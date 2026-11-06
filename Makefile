@@ -18,7 +18,7 @@ UI_CFLAGS = -Wall -Wno-format-truncation -fPIC
 PKGS = pangocairo librsvg-2.0 glib-2.0
 O = out
 LIB = $(O)/libglassine-ui.so.$(VERSION)
-SRC = src/glassine-ui-draw.c src/glassine-ui-voices.c
+SRC = src/glassine-ui-draw.c src/glassine-ui-voices.c src/glassine-ui-icons.c
 HDR = src/glassine-ui.h src/glassine-ui-scheme.h
 
 all: $(LIB) $(O)/glassine-ui.pc

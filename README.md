@@ -29,7 +29,7 @@ Needs cairo, pango, librsvg, glib (dev), python3, PyGObject (Gtk 3, Pango), pyca
 `make check` runs:
 
 - `tools/gen-voices --check`: the generated C table, `glassine-ui-scheme.h` and the Python module
-  match the data.
+  match the data, and the C icon map matches `glassine_ui.paint.ICONS`.
 - `test/test_voices.py`: sections, the fallback to White, a changed value (and a changed scheme token)
   reaching every form, the design importer.
 - `test/test_paint.py`: the Python drawing API call by call.
@@ -88,7 +88,9 @@ Contract: C API, version 1 (`GLASSINE_UI_API` in `glassine-ui.h`). `#include <gl
   `ui_hline` (solid, dashed, dotted), `ui_text` (placed, aligned, elided), `ui_text_w` (measured),
   `ui_text_wrap` (wrapped, at most n lines), `ui_icon` (an icon of glassine-mono, Adwaita, hicolor, the
   Flatpak exports or pixmaps at a pixel size; line art and `-symbolic` icons recoloured; rasterized once
-  and cached), `ui_font_with`, `ui_font_px`.
+  and cached), `ui_icon_material` (an icon named as the design names it, in Material Symbols, through
+  the same map as the Python `ICONS`/`ISCALE`, generated into `src/glassine-ui-icons.c`), `ui_hatch`
+  (parallel lines inside a rounded rect: the design's hatched outlines), `ui_font_with`, `ui_font_px`.
 - Nothing animates or redraws by itself: a call draws once. In the layout pass (`paint = 0`) the
   calls only measure, and `ui_icon` answers as in the paint pass. The calls leave the context's line
   width and dash as they were.

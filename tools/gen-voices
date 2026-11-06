@@ -1,0 +1,370 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-2.0-or-later
+"""gen-voices: the generated forms of the voice data (voices/voices.json).
+
+    gen-voices            write them
+    gen-voices --check    exit 1 (and say which) when one is out of date
+
+Generated (do not edit by hand):
+    src/glassine-ui-voices.c          the C table (UiVoice, glassine-ui.h)
+    src/glassine-ui-scheme.h          the E-ink tokens every voice shares (UI_RULE, UI_DIM)
+    python/glassine_ui/_voices.py     the Python data (glassine_ui.voices)
+
+The data is the design's own form: CSS values (colours, box-shadow lists,
+borders, font shorthands, radii) with every var(--il-*) resolved against the
+voice's E-ink scheme. The C table is built from the section "shell" by the rules
+in c_voice() below; "shell"."c" holds the few C values that are not the CSS
+value (see README "Voices", "Where C and Python differ").
+"""
+import json
+import os
+import pprint
+import re
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA = os.path.join(ROOT, "voices", "voices.json")
+ORDER = ("white", "editorial", "stationery")
+
+
+# ---- CSS values (the same reading as glassine_ui.paint) -----------------------------
+
+def color(s):
+    """'#rrggbb' -> 0xffrrggbb; 'none' | 'transparent' | '' -> 0"""
+    s = (s or "").strip()
+    if not s or s in ("none", "transparent"):
+        return 0
+    m = re.fullmatch(r"#([0-9a-fA-F]{6})", s)
+    if not m:
+        raise ValueError("not an e-ink colour: %r" % s)
+    return 0xff000000 | int(m.group(1), 16)
+
+
+def px(s, half=False):
+    """'12px' | '0' | '50%' -> float ('50%' -> HALF when half)"""
+    s = str(s).strip()
+    if s.endswith("%"):
+        if half and s == "50%":
+            return "HALF"
+        raise ValueError("percent: %r" % s)
+    return float(s[:-2]) if s.endswith("px") else float(s or 0)
+
+
+def radii(s):
+    v = [px(p, half=True) for p in str(s or "0").split()]
+    if len(v) == 1:
+        v = v * 4
+    elif len(v) == 2:
+        v = v + v
+    elif len(v) == 3:
+        v = v + [v[1]]
+    return v[:4]
+
+
+_SPLIT = re.compile(r",(?![^(]*\))")
+
+
+def shadows(s):
+    """box-shadow list -> [(x, y, spread, colour, inset)] in CSS order (first on top)"""
+    out = []
+    for part in _SPLIT.split(s or ""):
+        part = part.strip()
+        if not part or part == "none":
+            continue
+        inset = part.startswith("inset")
+        if inset:
+            part = part[5:].strip()
+        m = re.match(r"(.*?)\s*(#[0-9a-fA-F]{6})$", part)
+        n = [px(v) for v in m.group(1).split()]
+        n += [0] * (4 - len(n))
+        if n[2]:
+            raise ValueError("blur in a hard-edged voice: %r" % part)
+        out.append((n[0], n[1], n[3], color(m.group(2)), int(inset)))
+    return out
+
+
+def border(s):
+    """'1.5px solid #111111' -> (width, style, colour); 'none' -> (0, 'solid', 0)"""
+    s = (s or "").strip()
+    if not s or s == "none":
+        return (0.0, "solid", 0)
+    w, style, c = 1.0, "solid", 0
+    for p in s.split():
+        if p.endswith("px") or re.fullmatch(r"[\d.]+", p):
+            w = px(p)
+        elif p in ("solid", "dashed", "dotted", "double"):
+            style = p
+        else:
+            c = color(p)
+    return (w, style, c)
+
+
+_FONT = re.compile(r"^(?:(italic)\s+)?(?:(\d{3})\s+)?([\d.]+)px(?:/([\d.]+))?\s+(.+)$")
+
+
+def font(s, var="normal", ls="0", case="none"):
+    """a CSS font shorthand (+ font-variant, letter-spacing, text-transform) ->
+    (family, weight, italic, px, smallcaps, ls em, case, line height or None)"""
+    m = _FONT.match(s.strip())
+    if not m:
+        raise ValueError("font: %r" % s)
+    italic, w, size, lh, fam = m.groups()
+    fam = fam.split(",")[0].strip().strip("'\"")
+    ls = str(ls or "0").strip()
+    return dict(family=fam, weight=int(w or 400), italic=int(bool(italic)), px=float(size),
+                smallcaps=int(var == "small-caps"), ls=float(ls[:-2]) if ls.endswith("em") else 0.0,
+                tcase={"none": 0, "uppercase": 1, "lowercase": 2}[case or "none"],
+                lh=float(lh) if lh else None)
+
+
+def box(bg=None, r="0", sh=None, bd=None):
+    bw, style, bc = border(bd)
+    if style not in ("solid", "dashed"):
+        raise ValueError("box border: %r" % bd)
+    return dict(bg=color(bg), bw=bw, bc=bc, dashed=int(style == "dashed"), r=radii(r), rings=shadows(sh))
+
+
+# ---- the C voice ------------------------------------------------------------------------
+
+def c_voice(name, v):
+    """the UiVoice fields of one voice (in the struct's order) from its CSS values"""
+    s = dict(v["shell"])
+    over = v.get("c", {})
+    f = {}
+    f["name"] = name
+    f["title"] = v["title"]
+    f["screenBg"], f["ink"], f["sub"] = color(s["screenBg"]), color(s["ink"]), color(s["sub"])
+    f["lbl"] = font(s["lblFont"], s["lblVar"], s["lblLs"], s["lblCase"])
+    f["lblC"] = color(s["lblC"])
+    f["barBg"], f["barFg"] = color(s["barBg"]), color(s["barFg"])
+    bw, st, bc = border(s["barBorder"])
+    f["barBorderW"], f["barBorderC"], f["barDouble"] = bw, bc, int(st == "double")
+    bs = shadows(s["barShadow"])
+    f["barShadowH"], f["barShadowC"] = (bs[0][1], bs[0][3]) if bs else (0.0, 0)
+    f["stitch"], f["stitchColor"] = int(s["stitch"] != "none"), color(s["stitchColor"])
+    f["plateOn"] = box(s["plateOnBg"], s["plateR"], s["plateOnSh"])
+    f["plateOff"] = box(None, s["plateR"], s["plateOffSh"])
+    f["plateOnFg"] = color(s["plateOnFg"])
+    f["wsFont"], f["titleFont"], f["numFont"] = font(s["wsFont"]), font(s["titleFont"]), font(s["numFont"])
+    f["card"] = box(s["cardBg"], s["cardR"], s["cardSh"], s["cardBorder"])
+    f["emboss"] = int(s["emboss"] != "none")
+    bw, st, bc = border(s["sep"])
+    f["sepW"], f["sepC"], f["sepDashed"] = bw, bc, {"solid": 0, "dashed": 1, "dotted": 2}[st]
+    bw, st, bc = border(s["sepSoft"])
+    f["sepSoftW"], f["sepSoftC"] = bw, bc
+    bw, st, bc = border(s["headRule"])
+    f["headRuleW"], f["headRuleC"] = bw, bc
+    f["nameFont"] = font(s["nameFont"])
+    f["headFont"] = font(s["headFont"], s["headVar"], s["headLs"])
+    f["dateFont"] = font(s["dateFont"])
+    f["btn"] = box(s["btnBg"], s["btnR"], s["btnSh"])
+    f["sel"] = box(s["selBg"], s["btnR"], s["selSh"])
+    f["selFg"] = color(s["selFg"])
+    f["tog"] = box(s["btnBg"], s["togR"], s["btnSh"])
+    f["togOn"] = box(s["togOnBg"], s["togR"], s["togOnSh"])
+    f["togOnFg"] = color(s["togOnFg"])
+    f["grooveTop"], f["grooveH"], f["grooveR"] = px(s["grooveTop"]), px(s["grooveH"]), px(s["grooveR"])
+    f["grooveBg"] = color(s["grooveBg"])
+    f["grooveRing"] = shadows(s["grooveSh"])
+    f["fillTop"], f["fillH"] = px(s["fillTop"]), px(s["fillH"])
+    f["knobTop"], f["knobML"], f["knobW"], f["knobH"] = (px(s[k]) for k in ("knobTop", "knobML", "knobW", "knobH"))
+    f["knobR"] = px(s["knobR"], half=True)
+    f["knobBg"] = color(s["knobBg"])
+    bw, st, bc = border(s["knobBd"])
+    f["knobBw"], f["knobBc"] = bw, bc
+    f["tray"] = box(s["trayBg"], s["trayR"], s["traySh"])
+    f["segOn"] = box(s["segOnBg"], s["segR"], s["segOnSh"])
+    f["segR"] = px(s["segR"])
+    f["segFont"] = font(s["segFont"])
+    f["segOnFg"] = color(s["segOnFg"])
+    f["pwr"] = box(s["pwrBg"], s["pwrR"], s["pwrSh"])
+    f["pwrFg"] = color(s["pwrFg"])
+    f["pad"] = box(s["padBg"], s["padR"], s["padSh"], s["padBorder"])
+    f["padFg"] = color(s["padFg"])
+    f["padStitchInset"] = px(s["padStitchInset"])
+    f["folder"] = box(s["cardBg"], s["folderR"], s["folderSh"], s["cardBorder"])
+    f["folderTab"] = box(s["folderTabBg"], s["folderTabR"], s["folderTabSh"])
+    f["folderFont"] = font(s["folderFont"])
+    f["app"] = box(s["appBg"], s["appR"], s["appSh"])
+    f["appNameFont"] = font(s["appNameFont"], s["appNameVar"], s["appNameLs"])
+    f["appCatFont"] = font(s["appCatFont"])
+    f["nTitleFont"] = font(s["nTitleFont"])
+    f["nBodyFont"] = font(s["nBodyFont"])
+    f["nBodyLh"] = f["nBodyFont"]["lh"] or 0.0
+    f["searchFont"], f["pageFont"] = font(s["searchFont"]), font(s["pageFont"])
+    f["tabOn"] = box(s["tabOnBg"], s["tabR"], s["tabOnSh"])
+    f["tabOff"] = box(s["tabOffBg"], s["tabR"], s["tabOffSh"])
+    f["tabFont"] = font(s["tabFont"], s["tabVar"], s["tabLs"])
+    f["ratioFont"], f["snapFont"] = font(s["ratioFont"]), font(s["snapFont"])
+    f["frac"], f["roman"] = int(bool(s["frac"])), int(bool(s["roman"]))
+    for k in ("qsTitle", "lTitle", "nTitle", "oTitle", "curTag"):
+        f[k] = s[k]
+    # the C values that are not the CSS value: "field.part": value
+    for k, val in over.items():
+        if k.startswith("_"):
+            continue
+        field, _, part = k.partition(".")
+        if field not in f:
+            raise KeyError("%s: shell.c.%s: no such field" % (name, k))
+        if part:
+            f[field][part] = conv(field, part, val)
+        else:
+            f[field] = conv(field, None, val)
+    return f
+
+
+def conv(field, part, val):
+    """an override's value: colours as '#rrggbb', radii as CSS, rings as a box-shadow list"""
+    if part == "bg" or part == "bc":
+        return color(val)
+    if part == "r":
+        return radii(val)
+    if part == "rings":
+        return shadows(val)
+    if part == "bw":
+        return px(val)
+    if isinstance(val, str) and (val.startswith("#") or val in ("none", "transparent")):
+        return color(val)
+    return val
+
+
+# ---- writing ----------------------------------------------------------------------------
+
+def cnum(x):
+    if x == "HALF":
+        return "UI_HALF"
+    x = float(x)
+    if x == int(x):
+        return "%d" % x
+    return repr(x)
+
+
+def ccol(c):
+    return "UI_RGB(0x%06x)" % (c & 0xffffff) if c else "0"
+
+
+def cstr(s):
+    return '"' + s.replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+
+def cfont(d):
+    return "{ %s, %d, %d, %s, %d, %s, %d }" % (cstr(d["family"]), d["weight"], d["italic"], cnum(d["px"]),
+                                               d["smallcaps"], cnum(d["ls"]), d["tcase"])
+
+
+def crings(rings):
+    return "{ " + ", ".join("{ %s, %s, %s, %s, %d }" % (cnum(x), cnum(y), cnum(sp), ccol(c), i)
+                            for x, y, sp, c, i in rings) + " }"
+
+
+def cbox(b):
+    parts = []
+    if b["bg"]:
+        parts.append(".bg = " + ccol(b["bg"]))
+    if b["bw"] or b["bc"]:
+        parts.append(".bw = %s, .bc = %s" % (cnum(b["bw"]), ccol(b["bc"])))
+    if b["dashed"]:
+        parts.append(".dashed = 1")
+    if any(r != 0 for r in b["r"]):
+        parts.append(".r = { %s }" % ", ".join(cnum(r) for r in b["r"]))
+    if b["rings"]:
+        if len(b["rings"]) > 8:
+            raise ValueError("more than UI_NRING rings")
+        parts.append(".ring = %s, .nring = %d" % (crings(b["rings"]), len(b["rings"])))
+    return "{ " + ", ".join(parts) + " }" if parts else "{ 0 }"
+
+
+def c_table(data):
+    out = ["/* GENERATED by tools/gen-voices from voices/voices.json: do not edit by hand.",
+           " * SPDX-License-Identifier: GPL-2.0-or-later */",
+           "#include <string.h>",
+           '#include "glassine-ui.h"', ""]
+    for name in ORDER:
+        f = c_voice(name, data["voices"][name])
+        out.append("static const UiVoice v_%s = {" % name)
+        for k, val in f.items():
+            if k == "grooveRing":
+                out.append("    .grooveRing = %s, .ngrooveRing = %d," % (crings(val), len(val)) if val else
+                           "    .ngrooveRing = 0,")
+            elif val == "HALF":
+                out.append("    .%s = UI_HALF," % k)
+            elif isinstance(val, str):
+                out.append("    .%s = %s," % (k, cstr(val)))
+            elif isinstance(val, dict) and "family" in val:
+                out.append("    .%s = %s," % (k, cfont(val)))
+            elif isinstance(val, dict):
+                out.append("    .%s = %s," % (k, cbox(val)))
+            elif k.endswith(("Bg", "Fg", "C", "Color", "Bc")) or k in ("ink", "sub", "barBorderC", "barShadowC"):
+                out.append("    .%s = %s," % (k, ccol(val)))
+            else:
+                out.append("    .%s = %s," % (k, cnum(val)))
+        out.append("};")
+        out.append("")
+    out += ["const UiVoice *const ui_voices[] = { %s };" % ", ".join("&v_" + n for n in ORDER),
+            "const int ui_nvoices = %d;" % len(ORDER), "",
+            "const UiVoice *ui_voice_find(const char *name)",
+            "{",
+            "    for (int i = 0; i < ui_nvoices; i++)",
+            "        if (name && !strcmp(name, ui_voices[i]->name)) return ui_voices[i];",
+            "    return ui_voices[0];",
+            "}", ""]
+    return "\n".join(out)
+
+
+def c_scheme(data):
+    sch = [data["voices"][n]["scheme"] for n in ORDER]
+    for tok in ("rule", "dim"):
+        if len({s[tok] for s in sch}) != 1:
+            raise ValueError("scheme %s differs between voices" % tok)
+    return "\n".join([
+        "/* GENERATED by tools/gen-voices from voices/voices.json: do not edit by hand.",
+        " * The E-ink scheme's tokens that every voice shares. Included by glassine-ui.h.",
+        " * SPDX-License-Identifier: GPL-2.0-or-later */",
+        "#ifndef GLASSINE_UI_SCHEME_H",
+        "#define GLASSINE_UI_SCHEME_H",
+        "#define UI_RULE %s" % ccol(color(sch[0]["rule"])),
+        "#define UI_DIM %s" % ccol(color(sch[0]["dim"])),
+        "#endif", ""])
+
+
+def py_module(data):
+    voices = {n: data["voices"][n] for n in ORDER}
+    return ('"""GENERATED by tools/gen-voices from voices/voices.json: do not edit by hand.\n'
+            'Read it through glassine_ui.voices."""\n# SPDX-License-Identifier: GPL-2.0-or-later\n\n'
+            "CONTRACT = %d\nORDER = %r\nVOICES = %s\n" % (data["contract"], ORDER,
+                                                         pprint.pformat(voices, width=110, sort_dicts=True)))
+
+
+OUTPUTS = {
+    "src/glassine-ui-voices.c": c_table,
+    "src/glassine-ui-scheme.h": c_scheme,
+    "python/glassine_ui/_voices.py": py_module,
+}
+
+
+def main(argv):
+    check = "--check" in argv
+    with open(DATA) as fh:
+        data = json.load(fh)
+    stale = []
+    for rel, fn in OUTPUTS.items():
+        text = fn(data)
+        path = os.path.join(ROOT, rel)
+        old = open(path).read() if os.path.exists(path) else None
+        if old == text:
+            continue
+        if check:
+            stale.append(rel)
+        else:
+            with open(path, "w") as fh:
+                fh.write(text)
+            print("wrote", rel)
+    if stale:
+        print("gen-voices: out of date with voices/voices.json (run tools/gen-voices): " + ", ".join(stale),
+              file=sys.stderr)
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

@@ -1,0 +1,12 @@
+prefix=@PREFIX@
+libdir=@LIBDIR@
+includedir=@INCLUDEDIR@
+
+Name: glassine-ui
+Description: The GlassineOS voices and drawing (cairo, pango, librsvg)
+Version: @VERSION@
+Requires: cairo
+Requires.private: pangocairo librsvg-2.0 glib-2.0
+Cflags: -I${includedir}/glassine-ui
+Libs: -L${libdir} -lglassine-ui
+Libs.private: -lm

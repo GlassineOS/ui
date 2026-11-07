@@ -127,6 +127,20 @@ int main(int argc, char **argv)
     unsigned edge = *(unsigned *)(d + 30 * st + 10 * 4), inside = *(unsigned *)(d + 30 * st + 40 * 4);
     OK(edge == 0xff111111u && inside == 0xffffffffu, "the card: an ink edge, a paper inside");
     OK(*(unsigned *)(d + 75 * st + 155 * 4) == 0xff111111u, "and a draw after it lands");
+    UiGc lay2 = { cr, 0, v };
+    OK(ui_icon_material(&lay2, "chevron_left", 24, 12, 12, v->ink) == ui_icon(&lay2, "go-previous-symbolic", 24, 12, 12, v->ink),
+       "a Material name: its icon-theme name");
+    OK(!ui_icon_material(&lay2, "no-such-icon-anywhere", 24, 12, 12, v->ink), "an unknown name: none");
+    ui_fill_rect(&g, 100, 0, 100, 100, v->screenBg);
+    ui_hatch(&g, 100, 0, 100, 100, 0, 135, 1, 7, v->ink);
+    cairo_surface_flush(s);
+    int hatched = 0;
+    for (int y = 0; y < 100; y++)
+        for (int x = 100; x < 200; x++)
+            hatched += (*(unsigned *)(d + y * st + x * 4) & 0xff) < 0x80;
+    OK(hatched > 500 && hatched < 4000, "a hatch: lines, not a fill");
+    unsigned outside = *(unsigned *)(d + 5 * st + 95 * 4);
+    OK(outside == 0xffffffffu, "a hatch stays inside its rect");
     cairo_destroy(cr);
     cairo_surface_destroy(s);
     printf("c-api: %s\n", fails ? "FAILED" : "all passed");

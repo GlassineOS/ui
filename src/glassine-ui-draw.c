@@ -233,6 +233,28 @@ void ui_hline(UiGc *g, double x, double y, double w, double lw, ui_col c, int da
     cairo_restore(g->cr);
 }
 
+void ui_hatch(UiGc *g, double x, double y, double w, double h, double r, double angle, double lw, double step, ui_col c)
+{
+    if (!g->paint || !c || w <= 0 || h <= 0 || step <= 0) return;
+    cairo_t *cr = g->cr;
+    cairo_save(cr);
+    float r4[4] = { r, r, r, r };
+    path_rr4(cr, x, y, w, h, r4, 0);
+    cairo_clip(cr);
+    /* CSS: 0deg points up, angles turn clockwise; the stripes run across that direction */
+    double a = angle * M_PI / 180, dx = sin(a), dy = -cos(a);   /* the gradient's direction */
+    double cx = x + w / 2, cy = y + h / 2, half = (fabs(w * dx) + fabs(h * dy)) / 2;
+    cairo_set_line_width(cr, lw);
+    for (double t = -half; t <= half + step; t += step) {
+        double px_ = cx + dx * t, py = cy + dy * t, L = w + h;
+        cairo_move_to(cr, px_ - dy * L, py + dx * L);
+        cairo_line_to(cr, px_ + dy * L, py - dx * L);
+    }
+    src(cr, c);
+    cairo_stroke(cr);
+    cairo_restore(cr);
+}
+
 UiFont ui_font_with(const UiFont *f, int weight) { UiFont n = *f; n.weight = weight; return n; }
 UiFont ui_font_px(const UiFont *f, float px) { UiFont n = *f; n.px = px; return n; }
 

@@ -126,6 +126,14 @@ double ui_text_wrap(UiGc *g, const UiFont *f, const char *s, double x, double y,
  * others in their own colours. Returns 0 if there is no such icon or its file
  * doesn't render, in the layout pass too (which renders it once, and keeps it). */
 int ui_icon(UiGc *g, const char *name, double px, double cx, double cy, ui_col c);
+/* the same for an icon named as the design names it (Material Symbols:
+ * "chevron_left", "star", ...): the installed icon-theme names it maps to,
+ * tried in order, then the name itself; at the glyph's visual size within px
+ * (glassine_ui.paint's ICONS and ISCALE). Returns 0 if none is installed. */
+int ui_icon_material(UiGc *g, const char *name, double px, double cx, double cy, ui_col c);
+/* parallel lines lw thick, step apart, at angle degrees (CSS repeating-linear-gradient
+ * angles: 135 runs from top left to bottom right), inside the rounded rect */
+void ui_hatch(UiGc *g, double x, double y, double w, double h, double r, double angle, double lw, double step, ui_col c);
 UiFont ui_font_with(const UiFont *f, int weight);
 UiFont ui_font_px(const UiFont *f, float px);
 

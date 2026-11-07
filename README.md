@@ -76,14 +76,15 @@ Contract: C API, version 1 (`GLASSINE_UI_API` in `glassine-ui.h`). `#include <gl
   `UiGc` (cairo context, paint or layout pass, voice).
 - Voices: `ui_voices[]`, `ui_nvoices`, `ui_voice_find(name)` (unknown names and NULL give White);
   `UI_RULE`, `UI_DIM`.
-- Drawing (logical px; the caller's cairo matrix carries the device scale): `ui_draw_init()` once,
-  then `ui_box`, `ui_box_bg`, `ui_fill_rect`, `ui_rrect`, `ui_stroke_rrect` (solid or dashed),
+- Drawing (logical px; the caller's cairo matrix carries the device scale): `ui_draw_init()` once
+  (the first text or icon call does it if the caller didn't), then `ui_box`, `ui_box_bg`, `ui_fill_rect`, `ui_rrect`, `ui_stroke_rrect` (solid or dashed),
   `ui_hline` (solid, dashed, dotted), `ui_text` (placed, aligned, elided), `ui_text_w` (measured),
   `ui_text_wrap` (wrapped, at most n lines), `ui_icon` (an icon of glassine-mono, Adwaita, hicolor, the
   Flatpak exports or pixmaps at a pixel size; line art and `-symbolic` icons recoloured; rasterized once
   and cached), `ui_font_with`, `ui_font_px`.
 - Nothing animates or redraws by itself: a call draws once. In the layout pass (`paint = 0`) the
-  calls only measure.
+  calls only measure, and `ui_icon` answers as in the paint pass. The calls leave the context's line
+  width and dash as they were.
 
 ## Python API
 

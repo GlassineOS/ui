@@ -10,4 +10,5 @@ mkdir -p "$T"
 make -s -C "$R" install O=out/test/build PREFIX="$STAGE" >/dev/null
 export PKG_CONFIG_PATH="$STAGE/lib/pkgconfig"
 ${CC:-cc} -O2 -Wall -o "$T/c-api" "$R/test/c-api.c" $(pkg-config --cflags --libs glassine-ui)
-LD_LIBRARY_PATH="$STAGE/lib" "$T/c-api"
+# a GLib critical (NULL text, no init) is a failure, not a line on stderr
+G_DEBUG=fatal-criticals LD_LIBRARY_PATH="$STAGE/lib" "$T/c-api" "$T"

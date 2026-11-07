@@ -102,17 +102,20 @@ typedef struct {
     const UiVoice *t;                   /* the voice, for the caller's own use */
 } UiGc;
 
-/* once per process, before any text or icon */
+/* the font context and the icon index: once per process, before any text or
+ * icon (a text or icon call that comes first does it; later calls do nothing) */
 void ui_draw_init(void);
 void ui_box(UiGc *g, double x, double y, double w, double h, const UiBox *b);
 void ui_box_bg(UiGc *g, double x, double y, double w, double h, const UiBox *b, ui_col bg);
 void ui_fill_rect(UiGc *g, double x, double y, double w, double h, ui_col c);
 void ui_rrect(UiGc *g, double x, double y, double w, double h, double r, ui_col c);
 void ui_stroke_rrect(UiGc *g, double x, double y, double w, double h, double r, double lw, ui_col c, int dashed);
-/* a rule lw thick with its top at y; dashed: 0 solid, 1 dashes (3:2), 2 dots (1:1) */
+/* a rule lw thick with its top at y; dashed: 0 solid, 1 dashes (3:2), 2 dots (1:1).
+ * lw <= 0 draws nothing. The calls leave the context's line width and dash as they were. */
 void ui_hline(UiGc *g, double x, double y, double w, double lw, ui_col c, int dashed);
 /* text with its top-left at x,y (align 0 left, 1 centre, 2 right: x is that
- * edge/centre); maxw > 0 ellipsizes. Returns the width; *h the line height. */
+ * edge/centre); maxw > 0 ellipsizes. Returns the width; *h the line height.
+ * s == NULL is the empty string. */
 double ui_text(UiGc *g, const UiFont *f, const char *s, double x, double y, int align, double maxw, ui_col c, double *h);
 double ui_text_w(UiGc *g, const UiFont *f, const char *s, double *h);
 /* wrapped text in a w-wide column, at most maxlines lines (the last one
@@ -120,7 +123,8 @@ double ui_text_w(UiGc *g, const UiFont *f, const char *s, double *h);
 double ui_text_wrap(UiGc *g, const UiFont *f, const char *s, double x, double y, double w, int maxlines, double lh, ui_col c);
 /* an icon of the installed themes (glassine-mono -> Adwaita -> hicolor), px square,
  * centred on cx,cy. Line-art (glassine-mono) and -symbolic icons are drawn in c;
- * others in their own colours. Returns 0 if there is no such icon. */
+ * others in their own colours. Returns 0 if there is no such icon or its file
+ * doesn't render, in the layout pass too (which renders it once, and keeps it). */
 int ui_icon(UiGc *g, const char *name, double px, double cx, double cy, ui_col c);
 UiFont ui_font_with(const UiFont *f, int weight);
 UiFont ui_font_px(const UiFont *f, float px);

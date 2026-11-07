@@ -67,6 +67,7 @@ static void index_dir(const char *dir, int theme)
 
 void ui_draw_init(void)
 {
+    if (pctx) return;                   /* once: a second call keeps the first's tables */
     PangoFontMap *fm = pango_cairo_font_map_get_default();
     pctx = pango_font_map_create_context(fm);
     cairo_font_options_t *o = cairo_font_options_create();
@@ -162,13 +163,14 @@ void ui_box_bg(UiGc *g, double x, double y, double w, double h, const UiBox *b, 
     }
     if (b->bw > 0 && b->bc) {
         if (b->dashed) {
+            cairo_save(cr);             /* the caller's line width and dash stay */
             path_rr4(cr, x + b->bw / 2, y + b->bw / 2, w - b->bw, h - b->bw, b->r, -b->bw / 2);
             double d[2] = { 3 * b->bw, 2 * b->bw };
             cairo_set_dash(cr, d, 2, 0);
             cairo_set_line_width(cr, b->bw);
             src(cr, b->bc);
             cairo_stroke(cr);
-            cairo_set_dash(cr, NULL, 0, 0);
+            cairo_restore(cr);
         } else {
             cairo_save(cr);
             cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
@@ -205,13 +207,14 @@ void ui_stroke_rrect(UiGc *g, double x, double y, double w, double h, double r, 
     /* lw <= 0: nothing to stroke, and a { 0, 0 } dash would put cr in an error state */
     if (!g->paint || !c || lw <= 0) return;
     float r4[4] = { r, r, r, r };
+    cairo_save(g->cr);                  /* the caller's line width and dash stay */
     path_rr4(g->cr, x + lw / 2, y + lw / 2, w - lw, h - lw, r4, -lw / 2);
     double d[2] = { 3 * lw, 2 * lw };
     cairo_set_dash(g->cr, d, dashed ? 2 : 0, 0);
     cairo_set_line_width(g->cr, lw);
     src(g->cr, c);
     cairo_stroke(g->cr);
-    cairo_set_dash(g->cr, NULL, 0, 0);
+    cairo_restore(g->cr);
 }
 
 /* dashed: 1 dashes (3:2), 2 dots (1:1, CSS "dotted" for thin rules) */
@@ -220,13 +223,14 @@ void ui_hline(UiGc *g, double x, double y, double w, double lw, ui_col c, int da
     if (!g->paint || !c || lw <= 0) return;
     if (!dashed) { ui_fill_rect(g, x, y, w, lw, c); return; }
     double d[2] = { dashed == 2 ? lw : 3 * lw, dashed == 2 ? lw : 2 * lw };
+    cairo_save(g->cr);                  /* the caller's line width and dash stay */
     cairo_set_dash(g->cr, d, 2, 0);
     cairo_set_line_width(g->cr, lw);
     cairo_move_to(g->cr, x, y + lw / 2);
     cairo_line_to(g->cr, x + w, y + lw / 2);
     src(g->cr, c);
     cairo_stroke(g->cr);
-    cairo_set_dash(g->cr, NULL, 0, 0);
+    cairo_restore(g->cr);
 }
 
 UiFont ui_font_with(const UiFont *f, int weight) { UiFont n = *f; n.weight = weight; return n; }
@@ -234,6 +238,8 @@ UiFont ui_font_px(const UiFont *f, float px) { UiFont n = *f; n.px = px; return 
 
 static PangoLayout *layout(UiGc *g, const UiFont *f, const char *s, double maxw)
 {
+    ui_draw_init();                     /* if the caller didn't */
+    if (!s) s = "";
     pango_cairo_update_context(g->cr, pctx);
     PangoLayout *l = pango_layout_new(pctx);
     PangoFontDescription *d = pango_font_description_new();
@@ -339,6 +345,7 @@ static cairo_surface_t *raster(const char *path, int dev)
 int ui_icon(UiGc *g, const char *name, double px, double cx, double cy, ui_col c)
 {
     if (!name || !*name) return 0;
+    ui_draw_init();                     /* if the caller didn't */
     double sx = 1, sy = 0;
     cairo_user_to_device_distance(g->cr, &sx, &sy);   /* device px per logical px */
     int dev = (int)lround(px * sx);
@@ -353,7 +360,8 @@ int ui_icon(UiGc *g, const char *name, double px, double cx, double cy, ui_col c
         path = f->path;
         mono = f->mono;
     }
-    if (!g->paint) return 1;
+    /* rasterized (and kept) in the layout pass too, so that both passes agree
+     * on a file that is missing or doesn't render */
     char key[1100];
     snprintf(key, sizeof key, "%s@%d", path, dev);
     cairo_surface_t *s;
@@ -362,6 +370,7 @@ int ui_icon(UiGc *g, const char *name, double px, double cx, double cy, ui_col c
         g_hash_table_insert(icon_cache, g_strdup(key), s);
     }
     if (!s) return 0;
+    if (!g->paint) return 1;
     cairo_t *cr = g->cr;
     cairo_save(cr);
     /* snap to whole device pixels: crisp line art */

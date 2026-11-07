@@ -1,0 +1,10 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-2.0-or-later
+# ci-scope: which checks a change needs. Reads changed paths (one per line) on stdin and
+# prints "lib" when the library checks (make check-lib) can be affected, else "forms".
+#
+# The library reads src/, python/ and voices/. A token change that reaches it rewrites
+# voices/voices.json (gen-interleaf --check fails otherwise), so tokens, component styles,
+# web/, boards and docs alone are "forms".
+lib='^(src/|python/|voices/|Makefile$|glassine-ui\.pc\.in$|tools/ci-scope$|\.github/workflows/build\.yml$|test/(sheet|compare|c-api|pc-prefix|build-flags|test_paint)[^/]*$)'
+if grep -qE "$lib"; then echo lib; else echo forms; fi

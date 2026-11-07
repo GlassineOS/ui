@@ -244,7 +244,7 @@ PREVIEW_HEAD = """<link rel="stylesheet" href="../web/tokens.css">
 
 def preview_page(c):
     src = c["preview"]
-    m = re.search(r"<head[^>]*>", src, re.I)
+    m = re.search(r"<head(?:\s[^>]*)?>", src, re.I)
     if not m:
         raise ValueError("component %s: preview.html has no <head>" % c["name"])
     return src[:m.end()] + "\n" + PREVIEW_HEAD + src[m.end():]

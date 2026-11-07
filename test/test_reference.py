@@ -200,6 +200,18 @@ try:
     ok('href="http://a/b&quot;onmouseover=&quot;alert(1"' in link and 'onmouseover="' not in link
        and 'href="http://a/?p=1&amp;q=&lt;2&gt;"' in link,
        "links: a quote in the target cannot end the href, & and < are escaped once")
+
+    def injected(src):
+        try:
+            return G.preview_page({"name": "T", "preview": src})
+        except ValueError as e:
+            return e
+    ok(isinstance(injected("<html><body><header class=x>h</header></body></html>"), ValueError),
+       "previews: <header> is not taken for <head>")
+    ok(all(isinstance(injected(s), str) and "../web/tokens.css" in injected(s) for s in
+           ("<html><head><title>t</title></head><body></body></html>", "<HTML><HEAD lang=en>\n<title>t</title></HEAD>",
+            "<html><head\n data-x=1><title>t</title></head>")),
+       "previews: a <head> with attributes or in capitals still gets the web form")
 finally:
     shutil.rmtree(TMP, ignore_errors=True)
 

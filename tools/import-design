@@ -8,8 +8,9 @@ The dumps come from the design canvas's component scripts (claude.ai design
     node tools/design/setup-dump.js EinkSetup.js SETUP.json          # setup + scheme
 Every var(--il-NAME[,fallback]) is resolved against the voice's E-ink tokens. The
 sections scheme, card and setup are replaced; in shell the design's keys are
-replaced and the keys the design does not have (the C table's own) are kept; "c"
-is kept. Then run tools/gen-voices. Only the E-ink scheme is used."""
+replaced and the keys the design does not have (the C table's own) are kept; "c",
+"inline" and "apps" are kept (they are kept by hand). Then run tools/gen-voices.
+Only the E-ink scheme is used."""
 import json
 import os
 import re

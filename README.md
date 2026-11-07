@@ -6,7 +6,10 @@ panels, Settings, the first-run setup, Home).
 
 - **Voice data:** `voices/voices.json`, the single source, from the Interleaf design system on the
   E-ink scheme. The C table and the Python module are generated from it (`tools/gen-voices`);
-  `make check` fails when they are out of date.
+  `make check` fails when they are out of date. The GTK themes and the on-screen keyboard's look,
+  for the programs that do not draw with this repository, are generated from it too
+  (`tools/gen-apps`, into GlassineOS/shell's `rootfs/`; the shell's `make check` fails when its
+  copy is out of date).
 - **C library:** `libglassine-ui` (pkg-config `glassine-ui`): cairo + pango + librsvg drawing in the
   voices (boxes, rules, text, icons), for native programs such as the shell and Home.
 - **Python package:** `glassine_ui` (`voices`, `paint`): the same for the GTK/cairo programs, such as
@@ -31,7 +34,7 @@ Needs cairo, pango, librsvg, glib (dev), python3, PyGObject (Gtk 3, Pango), pyca
 - `tools/gen-voices --check`: the generated C table, `glassine-ui-scheme.h` and the Python module
   match the data, and the C icon map matches `glassine_ui.paint.ICONS`.
 - `test/test_voices.py`: sections, the fallback to White, a changed value (and a changed scheme token)
-  reaching every form, the design importer.
+  reaching every form, the design importer, `tools/gen-apps` (into a temporary tree).
 - `test/test_paint.py`: the Python drawing API call by call.
 - `test/c-api.sh`: a separate program built with `pkg-config glassine-ui` against an installed copy.
 - `test/pc-prefix.sh`: the installed `.pc` names the prefix it was installed with.
@@ -58,6 +61,8 @@ is chosen by name; unknown names give White (in C and in Python). Each voice has
 | `c` | the few values the C table takes instead of the CSS value: `"field.part": value`, with `_why` |
 | `card` | the settings card (rows, heads, tabs, segments, keyboard) |
 | `setup` | the first-run setup (header, steps, fields, keycaps, packs) |
+| `inline` | what the design writes in its components' code, not in the tables the dumps read: the keyboard's focus ring (`focusW`, `focusOff`, `focusR`: the outer radius), setup's voice miniatures (`mini*`), setup's chosen network row (`netOnBg`) |
+| `apps` | the look of the programs that do not draw with this repository, for `tools/gen-apps`: the GTK text face (`gtkFont`), the GTK 3 theme (`gtk3` colours, `gtk3Note`, `gtk3Rules`), the GTK 4 / libadwaita colours (`gtk4`, into `voices/gtk4.css.in`), the on-screen keyboard (`wvkbd`: its options) |
 
 Values are the design's CSS with every `var(--il-*)` resolved: colours `#rrggbb` (greys of the E-ink
 scheme), `box-shadow` lists (hard edges only: a blur fails the generator), borders (`1.5px solid
@@ -65,7 +70,16 @@ scheme), `box-shadow` lists (hard edges only: a blur fails the generator), borde
 with `*Var` (small-caps), `*Ls` (letter spacing, em) and `*Case`, radii in px or `50%`.
 
 The same key can mean different things in `shell`, `card` and `setup`: each is its own surface in the
-design (`headH`, `cardR`, `sep`, ...), so they are kept apart, not merged.
+design (`headH`, `cardR`, `sep`, ...), so they are kept apart, not merged. `shell` also has keys the
+design does not dump (the C table's own: `gripGap`, `gripLip` for glassine-swayd's drag handles).
+
+`tools/import-design` replaces `scheme`, `card` and `setup`, merges `shell`, and keeps `c`, `inline`
+and `apps`: those are kept by hand.
+
+The `apps` values are the GTK and keyboard themes as they were, not the scheme's greys: several are
+not on the 16-grey ladder (`#1b1b1b`, `#141414`, `#a0a0a0`, `#d0d0d0`, `#c4c4c4`, `#4a4a4a`, `#b5b5b5`,
+`#bdbdbd`), and Stationery's GTK ink is `#1b1b1b` where the voice's is `#111111`. Bringing them onto
+the scheme changes pixels, so it is a separate change.
 
 Changing a voice: edit `voices/voices.json` (or refresh it from the design with `tools/import-design`,
 which reads the dumps of `tools/design/*.js`), run `make generate`, commit the data and the generated
@@ -79,10 +93,11 @@ Contract: C API, version 1 (`GLASSINE_UI_API` in `glassine-ui.h`). `#include <gl
 - Types: `ui_col` (0xAARRGGBB, 0 = transparent; `UI_RGB(0xrrggbb)`), `UiRing` (x, y, spread, colour,
   inset), `UiBox` (background, border width/colour/dashed, four radii with `UI_HALF` = 50%, up to
   `UI_NRING` rings in CSS order), `UiFont` (family, weight, italic, px, small caps, letter spacing in
-  em, case `UI_CASE_*`), `UiVoice` (one voice: the fields of the `shell` section, see the header),
+  em, case `UI_CASE_*`), `UiVoice` (one voice: the fields of the `shell` section, the focus ring of
+  `inline`, the drag handles; see the header),
   `UiGc` (cairo context, paint or layout pass, voice).
 - Voices: `ui_voices[]`, `ui_nvoices`, `ui_voice_find(name)` (unknown names and NULL give White);
-  `UI_RULE`, `UI_DIM`.
+  `UI_RULE`, `UI_DIM`, `UI_PAPER`, `UI_HIGHLIGHT`.
 - Drawing (logical px; the caller's cairo matrix carries the device scale): `ui_draw_init()` once
   (the first text or icon call does it if the caller didn't), then `ui_box`, `ui_box_bg`, `ui_fill_rect`, `ui_rrect`, `ui_stroke_rrect` (solid or dashed),
   `ui_hline` (solid, dashed, dotted), `ui_text` (placed, aligned, elided), `ui_text_w` (measured),

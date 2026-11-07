@@ -42,7 +42,7 @@ data = json.load(open(os.path.join(ROOT, "voices", "voices.json")))
 ok(data["contract"] == 1, "voice data contract 1")
 ok(list(data["voices"]) == list(gen.ORDER), "voices in order: " + ", ".join(gen.ORDER))
 for name, v in data["voices"].items():
-    ok(set(v) == {"title", "scheme", "shell", "c", "card", "setup"}, name + ": sections")
+    ok(set(v) == {"title", "scheme", "shell", "c", "card", "setup", "inline", "apps"}, name + ": sections")
     try:
         gen.c_voice(name, v)
         ok(True, name + ": the C table reads every shell value it needs")
@@ -109,6 +109,40 @@ try:
     py = open(os.path.join(tmp, "python", "glassine_ui", "_voices.py")).read()
     ok("{ 0, 0, 2, UI_RGB(0x111111), 0 }" in c, "the C table has the new edge")
     ok("'cardSh': '0 0 0 2px #111111'" in py, "the Python data has the new edge")
+
+    # gen-apps: the GTK themes and the scripts' marked lines, into a root file system tree
+    rf = os.path.join(tmp, "rootfs")
+    os.makedirs(os.path.join(rf, "usr", "bin"))
+    for s, ind in (("glassine-theme-apply", "    "), ("glassine-wvkbd", "            ")):
+        with open(os.path.join(rf, "usr", "bin", s), "w") as fh:
+            fh.write("#!/bin/sh\ncase $t in\n%s# >>> gen-apps\n%sold) ;;\n%s# <<< gen-apps\nesac\n" % (ind, ind, ind))
+    ga = [sys.executable, os.path.join(tmp, "tools", "gen-apps")]
+    r = subprocess.run(ga + ["--check", rf], capture_output=True, text=True)
+    ok(r.returncode == 1 and "gtk4/white.css" in r.stderr, "gen-apps --check: missing files are out of date")
+    subprocess.run(ga + [rf], check=True, capture_output=True)
+    ok(subprocess.run(ga + ["--check", rf]).returncode == 0, "gen-apps: current after writing")
+    g4 = open(os.path.join(rf, "usr", "share", "glassine", "gtk4", "stationery.css")).read()
+    g3 = open(os.path.join(rf, "usr", "share", "themes", "glassine-editorial", "gtk-3.0", "gtk.css")).read()
+    ok("${" not in g4 and '"stationery" theme' in g4 and "toast { box-shadow: none; background-color: #141414;" in g4,
+       "gen-apps: the GTK 4 template filled (stationery)")
+    ok("@define-color glassine_btn transparent;" in g3 and "base.css" in g3, "gen-apps: the GTK 3 theme (editorial)")
+    ta = open(os.path.join(rf, "usr", "bin", "glassine-theme-apply")).read()
+    wv = open(os.path.join(rf, "usr", "bin", "glassine-wvkbd")).read()
+    ok("old)" not in ta and '    stationery) font="EB Garamond 11" ;;\n    # <<< gen-apps\nesac' in ta,
+       "gen-apps: the theme-apply fonts between the markers, the rest kept")
+    ok('            *) set -- --fn "IBM Plex Sans Medium 16" -R 6' in wv and "editorial) set -- " in wv,
+       "gen-apps: the keyboard looks, White as the fallback")
+    d = json.load(open(p))
+    d["voices"]["stationery"]["apps"]["gtk4"]["line"] = "#222222"
+    json.dump(d, open(p, "w"), indent=2)
+    r = subprocess.run(ga + ["--check", rf], capture_output=True, text=True)
+    ok(r.returncode == 1 and "gtk4/stationery.css" in r.stderr and "white.css" not in r.stderr,
+       "gen-apps --check names the one stale file")
+    with open(os.path.join(rf, "usr", "bin", "glassine-wvkbd"), "w") as fh:
+        fh.write("#!/bin/sh\n")
+    r = subprocess.run(ga + [rf], capture_output=True, text=True)
+    ok(r.returncode != 0 and "gen-apps" in r.stderr, "gen-apps: a script without its markers is an error")
+
     # the shared scheme tokens: a change reaches glassine-ui-scheme.h, and one
     # voice alone can't change them
     d = json.load(open(p))

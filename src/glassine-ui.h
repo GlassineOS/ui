@@ -85,6 +85,16 @@ typedef struct {
     int frac, roman;
     const char *qsTitle, *lTitle, *nTitle;
     const char *oTitle, *curTag;        /* the overview: its title, the current screen's tag */
+    /* the keyboard's focus ring (section "inline"): focusW thick, focusOff outside the
+     * control, focusR its outer radius */
+    float focusW, focusOff, focusR;
+    /* the drag handles between tiles (glassine-swayd): the bar (divBg, divDrag while
+     * dragged; an inside edge divEdgeW in divEdgeC), grips gripW x gripH (gripRound:
+     * ellipses), grips of them gripGap apart, gripLip a crescent at a round grip's
+     * foot (0: none), divStitch a stitched strap in divStitchC */
+    ui_col divBg, divDrag; float divEdgeW; ui_col divEdgeC;
+    float gripW, gripH; ui_col gripBg, gripDrag; int gripRound, grips; float gripGap; ui_col gripLip;
+    int divStitch; ui_col divStitchC;
 } UiVoice;
 
 extern const UiVoice *const ui_voices[];   /* white, editorial, stationery */

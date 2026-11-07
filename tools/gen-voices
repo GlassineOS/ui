@@ -7,16 +7,18 @@
 
 Generated (do not edit by hand):
     src/glassine-ui-voices.c          the C table (UiVoice, glassine-ui.h)
-    src/glassine-ui-scheme.h          the E-ink tokens every voice shares (UI_RULE, UI_DIM)
+    src/glassine-ui-scheme.h          the E-ink tokens every voice shares (UI_RULE, UI_DIM,
+                                      UI_PAPER, UI_HIGHLIGHT)
     python/glassine_ui/_voices.py     the Python data (glassine_ui.voices)
     src/glassine-ui-icons.c           the design's (Material) icon names -> icon-theme names,
                                       from glassine_ui.paint's ICONS and ISCALE (ui_icon_material)
 
 The data is the design's own form: CSS values (colours, box-shadow lists,
 borders, font shorthands, radii) with every var(--il-*) resolved against the
-voice's E-ink scheme. The C table is built from the section "shell" by the rules
-in c_voice() below; "shell"."c" holds the few C values that are not the CSS
-value (see README "Voices", "Where C and Python differ").
+voice's E-ink scheme. The C table is built from the sections "shell" and "inline"
+by the rules in c_voice() below; "c" holds the few C values that are not the CSS
+value (see README "Voices", "Where C and Python differ"). The section "apps"
+(GTK and the on-screen keyboard) is tools/gen-apps' input.
 """
 import ast
 import json
@@ -207,6 +209,20 @@ def c_voice(name, v):
     f["frac"], f["roman"] = int(bool(s["frac"])), int(bool(s["roman"]))
     for k in ("qsTitle", "lTitle", "nTitle", "oTitle", "curTag"):
         f[k] = s[k]
+    # the keyboard's focus ring (section "inline": the design writes it in its code)
+    inl = v["inline"]
+    f["focusW"], f["focusOff"], f["focusR"] = px(inl["focusW"]), px(inl["focusOff"]), px(inl["focusR"])
+    # the drag handles between tiles (glassine-swayd)
+    f["divBg"], f["divDrag"] = color(s["divBg"]), color(s["divDrag"])
+    ds = shadows(s["divSh"])
+    if len(ds) > 1 or any(r[0] or r[1] or not r[4] for r in ds):
+        raise ValueError("%s: divSh: one inset ring at most: %r" % (name, s["divSh"]))
+    f["divEdgeW"], f["divEdgeC"] = (ds[0][2], ds[0][3]) if ds else (0.0, 0)
+    f["gripW"], f["gripH"] = float(s["grip"][0]), float(s["grip"][1])
+    f["gripBg"], f["gripDrag"] = color(s["gripBg"]), color(s["gripDrag"])
+    f["gripRound"], f["grips"], f["gripGap"] = int(s["gripR"] == "50%"), int(s["grips"]), px(s["gripGap"])
+    f["gripLip"] = color(s["gripLip"])
+    f["divStitch"], f["divStitchC"] = int(bool(s["divStitch"])), color(s["stitchColor"])
     # the C values that are not the CSS value: "field.part": value
     for k, val in over.items():
         if k.startswith("_"):
@@ -302,7 +318,7 @@ def c_table(data):
                 out.append("    .%s = %s," % (k, cfont(val)))
             elif isinstance(val, dict):
                 out.append("    .%s = %s," % (k, cbox(val)))
-            elif k.endswith(("Bg", "Fg", "C", "Color", "Bc")) or k in ("ink", "sub", "barBorderC", "barShadowC"):
+            elif k.endswith(("Bg", "Fg", "C", "Color", "Bc")) or k in ("ink", "sub", "divDrag", "gripDrag", "gripLip"):
                 out.append("    .%s = %s," % (k, ccol(val)))
             else:
                 out.append("    .%s = %s," % (k, cnum(val)))
@@ -321,7 +337,7 @@ def c_table(data):
 
 def c_scheme(data):
     sch = [data["voices"][n]["scheme"] for n in ORDER]
-    for tok in ("rule", "dim"):
+    for tok in ("rule", "dim", "paper", "highlight"):
         if len({s[tok] for s in sch}) != 1:
             raise ValueError("scheme %s differs between voices" % tok)
     return "\n".join([
@@ -332,6 +348,8 @@ def c_scheme(data):
         "#define GLASSINE_UI_SCHEME_H",
         "#define UI_RULE %s" % ccol(color(sch[0]["rule"])),
         "#define UI_DIM %s" % ccol(color(sch[0]["dim"])),
+        "#define UI_PAPER %s" % ccol(color(sch[0]["paper"])),
+        "#define UI_HIGHLIGHT %s" % ccol(color(sch[0]["highlight"])),
         "#endif", ""])
 
 

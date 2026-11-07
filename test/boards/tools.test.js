@@ -49,6 +49,16 @@ test('server: runtime at any support.js, Interleaf from the checkout, design fil
   } finally { await srv.close(); }
 });
 
+test('server: a NUL byte in the path is refused and the server stays up', async () => {
+  const srv = await startServer({ design: SAMPLES, interleaf: INTERLEAF, live: false });
+  try {
+    for (const p of ['A%00.dc.html', 'a%00b', '_boards/x%00.js', 'ds/interleaf/tokens%00.json', 'sub/ds/interleaf/%00']) {
+      assert.strictEqual((await fetch(srv.url + p)).status, 400, p);
+    }
+    assert.strictEqual((await fetch(srv.url + 'Main.dc.html')).status, 200);
+  } finally { await srv.close(); }
+});
+
 test('server: refuses a missing Interleaf', async () => {
   await assert.rejects(async () => startServer({ design: SAMPLES, interleaf: path.join(TMP, 'none') }), /no Interleaf/);
 });

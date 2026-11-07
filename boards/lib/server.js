@@ -90,7 +90,7 @@ function sendFile(res, file) {
   fs.stat(file, function (err, st) {
     if (err || !st.isFile()) { res.writeHead(404, { 'content-type': 'text/plain' }); res.end('not found\n'); return; }
     res.writeHead(200, { 'content-type': MIME[path.extname(file).toLowerCase()] || 'application/octet-stream', 'cache-control': 'no-cache' });
-    fs.createReadStream(file).pipe(res);
+    fs.createReadStream(file).on('error', function () { res.destroy(); }).pipe(res);
   });
 }
 
@@ -106,10 +106,19 @@ function startServer(opts) {
   const watchers = [];
 
   const server = http.createServer(function (req, res) {
+    // one bad request must not stop the server (it may be reachable from the network, FR-013)
+    try { handle(req, res); } catch (e) {
+      if (!res.headersSent) res.writeHead(500, { 'content-type': 'text/plain' });
+      res.end();
+    }
+  });
+
+  function handle(req, res) {
     let u;
     try { u = new URL(req.url, 'http://x'); } catch (e) { res.writeHead(400); res.end(); return; }
     let p;
     try { p = decodeURIComponent(u.pathname); } catch (e) { res.writeHead(400); res.end(); return; }
+    if (p.indexOf('\0') >= 0) { res.writeHead(400); res.end(); return; }
     if (p === '/favicon.ico') { res.writeHead(204); res.end(); return; }
     if (p === '/') { res.writeHead(302, { location: '/_boards/' }); res.end(); return; }
     if (p === '/_boards/events') {
@@ -146,7 +155,7 @@ function startServer(opts) {
     if (!f) { res.writeHead(404); res.end(); return; }
     if (fs.existsSync(f) && fs.statSync(f).isDirectory()) { res.writeHead(302, { location: '/_boards/' }); res.end(); return; }
     sendFile(res, f);
-  });
+  }
 
   if (live) {
     let timer = null, changed = new Set();

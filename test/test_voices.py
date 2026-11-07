@@ -51,6 +51,26 @@ for name, v in data["voices"].items():
     for k in v["c"]:
         ok(k.startswith("_") or "_why" in v["c"], name + ": c." + k + " says why")
 
+# what UiVoice can't hold is refused, not dropped
+def refused(key, value):
+    """White's shell.key = value: does the C table refuse it?"""
+    v = json.loads(json.dumps(data["voices"]["white"]))
+    v["shell"][key] = value
+    try:
+        gen.c_table({"voices": dict(data["voices"], white=v)})
+        return False
+    except ValueError:
+        return True
+
+
+ok(refused("barShadow", "0 2px 0 #111111, 0 4px 0 #888888"), "barShadow: a second shadow is refused")
+ok(refused("barShadow", "2px 2px 0 #111111") and refused("barShadow", "0 2px 0 1px #111111")
+   and refused("barShadow", "inset 0 2px 0 #111111"), "barShadow: an x offset, a spread, inset are refused")
+ok(not refused("barShadow", "0 3px 0 #111111"), "barShadow: one shadow below the bar is taken")
+ok(refused("grooveSh", ", ".join(["0 0 0 1px #111111"] * 4)), "grooveSh: a fourth ring is refused")
+ok(not refused("grooveSh", ", ".join(["0 0 0 1px #111111"] * 3)), "grooveSh: three rings are taken")
+ok(refused("cardSh", ", ".join(["0 0 0 1px #111111"] * 9)), "a box: a ninth ring (UI_NRING) is refused")
+
 from glassine_ui import voices  # noqa: E402
 
 ok(voices.NAMES == ("white", "editorial", "stationery"), "Python: NAMES")

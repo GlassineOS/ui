@@ -140,6 +140,9 @@ def c_voice(name, v):
     bw, st, bc = border(s["barBorder"])
     f["barBorderW"], f["barBorderC"], f["barDouble"] = bw, bc, int(st == "double")
     bs = shadows(s["barShadow"])
+    # UiVoice holds one shadow straight below the bar: its height and colour
+    if len(bs) > 1 or any(x or sp or inset for x, _, sp, _, inset in bs):
+        raise ValueError("%s: barShadow: one outer shadow with only a y offset, not %r" % (name, s["barShadow"]))
     f["barShadowH"], f["barShadowC"] = (bs[0][1], bs[0][3]) if bs else (0.0, 0)
     f["stitch"], f["stitchColor"] = int(s["stitch"] != "none"), color(s["stitchColor"])
     f["plateOn"] = box(s["plateOnBg"], s["plateR"], s["plateOnSh"])
@@ -166,6 +169,8 @@ def c_voice(name, v):
     f["grooveTop"], f["grooveH"], f["grooveR"] = px(s["grooveTop"]), px(s["grooveH"]), px(s["grooveR"])
     f["grooveBg"] = color(s["grooveBg"])
     f["grooveRing"] = shadows(s["grooveSh"])
+    if len(f["grooveRing"]) > 3:
+        raise ValueError("%s: grooveSh: more than the 3 rings of UiVoice.grooveRing" % name)
     f["fillTop"], f["fillH"] = px(s["fillTop"]), px(s["fillH"])
     f["knobTop"], f["knobML"], f["knobW"], f["knobH"] = (px(s[k]) for k in ("knobTop", "knobML", "knobW", "knobH"))
     f["knobR"] = px(s["knobR"], half=True)

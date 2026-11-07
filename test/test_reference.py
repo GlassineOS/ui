@@ -9,7 +9,6 @@
   no link is root-relative (the site is published under a sub-path)
 - two builds are byte for byte the same
 """
-import filecmp
 import html.parser
 import importlib.machinery
 import importlib.util
@@ -87,9 +86,28 @@ try:
     for f in ("index.html", "tokens.html", "components.html", "reference.css", "web/tokens.css", "web/bundle.css",
               "web/combinations.json"):
         ok(os.path.isfile(os.path.join(a, f)), "written: " + f)
-    def same(d):
-        return not (d.left_only or d.right_only or d.diff_files or d.funny_files) and all(same(s) for s in d.subdirs.values())
-    ok(same(filecmp.dircmp(os.path.join(ROOT, "web"), os.path.join(a, "web"))), "web/ copied as it is")
+    def same(x, y):
+        """the same files and directories under both, byte for byte (filecmp.dircmp trusts size and mtime)"""
+        def tree(d):
+            files, dirs = {}, set()
+            for dirpath, dnames, fnames in os.walk(d):
+                rel = os.path.relpath(dirpath, d)
+                dirs.update(os.path.normpath(os.path.join(rel, n)) for n in dnames)
+                for n in fnames:
+                    with open(os.path.join(dirpath, n), "rb") as fh:
+                        files[os.path.normpath(os.path.join(rel, n))] = fh.read()
+            return files, dirs
+        return tree(x) == tree(y)
+    ok(same(os.path.join(ROOT, "web"), os.path.join(a, "web")), "web/ copied as it is")
+    probe = os.path.join(TMP, "probe")
+    shutil.copytree(os.path.join(a, "web"), probe, copy_function=shutil.copy2)
+    pf = os.path.join(probe, "combinations.json")
+    data = open(pf, "rb").read()
+    st = os.stat(pf)
+    with open(pf, "wb") as fh:
+        fh.write(data[:-1] + (b" " if data[-1:] != b" " else b"\n"))
+    os.utime(pf, ns=(st.st_atime_ns, st.st_mtime_ns))
+    ok(not same(os.path.join(a, "web"), probe), "the comparison sees a change of one byte that keeps size and mtime")
 
     pages = {}
     for dirpath, _, files in os.walk(a):
@@ -174,7 +192,7 @@ try:
     ok(not bad, "links: every href and src resolves" + ("" if not bad else ":\n     " + "\n     ".join(bad[:20])))
 
     r = build(b)
-    ok(r.returncode == 0 and same(filecmp.dircmp(a, b)), "two builds are the same")
+    ok(r.returncode == 0 and same(a, b), "two builds are the same")
 
     # --out replaces only a directory this tool wrote
     keep = os.path.join(TMP, "keep")
@@ -191,7 +209,7 @@ try:
     ok(r.returncode == 0 and os.path.isfile(os.path.join(fresh, "index.html")), "--out: an empty directory is used")
     open(os.path.join(a, "stale.html"), "w").close()
     r = build(a)
-    ok(r.returncode == 0 and not os.path.exists(os.path.join(a, "stale.html")) and same(filecmp.dircmp(a, b)),
+    ok(r.returncode == 0 and not os.path.exists(os.path.join(a, "stale.html")) and same(a, b),
        "--out: an earlier build is replaced, stale files gone")
 
     # the generator's own functions

@@ -49,8 +49,9 @@ generate:
 	$(PYTHON) tools/gen-interleaf
 	$(PYTHON) tools/gen-voices
 
+# only the default folder is cleaned: a CLAUDE_OUT of your own must be empty, the tool refuses it otherwise
 export-claude:
-	rm -rf $(CLAUDE_OUT)
+	[ "$(CLAUDE_OUT)" != "$(O)/claude/interleaf" ] || rm -rf $(CLAUDE_OUT)
 	$(PYTHON) tools/export-claude $(CLAUDE_OUT)
 
 install: all

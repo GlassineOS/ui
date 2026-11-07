@@ -126,7 +126,10 @@ The panel shows a grey at the level of its top nibble after the desktop's grey c
 default), so a grey off the ladder goes to the ladder grey on the same panel level (the voice's ink
 where the ink is on it), or the nearest level (of two equally near, the higher) where no ladder grey
 has it: `tools/ladder --map HEX`, `tools/ladder --map-apps` (the `apps` section; a translucent
-keyboard colour first over the key face it is drawn on).
+keyboard colour first over the key face it is drawn on). The curve is `epd_grey_luma_lut`'s; the
+desktop's default grey mode is luminance (`epd_grey_lum_lut`, `grey_lum = 1`), which gives the same
+level for all 256 neutral greys. The gamma can be changed at runtime (`gamma=`, `eink.conf`) and the
+ladder holds only at 1.8; `test/test_ladder.py` pins it.
 
 ## Web form
 

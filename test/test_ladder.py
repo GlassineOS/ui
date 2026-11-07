@@ -14,6 +14,7 @@ import importlib.machinery
 import importlib.util
 import json
 import os
+import re
 import subprocess
 import sys
 
@@ -60,6 +61,18 @@ try:
     ok(False, "a colour that is not a grey is refused by the mapping")
 except ValueError:
     ok(True, "a colour that is not a grey is refused by the mapping")
+
+# the ladder holds only at the desktop's default gamma: pin it, and (where the epd source is
+# at hand: GLASSINE_EPD_SRC, else <workspace>/epd/src) compare with the desktop's own default
+ok(L.GAMMA == 1.8, "the mapping rule's gamma is 1.8")
+epd_c = os.path.join(os.environ.get("GLASSINE_EPD_SRC") or os.path.join(
+    os.environ.get("GLASSINE_WORKSPACE") or os.path.expanduser("~/GlassineOS"), "epd", "src"), "glassine-epdd-desktop.c")
+if os.path.exists(epd_c):
+    defaults = re.findall(r"^\s+set_gamma\(([0-9.]+)\);", open(epd_c, errors="replace").read(), re.M)
+    ok(len(defaults) == 1 and float(defaults[0]) == L.GAMMA,
+       "the desktop's default gamma (epd glassine-epdd-desktop.c set_gamma) is the rule's: %s" % defaults)
+else:
+    print("skipped: the desktop's default gamma is not compared: no epd source (%s)" % epd_c)
 
 # ---- this repository --------------------------------------------------------------------
 

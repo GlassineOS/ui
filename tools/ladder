@@ -32,7 +32,10 @@ a blur radius other than 0, filter/backdrop-filter, or blur()/drop-shadow().
 The mapping rule (--map, --map-apps): the panel shows a grey v at the level
 lut(v) >> 4 (the top nibble), lut(v) = round(255 (v/255)^1.8): the desktop's grey curve
 at its default gamma 1.8 (GlassineOS/epd: epd_grey_luma_lut, and levels_of keeps the
-top nibble). A grey maps to the ladder grey on the same level: the voice's ink where the
+top nibble). The desktop's default grey mode is luminance (epd_grey_lum_lut, grey_lum = 1),
+not the luma LUT cited here; it gives the same level for all 256 neutral greys, so the rule
+holds. The gamma can be changed at runtime (the gamma= command, eink.conf), and the ladder
+holds only at 1.8. A grey maps to the ladder grey on the same level: the voice's ink where the
 ink is on that level (--map-apps; #000000 ... #333333 are all level 0), else the nearest
 of them in value; where no ladder grey has the level, to a ladder grey on the nearest
 level, and between two equally near levels to the higher (lighter) one, which is where the

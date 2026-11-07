@@ -177,6 +177,18 @@ def f_apps_rule_named(t, b, v):
     v["voices"]["editorial"]["apps"]["gtk3Rules"].append("row { color: gray; }")
 
 
+def f_apps_gtk3_named(t, b, v):
+    v["voices"]["white"]["apps"]["gtk3"]["soft"] = "red"
+
+
+def f_apps_gtk4_named(t, b, v):
+    v["voices"]["stationery"]["apps"]["gtk4"]["ink"] = "red"
+
+
+def f_underscore_key_not_prose(t, b, v):
+    v["voices"]["white"]["shell"]["_lip"] = "#b4b4b4"
+
+
 def f_apps_colour(t, b, v):
     v["voices"]["stationery"]["apps"]["gtk4"]["line"] = "#141414"
 
@@ -215,6 +227,9 @@ FIXTURES = [
     (f_apps_rule_gradient, "white: apps.gtk3Rules.", "a GTK rule with a gradient"),
     (f_apps_rule_blur, "editorial: apps.gtk3Rules.", "a GTK rule with a blur"),
     (f_apps_rule_named, "editorial: apps.gtk3Rules.", "a GTK rule with a named colour"),
+    (f_apps_gtk3_named, "white: apps.gtk3.soft", "a named colour in apps.gtk3"),
+    (f_apps_gtk4_named, "stationery: apps.gtk4.ink", "a named colour in apps.gtk4"),
+    (f_underscore_key_not_prose, "white: shell._lip", "a key starting with _ that is not prose"),
     (f_apps_colour, "stationery: apps.gtk4.line", "a GTK 4 colour off the ladder"),
     (f_wvkbd_colour, "stationery: apps.wvkbd.stroke", "a keyboard colour (no #) off the ladder"),
     (f_wvkbd_alpha, "white: apps.wvkbd.press", "a keyboard colour with alpha"),

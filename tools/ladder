@@ -21,7 +21,7 @@ What is checked:
                               rule replaces does not apply on e-ink; one scoped to a Paper or
                               Night theme never does
     voices/voices.json        every value of every voice (the voice data is the E-ink form),
-                              apart from prose (keys starting with "_", apps.gtk3Note) and
+                              apart from prose (the keys "_why" and "gtk3Note") and
                               the on-screen keyboard's non-colour options
 
 A colour is exactly one of #000000, #111111, ... #ffffff (six digits; the keyboard's
@@ -61,7 +61,7 @@ NOT_COLOURS = ("transparent", "currentcolor", "inherit", "none", "initial", "uns
 # the on-screen keyboard's options that are not colours (apps.wvkbd)
 WVKBD_PLAIN = ("fn", "R", "gap", "stroke-width")
 # prose in the voice data: not values
-PROSE_KEY = re.compile(r"^_|^gtk3Note$")
+PROSE_KEY = re.compile(r"^(?:_why|gtk3Note)$")
 
 # Values that are off the ladder but not changed here: each waits for a design decision.
 # The check prints them on every run and fails if one is no longer there (so the list stays
@@ -342,7 +342,8 @@ def check_voices(data):
                     for b in style_faults(val, prop):
                         faults.append((where, v, b))
                 continue
-            for b in colour_faults(v):
+            css = path[:2] in (["apps", "gtk3"], ["apps", "gtk4"])    # CSS colours: a word can be one
+            for b in colour_faults(v, css=css):
                 faults.append((where, v, "colour off the ladder: " + b))
             for b in style_faults(v):
                 faults.append((where, v, b))

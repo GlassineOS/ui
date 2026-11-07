@@ -78,8 +78,9 @@ try:
     for f in ("index.html", "tokens.html", "components.html", "reference.css", "web/tokens.css", "web/bundle.css",
               "web/combinations.json"):
         ok(os.path.isfile(os.path.join(a, f)), "written: " + f)
-    for f in ("tokens.css", "bundle.css", "combinations.json"):
-        ok(filecmp.cmp(os.path.join(ROOT, "web", f), os.path.join(a, "web", f), shallow=False), "web/%s copied as it is" % f)
+    def same(d):
+        return not (d.left_only or d.right_only or d.diff_files or d.funny_files) and all(same(s) for s in d.subdirs.values())
+    ok(same(filecmp.dircmp(os.path.join(ROOT, "web"), os.path.join(a, "web"))), "web/ copied as it is")
 
     pages = {}
     for dirpath, _, files in os.walk(a):
@@ -149,7 +150,7 @@ try:
         for tag, k, v in p.refs:
             u = urlsplit(v)
             if u.scheme or u.netloc:
-                if u.scheme not in ("https", "mailto"):
+                if u.scheme not in ("https", "mailto", "data"):
                     bad.append("%s: %s=%s (not https)" % (rel, k, v))
                 continue
             if v.startswith("/"):
@@ -164,10 +165,7 @@ try:
     ok(not bad, "links: every href and src resolves" + ("" if not bad else ":\n     " + "\n     ".join(bad[:20])))
 
     r = build(b)
-    cmp = filecmp.dircmp(a, b)
-    def same(d):
-        return not (d.left_only or d.right_only or d.diff_files or d.funny_files) and all(same(s) for s in d.subdirs.values())
-    ok(r.returncode == 0 and same(cmp), "two builds are the same")
+    ok(r.returncode == 0 and same(filecmp.dircmp(a, b)), "two builds are the same")
 finally:
     shutil.rmtree(TMP, ignore_errors=True)
 

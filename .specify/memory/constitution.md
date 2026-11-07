@@ -66,7 +66,6 @@ upstream license. Nothing is submitted upstream unsolicited. AI-assisted commits
   preview and checks. The shell, Home, Settings, setup, the documentation site and the hub build on
   them and pin the version they support (principle IV): a breaking change raises the major version.
 - **Consumed:** claude.ai's design-component format (the subset the boards use), cairo, pango, librsvg.
-  The claude.ai copies of Interleaf are published to from here, never read.
 
 ### Tests
 

@@ -25,6 +25,10 @@
   // a start tag of the key closes an open element of the listed names (the common implied ends)
   const IMPLIED = { li: ['li'], dt: ['dt', 'dd'], dd: ['dt', 'dd'], option: ['option'], tr: ['tr', 'td', 'th'], td: ['td', 'th'], th: ['td', 'th'] };
 
+  const P_CLOSERS = new Set(['address', 'article', 'aside', 'blockquote', 'details', 'dialog', 'div', 'dl', 'fieldset', 'figcaption', 'figure',
+    'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hgroup', 'hr', 'main', 'menu', 'nav', 'ol', 'p', 'pre', 'section', 'table', 'ul']);
+  const P_SCOPE = new Set(['button', 'table', 'td', 'th', 'caption', 'html', 'template', 'object', 'marquee', 'applet', 'sc-if', 'sc-for', 'x-dc']);
+
   const ENTITIES = {
     amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', shy: '­', ensp: ' ', emsp: ' ',
     thinsp: ' ', zwnj: '‌', zwj: '‍', ndash: '–', mdash: '—', lsquo: '‘', rsquo: '’',
@@ -90,7 +94,7 @@
     const text = (t, pos) => { if (t) cur().children.push({ type: 'text', text: t, line: lineOf(pos) }); };
     const close = (tag, pos) => {
       for (let k = stack.length - 1; k > 0; k--) {
-        if (stack[k].tag === tag) {
+        if (stack[k].tag === tag || stack[k].tag.toLowerCase() === tag.toLowerCase()) {
           for (let j = stack.length - 1; j > k; j--) {
             if (!OPTIONAL_END.has(stack[j].tag)) issue('unsupported', 'unclosed element', '<' + stack[j].tag + '> closed by </' + tag + '>', stack[j].line);
           }
@@ -117,7 +121,7 @@
       if (src[lt + 1] === '/') {
         const m = /^<\/([A-Za-z][\w:-]*)\s*>/.exec(src.slice(lt, lt + 200));
         if (!m) { text('<', lt); i = lt + 1; continue; }
-        close(cur().svg ? m[1] : m[1].toLowerCase(), lt);
+        close(m[1], lt);
         i = lt + m[0].length;
         continue;
       }
@@ -158,7 +162,14 @@
       const parent = cur();
       const inSvg = parent.svg || nm[1].toLowerCase() === 'svg';
       const tag = inSvg ? nm[1] : nm[1].toLowerCase();
-      const el = { type: 'element', tag: tag, written: nm[1], attrs: attrs, children: [], line: lineOf(lt), selfClosing: selfClosing, svg: inSvg && tag !== 'foreignObject' };
+      const el = { type: 'element', tag: tag, written: nm[1], inSvg: inSvg, attrs: attrs, children: [], line: lineOf(lt), selfClosing: selfClosing, svg: inSvg && tag !== 'foreignObject' };
+      if (!inSvg && P_CLOSERS.has(tag)) {
+        // as in HTML, a block start tag closes an open <p> (up to the nearest scope boundary)
+        for (let k = stack.length - 1; k > 0; k--) {
+          if (stack[k].tag === 'p') { stack.length = k; break; }
+          if (P_SCOPE.has(stack[k].tag) || stack[k].svg) break;
+        }
+      }
       if (!inSvg && IMPLIED[tag]) {
         const closes = IMPLIED[tag];
         for (let k = stack.length - 1; k > 0; k--) {
@@ -294,13 +305,13 @@
         if (!/^[a-z][a-z0-9-]*$/.test(a.name)) { issue('unsupported', 'prop name on <dc-import> (use kebab-case)', a.name, a.line); continue; }
         imp.props.push({ name: kebabToCamel(a.name), b: binding(a.value, issue, a.line) });
       }
-      if (ctx) ctx.imports.push(name);
+      if (ctx) ctx.imports.push({ name: name, line: n.line });
       return imp;
     }
     if (tag === 'helmet') { issue('unsupported', '<helmet> below the top of <x-dc>', '', n.line); return null; }
     if (tag === 'x-dc' || tag.startsWith('sc-') || tag.startsWith('dc-')) { issue('unsupported', 'element', '<' + tag + '>', n.line); return null; }
     if (tag === 'script') { issue('unsupported', '<script> in the template', '', n.line); return null; }
-    if (!n.svg && /[A-Z]/.test(n.written || tag)) { issue('unsupported', 'capitalized tag', '<' + (n.written || tag) + '>', n.line); return null; }
+    if (!n.inSvg && /[A-Z]/.test(n.written || tag)) { issue('unsupported', 'capitalized tag', '<' + (n.written || tag) + '>', n.line); return null; }
     const el = { k: 'el', tag: tag, attrs: [], events: [], ref: null, children: [], line: n.line };
     for (const a of n.attrs) {
       const name = a.name;
@@ -350,7 +361,7 @@
   function parseBoard(src, file) {
     const issues = [];
     const issue = function (kind, feature, detail, line) { issues.push({ kind: kind, feature: feature, detail: detail || '', line: line || 0 }); };
-    const doc = { file: file || '', subset: SUBSET_VERSION, lang: '', title: '', meta: [], headScripts: [], helmet: [], template: [], code: '', codeLine: 0, props: {}, preview: null, imports: [], issues: issues };
+    const doc = { file: file || '', subset: SUBSET_VERSION, lang: '', title: '', meta: [], headScripts: [], helmet: [], template: [], code: '', codeLine: 0, props: {}, preview: null, imports: [], importLines: [], issues: issues };
     const nodes = parseHTML(src, issue);
     const html = findEl(nodes, 'html');
     let head, body;
@@ -447,7 +458,8 @@
       content.push(n);
     }
     doc.template = compileNodes(content, issue, ctx);
-    doc.imports = Array.from(new Set(ctx.imports));
+    doc.imports = Array.from(new Set(ctx.imports.map(function (i) { return i.name; })));
+    doc.importLines = ctx.imports;
     return doc;
   }
 

@@ -8,7 +8,8 @@ const ROOT = path.resolve(__dirname, '..', '..');
 const { startServer } = require(path.join(ROOT, 'boards/lib/server.js'));
 const { openBrowser, renderBoard } = require(path.join(ROOT, 'boards/lib/browser.js'));
 const { checkDesign } = require(path.join(ROOT, 'boards/lib/check.js'));
-const INTERLEAF = path.join(__dirname, 'fixtures', 'interleaf');
+// the samples read the real Interleaf (the default: this checkout's interleaf/, as claude.ai has it)
+const INTERLEAF = undefined;
 
 const text = (page, sel) => page.$eval(sel, (e) => e.textContent.trim());
 const settle = (page) => page.waitForFunction('window.__boards && window.__boards.settled', { polling: 100, timeout: 20000 });
@@ -37,6 +38,19 @@ async function main() {
     assert.deepStrictEqual(by['Bad.dc.html'].unsupported.map((e) => e.feature).sort(), ['element', 'expression in a hole']);
     assert.ok(by['Host.dc.html'].unsupported.every((e) => e.board === 'Bad.dc.html'));
     assert.match(by['Throws.dc.html'].errors[0].message, /in text is object/);
+    // a dc-import cycle is named with the line that closes it, not a stack overflow
+    const cyc = by['Cycle.dc.html'].unsupported.find((e) => e.feature === 'dc-import cycle');
+    assert.ok(cyc, JSON.stringify(by['Cycle.dc.html']));
+    assert.strictEqual(cyc.board, 'CycleB.dc.html');
+    assert.strictEqual(cyc.line, 11);
+    assert.ok(!by['Cycle.dc.html'].console.some((c) => /call stack/i.test(c.text)) && !by['Cycle.dc.html'].errors.some((e) => /call stack/i.test(e.message)));
+    // a missing board names the importing board and line
+    const miss = by['Missing.dc.html'].errors.find((e) => e.feature === 'dc-import');
+    assert.ok(miss, JSON.stringify(by['Missing.dc.html']));
+    assert.deepStrictEqual([miss.board, miss.line, miss.detail], ['Missing.dc.html', 11, 'Nope']);
+    // an error in the logic carries the board file's line
+    const thrown = by['LineThrow.dc.html'].errors.find((e) => e.feature === 'renderVals()');
+    assert.strictEqual(thrown.line, 15);
   });
 
   const srv = await startServer({ design: path.join(ROOT, 'boards/samples'), interleaf: INTERLEAF, live: true });
@@ -67,6 +81,16 @@ async function main() {
         await settle(p);
         await Promise.all([p.waitForNavigation(), p.click('#home')]);
         assert.match(p.url(), /\/Main\.dc\.html\?voice=editorial$/);
+      } finally { await p.close(); }
+    });
+
+    await test('query props cannot set the prototype', async () => {
+      const p = await browser.newPage();
+      try {
+        await p.goto(srv.url + 'Main.dc.html?p.__proto__=%7B%22voice%22%3A%22stationery%22%7D&p.constructor=1', { waitUntil: 'load' });
+        await settle(p);
+        assert.deepStrictEqual(await p.evaluate(() => window.__boards.errors), []);
+        assert.strictEqual(await text(p, '#settings'), 'voice=white scheme=paper pen=1 compact=false');
       } finally { await p.close(); }
     });
 
@@ -111,6 +135,11 @@ async function main() {
         assert.ok(r.ok, JSON.stringify(r));
         assert.deepStrictEqual(await p.$$eval('.badge', (b) => b.map((x) => x.textContent)), ['x/1', 'x/2', 'y/3']);
         assert.strictEqual(await p.$eval('#to-counter', (a) => a.getAttribute('href')), '/Counter.dc.html');
+        // only http(s) links leave: a javascript: href does nothing
+        await p.evaluate(() => { const a = document.createElement('a'); a.id = 'js'; a.href = 'javascript:window.__ran=1'; a.textContent = 'js'; document.body.append(a); });
+        await p.click('#js');
+        await sleep(200);
+        assert.strictEqual(await p.evaluate(() => window.__ran), undefined);
         await Promise.all([p.waitForNavigation(), p.click('#to-counter')]);
         assert.match(p.url(), /\/Counter\.dc\.html$/);
       } finally { await p.close(); }

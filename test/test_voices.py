@@ -164,6 +164,29 @@ try:
            "gen-apps: " + what + " is refused, naming the voice")
     open(p, "w").write(good)
     ok(subprocess.run(ga + ["--check", rf]).returncode == 0, "gen-apps: the refusals wrote nothing; the data restored, it is current")
+    # the voices come from the data, not a second list in gen-apps: a fourth voice gets its files, its
+    # font line and a keyboard case, and the first stays the fallback
+    d = json.loads(good)
+    d["voices"]["fourth"] = json.loads(json.dumps(d["voices"]["editorial"]))
+    json.dump(d, open(p, "w"), indent=2)
+    r = subprocess.run(ga + ["--check", rf], capture_output=True, text=True)
+    ok(r.returncode == 1 and "glassine-fourth/gtk-3.0/gtk.css" in r.stderr and "gtk4/fourth.css" in r.stderr and
+       "glassine-theme-apply" in r.stderr and "glassine-wvkbd" in r.stderr,
+       "gen-apps --check: a voice added to the data is stale in every form")
+    subprocess.run(ga + [rf], check=True, capture_output=True)
+    ta = open(os.path.join(rf, "usr", "bin", "glassine-theme-apply")).read()
+    wv = open(os.path.join(rf, "usr", "bin", "glassine-wvkbd")).read()
+    ok('    fourth) font="%s" ;;' % d["voices"]["editorial"]["apps"]["gtkFont"] in ta and "            fourth) set -- " in wv and
+       wv.index("fourth) set --") < wv.index("*) set --") and wv.count("*) set --") == 1,
+       "gen-apps: a voice added to the data has a font line and a keyboard case, the first voice the fallback")
+    ok(os.path.exists(os.path.join(rf, "usr", "share", "themes", "glassine-fourth", "gtk-3.0", "gtk.css")) and
+       os.path.exists(os.path.join(rf, "usr", "share", "glassine", "gtk4", "fourth.css")),
+       "gen-apps: a voice added to the data has its GTK 3 and GTK 4 files")
+    open(p, "w").write(good)
+    shutil.rmtree(os.path.join(rf, "usr", "share", "themes", "glassine-fourth"))
+    os.remove(os.path.join(rf, "usr", "share", "glassine", "gtk4", "fourth.css"))
+    subprocess.run(ga + [rf], check=True, capture_output=True)
+    ok(subprocess.run(ga + ["--check", rf]).returncode == 0, "gen-apps: the data restored, it is current")
     d = json.load(open(p))
     d["voices"]["stationery"]["apps"]["gtk4"]["line"] = "#222222"
     json.dump(d, open(p, "w"), indent=2)

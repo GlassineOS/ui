@@ -28,7 +28,6 @@ from string import Template
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "voices", "voices.json")
 GTK4 = os.path.join(ROOT, "voices", "gtk4.css.in")
-ORDER = ("white", "editorial", "stationery")     # the first is the fallback (wvkbd's `*)`)
 GTK3_COLOURS = ("bg", "fg", "sub", "view", "btn", "btn_fg", "btn_line", "line", "soft", "sel", "sel_fg",
                 "head_bg", "head_fg")
 WVKBD_BREAK = ("bg", "press", "text")            # a new line of options before these
@@ -58,12 +57,15 @@ def sh_q(s):
 
 
 def theme_apply(voices, indent):
-    return ["%s%s) font=%s ;;" % (indent, n, sh_q(voices[n]["apps"]["gtkFont"])) for n in ORDER]
+    return ["%s%s) font=%s ;;" % (indent, n, sh_q(voices[n]["apps"]["gtkFont"])) for n in voices]
 
 
 def wvkbd(voices, indent):
+    """The voices in voices.json's order (gen-voices has its own, and a test holds them equal);
+    the first is the fallback, `*)`, and comes last."""
     out = []
-    for n in ORDER[1:] + ORDER[:1]:
+    order = list(voices)
+    for n in order[1:] + order[:1]:
         opts = voices[n]["apps"]["wvkbd"]
         lines, cur = [], []
         for k, v in opts.items():
@@ -79,7 +81,7 @@ def wvkbd(voices, indent):
             v = sh_q(v) if " " in v else v
             cur.append(("-%s %s" if len(k) == 1 else "--%s %s") % (k, v))
         lines.append(cur)
-        head = "%s%s) set -- " % (indent, "*" if n == ORDER[0] else n)
+        head = "%s%s) set -- " % (indent, "*" if n == order[0] else n)
         text = [head + " ".join(lines[0])]
         text += [indent + "    " + " ".join(ln) for ln in lines[1:]]
         out.append(" \\\n".join(text) + " ;;")
@@ -102,7 +104,7 @@ def region(path, old, fn, voices):
 
 def outputs(rootfs, data):
     voices = data["voices"]
-    for n in ORDER:
+    for n in voices:
         yield "usr/share/themes/glassine-%s/gtk-3.0/gtk.css" % n, gtk3(n, voices[n]["apps"])
         yield "usr/share/glassine/gtk4/%s.css" % n, gtk4(n, voices[n]["apps"])
     for rel, fn in REGIONS.items():

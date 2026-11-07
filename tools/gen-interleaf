@@ -18,8 +18,10 @@ Generated (do not edit by hand):
 Then run tools/gen-voices: it reads voices/voices.json.
 
 A token's value is a string (every theme) or one value per theme. A theme without a
-value of its own takes its fallback's (FALLBACK), then the first theme's. A value
-"{name}" is an alias of another token in the same theme.
+value of its own takes its fallback's (FALLBACK), never another theme's. A value
+"{name}" is an alias of another token in the same theme. Every colour token has a value
+in every theme; a shadow token needs one in each theme whose component styles read it
+(coverage()). Anything less is an error.
 """
 import json
 import os
@@ -31,7 +33,7 @@ TOKENS = os.path.join(ROOT, "interleaf", "tokens.json")
 BUNDLE = os.path.join(ROOT, "interleaf", "components", "bundle.css")
 VOICES = os.path.join(ROOT, "voices", "voices.json")
 
-# a theme without its own value of a token takes this theme's, then the first theme's
+# a theme without its own value of a token takes this theme's
 FALLBACK = {"stationery-eink": "eink"}
 # the families of single CSS values, in the order tokens.css declares them
 PLAIN = ("spacing", "radius", "layout", "stroke")
@@ -69,38 +71,36 @@ class Tokens:
                     raise ValueError("token %s: defined twice" % t["name"])
                 self.by_name[t["name"]] = (fam, t)
 
-    def chain(self, theme, eink_only=False):
+    def chain(self, theme):
         """the themes whose value a theme takes, in order"""
         out, t = [], theme
         while t and t not in out:
             out.append(t)
             t = FALLBACK.get(t)
-        if not eink_only and self.first not in out:
-            out.append(self.first)
         return out
 
-    def raw(self, name, theme, eink_only=False):
+    def raw(self, name, theme):
         """a token's own value in a theme (an alias stays "{name}"); None: no value"""
         if name not in self.by_name:
             raise KeyError("no token %r" % name)
         v = self.by_name[name][1]["value"]
         if isinstance(v, str):
             return v
-        for t in self.chain(theme, eink_only):
+        for t in self.chain(theme):
             if t in v:
                 return v[t]
         return None
 
-    def resolve(self, name, theme, eink_only=False, seen=()):
+    def resolve(self, name, theme, seen=()):
         """a token's value in a theme with every alias followed"""
         if name in seen:
             raise ValueError("token %s: alias cycle %s" % (name, " -> ".join(seen + (name,))))
-        v = self.raw(name, theme, eink_only)
+        v = self.raw(name, theme)
         if v is None:
             return None
         m = ALIAS.match(v.strip())
         if m:
-            r = self.resolve(m.group(1), theme, eink_only, seen + (name,))
+            r = self.resolve(m.group(1), theme, seen + (name,))
             if r is None:
                 raise ValueError("token %s (%s): alias of %s, which has no value" % (name, theme, m.group(1)))
             return r
@@ -135,7 +135,7 @@ def scheme(tok, voice):
         raise ValueError("voice %s: no E-ink theme in gen-interleaf's VOICE_THEME" % voice)
     out = {"theme": theme}
     for name in SCHEME_COLOURS + SCHEME_SHADOWS:
-        v = tok.resolve(name, theme, eink_only=True)
+        v = tok.resolve(name, theme)
         if v is None:
             raise ValueError("token %s: no value in the E-ink theme %s (voice %s)" % (name, theme, voice))
         if name in SCHEME_COLOURS and not re.fullmatch(r"#[0-9a-f]{6}", v):
@@ -233,6 +233,85 @@ def combinations(tok):
     return json.dumps({"contract": 1, "combinations": rows}, indent=1) + "\n"
 
 
+# ---- coverage ---------------------------------------------------------------------------
+# A page reads a theme's colours directly, so each colour token has a value in every theme. A
+# shadow is read through the component styles, which pick one per voice (White the keycap,
+# Editorial the offset, ...), so a shadow token needs a value only where a theme's styles read
+# it. reads() works that out from bundle.css with a small cascade: a rule under
+# [data-theme^="V"] or [data-theme="T"] replaces the same property of the same selector
+# without it. Rules inside @media count as if outside them.
+
+THEME_SEL = re.compile(r'\[data-theme(\^?=)"([^"]+)"\]\s*')
+CSS_RULE = re.compile(r"([^{}]+)\{([^{}]*)\}")
+
+
+def css_rules(css):
+    """(selector, [(property, value)]) in file order"""
+    css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+    css = re.sub(r"@import\s+(url\([^)]*\)|\"[^\"]*\"|'[^']*')[^;]*;", "", css)
+    css = re.sub(r"@media[^{]*\{", "", css)
+    out = []
+    for sel, body in CSS_RULE.findall(css):
+        decls = []
+        for d in body.split(";"):
+            if ":" in d:
+                k, v = d.split(":", 1)
+                decls.append((k.strip(), v.strip()))
+        out.append((sel.strip(), decls))
+    return out
+
+
+def selector_for(sel, theme):
+    """(applies, themed, the selector without its theme part) for one theme id"""
+    found = THEME_SEL.findall(sel)
+    base = THEME_SEL.sub("", sel).strip()
+    if base in ("", ":root", "[data-theme]"):
+        base = ":root"
+    for op, val in found:
+        if not (theme.startswith(val) if op == "^=" else theme == val):
+            return False, True, base
+    return True, bool(found), base
+
+
+def reads(tok, theme, css):
+    """the per-theme tokens that the component styles read in a web theme"""
+    eff = {}
+    for sel, decls in css_rules(css):
+        for one in split_top(sel):
+            applies, themed_sel, base = selector_for(one.strip(), theme)
+            if not applies:
+                continue
+            for k, v in decls:
+                old = eff.get((base, k))
+                if old is None or themed_sel or not old[0]:
+                    eff[(base, k)] = (themed_sel, v)
+    per_theme = set(themed(tok))
+    return {n for _, v in eff.values() for n in re.findall(r"var\(--([a-z0-9-]+)", v) if n in per_theme}
+
+
+def token_theme(web):
+    for t, al in WEB_ALIASES.items():
+        if web in al:
+            return t
+    return web
+
+
+def coverage(tok, css=None):
+    css = open(BUNDLE).read() if css is None else css
+    missing = []
+    for n in themed(tok):
+        if tok.by_name[n][0] == "color":
+            missing += ["%s (%s)" % (n, t) for t in tok.themes if tok.resolve(n, t) is None]
+    for v in WEB_VOICES:
+        for sch in WEB_SCHEMES:
+            web = web_theme(tok, v, sch)
+            for n in sorted(reads(tok, web, css)):
+                if tok.resolve(n, token_theme(web)) is None:
+                    missing.append("%s (%s, read by the %s styles)" % (n, token_theme(web), v))
+    if missing:
+        raise ValueError("no value: " + ", ".join(missing))
+
+
 # ---- writing ----------------------------------------------------------------------------
 
 OUTPUTS = {
@@ -250,6 +329,7 @@ def main(argv):
     check = argv == ["--check"]
     try:
         tok = Tokens(json.load(open(TOKENS)))
+        coverage(tok)
         texts = {rel: fn(tok) for rel, fn in OUTPUTS.items()}
     except (KeyError, ValueError) as e:
         print("gen-interleaf: %s" % (e.args[0] if e.args else e), file=sys.stderr)

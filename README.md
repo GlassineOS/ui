@@ -29,7 +29,6 @@ make                     # out/libglassine-ui.so, out/glassine-ui.pc
 make install             # PREFIX=/usr/local DESTDIR= PYTHONDIR=<site-packages under PREFIX>
 make check               # generated forms current, the library, the tests
 make generate            # write the generated forms (tools/gen-interleaf, then tools/gen-voices)
-make export-claude       # Interleaf staged for claude.ai in out/claude/interleaf
 ```
 
 Needs cairo, pango, librsvg, glib (dev), python3, PyGObject (Gtk 3, Pango), pycairo. CI runs
@@ -45,7 +44,7 @@ Needs cairo, pango, librsvg, glib (dev), python3, PyGObject (Gtk 3, Pango), pyca
   reaching every form, `tools/gen-apps` (into a temporary tree).
 - `test/test_interleaf.py`: aliases and theme fallbacks, the voices' scheme from the E-ink themes, a
   changed token reaching the voices' scheme and the web form, the stale-form check, the 27
-  combinations and the variables the component styles read, the `tools/export-claude` layout.
+  combinations and the variables the component styles read, the coverage check.
 - `test/test_paint.py`: the Python drawing API call by call.
 - `test/c-api.sh`: a separate program built with `pkg-config glassine-ui` against an installed copy.
 - `test/pc-prefix.sh`: the installed `.pc` names the prefix it was installed with.
@@ -69,14 +68,12 @@ three schemes (Paper, Night, E-ink), with three pens. `interleaf/` holds it:
 | `interleaf/tokens.json` | the tokens: `color` (the themes and a value per theme), `type` (families, type styles per voice), `spacing`, `radius`, `shadow` (a value per theme), `layout`, `stroke`; each with its `usage` |
 | `interleaf/README.md` | the guidelines: the three layers, themes, colour rules, accessibility targets, type, edges |
 | `interleaf/components/bundle.css` | the component styles (`.il-*`); they read the tokens' variables and the voice from the theme id's prefix |
-| `interleaf/components/NAME/` | a component's guidelines (`README.md`; `Cover` has none yet) and live preview (`preview.html`, its first line the card marker claude.ai reads) |
+| `interleaf/components/NAME/` | a component's guidelines (`README.md`; `Cover` has none yet) and live preview (`preview.html`, its first line the card marker `@dsCard`: group, height, subtitle) |
 
 A theme is a voice and a scheme: `white-paper`, `white-night`, `editorial-paper`, `editorial-night`,
 `stationery-paper`, `stationery-night`, `eink` (White and Editorial) and `stationery-eink`. A token's
-value is one value for every theme, or one per theme. Where a theme has no value of its own,
-`stationery-eink` takes `eink`'s, and every theme then takes the first theme's (`white-paper`'s): a
-Night theme without its own `passe-partout` has Paper's. A value `{name}` is an alias of another
-token in the same theme.
+value is one value for every theme, or one per theme (which values a theme must have: below). A
+value `{name}` is an alias of another token in the same theme.
 
 The voices' scheme (`voices/voices.json`, section `scheme`) is generated from the E-ink themes:
 White and Editorial from `eink`, Stationery from `stationery-eink`, with every alias resolved and
@@ -87,11 +84,12 @@ is an error, never the Paper value.
 Changing a token: edit `interleaf/tokens.json`, run `make generate`, commit the tokens and the
 generated files together.
 
-`make export-claude` stages the system in the file layout of a claude.ai design-system project
-(`README.md`, `tokens.json`, `components/`, `design-system.json`) in `out/claude/interleaf`, for
-publishing it there. claude.ai has no theme fallback other than the first theme, so the staged
-`tokens.json` has the `stationery-eink` values it takes from `eink` written out. It writes files only;
-nothing is read from claude.ai.
+A theme without a value of its own takes only its fallback's (`stationery-eink` takes `eink`'s),
+never the first theme's. Every colour token has a value in every theme. A shadow token needs a value
+only in the themes whose component styles read it: White reads `keycap`, Editorial `offset` and
+`passe-partout`, Stationery `card-stack` and `sheet-stack`. `tools/gen-interleaf` works this out from
+`bundle.css` (a rule under `[data-theme^="VOICE"]` or `[data-theme="THEME"]` replaces the same
+property of the same selector without it) and fails on a value that is missing.
 
 ## Web form
 

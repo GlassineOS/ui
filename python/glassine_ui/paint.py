@@ -296,17 +296,22 @@ def _lh_lines(lo, f, weight, lh):
     return out, i * pitch
 
 
-def text(cr, s, f, x, y, col, weight=None, caps=None, align=0, maxw=None, wrap=False, ls=0.0, lh=None):
-    """draws s with its top at y; align 0 left of x, 1 centred on x, 2 right of x
-    (wrapped lines each on their own). ls: letter spacing in em; lh: a CSS
-    line-height factor (None: the font's own). A transparent col (None,
-    'transparent') draws nothing, as in C, and still measures. -> (width, height)"""
-    lo = layout(cr, s, f, weight, caps, maxw, wrap)
+def _spaced(lo, f, weight, ls):
+    """letter spacing (em) on a layout"""
     if ls:
         desc, _ = font(f, weight)
         al = lo.get_attributes() or Pango.AttrList()
         al.insert(Pango.attr_letter_spacing_new(int(ls * desc.get_size())))
         lo.set_attributes(al)
+    return lo
+
+
+def text(cr, s, f, x, y, col, weight=None, caps=None, align=0, maxw=None, wrap=False, ls=0.0, lh=None):
+    """draws s with its top at y; align 0 left of x, 1 centred on x, 2 right of x
+    (wrapped lines each on their own). ls: letter spacing in em; lh: a CSS
+    line-height factor (None: the font's own). A transparent col (None,
+    'transparent') draws nothing, as in C, and still measures. -> (width, height)"""
+    lo = _spaced(layout(cr, s, f, weight, caps, maxw, wrap), f, weight, ls)
     c = color(col) if isinstance(col, str) else col
     if c:
         cr.set_source_rgba(*c)
@@ -328,8 +333,9 @@ def text(cr, s, f, x, y, col, weight=None, caps=None, align=0, maxw=None, wrap=F
     return w, h
 
 
-def measure(cr, s, f, weight=None, caps=None, maxw=None, wrap=False, lh=None):
-    lo = layout(cr, s, f, weight, caps, maxw, wrap)
+def measure(cr, s, f, weight=None, caps=None, maxw=None, wrap=False, lh=None, ls=0.0):
+    """what text() with the same arguments returns, without drawing -> (width, height)"""
+    lo = _spaced(layout(cr, s, f, weight, caps, maxw, wrap), f, weight, ls)
     lh = lh or font(f, weight)[1]
     if lh:
         lines, h = _lh_lines(lo, f, weight, lh)

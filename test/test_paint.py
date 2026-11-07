@@ -57,5 +57,14 @@ for name in ("go-next-symbolic", "arrow_forward", "error", "radio_button_uncheck
 s, cr = canvas()
 ok(not P.icon(cr, "no-such-icon-anywhere", 24, 50, 50, "transparent"), "no such icon: False, transparent or not")
 
+# ---- measure measures what text draws -----------------------------------------------
+s, cr = canvas(400, 100)
+for f in (FONT, "16px sans-serif"):
+    for kw in ({}, {"ls": .2}, {"ls": .2, "maxw": 60}, {"ls": .1, "maxw": 80, "wrap": True},
+               {"caps": ("small-caps", "lowercase"), "ls": .08}):
+        ok(P.measure(cr, "Sample text", f, **kw) == P.text(cr, "Sample text", f, 0, 0, "#111111", **kw),
+           "measure = text for %s %s" % (f, kw))
+ok(P.measure(cr, "Sample", FONT, ls=.2)[0] > P.measure(cr, "Sample", FONT)[0], "letter spacing widens")
+
 print("paint: %s" % ("all passed" if not fails else "%d FAILED" % fails))
 sys.exit(1 if fails else 0)

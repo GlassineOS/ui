@@ -101,7 +101,9 @@ Device-neutral. No device risk: nothing flashes or touches boot, recovery or use
 - Host: a set of known contrast failures (cream navigation on paper in the Stationery drawer, Night details
   summaries, focus rings on leather and on cream, the footer credit, Night code comments), each put into the
   tokens or styles on its own, fails the contrast check.
-- Host: the voices of spec 001 render as their references (their render tests stay green).
+- Host: the voices of spec 001 render as their references (their render tests stay green), apart from the
+  ladder corrections FR-021 requires, listed with the updated references.
+- By eye (the user, on the device, supervised): the ladder-corrected greys in each voice.
 
 ## Out of scope
 
@@ -116,4 +118,4 @@ Device-neutral. No device risk: nothing flashes or touches boot, recovery or use
   it.
 - **SC-002**: Every known contrast failure of the acceptance set is caught by the checks.
 - **SC-003**: A token change reaches the desktop programs, the documentation site and the hub with no edit in
-  their repositories other than the pinned version.
+  their repositories other than the pinned version and the forms regenerated from it.

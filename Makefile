@@ -3,12 +3,13 @@
 #   make install         PREFIX=/usr/local DESTDIR=; PYTHONDIR= for the Python package
 #   make generate        the generated forms of the tokens (tools/gen-interleaf: the voices'
 #                        scheme, web/) and of voices/voices.json (tools/gen-voices)
-#   make check           the generated forms are current, the library builds, the tests pass:
+#   make check           the generated forms are current, the E-ink colours are on the ladder
+#                        (tools/ladder), the library builds, the tests pass:
 #                        check-forms (python3 alone, seconds), check-lib, check-boards (node)
 #   make boards-check    the design-board samples in headless Chromium (in Alpine: tools/in-alpine)
 #   make reference       the browsable Interleaf reference (tools/gen-reference) in out/reference/
 #   make serve-reference build it and serve it on http://127.0.0.1:8000/ (REFERENCE_HOST, REFERENCE_PORT)
-VERSION = 1.0.0
+VERSION = 1.0.1
 SOMAJOR = 1
 PREFIX ?= /usr/local
 LIBDIR ?= $(PREFIX)/lib
@@ -69,7 +70,9 @@ check: check-forms check-lib check-boards
 check-forms:
 	$(PYTHON) tools/gen-interleaf --check
 	$(PYTHON) tools/gen-voices --check
+	$(PYTHON) tools/ladder --check
 	$(PYTHON) test/test_voices.py
+	$(PYTHON) test/test_ladder.py
 	$(PYTHON) test/test_interleaf.py
 	$(PYTHON) test/test_reference.py
 	sh test/ci-scope.sh

@@ -51,6 +51,10 @@ tests), it runs `make check-forms` alone. A token change that reaches the librar
   the tokens.
 - `tools/gen-voices --check`: the generated C table, `glassine-ui-scheme.h` and the Python module
   match the data, and the C icon map matches `glassine_ui.paint.ICONS`.
+- `tools/ladder --check`: spec 002 FR-021: every E-ink colour is one of the 16 ladder greys and no
+  style that applies on e-ink has a gradient or a blur (see "Interleaf", "The ladder").
+- `test/test_ladder.py`: the ladder's mapping rule, and a known failure of each kind (a token, a
+  shadow, a shared or voice style, the voice data, a GTK rule, a keyboard colour) refused.
 - `test/test_voices.py`: sections, the fallback to White, a changed value (and a changed scheme token)
   reaching every form, `tools/gen-apps` (into a temporary tree).
 - `test/test_interleaf.py`: aliases and theme fallbacks, the voices' scheme from the E-ink themes, a
@@ -107,6 +111,25 @@ only in the themes whose component styles read it: White reads `keycap`, Editori
 `passe-partout`, Stationery `card-stack` and `sheet-stack`. `tools/gen-interleaf` works this out from
 `bundle.css` (a rule under `[data-theme^="VOICE"]` or `[data-theme="THEME"]` replaces the same
 property of the same selector without it) and fails on a value that is missing.
+
+### The ladder
+
+On e-ink every colour is exactly one of the 16 ladder greys (`#000000`, `#111111` … `#ffffff`) and no
+style uses a gradient or a blur (spec 002 FR-021). `tools/ladder --check` (in `make check`) holds the
+E-ink themes' tokens, the declarations of `bundle.css` that apply in an E-ink theme (the same cascade
+as above: a rule under `[data-theme="stationery-eink"]` replaces the same property of the same
+selector without it; the E-ink rules sit at the end of the file) and the voice data to it. A value
+that waits for a design decision can be listed in its `PENDING` with its reason (none is now); it
+prints them on every run and fails when one is no longer there.
+
+The panel shows a grey at the level of its top nibble after the desktop's grey curve (gamma 1.8 by
+default), so a grey off the ladder goes to the ladder grey on the same panel level (the voice's ink
+where the ink is on it), or the nearest level (of two equally near, the higher) where no ladder grey
+has it: `tools/ladder --map HEX`, `tools/ladder --map-apps` (the `apps` section; a translucent
+keyboard colour first over the key face it is drawn on). The curve is `epd_grey_luma_lut`'s; the
+desktop's default grey mode is luminance (`epd_grey_lum_lut`, `grey_lum = 1`), which gives the same
+level for all 256 neutral greys. The gamma can be changed at runtime (`gamma=`, `eink.conf`) and the
+ladder holds only at 1.8; `test/test_ladder.py` pins it.
 
 ## Web form
 
@@ -183,10 +206,9 @@ The same key can mean different things in `shell`, `card` and `setup`: each is i
 design (`headH`, `cardR`, `sep`, ...), so they are kept apart, not merged. `shell` also has the C
 table's own keys (`gripGap`, `gripLip` for glassine-swayd's drag handles).
 
-The `apps` values are the GTK and keyboard themes as they were, not the scheme's greys: several are
-not on the 16-grey ladder (`#1b1b1b`, `#141414`, `#a0a0a0`, `#d0d0d0`, `#c4c4c4`, `#4a4a4a`, `#b5b5b5`,
-`#bdbdbd`), and Stationery's GTK ink is `#1b1b1b` where the voice's is `#111111`. Bringing them onto
-the scheme changes pixels, so it is a separate change.
+The `apps` values are the GTK and keyboard themes' own greys, not the scheme's roles: each is on the
+ladder (`tools/ladder --map-apps` put them on the ladder grey of their panel level). The keyboard's
+swipe trail is opaque: the grey the translucent trail showed over the key face.
 
 Changing a voice: a scheme token is changed in `interleaf/tokens.json`; every other section is
 edited in `voices/voices.json`. Then run `make generate` and commit the data and the generated files

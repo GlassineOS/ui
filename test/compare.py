@@ -54,9 +54,9 @@ EXPECTED = {("*", "text-" + n): (TEXT, TEXT_MASK)
 EXPECTED.update({
     ("white", "sep"): ("dotted rules: C 1:1 square dots, Python round dots (0, 2w+1)", bound(320)),
     ("stationery", "sep"): ("dashed rules: C dashes 3:2, Python 3:3", bound(369)),
-    ("white", "togOn"): under(26), ("white", "segOn"): under(9), ("white", "pwr"): under(27),
+    ("white", "pwr"): under(1),
     ("editorial", "tog"): under(6987), ("editorial", "pwr"): under(17632),
-    ("stationery", "card"): under(28), ("stationery", "segOn"): under(52), ("stationery", "folder"): under(31),
+    ("stationery", "card"): under(28), ("stationery", "segOn"): under(53), ("stationery", "folder"): under(31),
     ("stationery", "app"): under(26), ("stationery", "tabOn"): under(4),
 })
 

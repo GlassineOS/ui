@@ -12,9 +12,11 @@
 //   the colour of what lies beneath it stays in the box). Of the darkest and the lightest
 //   pixel there, the one with the lower ratio is the worst colour: patterns, highlighter bands,
 //   tabs and images under the text count. Target 4.5:1, or 3:1 for large text (24px, or 18.66px
-//   at weight 700). Text that scrolls under a frame is read 2px inside the scroller's edges.
+//   at weight 700). Text is read 2px inside the edges of every ancestor whose overflow is not
+//   visible (scrolling or not), so a frame's keyline does not count as beneath cut-off letters.
 // - Focus rings: the element is rendered focused (CSS.forcePseudoState :focus and :focus-visible,
-//   :focus-within on its ancestors) and unfocused (measureRing). Target 3:1.
+//   :focus-within on its ancestors) and unfocused (measureRing). Target 3:1. Every pixel the focus
+//   changes counts, ring, offset, halo or fill alike.
 // - States: default; hover (forced) and focus on every link, button, field and summary, in every
 //   pen; every closed <details> opened; text inside an aria-current element is reported with the
 //   state "current".

@@ -174,12 +174,17 @@ headless Chromium, and measures it against the guidelines' targets (WCAG 2.2 AA)
   included). The colour beneath is read from a render with all text and text decorations made
   transparent, over the box of the text's glyphs; of its darkest and lightest pixel the one with
   the lower ratio counts. So patterns, highlighter bands, tabs and images count with their worst
-  colour. Text that scrolls under a frame is read 2px inside the scroller's edges.
+  colour. Text is read 2px inside the edges of every ancestor whose `overflow` is not `visible`,
+  scrolling or not, so a frame's keyline does not count as beneath the letters cut off at it; what
+  is left of a text under 2px wide or high there is not measured.
 - **Focus rings**, 3:1: every link, button, field and summary is rendered with `:focus` and
   `:focus-visible` forced (CDP), and `:focus-within` on its ancestors, and without. Each pixel that
   changes has the ratio of its focused to its unfocused colour; the ring's ratio is the best one
   that as many pixels reach as a 1px line around the element has. A ring in the colour of what it
-  covers measures 1:1, and a neighbour lying under part of a 2px ring does not hide it.
+  covers measures 1:1, and a neighbour lying under part of a 2px ring does not hide it. The changed
+  pixels are pooled: every pixel within 40px of the element that focus changes counts, the ring,
+  its offset, a halo, a fill or a text colour alike. So a passing ring means that focus changes
+  enough pixels by 3:1, not that a drawn ring does.
 - **States**: default; hover (forced) and focus on every interactive element, in every pen; text
   inside an `aria-current` element is reported as `current`; every closed `<details>` is opened
   (`open`).

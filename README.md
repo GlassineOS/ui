@@ -1,12 +1,16 @@
 # GlassineOS/ui
 
-The look of the GlassineOS desktop in one place: the three voices (White, Editorial, Stationery) as
-data, and the drawing code built on them, for every program that draws itself (the shell's bar and
-panels, Settings, the first-run setup, Home).
+The look of GlassineOS in one place: the Interleaf design system, the three voices (White, Editorial,
+Stationery) as data, and the drawing code built on them, for every program that draws itself (the
+shell's bar and panels, Settings, the first-run setup, Home).
 
-- **Voice data:** `voices/voices.json`, the single source, from the Interleaf design system on the
-  E-ink scheme. The C table and the Python module are generated from it (`tools/gen-voices`);
-  `make check` fails when they are out of date. The GTK themes and the on-screen keyboard's look,
+- **Interleaf:** `interleaf/`, the design system's only source: the tokens, the guidelines and the
+  components. Its web form (`web/`: the CSS variables of every theme and the component styles) and
+  the voices' scheme tokens are generated from it (`tools/gen-interleaf`); `make check` fails when
+  they are out of date.
+- **Voice data:** `voices/voices.json`: the voices' scheme (generated from Interleaf's E-ink themes)
+  and the drawn programs' own values (kept here by hand). The C table and the Python module are
+  generated from it (`tools/gen-voices`); `make check` fails when they are out of date. The GTK themes and the on-screen keyboard's look,
   for the programs that do not draw with this repository, are generated from it too
   (`tools/gen-apps`, into GlassineOS/shell's `rootfs/`; the shell's `make check` fails when its
   copy is out of date).
@@ -24,6 +28,8 @@ Verified so far: the host tests below. Nothing has been checked on hardware from
 make                     # out/libglassine-ui.so, out/glassine-ui.pc
 make install             # PREFIX=/usr/local DESTDIR= PYTHONDIR=<site-packages under PREFIX>
 make check               # generated forms current, the library, the tests
+make generate            # write the generated forms (tools/gen-interleaf, then tools/gen-voices)
+make export-claude       # Interleaf staged for claude.ai in out/claude/interleaf
 ```
 
 Needs cairo, pango, librsvg, glib (dev), python3, PyGObject (Gtk 3, Pango), pycairo. CI runs
@@ -31,10 +37,15 @@ Needs cairo, pango, librsvg, glib (dev), python3, PyGObject (Gtk 3, Pango), pyca
 
 `make check` runs:
 
+- `tools/gen-interleaf --check`: the voices' scheme in `voices/voices.json` and the web form match
+  the tokens.
 - `tools/gen-voices --check`: the generated C table, `glassine-ui-scheme.h` and the Python module
   match the data, and the C icon map matches `glassine_ui.paint.ICONS`.
 - `test/test_voices.py`: sections, the fallback to White, a changed value (and a changed scheme token)
-  reaching every form, the design importer, `tools/gen-apps` (into a temporary tree).
+  reaching every form, `tools/gen-apps` (into a temporary tree).
+- `test/test_interleaf.py`: aliases and theme fallbacks, the voices' scheme from the E-ink themes, a
+  changed token reaching the voices' scheme and the web form, the stale-form check, the 27
+  combinations and the variables the component styles read, the `tools/export-claude` layout.
 - `test/test_paint.py`: the Python drawing API call by call.
 - `test/c-api.sh`: a separate program built with `pkg-config glassine-ui` against an installed copy.
 - `test/pc-prefix.sh`: the installed `.pc` names the prefix it was installed with.
@@ -46,6 +57,68 @@ Needs cairo, pango, librsvg, glib (dev), python3, PyGObject (Gtk 3, Pango), pyca
   for the cells not listed; the listed ones are held to these bounds, and
   `test/compare-selftest.py` checks that a regression in one fails.
 
+## Interleaf
+
+Contract: Interleaf tokens, version 1 (`"version": 1` in `interleaf/tokens.json`).
+
+Interleaf is the design system of GlassineOS: three voices (White, Editorial, Stationery), each in
+three schemes (Paper, Night, E-ink), with three pens. `interleaf/` holds it:
+
+| Path | What |
+|---|---|
+| `interleaf/tokens.json` | the tokens: `color` (the themes and a value per theme), `type` (families, type styles per voice), `spacing`, `radius`, `shadow` (a value per theme), `layout`, `stroke`; each with its `usage` |
+| `interleaf/README.md` | the guidelines: the three layers, themes, colour rules, accessibility targets, type, edges |
+| `interleaf/components/bundle.css` | the component styles (`.il-*`); they read the tokens' variables and the voice from the theme id's prefix |
+| `interleaf/components/NAME/` | a component's guidelines (`README.md`) and live preview (`preview.html`, its first line the card marker claude.ai reads) |
+
+A theme is a voice and a scheme: `white-paper`, `white-night`, `editorial-paper`, `editorial-night`,
+`stationery-paper`, `stationery-night`, `eink` (White and Editorial) and `stationery-eink`. A token's
+value is one value for every theme, or one per theme. A theme without a value of its own takes
+`stationery-eink` -> `eink`'s, then the first theme's (`white-paper`). A value `{name}` is an alias
+of another token in the same theme.
+
+The voices' scheme (`voices/voices.json`, section `scheme`) is generated from the E-ink themes:
+White and Editorial from `eink`, Stationery from `stationery-eink`, with every alias resolved and
+shadow lists joined by `,` alone. Its keys are fixed (`SCHEME_COLOURS`, `SCHEME_SHADOWS` in
+`tools/gen-interleaf`); a key without a value in the voice's E-ink theme (or `eink`, its fallback)
+is an error, never the Paper value.
+
+Changing a token: edit `interleaf/tokens.json`, run `make generate`, commit the tokens and the
+generated files together.
+
+`make export-claude` stages the system in the file layout of a claude.ai design-system project
+(`README.md`, `tokens.json`, `components/`, `design-system.json`) in `out/claude/interleaf`, for
+publishing it there. claude.ai has no theme fallback other than the first theme, so the staged
+`tokens.json` has the `stationery-eink` values it takes from `eink` written out. It writes files only;
+nothing is read from claude.ai.
+
+## Web form
+
+Contract: web form, version 1.
+
+`web/` holds the generated web form, for pages that look like GlassineOS (the documentation site,
+the hub, the design boards):
+
+| File | What |
+|---|---|
+| `web/tokens.css` | the tokens as CSS custom properties: colours and shadows per theme, the pen selection, then spacing, radius, layout, stroke, the greys and the font families (`--font-plex`, ...) on `:root`, and a class per type style (`.il-type-display`, `.il-type-ed-body`, ...) |
+| `web/bundle.css` | the component styles, as `interleaf/components/bundle.css` |
+| `web/combinations.json` | the 27 combinations: `voice`, `scheme`, `pen` and the `attributes` that select each |
+
+Load `tokens.css`, then `bundle.css`. Two attributes choose the look:
+
+- `data-theme`: the voice and scheme. Paper and Night are the tokens' theme ids
+  (`white-paper`, ..., `stationery-night`). E-ink is `white-eink`, `editorial-eink` and
+  `stationery-eink`: White and Editorial share the tokens' `eink` theme (`eink` itself is White), and
+  the component styles take the voice from the id's prefix.
+- `data-pen`: `1` (or no attribute: the house pen), `2` or `3`: `accent` and `highlight` become
+  `accent-N` and `highlight-N`, and the tokens that alias them (`pen`, `wax`, `focus`, ...) follow.
+  It goes on the element that has `data-theme` or on an ancestor of it. On e-ink the three pens are
+  the same greys.
+
+Without either attribute a page gets `white-paper` and pen 1. The fonts are loaded as the component
+styles do it (an `@import` of Google Fonts at the top of `bundle.css`).
+
 ## Voices
 
 Contract: voice data, version 1 (`"contract": 1` in the file).
@@ -56,12 +129,12 @@ is chosen by name; unknown names give White (in C and in Python). Each voice has
 | Section | What |
 |---|---|
 | `title` | the name shown to people: White, Editorial, Stationery |
-| `scheme` | the design's E-ink scheme tokens: the 16-grey ladder by role (`paper`, `sheet`, `ink`, `ink-soft`, `rule`, `shade`, `highlight`, `dim`, `accent`, `on-accent`, ...), the Stationery extras (`leather-dark`, `gilt`, `gold`, `wax`), the focus colours and the named shadows (`offset`, `keycap`, `card-stack`, `passe-partout`) |
+| `scheme` | generated from Interleaf's E-ink themes (see "Interleaf"): the 16-grey ladder by role (`paper`, `sheet`, `ink`, `ink-soft`, `rule`, `shade`, `highlight`, `dim`, `accent`, `on-accent`, ...), the Stationery extras (`leather-dark`, `gilt`, `gold`, `wax`), the focus colours and the named shadows (`offset`, `keycap`, `card-stack`, `passe-partout`) |
 | `shell` | the desktop shell's surfaces: bar, plates, cards, buttons, toggles, slider, trays, segments, power button, pads, folders, app tiles, tabs, rules, fonts, and the voice's own words (`qsTitle`, `oTitle`, ...) |
 | `c` | the few values the C table takes instead of the CSS value: `"field.part": value`, with `_why` |
 | `card` | the settings card (rows, heads, tabs, segments, keyboard) |
 | `setup` | the first-run setup (header, steps, fields, keycaps, packs) |
-| `inline` | what the design writes in its components' code, not in the tables the dumps read: the keyboard's focus ring (`focusW`, `focusOff`, `focusR`: the outer radius), setup's voice miniatures (`mini*`), setup's chosen network row (`netOnBg`) |
+| `inline` | the values the designs write in their components' code: the keyboard's focus ring (`focusW`, `focusOff`, `focusR`: the outer radius), setup's voice miniatures (`mini*`), setup's chosen network row (`netOnBg`) |
 | `apps` | the look of the programs that do not draw with this repository, for `tools/gen-apps`: the GTK text face (`gtkFont`), the GTK 3 theme (`gtk3` colours, `gtk3Note`, `gtk3Rules`), the GTK 4 / libadwaita colours (`gtk4`, into `voices/gtk4.css.in`), the on-screen keyboard (`wvkbd`: its options) |
 
 Values are the design's CSS with every `var(--il-*)` resolved: colours `#rrggbb` (greys of the E-ink
@@ -70,20 +143,17 @@ scheme), `box-shadow` lists (hard edges only: a blur fails the generator), borde
 with `*Var` (small-caps), `*Ls` (letter spacing, em) and `*Case`, radii in px or `50%`.
 
 The same key can mean different things in `shell`, `card` and `setup`: each is its own surface in the
-design (`headH`, `cardR`, `sep`, ...), so they are kept apart, not merged. `shell` also has keys the
-design does not dump (the C table's own: `gripGap`, `gripLip` for glassine-swayd's drag handles).
-
-`tools/import-design` replaces `scheme`, `card` and `setup`, merges `shell`, and keeps `c`, `inline`
-and `apps`: those are kept by hand.
+design (`headH`, `cardR`, `sep`, ...), so they are kept apart, not merged. `shell` also has the C
+table's own keys (`gripGap`, `gripLip` for glassine-swayd's drag handles).
 
 The `apps` values are the GTK and keyboard themes as they were, not the scheme's greys: several are
 not on the 16-grey ladder (`#1b1b1b`, `#141414`, `#a0a0a0`, `#d0d0d0`, `#c4c4c4`, `#4a4a4a`, `#b5b5b5`,
 `#bdbdbd`), and Stationery's GTK ink is `#1b1b1b` where the voice's is `#111111`. Bringing them onto
 the scheme changes pixels, so it is a separate change.
 
-Changing a voice: edit `voices/voices.json` (or refresh it from the design with `tools/import-design`,
-which reads the dumps of `tools/design/*.js`), run `make generate`, commit the data and the generated
-files together.
+Changing a voice: a scheme token is changed in `interleaf/tokens.json`; every other section is
+edited in `voices/voices.json`. Then run `make generate` and commit the data and the generated files
+together.
 
 ## C API
 

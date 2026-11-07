@@ -33,7 +33,7 @@ function runtimeSource(config) {
   return s;
 }
 
-// every *.dc.html below dir (paths with "/"), leaving out ds/ (at any depth) and hidden folders
+// every *.dc.html below dir (paths with "/"), leaving out ds/ (at any depth), hidden folders and links
 function listBoards(dir) {
   const out = [];
   (function walk(rel) {
@@ -41,7 +41,7 @@ function listBoards(dir) {
       if (e.name.startsWith('.') || e.name === 'node_modules') continue;
       const r = rel ? rel + '/' + e.name : e.name;
       if (e.isDirectory()) { if (e.name !== 'ds') walk(r); }
-      else if (e.name.endsWith('.dc.html')) out.push(r);
+      else if (e.isFile() && e.name.endsWith('.dc.html')) out.push(r);
     }
   })('');
   return out.sort();
@@ -93,62 +93,69 @@ function describe(dir) {
     launch: canvas.launch || null, notes: canvas.notes || {}, boards: boards };
 }
 
+// the file for a path below root, or null: no "." segment (dotfiles, ..), no NUL, and after
+// following links still inside root (a link in the design folder never serves what it points at)
 function within(root, rel) {
-  const p = path.resolve(root, '.' + path.sep + rel);
+  if (rel.indexOf('\0') >= 0) return null;
+  const segs = rel.split(/[\/\\]/).filter(Boolean);
+  if (segs.some(function (x) { return x[0] === '.'; })) return null;
+  const p = path.resolve(root, segs.join(path.sep) || '.');
+  if (!inside(root, p)) return null;
+  let real;
+  try { real = fs.realpathSync(p); } catch (e) { return p; } // missing: 404 later
+  return inside(fs.realpathSync(root), real) ? real : null;
+}
+function inside(root, p) {
   const r = path.relative(root, p);
-  return r === '' || !r.startsWith('..') && !path.isAbsolute(r) ? p : null;
+  return r === '' || !r.startsWith('..') && !path.isAbsolute(r);
 }
 
-// the file only if it is inside root once links are resolved: a link in the design folder that
-// points out of it is not followed
-function sendFile(res, file, root) {
-  const notFound = function () { res.writeHead(404, { 'content-type': 'text/plain' }); res.end('not found\n'); };
-  fs.realpath(file, function (err, real) {
-    const r = err ? null : path.relative(root, real);
-    if (r === null || r.startsWith('..') || path.isAbsolute(r)) return notFound();
-    fs.stat(real, function (err2, st) {
-      if (err2 || !st.isFile()) return notFound();
-      res.writeHead(200, { 'content-type': MIME[path.extname(file).toLowerCase()] || 'application/octet-stream', 'cache-control': 'no-cache' });
-      fs.createReadStream(real).on('error', function () { res.destroy(); }).pipe(res);
-    });
+function notFound(res) { res.writeHead(404, { 'content-type': 'text/plain' }); res.end('not found\n'); }
+
+function sendFile(res, file) {
+  if (!file) return notFound(res);
+  fs.stat(file, function (err, st) {
+    if (err || !st.isFile()) return notFound(res);
+    res.writeHead(200, { 'content-type': MIME[path.extname(file).toLowerCase()] || 'application/octet-stream', 'cache-control': 'no-cache' });
+    const s = fs.createReadStream(file);
+    s.on('error', function () { res.destroy(); });
+    s.pipe(res);
   });
 }
 
-// A Host header the server answers: localhost, an IP address, or the name it was started with. A
-// page on another site that rebinds its own name to this address (DNS rebinding) sends that name,
-// and gets nothing.
-function hostAllowed(header, bound) {
-  if (!header) return false;
-  let name;
-  try { name = new URL('http://' + header).hostname.toLowerCase(); } catch (e) { return false; }
+// The names a request's Host (and Origin, when sent) may carry: localhost, an IP address (a name
+// another site controls can be rebound to this address, an IP literal can't), the bound name, and
+// the names given with allowHosts. Anything else gets 421, so a page elsewhere cannot read the
+// design folder through DNS rebinding.
+function hostAllowed(name, bound, extra) {
+  if (!name) return false;
+  name = name.toLowerCase().replace(/^\[|\]$/g, '');
   if (name === 'localhost' || name.endsWith('.localhost')) return true;
-  if (/^\[[0-9a-f:.]+\]$/.test(name) || /^\d{1,3}(\.\d{1,3}){3}$/.test(name)) return true;
-  return !!bound && name === String(bound).toLowerCase().replace(/^\[|\]$/g, '');
+  if (/^[0-9a-f:.]+$/.test(name) && name.indexOf(':') >= 0 || /^\d{1,3}(\.\d{1,3}){3}$/.test(name)) return true;
+  if (bound && name === String(bound).toLowerCase().replace(/^\[|\]$/g, '')) return true;
+  return (extra || []).some(function (h) { return String(h).toLowerCase() === name; });
+}
+function hostName(v) {
+  if (!v) return null;
+  try { return new URL('http://' + v).hostname; } catch (e) { return null; }
 }
 
-// startServer({design, interleaf, host = '127.0.0.1', port = 0, live = true}) → {url, port, close()}
+// startServer({design, interleaf, host = '127.0.0.1', port = 0, live = true, allowHosts}) → {url, port, close()}
 function startServer(opts) {
   const design = path.resolve(opts.design);
+  if (!fs.existsSync(design)) throw new Error('no design folder at ' + design);
   const interleaf = path.resolve(opts.interleaf || path.join(UI_ROOT, 'interleaf'));
-  if (!fs.existsSync(path.join(design))) throw new Error('no design folder at ' + design);
   if (!fs.existsSync(path.join(interleaf, 'tokens.json'))) throw new Error('no Interleaf at ' + interleaf + ' (tokens.json missing); pass --interleaf DIR');
-  // the roots with their own links resolved, for the check in sendFile()
-  const realDesign = fs.realpathSync(design), realInterleaf = fs.realpathSync(interleaf), realPreview = fs.realpathSync(PREVIEW_DIR);
   const host = opts.host || '127.0.0.1';
   const live = opts.live !== false;
   const clients = new Set();
   const watchers = [];
 
-  const server = http.createServer(function (req, res) {
-    // one bad request must not stop the server (it may be reachable from the network, FR-013)
-    try { handle(req, res); } catch (e) {
-      if (!res.headersSent) res.writeHead(500, { 'content-type': 'text/plain' });
-      res.end();
-    }
-  });
-
   function handle(req, res) {
-    if (!hostAllowed(req.headers.host, host)) { res.writeHead(421, { 'content-type': 'text/plain' }); res.end('unknown host\n'); return; }
+    const ok = function (n) { return hostAllowed(n, host, opts.allowHosts); };
+    let origin = null;
+    if (req.headers.origin && req.headers.origin !== 'null') { try { origin = new URL(req.headers.origin).hostname; } catch (e) { origin = '?'; } }
+    if (!ok(hostName(req.headers.host)) || origin !== null && !ok(origin)) { res.writeHead(421, { 'content-type': 'text/plain' }); res.end('unknown host (see --allow-host)\n'); return; }
     let u;
     try { u = new URL(req.url, 'http://x'); } catch (e) { res.writeHead(400); res.end(); return; }
     let p;
@@ -157,7 +164,7 @@ function startServer(opts) {
     if (p === '/favicon.ico') { res.writeHead(204); res.end(); return; }
     if (p === '/') { res.writeHead(302, { location: '/_boards/' }); res.end(); return; }
     if (p === '/_boards/events') {
-      if (!live) { res.writeHead(404); res.end(); return; }
+      if (!live) return notFound(res);
       res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-cache', connection: 'keep-alive' });
       res.write(': boards\n\n');
       clients.add(res);
@@ -165,32 +172,30 @@ function startServer(opts) {
       return;
     }
     if (p === '/_boards/api/canvas') {
-      let body;
-      try { body = JSON.stringify(describe(design)); } catch (e) { res.writeHead(500, { 'content-type': 'text/plain' }); res.end(String(e.message) + '\n'); return; }
+      const body = JSON.stringify(describe(design));
       res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-cache' });
       res.end(body);
       return;
     }
-    if (p === '/_boards/' || p === '/_boards/index.html') return sendFile(res, path.join(PREVIEW_DIR, 'index.html'), realPreview);
-    if (p.startsWith('/_boards/')) {
-      const f = within(PREVIEW_DIR, p.slice('/_boards/'.length));
-      return f ? sendFile(res, f, realPreview) : (res.writeHead(404), res.end());
-    }
+    if (p === '/_boards/' || p === '/_boards/index.html') return sendFile(res, path.join(PREVIEW_DIR, 'index.html'));
+    if (p.startsWith('/_boards/')) return sendFile(res, within(PREVIEW_DIR, p.slice('/_boards/'.length)));
     if (/(^|\/)support\.js$/.test(p)) {
       res.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8', 'cache-control': 'no-cache' });
       res.end(runtimeSource({ live: live, events: '/_boards/events' }));
       return;
     }
     const ds = /(?:^|\/)ds\/interleaf\/(.*)$/.exec(p);
-    if (ds) {
-      const f = within(interleaf, ds[1]);
-      return f ? sendFile(res, f, realInterleaf) : (res.writeHead(404), res.end());
-    }
+    if (ds) return sendFile(res, within(interleaf, ds[1]));
     const f = within(design, p.slice(1));
-    if (!f) { res.writeHead(404); res.end(); return; }
-    if (fs.existsSync(f) && fs.statSync(f).isDirectory()) { res.writeHead(302, { location: '/_boards/' }); res.end(); return; }
-    sendFile(res, f, realDesign);
+    if (f && fs.existsSync(f) && fs.statSync(f).isDirectory()) { res.writeHead(302, { location: '/_boards/' }); res.end(); return; }
+    sendFile(res, f);
   }
+
+  const server = http.createServer(function (req, res) {
+    try { handle(req, res); } catch (e) {
+      if (!res.headersSent) { res.writeHead(500, { 'content-type': 'text/plain' }); res.end(String(e && e.message || e) + '\n'); } else res.destroy();
+    }
+  });
 
   if (live) {
     let timer = null, changed = new Set();
@@ -199,9 +204,10 @@ function startServer(opts) {
         if (name) changed.add(path.join(root, String(name)));
         clearTimeout(timer);
         timer = setTimeout(function () {
-          const files = Array.from(changed).map(function (f) { return path.relative(design, f); });
+          const files = Array.from(changed);
           changed = new Set();
-          for (const c of clients) c.write('event: change\ndata: ' + JSON.stringify({ files: files }) + '\n\n');
+          const rel = files.map(function (f) { return path.relative(design, f); });
+          for (const c of clients) c.write('event: change\ndata: ' + JSON.stringify({ files: rel }) + '\n\n');
         }, 120);
       };
     };

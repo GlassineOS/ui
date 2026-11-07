@@ -258,12 +258,15 @@ the line and the feature, and the check reports it as `unsupported`.
 - `ref="{{ fn }}"` (a callback or a ref object).
 - `<sc-if value="{{ x }}" hint-placeholder-val="…">` and `<sc-for list="{{ xs }}" as="x"
   hint-placeholder-count="…">`, nested; a loop's `as` name and `$index` are in scope inside it.
+- The template is read as HTML is, with the implied end tags of `li`, `option`, `dt`/`dd`, table
+  rows and cells, and `p` (closed by a block start tag); an end tag left over after that is reported.
 - `<dc-import name="X" …>` mounts `X.dc.html` beside the importing board (so `history/A.dc.html`
   imports `history/X.dc.html`); every other attribute is a prop, kebab-case to camelCase
   (`on-fit` → `onFit`); `style` styles the block that holds the child (`position: relative` unless the
   style says otherwise); `hint-size="W,H"` sizes it until the child has loaded. An imported board gets
-  only the props written on the tag. A board that imports itself, directly or through others, is
-  unsupported (`dc-import cycle`, on the line of the `<dc-import>`).
+  only the props written on the tag. A board that ends up importing itself (`A` → `B` → `A`) is
+  unsupported; the report names the `<dc-import>` line that closes the cycle, and a missing board
+  names the line that imports it.
 - The logic: `class Component extends DCLogic` (plain JavaScript, no `import`/`export`, no
   `render()`), with `renderVals()`, `this.props`, `state` as a class field or set in the constructor,
   `setState` (object or function), `forceUpdate()`, `componentDidMount`/`DidUpdate`/`WillUnmount`,
@@ -273,14 +276,14 @@ the line and the feature, and the check reports it as `unsupported`.
   `editor`, `default`, `options`; `$preview: {width, height}`. The board opened on its own gets the
   `default`s as props, as an editor seeds them.
 - Links `<a href="Other.dc.html">` move to that board (relative to the board that holds the link; a
-  leading `/` is the design folder); the preview's voice, scheme and pen go along. `#id` scrolls; links
-  to other sites open a new tab.
+  leading `/` is the design folder); the preview's voice, scheme and pen go along. `#id` scrolls; `http`
+  and `https` links to other sites open a new tab, other schemes (`javascript:`, `data:`) do nothing.
 - `fetch('ds/interleaf/…')` reads Interleaf from this repository (see below).
 
 ### Commands
 
 ```
-tools/boards preview DESIGN_DIR [--port 4790] [--host 127.0.0.1] [--interleaf DIR]
+tools/boards preview DESIGN_DIR [--port 4790] [--host 127.0.0.1] [--allow-host NAME]... [--interleaf DIR]
 tools/boards check   DESIGN_DIR [--interleaf DIR] [--json out/boards-check.json|-] [--board FILE]...
 tools/boards import  CANVAS_EXPORT_DIR DEST_DIR [--force]
 tools/in-alpine CMD...      # CMD in alpine:3.24 with Chromium and node, as the calling user
@@ -292,12 +295,16 @@ tools/in-alpine CMD...      # CMD in alpine:3.24 with Chromium and node, as the 
   (shrunk to fit, or filling the window for `"expand": "fill"`), a voice, scheme and pen picker (it
   sets the board's `voice` or `theme`, `scheme` and `pen` props when the board has them), and the
   board's own enum and boolean props. Every file a board loads as `support.js` is the runtime;
-  `ds/interleaf/*` at any depth comes from Interleaf (default: this checkout's `interleaf/`), never from
-  a copy in the design folder. Saving a board, the canvas or Interleaf reloads the page. It listens on
-  127.0.0.1; `--host 0.0.0.0` lets the hub reach it. It answers only requests addressed to
-  `localhost`, an IP address or the `--host` name (so a web page can't reach it through a name of its
-  own, DNS rebinding), and doesn't follow a link that leads out of the design folder or Interleaf.
-  Node only, no npm packages.
+  `ds/interleaf/*` at any depth comes from Interleaf (default: this checkout's `interleaf/`;
+  `--interleaf DIR` serves another copy as it is), never from a copy in the design folder. The tokens
+  are served as `interleaf/tokens.json` has them: a board that reads a theme's value applies the
+  theme fallback itself (`stationery-eink` takes `eink`'s value where it has none). Saving a board,
+  the canvas or Interleaf reloads the page. Node only, no npm packages.
+- The preview serves only files below the design folder (and Interleaf, and its own pages): no names
+  starting with `.`, no symbolic link that leads outside, no NUL in a path. It listens on 127.0.0.1;
+  `--host 0.0.0.0` lets the hub reach it. It answers only requests whose `Host` (and `Origin`, when
+  sent) is localhost, the bound address (every local address when bound to all), or a name given
+  with `--allow-host` (the hub's name for this machine, for example).
 - `check` renders every board of the folder in headless Chromium at its canvas size (else its
   `$preview` size) and writes a JSON report (`--json -` for stdout) and a summary: per board the render,
   script and load errors (`errors`), the features outside the subset (`unsupported`), console errors
@@ -318,7 +325,8 @@ pages and API (`/_boards/`), so it can script them and read everything the serve
 folder and Interleaf, nothing outside them. It can also load from and send to other sites. The
 preview has no login: with `--host`, anyone who can reach the port can read the design folder.
 
-`make boards-check` renders the samples in `boards/samples/` (every feature of the subset) and clicks
+`make boards-check` renders the samples in `boards/samples/` (every feature of the subset, against
+this checkout's `interleaf/`; `BOARDS_INTERLEAF=DIR` for another copy) and clicks
 through them (`test/boards/samples-e2e.js`: state, branches, links, the preview pages, and the boards
 in `test/boards/unsupported/` failing with the right features); CI runs it in Alpine
 (`tools/in-alpine make boards-check` locally).

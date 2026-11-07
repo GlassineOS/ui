@@ -91,9 +91,10 @@ check-boards:
 	$(NODE) --test test/boards/*.test.js
 
 # the sample boards rendered and clicked through (needs Chromium; tools/in-alpine provides one)
-BOARDS_INTERLEAF = test/boards/fixtures/interleaf
+# the samples read the real Interleaf (default); BOARDS_INTERLEAF=DIR serves another copy as is
+BOARDS_INTERLEAF ?=
 boards-check:
-	tools/boards check boards/samples --interleaf $(BOARDS_INTERLEAF) --json $(O)/boards-check.json
+	tools/boards check boards/samples $(if $(BOARDS_INTERLEAF),--interleaf $(BOARDS_INTERLEAF)) --json $(O)/boards-check.json
 	$(NODE) test/boards/samples-e2e.js
 
 clean:

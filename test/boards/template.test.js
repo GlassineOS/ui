@@ -205,6 +205,33 @@ test('implied end tags of li and option are accepted', () => {
   assert.strictEqual(out[1].children.length, 2);
 });
 
+test('SVG foreignObject keeps its case and closes', () => {
+  const doc = parse('<svg viewBox="0 0 2 2"><foreignObject width="2" height="2"><div>{{ x }}</div></foreignObject></svg>');
+  assert.deepStrictEqual(doc.issues, []);
+  const { out } = render(doc, { x: 'in' });
+  assert.strictEqual(out[0].children[0].tag, 'foreignObject');
+  assert.strictEqual(out[0].children[0].children[0].tag, 'div');
+});
+
+test('a block start tag closes an open <p>, as in HTML', () => {
+  const a = parse('<p>a<p>b');
+  assert.deepStrictEqual(a.issues, []);
+  assert.deepStrictEqual(render(a, {}).out.map((e) => e.tag), ['p', 'p']);
+  const b = parse('<div><p>x<div>y</div></div>');
+  assert.deepStrictEqual(b.issues, []);
+  assert.deepStrictEqual(render(b, {}).out[0].children.map((e) => e.tag), ['p', 'div']);
+  // the </p> left over is then reported, not rendered silently
+  assert.ok(features(parse('<p>x<div>y</div></p>')).includes('stray end tag'));
+  // inside a button the <p> stays open
+  assert.deepStrictEqual(parse('<p><button><div>z</div></button></p>').issues, []);
+});
+
+test('dc-import lines are kept for reports', () => {
+  const doc = parse('<div>\n<dc-import name="A" hint-size="1px,1px"></dc-import>\n<dc-import name="A" hint-size="1px,1px"></dc-import></div>');
+  assert.deepStrictEqual(doc.imports, ['A']);
+  assert.strictEqual(doc.importLines.A, 11);
+});
+
 test('importCycles: the imports that lead back to the board, with the way there', () => {
   const g = { A: ['B', 'C'], B: ['A'], C: ['D'], D: [], S: ['S'] };
   const of = (f) => (g[f] || []).map((t, i) => ({ name: t, file: t, line: i + 1 }));

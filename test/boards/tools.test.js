@@ -191,6 +191,85 @@ test('import: symbolic links are left out, never followed', () => {
   assert.deepStrictEqual(r.left.filter((l) => /symbolic link/.test(l.why)).map((l) => l.path).sort(), ['dangling.js', 'data/fixtures.js', 'dir']);
   for (const p of ['data/fixtures.js', 'dir', 'dangling.js']) assert.ok(!fs.existsSync(path.join(dest, p)), p);
 });
+// a raw request, so Host and Origin can be set
+function req(url, p, headers) {
+  const u = new URL(url);
+  return new Promise((resolve, reject) => {
+    const r = http.request({ host: u.hostname, port: u.port, path: p, headers: Object.assign({ host: u.host }, headers || {}) }, (res) => {
+      let b = '';
+      res.on('data', (d) => { b += d; });
+      res.on('end', () => resolve({ status: res.statusCode, body: b }));
+    });
+    r.on('error', reject);
+    r.end();
+  });
+}
+
+function secDesign() {
+  const root = path.join(TMP, 'sec'), design = path.join(root, 'design'), il = path.join(root, 'interleaf');
+  fs.rmSync(root, { recursive: true, force: true });
+  fs.mkdirSync(path.join(design, '.git'), { recursive: true });
+  fs.mkdirSync(il, { recursive: true });
+  fs.copyFileSync(path.join(SAMPLES, 'Card.dc.html'), path.join(design, 'Card.dc.html'));
+  fs.writeFileSync(path.join(design, '.env'), 'SECRET=1');
+  fs.writeFileSync(path.join(design, '.git', 'config'), 'secret');
+  fs.writeFileSync(path.join(root, 'outside.txt'), 'secret');
+  fs.symlinkSync('../outside.txt', path.join(design, 'link.txt'));
+  fs.symlinkSync('..', path.join(design, 'up'));
+  fs.symlinkSync(path.join(design, 'Card.dc.html'), path.join(design, 'Linked.dc.html'));
+  fs.copyFileSync(path.join(INTERLEAF, 'tokens.json'), path.join(il, 'tokens.json'));
+  fs.symlinkSync('../outside.txt', path.join(il, 'link.json'));
+  return { design, il };
+}
+
+test('server: no dotfiles; links that stay inside are served', async () => {
+  const { design, il } = secDesign();
+  const srv = await startServer({ design, interleaf: il, live: false });
+  try {
+    for (const p of ['/.env', '/.git/config', '/link.txt', '/up/outside.txt', '/ds/interleaf/link.json', '/_boards/.x', '/%2e%2e/outside.txt']) {
+      const r = await req(srv.url, p);
+      assert.strictEqual(r.status, 404, p);
+      assert.doesNotMatch(r.body, /secret/i, p);
+    }
+    assert.strictEqual((await req(srv.url, '/Card.dc.html')).status, 200);
+    // a link inside the folder may point inside it
+    assert.strictEqual((await req(srv.url, '/Linked.dc.html')).status, 200);
+    assert.deepStrictEqual(describe(design).boards.map((b) => b.file), ['Card.dc.html']);
+  } finally { await srv.close(); }
+});
+
+test('server: Origin as Host, and names given with allowHosts', async () => {
+  const srv = await startServer({ design: SAMPLES, interleaf: INTERLEAF, live: false, allowHosts: ['hub.example'] });
+  try {
+    const port = srv.port;
+    assert.strictEqual((await req(srv.url, '/Main.dc.html', { host: 'evil.example:' + port })).status, 421);
+    assert.strictEqual((await req(srv.url, '/Main.dc.html', { origin: 'http://evil.example:' + port })).status, 421);
+    assert.strictEqual((await req(srv.url, '/Main.dc.html', { host: 'localhost:' + port })).status, 200);
+    assert.strictEqual((await req(srv.url, '/Main.dc.html', { host: '127.0.0.1:' + port, origin: 'http://127.0.0.1:' + port })).status, 200);
+    assert.strictEqual((await req(srv.url, '/Main.dc.html', { host: 'hub.example:' + port })).status, 200);
+  } finally { await srv.close(); }
+});
+
+test('server: the default Interleaf is interleaf/ of this checkout', async () => {
+  const srv = await startServer({ design: SAMPLES, live: false });
+  try {
+    assert.strictEqual(srv.interleaf, path.join(ROOT, 'interleaf'));
+    assert.strictEqual((await req(srv.url, '/ds/interleaf/tokens.json')).body, fs.readFileSync(path.join(ROOT, 'interleaf', 'tokens.json'), 'utf8'));
+    assert.strictEqual((await req(srv.url, '/sub/ds/interleaf/components/bundle.css')).status, 200);
+  } finally { await srv.close(); }
+});
+
+test('import: an embedded ds/ is left out at any depth', () => {
+  const root = path.join(TMP, 'nested-ds'), src = path.join(root, 'export'), dest = path.join(root, 'design');
+  fs.rmSync(root, { recursive: true, force: true });
+  fs.mkdirSync(path.join(src, 'sub', 'ds', 'interleaf'), { recursive: true });
+  fs.writeFileSync(path.join(src, 'canvas.json'), '{"v":3}');
+  fs.writeFileSync(path.join(src, 'sub', 'A.dc.html'), '<html></html>');
+  fs.writeFileSync(path.join(src, 'sub', 'ds', 'interleaf', 'tokens.json'), '{}');
+  const r = importCanvas(src, dest);
+  assert.deepStrictEqual(r.copied.sort(), ['canvas.json', 'sub/A.dc.html']);
+  assert.ok(r.left.some((l) => l.path === 'sub/ds/'));
+});
 
 test('browser: Chromium keeps its sandbox unless root, in a container, or BOARDS_NO_SANDBOX=1', () => {
   assert.strictEqual(needsNoSandbox({}, false, false), false);

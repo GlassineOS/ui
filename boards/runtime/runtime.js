@@ -76,16 +76,27 @@
     }
   }
 
+  // the board's line of an error thrown in its logic, from the stack (0 when it has none)
+  function logicLine(e, rec) {
+    const st = String(e && e.stack || '');
+    const at = st.indexOf(rec.url + '.logic.js:');
+    if (at < 0) return 0;
+    const m = /^:(\d+)/.exec(st.slice(at + rec.url.length + 9));
+    return m ? Number(m[1]) : 0;
+  }
+
   const LIFECYCLE = ['componentDidMount', 'componentDidUpdate', 'componentWillUnmount', 'shouldComponentUpdate', 'getSnapshotBeforeUpdate'];
   function evaluate(rec) {
     const doc = rec.doc;
     let C;
     try {
-      const pad = new Array(Math.max(0, doc.codeLine - 1)).join('\n'); // keeps line numbers of the file
+      // keeps the file's line numbers: the logic starts on the line of its <script> tag, and the
+      // Function wrapper adds two lines of its own
+      const pad = new Array(Math.max(0, doc.codeLine - 2)).join('\n');
       const fn = new Function('DCLogic', pad + doc.code + '\n;return typeof Component === "function" ? Component : undefined;\n//# sourceURL=' + rec.url + '.logic.js');
       C = fn(DCLogic);
     } catch (e) {
-      throw { kind: 'script', feature: 'logic', message: String(e && e.message || e), line: e && e.lineNumber || 0 };
+      throw { kind: 'script', feature: 'logic', message: String(e && e.message || e), line: e && e.lineNumber || logicLine(e, rec) };
     }
     if (typeof C !== 'function' || !(C.prototype instanceof DCLogic)) throw { kind: 'unsupported', feature: 'logic that is not "class Component extends DCLogic"', line: doc.codeLine };
     if (Object.prototype.hasOwnProperty.call(C.prototype, 'render')) throw { kind: 'unsupported', feature: 'render() in the logic class', line: doc.codeLine };
@@ -94,7 +105,7 @@
       const f = C.prototype[m];
       C.prototype[m] = function () {
         try { return f.apply(this, arguments); } catch (e) {
-          report({ board: rec.file, kind: 'script', feature: m + '()', detail: '', line: 0, message: String(e && e.message || e) });
+          report({ board: rec.file, kind: 'script', feature: m + '()', detail: '', line: logicLine(e, rec), message: String(e && e.message || e) });
           return m === 'shouldComponentUpdate' ? true : undefined;
         }
       };
@@ -204,7 +215,7 @@
       const rec = this.constructor.__dcRec;
       let vals;
       try { vals = this.renderVals(); } catch (e) {
-        report({ board: rec.file, kind: 'script', feature: 'renderVals()', detail: '', line: 0, message: String(e && e.message || e) });
+        report({ board: rec.file, kind: 'script', feature: 'renderVals()', detail: '', line: logicLine(e, rec), message: String(e && e.message || e) });
         return errorBox(rec.file, ['renderVals() threw: ' + String(e && e.message || e)]);
       }
       if (vals === null || typeof vals !== 'object') {
@@ -269,7 +280,11 @@
     const href = a.getAttribute('href');
     if (!href || href[0] === '#') return;
     const u = new URL(href, location.href);
-    if (u.origin !== location.origin) { ev.preventDefault(); window.open(u.href, '_blank', 'noopener'); return; }
+    if (u.origin !== location.origin) {
+      ev.preventDefault();
+      if (u.protocol === 'http:' || u.protocol === 'https:') window.open(u.href, '_blank', 'noopener');
+      return;
+    }
     if (!/\.dc\.html$/.test(u.pathname)) return;
     ev.preventDefault();
     const here = new URLSearchParams(location.search);
@@ -294,7 +309,10 @@
       if (!q.has(g)) continue;
       for (const k of glob[g]) if (doc.props[k]) props[k] = typed(doc.props[k], q.get(g));
     }
-    for (const [k, v] of q) if (k.startsWith('p.')) props[k.slice(2)] = typed(doc.props[k.slice(2)], v);
+    for (const [k, v] of q) {
+      const name = k.slice(2);
+      if (k.startsWith('p.') && /^[A-Za-z_$][\w$]*$/.test(name) && ['__proto__', 'constructor', 'prototype'].indexOf(name) < 0) props[name] = typed(doc.props[name], v);
+    }
     return props;
   }
 

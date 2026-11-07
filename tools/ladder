@@ -150,15 +150,36 @@ def split_top(s):
     return parts
 
 
+def split_space(s):
+    """s cut at the whitespace outside parentheses (rgba(0, 0, 0, .3) and calc(2px + 2px) stay whole)"""
+    parts, depth, cur = [], 0, ""
+    for ch in s:
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth = max(depth - 1, 0)
+        if ch.isspace() and depth == 0:
+            if cur:
+                parts.append(cur)
+            cur = ""
+        else:
+            cur += ch
+    return parts + ([cur] if cur else [])
+
+
+MATH = re.compile(r"^(?:calc|min|max|clamp)\(", re.I)
+
+
 def shadow_blurs(s, need_colour=False):
-    """the parts of a shadow list that have a blur radius other than 0 (need_colour: only
-    parts that name a colour, so that a radius list such as "0 10px 10px 0" is not one)"""
+    """the parts of a shadow list that have a blur radius other than 0, or a computed one
+    (calc(), min(), max(), clamp(): not evaluated here, so refused) (need_colour: only parts
+    that name a colour, so that a radius list such as "0 10px 10px 0" is not one)"""
     out = []
     for part in split_top(s):
         if need_colour and not (HEX.search(part) or FUNC_COLOUR.search(part) or "var(" in part):
             continue
-        lengths = [w for w in re.sub(r"\([^()]*\)", " ", part).split() if LENGTH.match(w)]
-        if len(lengths) >= 3 and float(re.sub(r"[a-z%]+$", "", lengths[2])) != 0:
+        lengths = [w for w in split_space(part) if LENGTH.match(w) or MATH.match(w)]
+        if len(lengths) >= 3 and (MATH.match(lengths[2]) or float(re.sub(r"[a-z%]+$", "", lengths[2])) != 0):
             out.append(part.strip())
     return out
 
@@ -187,9 +208,10 @@ def style_faults(s, prop=None):
     """the gradients and blurs in a value (prop: its CSS property, when known)"""
     bad = ["gradient: " + m.group(0) for m in GRADIENT.finditer(s)]
     bad += ["blur: " + m.group(0) for m in BLUR_FN.finditer(s)]
-    if prop in ("filter", "backdrop-filter", "-webkit-backdrop-filter") and s.strip() not in ("none", ""):
+    # any (vendor-prefixed) filter, backdrop-filter or *-shadow property
+    if prop and prop.lower().endswith("filter") and s.strip() not in ("none", ""):
         bad.append("%s: %s" % (prop, s.strip()))
-    if prop is None or prop in ("box-shadow", "text-shadow", "-gtk-icon-shadow") or prop.startswith("--"):
+    if prop is None or prop.lower().endswith("shadow") or prop.startswith("--"):
         bad += ["blur: " + p for p in shadow_blurs(s, need_colour=prop is None)]
     return bad
 

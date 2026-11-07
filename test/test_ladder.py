@@ -137,6 +137,18 @@ def f_bundle_important(t, b, v):
         + '[data-theme="stationery-eink"] .il-x { background: none; }\n'
 
 
+def f_bundle_prefixed_shadow(t, b, v):
+    return b + '\n.il-x { -webkit-box-shadow: 0 0 4px #111111; }\n'
+
+
+def f_bundle_prefixed_filter(t, b, v):
+    return b + '\n.il-x { -webkit-backdrop-filter: blur(4px); -webkit-filter: grayscale(1); }\n'
+
+
+def f_bundle_calc_blur(t, b, v):
+    return b + '\n.il-x { box-shadow: 0 2px calc(2px * 2) #111111; }\n'
+
+
 def f_voice_shadow(t, b, v):
     v["voices"]["white"]["shell"]["btnSh"] = "inset 0 0 0 1.5px #111111,0 3px 0 #b4b4b4"
 
@@ -193,6 +205,9 @@ FIXTURES = [
     (f_bundle_url_semicolon, "bundle.css (eink): .il-x { background }", "a gradient after a ; inside url()"),
     (f_bundle_important, "bundle.css (eink): .il-x { background }",
      "a shared !important gradient that a plain E-ink rule does not replace"),
+    (f_bundle_prefixed_shadow, "bundle.css (eink): .il-x { -webkit-box-shadow }", "a prefixed shadow with a blur"),
+    (f_bundle_prefixed_filter, "bundle.css (eink): .il-x { -webkit-filter }", "a prefixed filter"),
+    (f_bundle_calc_blur, "bundle.css (eink): .il-x { box-shadow }", "a blur written as calc()"),
     (f_voice_shadow, "white: shell.btnSh", "a voice shadow off the ladder"),
     (f_voice_blur, "editorial: card.tabSh", "a voice shadow with a blur"),
     (f_voice_short_hex, "stationery: shell.gripLip", "a three-digit colour"),
@@ -245,6 +260,8 @@ ok(L.shadow_blurs("0 10px 10px 0", need_colour=True) == [] and L.shadow_blurs("0
 v = copy.deepcopy(VOICES)
 v["voices"]["white"]["c"]["_why"] = "the old #b4b4b4, linear-gradient() and 0 2px 3px #000 in prose"
 ok(L.check(None, None, v)[0] == [], "prose (_why) is not checked")
+ok(L.shadow_blurs("0 2px 0 #111111") == [] and L.shadow_blurs("0 calc(1px + 1px) 0 #111111") == []
+   and L.shadow_blurs("inset 0 2px 0 rgba(0, 0, 0, 0.3)") == [], "a blur of 0 is none, also beside calc() and rgba()")
 ok(L.colour_faults("1px solid currentColor, transparent", css=True) == [], "currentColor and transparent are not colours")
 
 # ---- --map-apps -------------------------------------------------------------------------

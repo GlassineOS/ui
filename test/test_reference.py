@@ -155,7 +155,11 @@ try:
             badp.append(c)
     ok(not badp, "previews: the web form loaded, the @dsCard line gone, their own body kept"
        + ("" if not badp else " (not in %s)" % ", ".join(badp)))
-    heights = {c: re.search(r"height=(\d+)", open(os.path.join(cdir, c, "preview.html"), encoding="utf-8").readline()) for c in comps}
+    def card_height(c):  # the card as the generator reads it: leading whitespace and blank lines allowed
+        src = open(os.path.join(cdir, c, "preview.html"), encoding="utf-8").read()
+        card = re.match(r"\s*<!--\s*@dsCard\b(.*?)-->", src, re.S)
+        return card and re.search(r"height=(\d+)", card.group(1))
+    heights = {c: card_height(c) for c in comps}
     ctext = open(os.path.join(a, "components.html"), encoding="utf-8").read()
     ok(all(m is None or 'data-height="%s"' % m.group(1) in ctext for m in heights.values()), "previews: sized by @dsCard")
 

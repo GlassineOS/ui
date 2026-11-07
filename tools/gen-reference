@@ -267,7 +267,7 @@ def head_script(combos):
     for c in combos:
         t = c["attributes"]["data-theme"]
         themes[t] = GEN.token_theme(t)
-    tt = json.dumps(themes, separators=(",", ":"), sort_keys=True)
+    tt = json.dumps(themes, separators=(",", ":"), sort_keys=True).replace("<", "\\u003c")
     return """<script>
 window.INTERLEAF_COMBINATIONS = %s;
 window.INTERLEAF_TOKEN_THEME = %s;

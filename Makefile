@@ -58,6 +58,7 @@ install: all
 check: all
 	$(PYTHON) tools/gen-voices --check
 	$(PYTHON) test/test_voices.py
+	$(PYTHON) test/test_paint.py
 	sh test/c-api.sh
 	sh test/pc-prefix.sh
 	sh test/sheet.sh

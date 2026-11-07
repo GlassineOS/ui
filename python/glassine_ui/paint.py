@@ -299,7 +299,8 @@ def _lh_lines(lo, f, weight, lh):
 def text(cr, s, f, x, y, col, weight=None, caps=None, align=0, maxw=None, wrap=False, ls=0.0, lh=None):
     """draws s with its top at y; align 0 left of x, 1 centred on x, 2 right of x
     (wrapped lines each on their own). ls: letter spacing in em; lh: a CSS
-    line-height factor (None: the font's own). -> (width, height)"""
+    line-height factor (None: the font's own). A transparent col (None,
+    'transparent') draws nothing, as in C, and still measures. -> (width, height)"""
     lo = layout(cr, s, f, weight, caps, maxw, wrap)
     if ls:
         desc, _ = font(f, weight)
@@ -307,21 +308,23 @@ def text(cr, s, f, x, y, col, weight=None, caps=None, align=0, maxw=None, wrap=F
         al.insert(Pango.attr_letter_spacing_new(int(ls * desc.get_size())))
         lo.set_attributes(al)
     c = color(col) if isinstance(col, str) else col
-    cr.set_source_rgba(*(c or (0, 0, 0, 1)))
+    if c:
+        cr.set_source_rgba(*c)
     lh = lh or font(f, weight)[1]
     if lh:
         lines, h = _lh_lines(lo, f, weight, lh)
         w = max(lw for _, _, lw, _ in lines)
-        for line, lx, lw, base in lines:
+        for line, lx, lw, base in lines if c else ():
             cr.move_to(x - (lw / 2 if align == 1 else lw if align == 2 else 0), y + base)
             PangoCairo.show_layout_line(cr, line)
         return w, h
     w, h = size(lo)
     if maxw is not None and not wrap:
         w = min(w, maxw)
-    ox = x - (w / 2 if align == 1 else w if align == 2 else 0)
-    cr.move_to(ox, y)
-    PangoCairo.show_layout(cr, lo)
+    if c:
+        ox = x - (w / 2 if align == 1 else w if align == 2 else 0)
+        cr.move_to(ox, y)
+        PangoCairo.show_layout(cr, lo)
     return w, h
 
 
@@ -545,10 +548,13 @@ RINGED = ("check_circle", "pending", "error", "radio_button_unchecked")         
 
 
 def icon(cr, name, sz, cx, cy, col, scale=2):
-    """a one-colour icon (its alpha as a mask) centred on cx,cy; -> drawn?"""
+    """a one-colour icon (its alpha as a mask) centred on cx,cy; -> is there such
+    an icon? A transparent col (None, 'transparent') draws nothing, as in C."""
+    c = color(col) if isinstance(col, str) else col
     if name in ("arrow_forward", "arrow_back"):     # Material's arrows (the themes only have chevrons)
-        c = color(col) if isinstance(col, str) else col
-        cr.set_source_rgba(*(c or (0, 0, 0, 1)))
+        if not c:
+            return True
+        cr.set_source_rgba(*c)
         d = 1 if name == "arrow_forward" else -1
         h = sz * 0.31
         cr.set_line_width(max(1.5, sz / 11))
@@ -563,13 +569,13 @@ def icon(cr, name, sz, cx, cy, col, scale=2):
         cr.set_line_cap(cairo.LINE_CAP_BUTT)
         return True
     if name in RINGED:
-        c = color(col) if isinstance(col, str) else col
-        cr.set_source_rgba(*(c or (0, 0, 0, 1)))
-        cr.set_line_width(max(1.5, sz / 12))
-        cr.new_sub_path()
-        cr.arc(cx, cy, sz * 0.40, 0, 6.2832)
-        cr.stroke()
-        if name == "radio_button_unchecked":
+        if c:
+            cr.set_source_rgba(*c)
+            cr.set_line_width(max(1.5, sz / 12))
+            cr.new_sub_path()
+            cr.arc(cx, cy, sz * 0.40, 0, 6.2832)
+            cr.stroke()
+        if name == "radio_button_unchecked" or (name == "error" and not c):
             return True
         if name == "error":                      # Material's error: a ring with "!"
             w = max(1.5, sz / 11)
@@ -582,7 +588,7 @@ def icon(cr, name, sz, cx, cy, col, scale=2):
     s = _icon_surface(name, sz, scale)
     if not s:
         return False
-    c = color(col) if isinstance(col, str) else col
-    cr.set_source_rgba(*(c or (0, 0, 0, 1)))
-    cr.mask_surface(s, cx - sz / 2, cy - sz / 2)
+    if c:
+        cr.set_source_rgba(*c)
+        cr.mask_surface(s, cx - sz / 2, cy - sz / 2)
     return True

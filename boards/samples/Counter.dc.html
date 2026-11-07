@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Counter</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>body { margin: 0; font: 15px/1.4 system-ui, sans-serif; }</style>
+</helmet>
+<section ref="{{ setEl }}" style="padding: 24px">
+  <h1 style="margin: 0 0 8px">Counter</h1>
+  <p id="count">count: {{ count }}</p>
+  <p id="mounted">mounted: {{ mounted }} · updates: {{ updates }} · ticks: {{ ticks }}</p>
+  <p id="width">width: {{ width }} · narrow: {{ narrow }} · label: {{ label }}</p>
+  <button type="button" id="inc" onClick="{{ inc }}">Add one</button>
+  <button type="button" id="dbl" onDoubleClick="{{ reset }}">Double-click to reset</button>
+  <sc-if value="{{ many }}" hint-placeholder-val="{{ false }}"><p id="many">More than two.</p></sc-if>
+  <p><a id="home" href="/Main.dc.html">Back to Main</a></p>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":480,"height":360}}'>
+class Component extends DCLogic {
+  static LABEL = 'counter';
+  constructor(p) { super(p); this.state = { count: 0, mounted: false, updates: 0, ticks: 0, width: 0 }; }
+  componentDidMount() {
+    this.timer = setTimeout(() => this.setState({ mounted: true }), 10);
+    this.tick = setInterval(() => this.setState(s => ({ ticks: s.ticks + 1 })), 1000);
+    if (this.el) this.setState({ width: Math.round(this.el.getBoundingClientRect().width) });
+    if (typeof ResizeObserver !== 'undefined' && this.el) {
+      this.ro = new ResizeObserver(() => { const w = Math.round(this.el.getBoundingClientRect().width); if (w !== this.state.width) this.setState({ width: w }); });
+      this.ro.observe(this.el);
+    }
+  }
+  componentDidUpdate(pp, ps) { if (ps.count !== this.state.count) this.setState(s => ({ updates: s.updates + 1 })); }
+  componentWillUnmount() { clearTimeout(this.timer); clearInterval(this.tick); if (this.ro) this.ro.disconnect(); }
+  renderVals() {
+    return {
+      count: this.state.count, mounted: String(this.state.mounted), updates: this.state.updates, ticks: this.state.ticks > 0 ? 'yes' : 'no',
+      width: this.state.width, narrow: String(window.matchMedia('(max-width: 300px)').matches), label: Component.LABEL,
+      many: this.state.count > 2,
+      setEl: el => { this.el = el; },
+      inc: () => this.setState(s => ({ count: s.count + 1 })),
+      reset: () => this.setState({ count: 0 }),
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Form</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>body { margin: 0; font: 15px/1.4 system-ui, sans-serif; } label { display: block; margin: 6px 0; }</style>
+</helmet>
+<form style="padding: 24px" onSubmit="{{ submit }}">
+  <label for="name">Name</label>
+  <input id="name" type="text" value="{{ name }}" onChange="{{ setName }}" onKeyDown="{{ key }}" aria-label="Name" placeholder="{{ hint }}">
+  <p id="echo" style="white-space: pre-line">typed: {{ name }} · keys: {{ keys }}</p>
+  <label><input id="agree" type="checkbox" checked="{{ agree }}" onChange="{{ toggle }}"> Agree</label>
+  <p id="agreed" aria-checked="{{ agree }}" role="status">agree: {{ agreeText }}</p>
+  <textarea id="notes" rows="3" style="width: 100%; box-sizing: border-box; border: 1px solid {{ border }}">{{ notes }}</textarea>
+  <button id="send" type="submit" disabled="{{ empty }}">Send</button>
+  <p id="sent">{{ sent }}</p>
+</form>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:480,&quot;height&quot;:420}}">
+class Component extends DCLogic {
+  state = { name: '', keys: 0, agree: false, sent: '' };
+  renderVals() {
+    const s = this.state;
+    return {
+      name: s.name, keys: s.keys, agree: s.agree, agreeText: s.agree ? 'yes' : 'no', hint: 'Your name',
+      notes: 'Notes for ' + (s.name || 'nobody'), border: s.agree ? '#111111' : '#bbbbbb', empty: !s.name, sent: s.sent,
+      setName: e => this.setState({ name: e.target.value }),
+      key: () => this.setState(t => ({ keys: t.keys + 1 })),
+      toggle: e => this.setState({ agree: e.target.checked }),
+      submit: e => { e.preventDefault(); this.setState({ sent: 'sent ' + s.name }); },
+    };
+  }
+}
+</script>
+</body>
+</html>

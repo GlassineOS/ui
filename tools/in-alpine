@@ -1,0 +1,26 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-2.0-or-later
+# tools/in-alpine CMD [ARG]...: run CMD in alpine:3.24 with Chromium and node (the boards checks need
+# a browser; CI runs the same). This checkout and the current directory are mounted at their own
+# paths, the command runs as the calling user, and the npm dev dependencies are installed into this
+# checkout's node_modules/ (npm ci) when missing.
+set -eu
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+IMAGE=${BOARDS_IMAGE:-glassine-ui-boards:alpine-3.24}
+if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
+	docker build -q -t "$IMAGE" - >/dev/null <<'DOCKERFILE'
+FROM alpine:3.24
+RUN apk add --no-cache chromium nodejs npm su-exec font-dejavu make python3
+DOCKERFILE
+fi
+mounts="-v $ROOT:$ROOT"
+case "$PWD/" in "$ROOT"/*) ;; *) mounts="$mounts -v $PWD:$PWD" ;; esac
+tty=; [ -t 0 ] && [ -t 1 ] && tty=-t
+# shellcheck disable=SC2086
+exec docker run --rm -i $tty $mounts -w "$PWD" -e HOME=/tmp/home -e CHROMIUM=/usr/bin/chromium-browser -e BOARDS_NO_SANDBOX=1 \
+	-e BOARDS_UID="$(id -u)" -e BOARDS_GID="$(id -g)" -e BOARDS_ROOT="$ROOT" "$IMAGE" sh -euc '
+	mkdir -p /tmp/home && chown "$BOARDS_UID:$BOARDS_GID" /tmp/home
+	[ -x /usr/bin/chromium-browser ] || export CHROMIUM=/usr/bin/chromium
+	exec su-exec "$BOARDS_UID:$BOARDS_GID" sh -euc "export HOME=/tmp/home npm_config_cache=/tmp/home/.npm
+		[ -d \"\$BOARDS_ROOT/node_modules/puppeteer-core\" ] || (cd \"\$BOARDS_ROOT\" && npm ci --ignore-scripts --no-audit --no-fund >&2)
+		exec \"\$@\"" sh "$@"' sh "$@"

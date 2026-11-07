@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Host</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div><p>Imports a board outside the subset, with an object inside its style.</p><dc-import name="Bad" style="color: {{ s }}" hint-size="100px,40px"></dc-import></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() { return { s: { not: 'a colour' } }; }
+}
+</script>
+</body>
+</html>

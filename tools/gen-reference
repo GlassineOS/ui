@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 """gen-reference: the browsable Interleaf reference (spec 002 FR-030, FR-031).
 
-    gen-reference [--out DIR]    write the site (default out/reference)
+    gen-reference [--out DIR]    write the site (default out/reference); DIR is replaced if it
+                                 is new, empty or an earlier build of this tool, else refused
 
 The site is static and every link is relative, so it opens from a file, from a local
 server (make serve-reference) and from GitHub Pages under /ui/. It is styled with
@@ -581,11 +582,20 @@ def components_page(comps, combos):
                  "Every Interleaf component with its guidelines and a live preview.")
 
 
+# written into every site; a rebuild replaces a directory only if it holds this. Not .nojekyll:
+# any Pages site has that one.
+MARKER = ".gen-reference"
+
+
 def build(dest):
     tok = GEN.Tokens(json.load(open(GEN.TOKENS, encoding="utf-8")))
     combos = json.load(open(os.path.join(WEB, "combinations.json"), encoding="utf-8"))["combinations"]
     comps = components()
     if os.path.isdir(dest):
+        # replace only a directory this tool wrote: --out . or --out ~/site must not wipe anything
+        if os.listdir(dest) and not os.path.isfile(os.path.join(dest, MARKER)):
+            raise ValueError("%s is not empty and was not written by gen-reference (no %s in it); "
+                             "give an empty or new directory, or remove it first" % (dest, MARKER))
         shutil.rmtree(dest)
     os.makedirs(os.path.join(dest, "previews"))
     # all of web/, so that whatever the web form loads beside it (fonts) comes along
@@ -596,6 +606,7 @@ def build(dest):
         "tokens.html": tokens_page(tok, combos),
         "components.html": components_page(comps, combos),
         ".nojekyll": "",
+        MARKER: "",
     }
     for c in comps:
         files["previews/%s.html" % c["name"]] = preview_page(c)

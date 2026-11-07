@@ -166,6 +166,24 @@ try:
 
     r = build(b)
     ok(r.returncode == 0 and same(filecmp.dircmp(a, b)), "two builds are the same")
+
+    # --out replaces only a directory this tool wrote
+    keep = os.path.join(TMP, "keep")
+    os.makedirs(os.path.join(keep, "sub"))
+    for f in ("keepme", os.path.join("sub", "deep")):
+        open(os.path.join(keep, f), "w").close()
+    r = build(keep)
+    ok(r.returncode != 0 and "not empty" in r.stderr and os.path.isfile(os.path.join(keep, "keepme"))
+       and os.path.isfile(os.path.join(keep, "sub", "deep")) and not os.path.exists(os.path.join(keep, "index.html")),
+       "--out: a non-empty directory of someone else's is refused, untouched")
+    fresh = os.path.join(TMP, "fresh")
+    os.makedirs(fresh)
+    r = build(fresh)
+    ok(r.returncode == 0 and os.path.isfile(os.path.join(fresh, "index.html")), "--out: an empty directory is used")
+    open(os.path.join(a, "stale.html"), "w").close()
+    r = build(a)
+    ok(r.returncode == 0 and not os.path.exists(os.path.join(a, "stale.html")) and same(filecmp.dircmp(a, b)),
+       "--out: an earlier build is replaced, stale files gone")
 finally:
     shutil.rmtree(TMP, ignore_errors=True)
 

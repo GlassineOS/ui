@@ -73,6 +73,9 @@ ok(raises(lambda: gen.Tokens(bad).resolve("nope", "eink"), "no token"), "an unkn
 ok(gen.shadow_list("0 0 0 5px #ffffff, 0 0 0 6px #111111") == "0 0 0 5px #ffffff,0 0 0 6px #111111" and
    gen.shadow_list("0 0 0 1px rgba(0, 0, 0, 0.5), 0 3px 0 #111111") == "0 0 0 1px rgba(0, 0, 0, 0.5),0 3px 0 #111111",
    "shadow lists: joined by ',' alone, a function's commas kept")
+ok(gen.shadow_list("0 0 0 1px color-mix(in srgb, rgb(1,2,3) 50%, red), 0 3px 0 #111111")
+   == "0 0 0 1px color-mix(in srgb, rgb(1,2,3) 50%, red),0 3px 0 #111111"
+   and gen.shadow_list("0 3px 0 #111111") == "0 3px 0 #111111", "shadow lists: nested functions are not split")
 
 # the voices' scheme (002 FR-002)
 for name, v in voices["voices"].items():

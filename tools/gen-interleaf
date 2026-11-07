@@ -55,7 +55,6 @@ THEME_ATTR, PEN_ATTR = "data-theme", "data-pen"
 # .body or .label stays its own)
 TYPE_CLASS = "il-type-"
 ALIAS = re.compile(r"^\{([A-Za-z0-9][A-Za-z0-9_.-]*)\}$")
-_SPLIT = re.compile(r",(?![^(]*\))")
 
 
 class Tokens:
@@ -108,9 +107,24 @@ class Tokens:
         return v
 
 
+def split_top(s):
+    """s cut at the commas outside any parentheses (color-mix(in srgb, rgb(1,2,3) 50%, red) stays whole)"""
+    parts, depth, start = [], 0, 0
+    for i, ch in enumerate(s):
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+        elif ch == "," and depth == 0:
+            parts.append(s[start:i])
+            start = i + 1
+    parts.append(s[start:])
+    return parts
+
+
 def shadow_list(s):
     """a box-shadow list in the voice data's form: the shadows joined by ',' alone"""
-    return ",".join(p.strip() for p in _SPLIT.split(s))
+    return ",".join(p.strip() for p in split_top(s))
 
 
 # ---- the voices' scheme -----------------------------------------------------------------

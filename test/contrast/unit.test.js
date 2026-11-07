@@ -31,25 +31,43 @@ test('targets: 4.5 normal, 3 at 24px or 18.66px bold', function () {
   assert.strictEqual(W.textTarget(19, 600), 4.5);
 });
 
-test('PNG: filters 0-4, RGB and RGBA', function () {
-  for (const type of [2, 6]) {
-    const bpp = type === 6 ? 4 : 3, w = 3, h = 5;
-    const want = img(w, h, function (x, y) { return [x * 40 + y, y * 30, (x + y) * 20]; });
-    const rows = [];
-    for (let y = 0; y < h; y++) {
-      const raw = Buffer.alloc(w * bpp);
-      for (let x = 0; x < w; x++) for (let k = 0; k < bpp; k++) raw[x * bpp + k] = k < 3 ? want.data[(y * w + x) * 4 + k] : 255;
-      // filter "sub" on every row (the decoder's other filters are exercised by Chromium's PNGs)
-      const f = Buffer.alloc(w * bpp);
-      for (let i = 0; i < raw.length; i++) f[i] = (raw[i] - (i >= bpp ? raw[i - bpp] : 0)) & 255;
-      rows.push(Buffer.concat([Buffer.from([1]), f]));
+// a PNG of want (img()), each row y with filter filters(y): None, Sub, Up, Average, Paeth
+function encodePng(want, type, filters) {
+  const bpp = type === 6 ? 4 : 3, w = want.width, h = want.height, stride = w * bpp;
+  const raw = Buffer.alloc(stride * h);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) for (let k = 0; k < bpp; k++) raw[y * stride + x * bpp + k] = k < 3 ? want.data[(y * w + x) * 4 + k] : 255;
+  const rows = [];
+  for (let y = 0; y < h; y++) {
+    const f = filters(y), out = Buffer.alloc(stride);
+    for (let i = 0; i < stride; i++) {
+      const x = raw[y * stride + i], a = i >= bpp ? raw[y * stride + i - bpp] : 0, b = y ? raw[(y - 1) * stride + i] : 0, c = y && i >= bpp ? raw[(y - 1) * stride + i - bpp] : 0;
+      let pred = 0;
+      if (f === 1) pred = a; else if (f === 2) pred = b; else if (f === 3) pred = (a + b) >> 1;
+      else if (f === 4) { const p = a + b - c, pa = Math.abs(p - a), pb = Math.abs(p - b), pc = Math.abs(p - c); pred = pa <= pb && pa <= pc ? a : pb <= pc ? b : c; }
+      out[i] = (x - pred) & 255;
     }
-    const chunk = function (kind, body) { const l = Buffer.alloc(4); l.writeUInt32BE(body.length); return Buffer.concat([l, Buffer.from(kind, 'latin1'), body, Buffer.alloc(4)]); };
-    const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(w, 0); ihdr.writeUInt32BE(h, 4); ihdr[8] = 8; ihdr[9] = type;
-    const png = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk('IHDR', ihdr), chunk('IDAT', zlib.deflateSync(Buffer.concat(rows))), chunk('IEND', Buffer.alloc(0))]);
-    const got = PNG.decode(png);
-    assert.deepStrictEqual(Array.from(got.data), Array.from(want.data));
+    rows.push(Buffer.concat([Buffer.from([f]), out]));
   }
+  const chunk = function (kind, body) { const l = Buffer.alloc(4); l.writeUInt32BE(body.length); return Buffer.concat([l, Buffer.from(kind, 'latin1'), body, Buffer.alloc(4)]); };
+  const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(w, 0); ihdr.writeUInt32BE(h, 4); ihdr[8] = 8; ihdr[9] = type;
+  return function (cut) {
+    const data = Buffer.concat(rows);
+    return Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk('IHDR', ihdr),
+      chunk('IDAT', zlib.deflateSync(cut ? data.subarray(0, data.length - cut) : data)), chunk('IEND', Buffer.alloc(0))]);
+  };
+}
+
+test('PNG: filters 0-4 (each on a row with a row above), RGB and RGBA', function () {
+  for (const type of [2, 6]) {
+    const want = img(4, 11, function (x, y) { return [(x * 70 + y * 13) & 255, (y * 37 + x * x * 9) & 255, ((x + y) * 51) & 255]; });
+    const png = encodePng(want, type, function (y) { return y % 5; });
+    assert.deepStrictEqual(Array.from(PNG.decode(png()).data), Array.from(want.data));
+  }
+});
+
+test('PNG: data shorter than its rows is an error', function () {
+  const want = img(3, 4, function (x, y) { return [x * 50, y * 50, 0]; });
+  assert.throws(function () { PNG.decode(encodePng(want, 2, function () { return 0; })(10)); }, /PNG data is/);
 });
 
 // the three renders of a shot: the backdrop (b), and the glyphs (where glyph(x, y)) black (k) and white (w) over it

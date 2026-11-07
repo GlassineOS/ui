@@ -19,6 +19,7 @@ function decode(buf) {
   if (depth !== 8 || (type !== 2 && type !== 6) || interlace) throw new Error('unsupported PNG (depth ' + depth + ', type ' + type + ', interlace ' + interlace + ')');
   const bpp = type === 6 ? 4 : 3, stride = width * bpp;
   const raw = zlib.inflateSync(Buffer.concat(idat));
+  if (raw.length !== height * (stride + 1)) throw new Error('PNG data is ' + raw.length + ' bytes, not the ' + height * (stride + 1) + ' of ' + width + 'x' + height);
   const px = new Uint8Array(stride * height);
   for (let y = 0; y < height; y++) {
     const f = raw[y * (stride + 1)], src = y * (stride + 1) + 1, dst = y * stride, prev = dst - stride;

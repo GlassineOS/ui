@@ -45,8 +45,10 @@ in review.
 **Rendering**
 - **FR-001**: Boards in claude.ai's design-component format render: templated text and attributes, conditions,
   repetition, nested boards, events, state and the component logic, and the head content a board declares.
-- **FR-002**: The renderer is the organization's own, written from the format's description. No part of
-  claude.ai's editor or runtime is in the organization's sources.
+- **FR-002**: The renderer is the organization's own, written from the format reference that claude.ai serves
+  with every design canvas. No part of claude.ai's editor or runtime is in the organization's sources.
+- **FR-005**: The supported subset of the format is versioned here. A board that uses anything outside it fails
+  as in FR-003, which is how a change of the format on claude.ai's side shows.
 - **FR-003**: Format features the renderer does not support fail visibly, naming the board and the feature;
   they never render silently wrong.
 - **FR-004**: The canvas layout (board positions, pages, notes, which boards are interactive) is read from the
@@ -73,8 +75,8 @@ in review.
 
 | Contract | Owned / consumed | Version | Spec location |
 |---|---|---|---|
-| Design-component format (boards, canvas description) | consumed (claude.ai); the supported subset is owned | 1 | this spec, README "Boards" |
-| Preview and check commands, their output | owned | 1 | this spec, README "Boards" |
+| Design-component format (boards, canvas description) | consumed (claude.ai, unversioned there); the supported subset is owned | 1 (the subset) | this spec, FR-005 |
+| Preview and check commands, their output | owned | 1 | this spec |
 | Interleaf web form | consumed (spec 002) | 1 | spec 002 |
 
 ## Device scope and risk

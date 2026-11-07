@@ -46,8 +46,10 @@ scheme and pen, locally with one command and on a published page.
 - **FR-001**: The whole design system is defined in this repository and only here: the tokens for every voice,
   scheme and pen (structure, colour, type, space, radius, edges, strokes, layout), the components, and the
   guidelines.
-- **FR-002**: The voices of spec 001 are derived from these tokens for the E-ink scheme. The values that exist
-  only for the drawn programs' own surfaces (shell, settings card, setup) are voice data in this repository.
+- **FR-002**: The scheme tokens of spec 001's voices are generated from these tokens' E-ink schemes. Everything
+  else in the voice data is maintained in this repository as voice data: the drawn programs' own surfaces
+  (shell, settings card, setup), the values the designs write in their component code, the per-form overrides
+  (each with its reason), and the look of the programs that do not draw with this repository.
 - **FR-003**: Token names and their meaning are a versioned contract. Removing or renaming a token, or changing
   what it means, is a breaking change.
 
@@ -61,7 +63,8 @@ scheme and pen, locally with one command and on a published page.
   every component, and the states the guidelines name: hover and focus in every pen, the current navigation
   item, opened details, text over patterns and highlighter bands (against the worst colour beneath), and text
   that the styles generate themselves. Targets are the guidelines' (WCAG 2.2 AA).
-- **FR-021**: In the E-ink schemes every colour is one of the 16 greys and no style uses a gradient or a blur.
+- **FR-021**: In the E-ink schemes every colour maps to exactly one of the panel's 16 greys (its nearest level,
+  never halfway between two), and no style uses a gradient or a blur.
 - **FR-022**: Each component's preview is rendered in every combination and compared with a stored reference;
   a difference produces an image an agent and a reviewer can look at.
 - **FR-023**: All checks run without a display and give results an agent can read (pass or fail per case, the
@@ -80,8 +83,8 @@ scheme and pen, locally with one command and on a published page.
 
 | Contract | Owned / consumed | Version | Spec location |
 |---|---|---|---|
-| Interleaf tokens (names, meaning, values) | owned | 1 | this spec, README "Interleaf" |
-| Web form (variables, component styles, how voice/scheme/pen are chosen) | owned | 1 | this spec, README "Web" |
+| Interleaf tokens (names, meaning, values) | owned | 1 | this spec |
+| Web form (variables, component styles, how voice/scheme/pen are chosen) | owned | 1 | this spec |
 | Voice data | owned | 1 | spec 001 |
 | Interleaf on claude.ai | published to | n/a | FR-040 |
 
@@ -106,7 +109,9 @@ Device-neutral. No device risk: nothing flashes or touches boot, recovery or use
 
 ## Success criteria
 
-- **SC-001**: Each Interleaf value exists in exactly one place in the organization's sources.
+- **SC-001**: Each Interleaf value is written by hand in exactly one place in the organization's sources: this
+  repository. Every other form of it, here or in a consumer, is generated from that place and checked against
+  it.
 - **SC-002**: Every known contrast failure of the acceptance set is caught by the checks.
 - **SC-003**: A token change reaches the desktop programs, the documentation site and the hub with no edit in
   their repositories other than the pinned version.

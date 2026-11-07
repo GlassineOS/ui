@@ -143,6 +143,27 @@ try:
        "gen-apps: the theme-apply fonts between the markers, the rest kept")
     ok('            *) set -- --fn "IBM Plex Sans Medium 16" -R 6' in wv and "editorial) set -- " in wv,
        "gen-apps: the keyboard looks, White as the fallback")
+    # wvkbd's options are spliced into a shell script: what could change it is refused, with a message
+    good = open(p).read()
+    for what, key, value, msg in (
+            ("a quote in a value", "fn", 'a"b', "'a\"b'"),
+            ("a quote and a space in a value", "fn", 'a "b', "'a \"b'"),
+            ("a shell character in a value", "fn", "a;b", "'a;b'"),
+            ("a $ in a value", "fn", "$HOME", "'$HOME'"),
+            ("an empty value", "fn", "", "''"),
+            ("a number as a value", "R", 6, "must be a string"),
+            ("null as a value", "R", None, "must be a string"),
+            ("a command in a key", "fn; touch /tmp/x #", "1", "not an option name"),
+            ("a key that starts with a dash", "-x", "1", "not an option name"),
+            ("an empty key", "", "1", "not an option name")):
+        d = json.loads(good)
+        d["voices"]["editorial"]["apps"]["wvkbd"][key] = value
+        json.dump(d, open(p, "w"), indent=2)
+        r = subprocess.run(ga + [rf], capture_output=True, text=True)
+        ok(r.returncode == 1 and "Traceback" not in r.stderr and msg in r.stderr and "editorial" in r.stderr,
+           "gen-apps: " + what + " is refused, naming the voice")
+    open(p, "w").write(good)
+    ok(subprocess.run(ga + ["--check", rf]).returncode == 0, "gen-apps: the refusals wrote nothing; the data restored, it is current")
     d = json.load(open(p))
     d["voices"]["stationery"]["apps"]["gtk4"]["line"] = "#222222"
     json.dump(d, open(p, "w"), indent=2)

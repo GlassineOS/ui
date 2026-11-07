@@ -32,6 +32,8 @@ ORDER = ("white", "editorial", "stationery")     # the first is the fallback (wv
 GTK3_COLOURS = ("bg", "fg", "sub", "view", "btn", "btn_fg", "btn_line", "line", "soft", "sel", "sel_fg",
                 "head_bg", "head_fg")
 WVKBD_BREAK = ("bg", "press", "text")            # a new line of options before these
+OPT_KEY = re.compile(r"[A-Za-z][A-Za-z0-9-]*")   # a wvkbd option's name: it is spliced into the script
+OPT_VALUE = re.compile(r"[A-Za-z0-9._ -]+")      # and its value: no quote, no shell character
 
 
 def gtk3(name, a):
@@ -68,9 +70,13 @@ def wvkbd(voices, indent):
             if k in WVKBD_BREAK and cur:
                 lines.append(cur)
                 cur = []
+            if not OPT_KEY.fullmatch(k):
+                raise ValueError("wvkbd %s: not an option name: %r" % (n, k))
+            if not isinstance(v, str):
+                raise ValueError("wvkbd %s: %s must be a string, not %r" % (n, k, v))
+            if not OPT_VALUE.fullmatch(v):
+                raise ValueError("wvkbd %s: %s: %r" % (n, k, v))
             v = sh_q(v) if " " in v else v
-            if not re.fullmatch(r'[A-Za-z0-9"._ -]+', v):
-                raise ValueError("wvkbd %s: %r" % (k, v))
             cur.append(("-%s %s" if len(k) == 1 else "--%s %s") % (k, v))
         lines.append(cur)
         head = "%s%s) set -- " % (indent, "*" if n == ORDER[0] else n)

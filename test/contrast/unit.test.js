@@ -97,3 +97,14 @@ test('focus ring: a 2px dark ring passes, one in the colour beneath fails', func
   assert.strictEqual(C.measureRing(u, ring([250, 250, 250]), [box]).ratio, 1);
   assert.strictEqual(C.measureRing(u, u, [box]).ratio, 1);
 });
+
+test('coverage: a page with no text, or fewer cases than its floor, is short', function () {
+  const page = function (component, kinds) {
+    return { component: component, theme: 'white-paper', pen: '1', width: 'desktop', cases: kinds.map(function (k) { return { kind: k }; }) };
+  };
+  const floors = { Nav: { text: 2, focusRing: 1 } };
+  assert.deepStrictEqual(C.coverageShort([page('Nav', ['text', 'generated', 'focus-ring']), page('Other', ['text'])], floors), []);
+  const short = C.coverageShort([page('Nav', ['text', 'focus-ring']), page('Other', []), page('Nav', ['text', 'text'])], floors);
+  assert.deepStrictEqual(short.map(function (s) { return [s.component, s.kind, s.got, s.floor]; }),
+    [['Nav', 'text', 1, 2], ['Other', 'text', 0, 1], ['Nav', 'focusRing', 0, 1]]);
+});

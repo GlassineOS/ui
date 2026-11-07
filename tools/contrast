@@ -2,13 +2,15 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // tools/contrast: the Interleaf contrast check (spec 002 FR-020, FR-023), headless.
 //   contrast [--json FILE|-] [--component NAME]... [--theme ID|VOICE|SCHEME]... [--width desktop|phone]...
-//            [--inject CSS]... [--open FILE] [--previews DIR] [--jobs N] [--chromium PATH] [--quiet]
+//            [--inject CSS]... [--open FILE] [--coverage FILE] [--previews DIR] [--jobs N] [--chromium PATH] [--quiet]
 // Every component preview (interleaf/components/*/preview.html) in every combination of
 // web/combinations.json, at desktop (1280px) and phone (390px) width, in the states the guidelines
 // name. --open FILE: known open failures, reported as "open" and not failed (an entry that no
 // longer fails is stale and fails the check). --inject CSS: a stylesheet after the component
-// styles (the known-failure fixtures use it).
-// Exits 1 when a case fails (or a page could not be measured). Needs Chromium: tools/in-alpine.
+// styles (the known-failure fixtures use it). --coverage FILE: the least number of text cases and
+// focus rings each component's pages must measure (every page at least one text case without it).
+// Exits 1 when a case fails, a page could not be measured, or a page measured less than its floor.
+// Needs Chromium: tools/in-alpine.
 'use strict';
 const fs = require('fs');
 const os = require('os');
@@ -17,7 +19,7 @@ const C = require(path.join(__dirname, 'lib', 'contrast.js'));
 
 function usage(code) {
   process.stderr.write('usage: contrast [--json FILE|-] [--component NAME]... [--theme ID]... [--width desktop|phone]...\n' +
-    '                [--inject CSS]... [--open FILE] [--previews DIR] [--jobs N] [--chromium PATH] [--quiet]\n');
+    '                [--inject CSS]... [--open FILE] [--coverage FILE] [--previews DIR] [--jobs N] [--chromium PATH] [--quiet]\n');
   process.exit(code);
 }
 
@@ -31,6 +33,7 @@ for (let i = 0; i < argv.length; i++) {
   else if (a === '--width') { const w = v(); if (!C.WIDTHS[w]) usage(2); opt.widths.push(w); }
   else if (a === '--inject') opt.injects.push(path.resolve(v()));
   else if (a === '--open') opt.open = JSON.parse(fs.readFileSync(v(), 'utf8')).open;
+  else if (a === '--coverage') opt.coverage = JSON.parse(fs.readFileSync(v(), 'utf8')).floors;
   else if (a === '--previews') opt.previews = path.resolve(v());
   else if (a === '--jobs') opt.jobs = Number(v());
   else if (a === '--chromium') opt.chromium = v();

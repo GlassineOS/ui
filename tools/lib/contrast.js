@@ -430,6 +430,13 @@ async function runPage(page, cdp, base, url, width) {
   await page.setViewport({ width: width, height: 800, deviceScaleFactor: 1 });
   await page.goto(url, { waitUntil: 'load', timeout: 30000 });
   await page.evaluate(function () { return document.fonts.ready.then(function () { return 1; }); });
+  // a page whose web form did not load would still have text, measured against the wrong styles
+  const unstyled = await page.evaluate(function () {
+    return [].filter.call(document.querySelectorAll('link[rel="stylesheet"]'), function (l) {
+      try { return !l.sheet || !l.sheet.cssRules.length; } catch (e) { return true; }
+    }).map(function (l) { return l.getAttribute('href'); });
+  });
+  if (unstyled.length) throw new Error('stylesheet not loaded or empty: ' + unstyled.join(', '));
   let size = await page.evaluate(pageInit);
   await page.setViewport({ width: width, height: Math.max(100, Math.ceil(size.height)), deviceScaleFactor: 1 });
   size = await page.evaluate(function () { return { width: document.documentElement.clientWidth, height: Math.max(document.documentElement.scrollHeight, document.body.scrollHeight) }; });
@@ -498,7 +505,25 @@ async function runPage(page, cdp, base, url, width) {
   return cases;
 }
 
-// check({components, themes, widths, injects, previews, web, jobs, chromium, log}) -> report
+// the pages that measured fewer cases than their floor: every page at least one text case, and a
+// component in floors ({Name: {text: N, focusRing: M}}) at least N text and generated cases and M
+// focus rings on each of its pages. A preview that lost its text, or a collector that skips what
+// it used to measure, fails the check instead of passing with fewer cases.
+function coverageShort(pages, floors) {
+  const short = [];
+  for (const p of pages) {
+    const f = (floors || {})[p.component] || {};
+    const n = { text: 0, focusRing: 0 };
+    for (const c of p.cases) n[c.kind === 'focus-ring' ? 'focusRing' : 'text']++;
+    for (const k of ['text', 'focusRing']) {
+      const floor = Math.max(k === 'text' ? 1 : 0, f[k] || 0);
+      if (n[k] < floor) short.push({ component: p.component, theme: p.theme, pen: p.pen, width: p.width, kind: k, got: n[k], floor: floor });
+    }
+  }
+  return short;
+}
+
+// check({components, themes, widths, injects, open, coverage, previews, web, jobs, chromium, log}) -> report
 async function check(opts) {
   opts = opts || {};
   const B = require(path.join(ROOT, 'boards', 'lib', 'browser.js'));
@@ -523,6 +548,7 @@ async function check(opts) {
   const srv = await startServer({ previews: previews, web: web, injects: opts.injects || [] });
   const jobs = Math.max(1, opts.jobs || 4);
   const errors = [];
+  const measured = [];
   const workers = [];
   let done = 0, free = workers.slice();
   let results;
@@ -547,7 +573,9 @@ async function check(opts) {
       const base = { voice: t.combo.voice, scheme: t.combo.scheme, pen: t.combo.pen, theme: a['data-theme'], width: t.wname, component: t.comp };
       const url = srv.base + '/_ct/page/' + encodeURIComponent(t.comp) + '?theme=' + encodeURIComponent(a['data-theme']) + '&pen=' + encodeURIComponent(a['data-pen']);
       try {
-        return await runPage(w.page, w.cdp, base, url, WIDTHS[t.wname] || +t.wname);
+        const cs = await runPage(w.page, w.cdp, base, url, WIDTHS[t.wname] || +t.wname);
+        measured.push(Object.assign({}, base, { cases: cs }));
+        return cs;
       } catch (e) {
         errors.push(Object.assign({}, base, { error: String(e && e.message || e) }));
         return [];
@@ -572,6 +600,7 @@ async function check(opts) {
     const inScope = comps.indexOf(e.component) >= 0 && (!e.themes || combos.some(function (c) { return e.themes.indexOf(c.attributes['data-theme']) >= 0; }));
     if (!n && inScope) stale.push(e);
   }
+  const short = coverageShort(measured, opts.coverage);
   const count = function (r) { return cases.filter(function (c) { return c.result === r; }).length; };
   return {
     check: 'contrast', spec: '002 FR-020', standard: 'WCAG 2.2 AA',
@@ -580,7 +609,7 @@ async function check(opts) {
     injects: (opts.injects || []).map(function (f) { return path.relative(ROOT, path.resolve(f)); }),
     pages: tasks.length, ms: Date.now() - t0,
     total: cases.length, passed: count('pass'), failed: count('fail'), open: count('open'), info: count('info'),
-    ok: !errors.length && !count('fail') && !stale.length, errors: errors, stale: stale, cases: cases,
+    ok: !errors.length && !count('fail') && !stale.length && !short.length, errors: errors, stale: stale, short: short, cases: cases,
   };
 }
 
@@ -620,10 +649,12 @@ function summary(rep, maxThemes) {
     lines.push('  open ' + g.component + ' ' + g.kind + (g.pseudo ? ' ' + g.pseudo : '') + ' [' + g.state + '] ' + g.element + ' "' + g.text + '": ' +
       (g.min === g.max ? g.min : g.min + '-' + g.max) + ':1 < ' + g.target + ':1 in ' + g.cases + ' cases (known, see the open list)');
   }
+  for (const s of rep.short) lines.push('  SHORT ' + s.component + ' ' + s.theme + ' pen ' + s.pen + ' ' + s.width + ': ' + s.got + ' ' +
+    (s.kind === 'text' ? 'text cases' : 'focus rings') + ', fewer than the floor of ' + s.floor + ' (test/contrast/coverage.json)');
   for (const e of rep.stale) lines.push('  STALE open-list entry, no longer fails: ' + e.component + ' ' + e.kind + ' ' + e.element + ' (remove it)');
   lines.push('contrast: ' + (rep.ok ? 'passed' + (rep.open ? ' (' + rep.open + ' known open cases)' : '') : 'FAILED'));
   return lines.join('\n');
 }
 
 module.exports = { check: check, summary: summary, groupFailures: groupFailures, composePage: composePage, measureRing: measureRing,
-  measureText: measureText, extremes: extremes, listComponents: listComponents, WIDTHS: WIDTHS };
+  measureText: measureText, extremes: extremes, coverageShort: coverageShort, listComponents: listComponents, WIDTHS: WIDTHS };

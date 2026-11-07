@@ -97,11 +97,12 @@ boards-check:
 
 # the contrast check (spec 002 FR-020): every component in all 27 combinations, desktop and phone
 # width, hover, focus, current and open states, against WCAG 2.2 AA (needs Chromium: tools/in-alpine).
-# Known open failures are listed in test/contrast/open.json. contrast-test: the check's self-test,
-# and the known failures of the acceptance set, each of which it must catch.
+# Known open failures are listed in test/contrast/open.json, the least cases per page in
+# test/contrast/coverage.json. contrast-test: the check's self-test, and the known failures of the
+# acceptance set, each of which it must catch.
 CONTRAST_JOBS ?= 8
 contrast-check:
-	$(NODE) tools/contrast --jobs $(CONTRAST_JOBS) --open test/contrast/open.json --json $(O)/contrast.json
+	$(NODE) tools/contrast --jobs $(CONTRAST_JOBS) --open test/contrast/open.json --coverage test/contrast/coverage.json --json $(O)/contrast.json
 contrast-test:
 	$(NODE) test/contrast/selftest.js
 	CONTRAST_JOBS=$(CONTRAST_JOBS) $(NODE) test/contrast/known-failures.js

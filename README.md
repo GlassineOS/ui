@@ -200,6 +200,12 @@ Known open failures on main are listed in `test/contrast/open.json`, each with i
 proposed fix: they are reported as `open` and do not fail the check. An entry that no longer fails is
 stale and fails the check, so it goes with its fix.
 
+Coverage: a page that measures nothing cannot fail, so the check also fails when a page measures
+too little. Every page must measure at least one text case, and `test/contrast/coverage.json`
+(`--coverage FILE`) gives each component the least number of text cases and focus rings each of its
+pages must measure (the lowest counts on main). A preview whose stylesheets did not load, or loaded
+empty, is an error. When a preview loses text or controls on purpose, its floor goes down with it.
+
 `make contrast-test` runs `test/contrast/selftest.js` (a page of known answers: patterns, bands,
 generated text, large text, the disabled exemption, rings, hover, current, open) and
 `test/contrast/known-failures.js`: the acceptance set of known failures (spec 002 SC-002), one fixture

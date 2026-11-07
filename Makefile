@@ -13,7 +13,8 @@ PYTHON ?= python3
 PYTHONDIR ?= $(shell $(PYTHON) -c 'import sysconfig; print(sysconfig.get_path("purelib", vars={"base": "$(PREFIX)"}))' 2>/dev/null)
 CC ?= cc
 CFLAGS ?= -O2
-CFLAGS += -Wall -Wno-format-truncation -fPIC
+# the library's own flags, kept apart so that make CFLAGS=... doesn't drop them
+UI_CFLAGS = -Wall -Wno-format-truncation -fPIC
 PKGS = pangocairo librsvg-2.0 glib-2.0
 O = out
 LIB = $(O)/libglassine-ui.so.$(VERSION)
@@ -24,7 +25,7 @@ all: $(LIB) $(O)/glassine-ui.pc
 
 $(LIB): $(SRC) $(HDR)
 	@mkdir -p $(O)
-	$(CC) $(CFLAGS) -shared -Wl,-soname,libglassine-ui.so.$(SOMAJOR) -o $@ $(SRC) \
+	$(CC) $(CFLAGS) $(UI_CFLAGS) -shared -Wl,-soname,libglassine-ui.so.$(SOMAJOR) -o $@ $(SRC) \
 	    $$(pkg-config --cflags --libs $(PKGS)) -lm
 	ln -sf libglassine-ui.so.$(VERSION) $(O)/libglassine-ui.so.$(SOMAJOR)
 	ln -sf libglassine-ui.so.$(SOMAJOR) $(O)/libglassine-ui.so
@@ -61,6 +62,7 @@ check: all
 	$(PYTHON) test/test_paint.py
 	sh test/c-api.sh
 	sh test/pc-prefix.sh
+	sh test/build-flags.sh
 	sh test/sheet.sh
 
 clean:

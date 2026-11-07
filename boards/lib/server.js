@@ -33,14 +33,14 @@ function runtimeSource(config) {
   return s;
 }
 
-// every *.dc.html below dir (paths with "/"), leaving out ds/ and hidden folders
+// every *.dc.html below dir (paths with "/"), leaving out ds/ (at any depth) and hidden folders
 function listBoards(dir) {
   const out = [];
   (function walk(rel) {
     for (const e of fs.readdirSync(path.join(dir, rel), { withFileTypes: true })) {
       if (e.name.startsWith('.') || e.name === 'node_modules') continue;
       const r = rel ? rel + '/' + e.name : e.name;
-      if (e.isDirectory()) { if (!(rel === '' && e.name === 'ds')) walk(r); }
+      if (e.isDirectory()) { if (e.name !== 'ds') walk(r); }
       else if (e.name.endsWith('.dc.html')) out.push(r);
     }
   })('');

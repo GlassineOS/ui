@@ -12,7 +12,7 @@ const LEAVE_OUT = [
   { test: function (r) { return r === 'SKILL.md'; }, why: "claude.ai's instructions" },
   { test: function (r) { return r === 'index.html'; }, why: "claude.ai's canvas page" },
   { test: function (r) { return /(^|\/)support\.js$/.test(r); }, why: "claude.ai's runtime hook (the preview serves its own)" },
-  { test: function (r) { return r === 'ds' || r.startsWith('ds/'); }, why: 'the embedded design-system copy (served from GlassineOS/ui)' },
+  { test: function (r) { return /(^|\/)ds(\/|$)/.test(r); }, why: 'the embedded design-system copy (served from GlassineOS/ui)' },
   { test: function (r) { return /(^|\/)\./.test(r); }, why: 'hidden' },
 ];
 

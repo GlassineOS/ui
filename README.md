@@ -223,8 +223,8 @@ tools/in-alpine CMD...      # CMD in alpine:3.24 with Chromium and node, as the 
   `package.json` and `package-lock.json`); `tools/in-alpine tools/boards check …` provides both.
 - `import` copies a canvas exported from claude.ai into a design folder: boards, `canvas.json` and the
   sample data. It leaves out claude.ai's own files (`artifact-type/`, `SKILL.md`, `index.html`, any
-  `support.js`) and the embedded `ds/` copy, removes `designSystems` from `canvas.json`, and lists what
-  it left out.
+  `support.js`), the embedded `ds/` copy (in any folder) and symbolic links (never followed), removes
+  `designSystems` from `canvas.json`, and lists what it left out.
 
 `make boards-check` renders the samples in `boards/samples/` (every feature of the subset) and clicks
 through them (`test/boards/samples-e2e.js`: state, branches, links, the preview pages, and the boards

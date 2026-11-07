@@ -1,0 +1,632 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-2.0-or-later
+"""gen-reference: the browsable Interleaf reference (spec 002 FR-030, FR-031).
+
+    gen-reference [--out DIR]    write the site (default out/reference)
+
+The site is static and every link is relative, so it opens from a file, from a local
+server (make serve-reference) and from GitHub Pages under /ui/. It is styled with
+Interleaf itself (web/tokens.css, web/bundle.css, copied into DIR/web/) and shows:
+
+    index.html          the guidelines (interleaf/README.md)
+    tokens.html         every token: usage, a value per theme, a sample
+    components.html     every component: its guidelines and a live preview
+    previews/NAME.html  each component's preview.html with the web form loaded
+
+The picker (voice, scheme, pen) offers the combinations of web/combinations.json and sets
+their attributes on the page and, by postMessage, inside every preview. Python stdlib only;
+the output has no timestamps, so a build from the same sources is byte for byte the same.
+"""
+import html
+import importlib.machinery
+import importlib.util
+import json
+import os
+import re
+import shutil
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+INTERLEAF = os.path.join(ROOT, "interleaf")
+COMPONENTS = os.path.join(INTERLEAF, "components")
+WEB = os.path.join(ROOT, "web")
+WEB_FILES = ("tokens.css", "bundle.css", "combinations.json")
+
+
+def load_gen():
+    path = os.path.join(ROOT, "tools", "gen-interleaf")
+    loader = importlib.machinery.SourceFileLoader("gen_interleaf", path)
+    mod = importlib.util.module_from_spec(importlib.util.spec_from_loader("gen_interleaf", loader))
+    loader.exec_module(mod)
+    return mod
+
+
+GEN = load_gen()
+SCHEME_NAMES = {"paper": "Paper", "night": "Night", "eink": "E-ink"}
+PLAIN_FAMILIES = ("spacing", "radius", "layout", "stroke")
+
+esc = html.escape
+
+
+# ---- Markdown (the subset the guidelines use) -------------------------------------------
+
+def slug(text):
+    s = re.sub(r"<[^>]+>", "", text)
+    s = html.unescape(s).lower()
+    s = re.sub(r"[^a-z0-9]+", "-", s).strip("-")
+    return s or "section"
+
+
+def inline(text):
+    """inline Markdown: `code`, **strong**, *em*, [text](url); everything else escaped"""
+    out, pos = [], 0
+    for m in re.finditer(r"`([^`]+)`", text):
+        out.append(inline_plain(text[pos:m.start()]))
+        out.append('<code class="il-code-inline">%s</code>' % esc(m.group(1), quote=False))
+        pos = m.end()
+    out.append(inline_plain(text[pos:]))
+    return "".join(out)
+
+
+def inline_plain(text):
+    s = esc(text, quote=False)
+    s = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)", lambda m: '<a class="il-link" href="%s">%s</a>' % (m.group(2), m.group(1)), s)
+    s = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", s)
+    s = re.sub(r"(?<![\w*])\*(?!\s)(.+?)(?<!\s)\*(?![\w*])", r"<em>\1</em>", s)
+    return s
+
+
+LIST_ITEM = re.compile(r"^( *)([-*]|\d+\.) +(.*)$")
+
+
+def markdown(text, h2_class="il-h2", skip_h1=False):
+    """(html, [(id, heading)] of the h2s)"""
+    lines = text.splitlines()
+    out, toc, para = [], [], []
+    i = 0
+
+    def flush():
+        if para:
+            out.append("<p>%s</p>" % inline(" ".join(l.strip() for l in para)))
+            para.clear()
+
+    while i < len(lines):
+        line = lines[i]
+        if not line.strip():
+            flush()
+            i += 1
+            continue
+        m = re.match(r"^(#{1,6}) +(.*?) *#*$", line)
+        if m:
+            flush()
+            level, title = len(m.group(1)), m.group(2)
+            i += 1
+            if level == 1 and skip_h1:
+                continue
+            hid = slug(title)
+            cls = ' class="%s"' % h2_class if level == 2 and h2_class else ""
+            if level == 2:
+                toc.append((hid, title))
+            out.append('<h%d id="%s"%s>%s</h%d>' % (level, hid, cls, inline(title), level))
+            continue
+        if line.lstrip().startswith("|"):
+            flush()
+            rows = []
+            while i < len(lines) and lines[i].lstrip().startswith("|"):
+                rows.append(lines[i].strip())
+                i += 1
+            out.append(md_table(rows))
+            continue
+        if LIST_ITEM.match(line):
+            flush()
+            block = []
+            while i < len(lines) and lines[i].strip() and (LIST_ITEM.match(lines[i]) or lines[i].startswith(" ")):
+                block.append(lines[i])
+                i += 1
+            out.append(md_list(block))
+            continue
+        para.append(line)
+        i += 1
+    flush()
+    return "\n".join(out), toc
+
+
+def cells(row):
+    row = row.strip()
+    if row.startswith("|"):
+        row = row[1:]
+    if row.endswith("|"):
+        row = row[:-1]
+    return [c.strip() for c in row.split("|")]
+
+
+def md_table(rows):
+    head = cells(rows[0])
+    body = [cells(r) for r in rows[1:] if not re.fullmatch(r"\|?[\s:|-]+\|?", r)]
+    h = "".join('<th scope="col">%s</th>' % inline(c) for c in head)
+    b = "".join("<tr>%s</tr>" % "".join("<td>%s</td>" % inline(c) for c in r) for r in body)
+    return '<div class="il-table-wrap"><table class="il-table"><thead><tr>%s</tr></thead><tbody>%s</tbody></table></div>' % (h, b)
+
+
+def md_list(block):
+    """nested lists by indentation; a continuation line joins its item"""
+    items = []  # (indent, ordered, text)
+    for line in block:
+        m = LIST_ITEM.match(line)
+        if m:
+            items.append([len(m.group(1)), m.group(2)[0].isdigit(), m.group(3)])
+        elif items:
+            items[-1][2] += " " + line.strip()
+
+    def build(start, indent):
+        tag = "ol" if items[start][1] else "ul"
+        parts, k = [], start
+        while k < len(items) and items[k][0] >= indent:
+            if items[k][0] > indent:
+                sub, k = build(k, items[k][0])
+                parts[-1] = parts[-1][:-5] + sub + "</li>"
+                continue
+            parts.append("<li>%s</li>" % inline(items[k][2]))
+            k += 1
+        return "<%s>%s</%s>" % (tag, "".join(parts), tag), k
+
+    out, k = [], 0
+    while k < len(items):
+        s, k = build(k, items[k][0])
+        out.append(s)
+    return "".join(out)
+
+
+# ---- the components ---------------------------------------------------------------------
+
+DSCARD = re.compile(r"^\s*<!--\s*@dsCard\b(.*?)-->\s*\n?", re.S)
+DSCARD_ATTR = re.compile(r'(\w+)=(?:"([^"]*)"|(\S+))')
+
+
+def components():
+    out = []
+    for name in sorted(os.listdir(COMPONENTS)):
+        d = os.path.join(COMPONENTS, name)
+        if not os.path.isdir(d):
+            continue
+        prev = os.path.join(d, "preview.html")
+        if not os.path.isfile(prev):
+            raise ValueError("component %s: no preview.html" % name)
+        src = open(prev, encoding="utf-8").read()
+        m = DSCARD.match(src)
+        card = {}
+        if m:
+            for a in DSCARD_ATTR.finditer(m.group(1)):
+                card[a.group(1)] = a.group(2) if a.group(2) is not None else a.group(3)
+            src = src[m.end():]
+        readme = os.path.join(d, "README.md")
+        title = re.sub(r"(?<=[a-z])(?=[A-Z])", " ", name)
+        text = None
+        if os.path.isfile(readme):
+            text = open(readme, encoding="utf-8").read()
+            h = re.search(r"^# +(.+)$", text, re.M)
+            if h:
+                title = h.group(1).strip()
+        out.append({"name": name, "title": title, "group": card.get("group") or "Other",
+                    "height": int(card.get("height") or 240), "subtitle": card.get("subtitle"),
+                    "preview": src, "readme": text})
+    return out
+
+
+PREVIEW_HEAD = """<link rel="stylesheet" href="../web/tokens.css">
+<link rel="stylesheet" href="../web/bundle.css">
+<style>html { background: var(--paper); }</style>
+<script>
+/* the reference page sets the theme and pen (postMessage) and learns the height */
+(function () {
+  var d = document.documentElement, q = new URLSearchParams(location.search);
+  function set(t, p) { if (t) d.setAttribute("data-theme", t); if (p) d.setAttribute("data-pen", p); }
+  set(q.get("theme"), q.get("pen"));
+  function size() { if (parent !== window && document.body) parent.postMessage({ interleaf: "size", height: Math.ceil(document.body.getBoundingClientRect().height) }, "*"); }
+  addEventListener("message", function (e) {
+    if (e.source !== parent || !e.data || e.data.interleaf !== "theme") return;
+    set(e.data.theme, e.data.pen);
+    requestAnimationFrame(size);
+  });
+  addEventListener("load", function () {
+    size();
+    if (window.ResizeObserver) new ResizeObserver(size).observe(document.body);
+    if (document.fonts) document.fonts.ready.then(size);
+  });
+  if (parent !== window) parent.postMessage({ interleaf: "ready" }, "*");
+})();
+</script>
+"""
+
+
+def preview_page(c):
+    src = c["preview"]
+    m = re.search(r"<head[^>]*>", src, re.I)
+    if not m:
+        raise ValueError("component %s: preview.html has no <head>" % c["name"])
+    return src[:m.end()] + "\n" + PREVIEW_HEAD + src[m.end():]
+
+
+# ---- the page frame ---------------------------------------------------------------------
+
+PAGES = (("index.html", "Guidelines"), ("tokens.html", "Tokens"), ("components.html", "Components"))
+
+MARK = ('<svg width="32" height="32" viewBox="0 0 48 48" aria-hidden="true"><rect x="2" y="4" width="30" height="34" rx="5" '
+        'style="fill:none;stroke:currentColor;stroke-width:2.5"></rect><rect x="14" y="10" width="30" height="34" rx="5" '
+        'transform="rotate(6 29 27)" style="fill:var(--highlight)"></rect><path d="M20 30 C 26 24, 30 34, 38 26" '
+        'transform="rotate(6 29 27)" style="fill:none;stroke:var(--pen);stroke-width:3;stroke-linecap:round"></path></svg>')
+
+
+def head_script(combos):
+    """runs in <head>: sets the remembered (or asked for) combination before the first paint"""
+    data = json.dumps(combos, separators=(",", ":"), sort_keys=True).replace("<", "\\u003c")
+    themes = {}
+    for c in combos:
+        t = c["attributes"]["data-theme"]
+        themes[t] = GEN.token_theme(t)
+    tt = json.dumps(themes, separators=(",", ":"), sort_keys=True)
+    return """<script>
+window.INTERLEAF_COMBINATIONS = %s;
+window.INTERLEAF_TOKEN_THEME = %s;
+(function () {
+  var C = window.INTERLEAF_COMBINATIONS, q = new URLSearchParams(location.search), s = {};
+  try { s = JSON.parse(localStorage.getItem("interleaf-reference") || "{}") || {}; } catch (e) { s = {}; }
+  function mq(m) { return window.matchMedia && matchMedia(m).matches; }
+  var want = {
+    voice: q.get("voice") || s.voice || C[0].voice,
+    scheme: q.get("scheme") || s.scheme || (mq("(update: slow)") ? "eink" : mq("(prefers-color-scheme: dark)") ? "night" : C[0].scheme),
+    pen: q.get("pen") || s.pen || String(C[0].pen)
+  };
+  var c = C.filter(function (x) { return x.voice === want.voice && x.scheme === want.scheme && String(x.pen) === String(want.pen); })[0] || C[0];
+  window.INTERLEAF_CURRENT = c;
+  var d = document.documentElement;
+  Object.keys(c.attributes).forEach(function (k) { d.setAttribute(k, c.attributes[k]); });
+  d.setAttribute("data-token-theme", window.INTERLEAF_TOKEN_THEME[c.attributes["data-theme"]] || "");
+})();
+</script>""" % (data, tt)
+
+
+PAGE_SCRIPT = """<script>
+(function () {
+  var C = window.INTERLEAF_COMBINATIONS, d = document.documentElement;
+  var form = document.getElementById("picker");
+  var frames = Array.prototype.slice.call(document.querySelectorAll("iframe[data-preview]"));
+  function current() { return window.INTERLEAF_CURRENT; }
+  function send(f) {
+    var c = current();
+    if (f.contentWindow) f.contentWindow.postMessage({ interleaf: "theme", theme: c.attributes["data-theme"], pen: c.attributes["data-pen"] }, "*");
+  }
+  function apply(c) {
+    window.INTERLEAF_CURRENT = c;
+    Object.keys(c.attributes).forEach(function (k) { d.setAttribute(k, c.attributes[k]); });
+    d.setAttribute("data-token-theme", window.INTERLEAF_TOKEN_THEME[c.attributes["data-theme"]] || "");
+    try { localStorage.setItem("interleaf-reference", JSON.stringify({ voice: c.voice, scheme: c.scheme, pen: String(c.pen) })); } catch (e) { /* no storage: the choice lasts for this page */ }
+    var cur = document.getElementById("picker-current");
+    if (cur) cur.textContent = c.attributes["data-theme"] + ", pen " + c.attributes["data-pen"];
+    frames.forEach(send);
+  }
+  if (form) {
+    var c0 = current();
+    form.voice.value = c0.voice; form.scheme.value = c0.scheme; form.pen.value = String(c0.pen);
+    form.addEventListener("change", function () {
+      var v = form.voice.value, s = form.scheme.value, p = form.pen.value;
+      var c = C.filter(function (x) { return x.voice === v && x.scheme === s && String(x.pen) === p; })[0];
+      if (c) apply(c);
+    });
+    apply(c0);
+  }
+  addEventListener("message", function (e) {
+    var f = frames.filter(function (x) { return x.contentWindow === e.source; })[0];
+    if (!f || !e.data) return;
+    if (e.data.interleaf === "ready") send(f);
+    if (e.data.interleaf === "size" && e.data.height > 0) {
+      var min = parseInt(f.getAttribute("data-height"), 10) || 0;
+      f.style.height = Math.max(min, e.data.height) + "px";
+    }
+  });
+  frames.forEach(function (f) { f.addEventListener("load", function () { send(f); }); });
+})();
+</script>"""
+
+SITE_CSS = """/* the reference site's own layout; every colour, space and edge is an Interleaf token */
+html { background: var(--paper); }
+body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
+.ref-skip { position: absolute; left: var(--space-4); top: -100px; z-index: 2; padding: var(--space-2) var(--space-4); background: var(--paper); color: var(--ink); }
+.ref-skip:focus { top: var(--space-2); }
+.ref-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.il-header { z-index: 1; }
+.ref-pages { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); font-family: var(--v-label); font-size: var(--v-label-size); font-variant: var(--v-label-variant); text-transform: var(--v-label-case); letter-spacing: var(--v-label-ls); }
+.ref-pages a { color: inherit; display: inline-flex; align-items: center; min-height: 44px; text-decoration: none; }
+.ref-pages a:hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
+.ref-pages a[aria-current="page"] { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 6px; }
+.ref-picker { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-2) var(--space-3); margin: 0; padding: 0; border: 0; min-width: 0; }
+.ref-picker label { display: flex; flex-direction: column; gap: 2px; font-family: var(--v-label); font-size: var(--v-label-size); font-variant: var(--v-label-variant); text-transform: var(--v-label-case); letter-spacing: var(--v-label-ls); color: inherit; }
+.ref-picker select { font-size: 15px; padding-right: var(--space-3); max-width: 100%; }
+.ref-picker .il-swatch { align-self: center; margin-bottom: var(--space-3); }
+.ref-layout { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-6); width: 100%; max-width: 1280px; margin: 0 auto; box-sizing: border-box; padding: var(--space-6) var(--space-4) var(--space-16); }
+.ref-side { display: none; }
+@media (min-width: 960px) {
+  .ref-layout { grid-template-columns: var(--nav-column) minmax(0, 1fr); gap: var(--space-16); padding: var(--space-8) var(--space-6) var(--space-16); }
+  .ref-side { display: block; }
+  .ref-side .il-nav { position: sticky; top: var(--space-6); max-height: calc(100vh - 2 * var(--space-6)); overflow-y: auto; }
+}
+.ref-main { min-width: 0; display: flex; flex-direction: column; gap: var(--space-6); }
+.ref-main > p, .ref-main > ul, .ref-main > ol, .ref-section > p, .ref-section > ul, .ref-section > ol { max-width: var(--measure); margin: 0; }
+.ref-main li + li { margin-top: var(--space-2); }
+.ref-main li > ul { margin-top: var(--space-2); }
+.ref-main h3 { margin: var(--space-2) 0 0; font-family: var(--v-head); }
+.ref-main .il-h2 { margin-top: var(--space-8); }
+.ref-section { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
+.ref-name { font-family: var(--font-mono); font-size: 14.5px; font-weight: 600; overflow-wrap: anywhere; }
+.ref-usage { margin: var(--space-1) 0 0; color: var(--ink-soft); font-size: calc(var(--v-body) - 3px); line-height: 1.45; font-weight: 400; max-width: 46ch; }
+.ref-value { display: block; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.4; color: var(--ink-soft); overflow-wrap: anywhere; }
+.il-table th[scope="row"] { color: var(--ink); font-family: var(--v-text); text-transform: none; font-variant: normal; letter-spacing: 0; vertical-align: top; min-width: 24ch; }
+.ref-colours td { min-width: 92px; }
+.ref-colours th[data-tt], .ref-shadows th[data-tt] { white-space: nowrap; }
+.ref-chip { display: block; height: 36px; margin-bottom: var(--space-1); border-radius: var(--radius-paper); box-shadow: inset 0 0 0 1px var(--rule); }
+:root[data-token-theme="white-paper"] [data-tt="white-paper"], :root[data-token-theme="white-night"] [data-tt="white-night"],
+:root[data-token-theme="editorial-paper"] [data-tt="editorial-paper"], :root[data-token-theme="editorial-night"] [data-tt="editorial-night"],
+:root[data-token-theme="stationery-paper"] [data-tt="stationery-paper"], :root[data-token-theme="stationery-night"] [data-tt="stationery-night"],
+:root[data-token-theme="eink"] [data-tt="eink"], :root[data-token-theme="stationery-eink"] [data-tt="stationery-eink"] { background: var(--sheet); }
+.ref-shadow-cell { padding: var(--space-5) var(--space-4) var(--space-4); background: var(--paper); color: var(--ink); }
+.ref-shadow-sample { width: 72px; height: 40px; margin: 0 auto var(--space-3); background: var(--paper); }
+.ref-none { color: var(--ink-soft); }
+.ref-type { display: grid; gap: var(--space-2); padding: var(--space-4) 0; border-bottom: var(--v-row-rule); min-width: 0; }
+.ref-type-sample { margin: 0; overflow-wrap: anywhere; color: var(--ink); }
+.ref-bar { height: 12px; max-width: 100%; background: var(--ink); }
+.ref-radius { width: 72px; height: 48px; box-shadow: inset 0 0 0 1.5px var(--ink); background: var(--sheet); }
+.ref-stroke { width: 100%; max-width: 240px; height: 0; }
+.ref-measure { font-size: 15px; color: var(--ink-soft); overflow: hidden; white-space: nowrap; text-overflow: clip; max-width: 100%; }
+.ref-component { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
+.ref-component .il-lead { font-size: var(--v-body); }
+.ref-frame { display: block; width: 100%; border: 0; background: var(--paper); box-shadow: inset 0 0 0 1px var(--rule); }
+.ref-frame-wrap { border-radius: var(--v-ui-radius); overflow: hidden; box-shadow: 0 0 0 1px var(--rule); }
+.ref-open { font-size: 15px; }
+.ref-groups { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-6); }
+"""
+
+
+def frame(page, title, body, side, combos, desc):
+    pages = "".join('<a href="%s"%s>%s</a>' % (f, ' aria-current="page"' if f == page else "", esc(t)) for f, t in PAGES)
+    voices = sorted({c["voice"] for c in combos}, key=lambda v: [c["voice"] for c in combos].index(v))
+    schemes = sorted({c["scheme"] for c in combos}, key=lambda v: [c["scheme"] for c in combos].index(v))
+    pens = sorted({c["pen"] for c in combos})
+    opt = lambda vals, name: "".join('<option value="%s">%s</option>' % (esc(str(v)), esc(name(v))) for v in vals)
+    picker = ('<form class="ref-picker" id="picker" aria-label="Appearance" onsubmit="return false">'
+              '<label>Voice<select class="il-btn" name="voice">%s</select></label>'
+              '<label>Scheme<select class="il-btn" name="scheme">%s</select></label>'
+              '<label>Pen<select class="il-btn" name="pen">%s</select></label>'
+              '<span class="il-swatch" aria-hidden="true"></span>'
+              '<output class="ref-hidden" id="picker-current" aria-live="polite"></output></form>') % (
+        opt(voices, lambda v: v.capitalize()), opt(schemes, lambda s: SCHEME_NAMES.get(s, s.capitalize())),
+        opt(pens, lambda p: "Pen %d%s" % (p, " (house)" if p == 1 else "")))
+    nav = ""
+    if side:
+        nav = ('<nav class="ref-side" aria-label="On this page"><div class="il-nav"><div class="il-nav-group">'
+               '<span class="il-label">On this page</span>%s</div></div></nav>') % "".join(
+            '<a href="#%s">%s</a>' % (i, inline(t)) for i, t in side)
+    return """<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>%s</title>
+<meta name="description" content="%s">
+%s
+<link rel="stylesheet" href="web/tokens.css">
+<link rel="stylesheet" href="web/bundle.css">
+<link rel="stylesheet" href="reference.css">
+</head>
+<body class="il-page il-desk">
+<a class="ref-skip" href="#main">Skip to content</a>
+<header class="il-header">
+<a class="il-brand" href="index.html">%s Interleaf</a>
+<nav class="ref-pages" aria-label="Reference">%s</nav>
+<span style="flex:1 1 0"></span>
+%s
+</header>
+<div class="ref-layout">
+%s
+<main class="ref-main il-sheet il-sections" id="main" tabindex="-1">
+%s
+</main>
+</div>
+<footer class="il-footer"><span>Interleaf, the design system of GlassineOS. Built from the <code>ui</code> repository; GPL-2.0-or-later.</span><span><a href="web/tokens.css">tokens.css</a> · <a href="web/bundle.css">bundle.css</a> · <a href="web/combinations.json">combinations.json</a></span></footer>
+%s
+</body>
+</html>
+""" % (esc(title), esc(desc), head_script(combos), MARK, pages, picker, nav, body, PAGE_SCRIPT)
+
+
+def title_block(label, title, lead):
+    return ('<div class="il-title-block"><span class="il-label">%s</span><h1 class="il-h1">%s</h1>%s</div>'
+            % (esc(label), esc(title), '<p class="il-lead">%s</p>' % lead if lead else ""))
+
+
+# ---- the pages --------------------------------------------------------------------------
+
+def guidelines_page(combos):
+    text = open(os.path.join(INTERLEAF, "README.md"), encoding="utf-8").read()
+    paras = text.split("\n\n")
+    lead = inline(paras[0].strip()) if paras and not paras[0].startswith("#") else ""
+    rest = "\n\n".join(paras[1:]) if lead else text
+    body, toc = markdown(rest)
+    return frame("index.html", "Interleaf", title_block("Guidelines", "Interleaf", lead) + "\n" + body, toc, combos,
+                 "The guidelines of Interleaf, the design system of GlassineOS.")
+
+
+def colour_cell(tok, name, theme):
+    raw = tok.raw(name, theme)
+    val = tok.resolve(name, theme)
+    alias = GEN.ALIAS.match(raw.strip()) if raw else None
+    note = ('= %s<br>%s' % (esc(alias.group(1)), esc(val))) if alias else esc(val)
+    return '<span class="ref-chip" style="background:%s"></span><span class="ref-value">%s</span>' % (esc(val), note)
+
+
+def tokens_page(tok, combos):
+    d, themes = tok.data, tok.themes
+    tnames = {t["id"]: t["name"] for t in d["color"]["themes"]}
+    out, toc = [title_block("Tokens", "Tokens",
+                            "Every token of <code class=\"il-code-inline\">interleaf/tokens.json</code>, with its usage and its value "
+                            "in each theme. The column of the theme you picked is shaded; the values are pen 1's, the other pens are "
+                            "<code class=\"il-code-inline\">accent-2</code>, <code class=\"il-code-inline\">accent-3</code> and their highlights.")], []
+
+    def section(sid, title, inner):
+        toc.append((sid, title))
+        out.append('<section class="ref-section" aria-labelledby="%s"><h2 class="il-h2" id="%s">%s</h2>%s</section>' % (sid, sid, esc(title), inner))
+
+    head = "".join('<th scope="col" data-tt="%s">%s<span class="ref-value">%s</span></th>' % (t, esc(tnames[t]), esc(t)) for t in themes)
+    rows = []
+    for t in d["color"]["tokens"]:
+        n = t["name"]
+        if isinstance(t["value"], str):
+            cellv = '<td colspan="%d">%s<span class="ref-value">every theme</span></td>' % (len(themes), colour_cell(tok, n, themes[0]))
+        else:
+            cellv = "".join('<td data-tt="%s">%s</td>' % (th, colour_cell(tok, n, th)) for th in themes)
+        rows.append('<tr id="token-%s"><th scope="row"><span class="ref-name">%s</span><p class="ref-usage">%s</p></th>%s</tr>'
+                    % (n, esc(n), inline(t.get("usage", "")), cellv))
+    section("colour", "Colour",
+            "<p>A value <code class=\"il-code-inline\">= name</code> is an alias of another token in the same theme.</p>"
+            '<div class="il-table-wrap"><table class="il-table ref-colours"><thead><tr><th scope="col">Token</th>%s</tr></thead><tbody>%s</tbody></table></div>'
+            % (head, "".join(rows)))
+
+    rows = []
+    for t in d["shadow"]["tokens"]:
+        n = t["name"]
+        cellv = []
+        for th in themes:
+            v = tok.resolve(n, th)
+            if v is None:
+                cellv.append('<td data-tt="%s"><span class="ref-none">—</span></td>' % th)
+            else:
+                cellv.append('<td data-tt="%s"><div class="ref-shadow-cell" data-theme="%s"><div class="ref-shadow-sample" style="box-shadow:%s"></div>'
+                             '<span class="ref-value">%s</span></div></td>' % (th, th, esc(v), esc(v)))
+        rows.append('<tr id="token-%s"><th scope="row"><span class="ref-name">%s</span><p class="ref-usage">%s</p></th>%s</tr>'
+                    % (n, esc(n), inline(t.get("usage", "")), "".join(cellv)))
+    section("shadow", "Shadow",
+            "<p>Each sample sits on its theme's own paper. A dash: the theme's component styles don't read the token.</p>"
+            '<div class="il-table-wrap"><table class="il-table ref-shadows"><thead><tr><th scope="col">Token</th>%s</tr></thead><tbody>%s</tbody></table></div>'
+            % (head, "".join(rows)))
+
+    typ = d["type"]
+    parts = ["<h3>Families</h3>"]
+    for fam, stack in typ["families"].items():
+        parts.append('<div class="ref-type" id="family-%s"><span class="ref-name">--font-%s</span>'
+                     '<p class="ref-type-sample" style="font-family:var(--font-%s);font-size:24px">Glassine between the pages, 0123456789</p>'
+                     '<span class="ref-value">%s</span></div>' % (esc(fam), esc(fam), esc(fam), esc(stack)))
+    if typ.get("fonts"):
+        parts.append("<h3>Fonts</h3><ul>%s</ul>" % "".join(
+            "<li><span class=\"ref-value\">%s</span></li>" % esc(json.dumps(f, ensure_ascii=False, sort_keys=True)) for f in typ["fonts"]))
+    for g in typ["groups"]:
+        parts.append("<h3>%s</h3>" % esc(g["name"]))
+        for s in g["styles"]:
+            fam = s.get("family", g.get("family"))
+            props = ["family " + fam, s["fontSize"], "line height %s" % s["lineHeight"], "weight %s" % s["fontWeight"]]
+            if s.get("letterSpacing"):
+                props.append("tracking " + s["letterSpacing"])
+            if s.get("fontStyle"):
+                props.append(s["fontStyle"])
+            parts.append('<div class="ref-type" id="type-%s"><span class="ref-name">.%s%s</span><p class="ref-type-sample %s%s">%s</p>'
+                         '<span class="ref-value">%s</span><p class="ref-usage">%s</p></div>'
+                         % (esc(s["name"]), GEN.TYPE_CLASS, esc(s["name"]), GEN.TYPE_CLASS, esc(s["name"]), esc(s.get("sample", s["name"])),
+                            esc(" · ".join(props)), inline(s.get("usage", ""))))
+    section("type", "Type", "".join(parts))
+
+    samples = {
+        "spacing": lambda v: '<div class="ref-bar" style="width:%s"></div>' % esc(v),
+        "radius": lambda v: '<div class="ref-radius" style="border-radius:%s"></div>' % esc(v),
+        "layout": lambda v: '<div class="ref-bar" style="width:%s"></div>' % esc(v),
+        "stroke": lambda v: '<div class="ref-stroke" style="border-top:%s var(--ink)"></div>' % esc(v),
+    }
+    titles = {"spacing": "Space", "radius": "Radius", "layout": "Layout", "stroke": "Stroke"}
+    for fam in PLAIN_FAMILIES:
+        rows = []
+        for t in d[fam]["tokens"]:
+            rows.append('<tr id="token-%s"><th scope="row"><span class="ref-name">%s</span><p class="ref-usage">%s</p></th>'
+                        '<td><span class="ref-value">%s</span></td><td style="width:50%%">%s</td></tr>'
+                        % (t["name"], esc(t["name"]), inline(t.get("usage", "")), esc(t["value"]), samples[fam](t["value"])))
+        section(fam, titles[fam], '<div class="il-table-wrap"><table class="il-table"><thead><tr><th scope="col">Token</th>'
+                '<th scope="col">Value</th><th scope="col">Sample</th></tr></thead><tbody>%s</tbody></table></div>' % "".join(rows))
+    return frame("tokens.html", "Interleaf tokens", "\n".join(out), toc, combos,
+                 "Every Interleaf token with its usage and its value in each theme.")
+
+
+def components_page(comps, combos):
+    groups = []
+    for c in comps:
+        if c["group"] not in groups:
+            groups.append(c["group"])
+    out = [title_block("Components", "Components",
+                       "Each component's guidelines and a live preview. The previews follow the voice, scheme and pen you pick.")]
+    toc = []
+    for g in groups:
+        gid = "group-" + slug(g)
+        out.append('<h2 class="il-h2" id="%s">%s</h2>' % (gid, esc(g)))
+        for c in comps:
+            if c["group"] != g:
+                continue
+            toc.append((c["name"], c["title"]))
+            readme = markdown(c["readme"], h2_class=None, skip_h1=True)[0] if c["readme"] else \
+                '<p class="ref-none">No guidelines yet.</p>'
+            href = "previews/%s.html" % c["name"]
+            out.append('<section class="ref-component" id="%s" aria-labelledby="%s-title">'
+                       '<h3 id="%s-title">%s</h3>%s%s'
+                       '<div class="ref-frame-wrap"><iframe class="ref-frame" data-preview src="%s" title="%s preview" '
+                       'data-height="%d" style="height:%dpx" loading="lazy"></iframe></div>'
+                       '<a class="il-link ref-open" href="%s">Open the %s preview on its own</a></section>'
+                       % (c["name"], c["name"], c["name"], esc(c["title"]),
+                          '<p class="il-lead">%s</p>' % esc(c["subtitle"]) if c["subtitle"] else "", readme,
+                          href, esc(c["title"]), c["height"], c["height"], href, esc(c["title"])))
+    return frame("components.html", "Interleaf components", "\n".join(out), toc, combos,
+                 "Every Interleaf component with its guidelines and a live preview.")
+
+
+def build(dest):
+    tok = GEN.Tokens(json.load(open(GEN.TOKENS, encoding="utf-8")))
+    combos = json.load(open(os.path.join(WEB, "combinations.json"), encoding="utf-8"))["combinations"]
+    comps = components()
+    if os.path.isdir(dest):
+        shutil.rmtree(dest)
+    os.makedirs(os.path.join(dest, "web"))
+    os.makedirs(os.path.join(dest, "previews"))
+    for f in WEB_FILES:
+        shutil.copyfile(os.path.join(WEB, f), os.path.join(dest, "web", f))
+    files = {
+        "reference.css": SITE_CSS,
+        "index.html": guidelines_page(combos),
+        "tokens.html": tokens_page(tok, combos),
+        "components.html": components_page(comps, combos),
+        ".nojekyll": "",
+    }
+    for c in comps:
+        files["previews/%s.html" % c["name"]] = preview_page(c)
+    for rel, text in files.items():
+        with open(os.path.join(dest, rel), "w", encoding="utf-8") as fh:
+            fh.write(text)
+    return dest
+
+
+def main(argv):
+    dest = os.path.join(ROOT, "out", "reference")
+    args = list(argv)
+    while args:
+        a = args.pop(0)
+        if a == "--out" and args:
+            dest = os.path.abspath(args.pop(0))
+        elif a in ("-h", "--help"):
+            print(__doc__.strip())
+            return 0
+        else:
+            print("gen-reference: unknown argument %r (see --help)" % a, file=sys.stderr)
+            return 2
+    try:
+        build(dest)
+    except (ValueError, KeyError, OSError) as e:
+        print("gen-reference: %s" % e, file=sys.stderr)
+        return 1
+    print("gen-reference: wrote %s" % dest)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

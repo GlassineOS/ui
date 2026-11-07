@@ -1,0 +1,38 @@
+name: reference
+# The Interleaf reference (spec 002 FR-031): built from main and published to GitHub Pages.
+# Pull requests build it in make check-forms (test/test_reference.py); this workflow only publishes.
+# Pages must use "GitHub Actions" as its source (Settings > Pages > Build and deployment).
+# A deployment that hangs does not recover when re-run from the same commit; a new commit on
+# main (or a manual run after one) does.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+# one deployment at a time; a newer push waits instead of cancelling one in flight
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      # python3 (stdlib only) and make, both on the runner
+      - run: make reference
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: out/reference
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

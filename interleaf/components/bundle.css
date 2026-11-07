@@ -65,8 +65,8 @@
 
 /* ---------- Page & type ---------- */
 .il-page { background: var(--paper); color: var(--ink); font-family: var(--v-text); font-size: var(--v-body); line-height: var(--v-lh); }
-/* Focus rings follow the SURFACE they sit on, not the voice's pen (audit 2026-10-31:
-   the pen ring measured 1.01-1.46:1 on Stationery leather and cream fields). */
+/* Focus rings follow the SURFACE they sit on, not the voice's pen (measured: the pen
+   ring reached only 1.01-1.46:1 on Stationery leather and cream fields). */
 .il-page :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 [data-theme^="stationery"] :is(.il-header, .il-desk, .il-drawer, .il-footer) :focus-visible { outline-color: var(--focus-on-leather); }
 [data-theme^="stationery"] :is(.il-search, .il-btn):focus-within,

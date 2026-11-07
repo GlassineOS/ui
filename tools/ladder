@@ -32,11 +32,12 @@ a blur radius other than 0, filter/backdrop-filter, or blur()/drop-shadow().
 The mapping rule (--map, --map-apps): the panel shows a grey v at the level
 lut(v) >> 4 (the top nibble), lut(v) = round(255 (v/255)^1.8): the desktop's grey curve
 at its default gamma 1.8 (GlassineOS/epd: epd_grey_luma_lut, and levels_of keeps the
-top nibble). A grey maps to the ladder grey on the same level; where several ladder greys
-share it (#000000 ... #333333 are all level 0), to the nearest of them in value; where none
-has it, to a ladder grey on the nearest level, and between two equally near levels to the
-lower (darker) one, which is where the hand corrections went (#b4b4b4, level 8, to
-#aaaaaa, level 7).
+top nibble). A grey maps to the ladder grey on the same level: the voice's ink where the
+ink is on that level (--map-apps; #000000 ... #333333 are all level 0), else the nearest
+of them in value; where no ladder grey has the level, to a ladder grey on the nearest
+level, and between two equally near levels to the higher (lighter) one, which is where the
+hand corrections went (#b4b4b4, level 8, to #bbbbbb, level 9). A translucent keyboard
+colour (the swipe trail, rrggbbaa) is first composited over the key face it is drawn on.
 """
 import importlib.machinery
 import importlib.util
@@ -65,18 +66,7 @@ PROSE_KEY = re.compile(r"^_|^gtk3Note$")
 # Values that are off the ladder but not changed here: each waits for a design decision.
 # The check prints them on every run and fails if one is no longer there (so the list stays
 # true). (where, value): why
-PENDING = {
-    ("tokens: index-line (stationery-eink)", "rgba(0, 0, 0, 0.16)"):
-        "translucent: the index-card lines, which e-ink does not draw (bundle.css); "
-        "eink has {rule}",
-    ("stationery: apps.wvkbd.swipe", "ffffff60"):
-        "the keyboard's swipe trail is drawn translucent (alpha 0x60) over the keys",
-    ("stationery: apps.wvkbd.swipe-sp", "ffffff60"): "as swipe",
-    ("white: apps.wvkbd.swipe", "11111160"): "as stationery's swipe",
-    ("white: apps.wvkbd.swipe-sp", "11111160"): "as stationery's swipe",
-    ("editorial: apps.wvkbd.swipe", "11111160"): "as stationery's swipe",
-    ("editorial: apps.wvkbd.swipe-sp", "11111160"): "as stationery's swipe",
-}
+PENDING = {}
 
 
 # ---- the mapping rule -------------------------------------------------------------------
@@ -99,16 +89,24 @@ def grey_of(hexv):
     return int(m.group(1), 16)
 
 
-def to_ladder(hexv, gamma=GAMMA):
-    """the ladder grey (as '#rrggbb') of a grey by the mapping rule"""
+def to_ladder(hexv, gamma=GAMMA, ink=None):
+    """the ladder grey (as '#rrggbb') of a grey by the mapping rule; ink: the voice's ink,
+    taken where it is on the grey's level"""
     v = grey_of(hexv)
     want = level(v, gamma)
+    if ink is not None and ink.lower() in LADDER and level(grey_of(ink), gamma) == want:
+        return ink.lower()
     lv = [(level(17 * k, gamma), 17 * k) for k in range(16)]
     dist = min(abs(l - want) for l, _ in lv)
     near = [(l, g) for l, g in lv if abs(l - want) == dist]
-    low = min(l for l, _ in near)            # two equally near levels: the lower
-    g = min((g for l, g in near if l == low), key=lambda g: (abs(g - v), g))
+    high = max(l for l, _ in near)           # two equally near levels: the higher (lighter)
+    g = min((g for l, g in near if l == high), key=lambda g: (abs(g - v), g))
     return "#%02x%02x%02x" % (g, g, g)
+
+
+def over(fg, alpha, bg):
+    """the grey value of the grey fg drawn with alpha (0-255) over the grey bg"""
+    return int(math.floor((grey_of(fg) * alpha + grey_of(bg) * (255 - alpha)) / 255.0 + 0.5))
 
 
 # ---- reading values ---------------------------------------------------------------------
@@ -350,7 +348,7 @@ def map_apps(data):
             old = m.group(0).lower()
             if (old if not bare else "#" + old) in LADDER:
                 return m.group(0)
-            new = to_ladder(old)
+            new = to_ladder(old if not bare else "#" + old, ink=ink)
             new = new[1:] if bare else new
             changes.append((where, old, new))
             return new
@@ -358,14 +356,25 @@ def map_apps(data):
 
     for name, voice in data["voices"].items():
         apps = voice["apps"]
+        ink = voice["scheme"]["ink"]
         for sec in ("gtk3", "gtk4"):
             for k in apps[sec]:
                 apps[sec][k] = fix("%s: apps.%s.%s" % (name, sec, k), apps[sec][k], False)
         apps["gtk3Rules"] = [fix("%s: apps.gtk3Rules.%d" % (name, i), r, False)
                              for i, r in enumerate(apps["gtk3Rules"])]
-        for k, v in apps["wvkbd"].items():
+        kb = apps["wvkbd"]
+        for k, v in kb.items():
             if k not in WVKBD_PLAIN and re.fullmatch(r"[0-9a-fA-F]{6}", v):
-                apps["wvkbd"][k] = fix("%s: apps.wvkbd.%s" % (name, k), v, True)
+                kb[k] = fix("%s: apps.wvkbd.%s" % (name, k), v, True)
+        # a translucent colour (the swipe trail, drawn over the key's face: fg, or fg-sp for
+        # the special keys) becomes the ladder grey of what it showed there
+        for k, v in kb.items():
+            if k not in WVKBD_PLAIN and re.fullmatch(r"[0-9a-fA-F]{8}", v):
+                face = kb["fg-sp" if k.endswith("-sp") else "fg"]
+                g = over(v[:6], int(v[6:], 16), face)
+                new = to_ladder("%02x%02x%02x" % (g, g, g), ink=ink)[1:]
+                changes.append(("%s: apps.wvkbd.%s" % (name, k), v.lower(), new))
+                kb[k] = new
     return changes
 
 

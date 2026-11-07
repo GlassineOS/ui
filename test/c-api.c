@@ -27,7 +27,7 @@ int main(int argc, char **argv)
     OK(ui_voice_find("stationery") == ui_voices[2], "by name");
     OK(ui_voice_find("nope") == ui_voices[0] && ui_voice_find(NULL) == ui_voices[0], "unknown -> White");
     OK(!strcmp(ui_voice_find("editorial")->title, "Editorial"), "title");
-    OK(UI_RULE == 0xffbbbbbbu && UI_DIM == 0xffaaaaaau, "scheme rule, dim");
+    OK(UI_RULE == 0xffbbbbbbu && UI_DIM == 0xffbbbbbbu, "scheme rule, dim");
 
     cairo_surface_t *s = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 200, 100);
     cairo_t *cr = cairo_create(s);

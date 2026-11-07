@@ -43,11 +43,16 @@ ok([L.level(17 * k) for k in range(16)] == [0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 9, 
 ok([L.level(17 * k, 1.0) for k in range(16)] == list(range(16)), "at gamma 1.0 each ladder grey is its own level")
 ok(L.to_ladder("#bdbdbd") == "#bbbbbb" and L.level(0xbd) == L.level(0xbb) == 9, "#bdbdbd -> #bbbbbb (same level)")
 ok(L.to_ladder("#a0a0a0") == "#999999" and L.level(0xa0) == L.level(0x99) == 6, "#a0a0a0 -> #999999 (same level)")
-ok(L.to_ladder("#b4b4b4") == "#aaaaaa" and L.level(0xb4) == 8,
-   "#b4b4b4 (level 8, no ladder grey) -> #aaaaaa: of two equally near levels, the lower")
-ok(L.to_ladder("#d0d0d0") == "#cccccc" and L.to_ladder("#e4e4e4") == "#dddddd", "the same tie-break at levels 11 and 13")
+ok(L.to_ladder("#b4b4b4") == "#bbbbbb" and L.level(0xb4) == 8,
+   "#b4b4b4 (level 8, no ladder grey) -> #bbbbbb: of two equally near levels, the higher")
+ok(L.to_ladder("#d0d0d0") == "#dddddd" and L.to_ladder("#e4e4e4") == "#eeeeee", "the same tie-break at levels 11 and 13")
 ok(L.to_ladder("#1b1b1b") == "#222222" and L.to_ladder("#141414") == "#111111",
    "level 0 has four ladder greys: the nearest in value")
+ok(L.to_ladder("#1b1b1b", ink="#111111") == "#111111" and L.to_ladder("#333333", ink="#111111") == "#111111",
+   "a grey on the ink's level maps to the voice's ink")
+ok(L.to_ladder("#4a4a4a", ink="#111111") == "#444444", "a grey on another level ignores the ink")
+ok(L.over("111111", 0x60, "ffffff") == 165 and L.over("ffffff", 0x60, "dddddd") == 234,
+   "a translucent grey over a face: the composite value")
 ok(all(L.to_ladder(g) == g for g in L.LADDER), "a ladder grey maps to itself")
 ok(L.lut(0xb4) == 136 and L.lut(0x80) == 74, "the grey curve rounds as lround(255 (v/255)^1.8)")
 try:
@@ -61,9 +66,9 @@ except ValueError:
 faults, seen = L.check()
 ok(faults == [], "this repository's E-ink values are on the ladder%s"
    % ("" if not faults else ": " + "; ".join("%s: %s" % f[:2] for f in faults[:5])))
-ok(seen == set(L.PENDING), "every pending value is still there")
+ok(L.PENDING == {} and seen == set(), "nothing is pending")
 r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "ladder"), "--check"], capture_output=True, text=True)
-ok(r.returncode == 0 and "pending" in r.stdout, "ladder --check passes and lists the pending values")
+ok(r.returncode == 0, "ladder --check passes")
 
 
 # ---- known failures ---------------------------------------------------------------------
@@ -81,6 +86,7 @@ def f_token_colour(t, b, v):
 
 
 def f_token_alias(t, b, v):
+    token(t, "index-line")["value"]["stationery-eink"] = "rgba(0, 0, 0, 0.16)"
     token(t, "dim")["value"]["stationery-eink"] = "{index-line}"
 
 
@@ -194,11 +200,20 @@ for fn, where, what in FIXTURES:
     ok(any(f[0].startswith(where) for f in got),
        "refused: %s (%s)%s" % (what, where, "" if got else ": nothing found"))
 
-# a pending value that is gone fails the check, so PENDING stays true
-v = copy.deepcopy(VOICES)
-v["voices"]["white"]["apps"]["wvkbd"]["swipe"] = "111111"
-_, seen = L.check(None, None, v)
-ok(("white: apps.wvkbd.swipe", "11111160") not in seen, "a pending value that changed is not seen (--check then fails)")
+# a pending value is skipped while it is there; once gone, --check fails (PENDING stays true)
+saved = dict(L.PENDING)
+try:
+    L.PENDING[("white: apps.wvkbd.swipe", "11111160")] = "a test"
+    v = copy.deepcopy(VOICES)
+    v["voices"]["white"]["apps"]["wvkbd"]["swipe"] = "11111160"
+    got, seen = L.check(None, None, v)
+    ok(not any(f[0] == "white: apps.wvkbd.swipe" for f in got) and seen == set(L.PENDING),
+       "a pending value is seen and not reported as a fault")
+    _, seen = L.check()
+    ok(seen != set(L.PENDING), "a pending value that is gone is not seen (--check then fails)")
+finally:
+    L.PENDING.clear()
+    L.PENDING.update(saved)
 
 # ---- not faults -------------------------------------------------------------------------
 
@@ -221,11 +236,14 @@ v = copy.deepcopy(VOICES)
 v["voices"]["stationery"]["apps"]["gtk3"]["soft"] = "#c4c4c4"
 v["voices"]["stationery"]["apps"]["wvkbd"]["stroke"] = "b0b0b0"
 v["voices"]["stationery"]["apps"]["gtk3Rules"][0] = "button { box-shadow: inset 0 3px #d0d0d0; }"
+v["voices"]["stationery"]["apps"]["gtk4"]["ink"] = "#1b1b1b"
+v["voices"]["white"]["apps"]["wvkbd"]["swipe"] = "11111160"
 ch = L.map_apps(v)
 a = v["voices"]["stationery"]["apps"]
-ok(a["gtk3"]["soft"] == "#bbbbbb" and a["wvkbd"]["stroke"] == "aaaaaa" and "#cccccc" in a["gtk3Rules"][0]
-   and len(ch) == 3, "--map-apps rewrites the GTK colours, the GTK rules and the keyboard (without #)")
-ok(a["wvkbd"]["swipe"] == "ffffff60", "--map-apps leaves the keyboard's translucent swipe trail")
+ok(a["gtk3"]["soft"] == "#bbbbbb" and a["wvkbd"]["stroke"] == "bbbbbb" and "#dddddd" in a["gtk3Rules"][0]
+   and a["gtk4"]["ink"] == "#111111", "--map-apps rewrites the GTK colours, the GTK rules and the keyboard (without #)")
+ok(v["voices"]["white"]["apps"]["wvkbd"]["swipe"] == "aaaaaa" and len(ch) == 5,
+   "--map-apps makes the swipe trail the opaque grey it showed over the key face")
 ok(L.map_apps(copy.deepcopy(VOICES)) == [], "this repository's apps section is already mapped")
 
 print("ladder: %s" % ("all passed" if not fails else "%d FAILED" % fails))

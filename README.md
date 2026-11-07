@@ -113,14 +113,15 @@ On e-ink every colour is exactly one of the 16 ladder greys (`#000000`, `#111111
 style uses a gradient or a blur (spec 002 FR-021). `tools/ladder --check` (in `make check`) holds the
 E-ink themes' tokens, the declarations of `bundle.css` that apply in an E-ink theme (the same cascade
 as above: a rule under `[data-theme="stationery-eink"]` replaces the same property of the same
-selector without it; the E-ink rules sit at the end of the file) and the voice data to it. Values
-that wait for a design decision are listed in its `PENDING` with their reason; it prints them on
-every run and fails when one is no longer there.
+selector without it; the E-ink rules sit at the end of the file) and the voice data to it. A value
+that waits for a design decision can be listed in its `PENDING` with its reason (none is now); it
+prints them on every run and fails when one is no longer there.
 
 The panel shows a grey at the level of its top nibble after the desktop's grey curve (gamma 1.8 by
-default), so a grey off the ladder goes to the ladder grey on the same panel level, or the nearest
-level (of two equally near, the lower) where no ladder grey has it: `tools/ladder --map HEX`,
-`tools/ladder --map-apps` (the `apps` section).
+default), so a grey off the ladder goes to the ladder grey on the same panel level (the voice's ink
+where the ink is on it), or the nearest level (of two equally near, the higher) where no ladder grey
+has it: `tools/ladder --map HEX`, `tools/ladder --map-apps` (the `apps` section; a translucent
+keyboard colour first over the key face it is drawn on).
 
 ## Web form
 
@@ -179,11 +180,9 @@ The same key can mean different things in `shell`, `card` and `setup`: each is i
 design (`headH`, `cardR`, `sep`, ...), so they are kept apart, not merged. `shell` also has the C
 table's own keys (`gripGap`, `gripLip` for glassine-swayd's drag handles).
 
-The `apps` values are the GTK and keyboard themes' own greys, not the scheme's: each is on the
-ladder (`tools/ladder --map-apps` put them on the ladder grey of their panel level), but they are not
-the scheme's roles; Stationery's GTK ink is `#222222` where the voice's is `#111111` (the same panel
-level). The keyboard's swipe trail is translucent (`11111160`, `ffffff60`), listed as pending in
-`tools/ladder`.
+The `apps` values are the GTK and keyboard themes' own greys, not the scheme's roles: each is on the
+ladder (`tools/ladder --map-apps` put them on the ladder grey of their panel level). The keyboard's
+swipe trail is opaque: the grey the translucent trail showed over the key face.
 
 Changing a voice: a scheme token is changed in `interleaf/tokens.json`; every other section is
 edited in `voices/voices.json`. Then run `make generate` and commit the data and the generated files

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // SPDX-License-Identifier: GPL-2.0-or-later
 // tools/boards: design boards (spec 003).
-//   boards preview DESIGN_DIR [--port N] [--host H] [--interleaf DIR]
+//   boards preview DESIGN_DIR [--port N] [--host H] [--allow-host NAME]... [--interleaf DIR]
 //   boards check   DESIGN_DIR [--interleaf DIR] [--json FILE|-] [--board FILE]... [--jobs N]
 //                  [--timeout MS] [--chromium PATH]
 //   boards import  CANVAS_EXPORT_DIR DEST_DIR [--force]
@@ -13,7 +13,7 @@ const LIB = path.join(__dirname, '..', 'boards', 'lib');
 
 function usage(code) {
   process.stderr.write([
-    'usage: boards preview DESIGN_DIR [--port N] [--host H] [--interleaf DIR]',
+    'usage: boards preview DESIGN_DIR [--port N] [--host H] [--allow-host NAME]... [--interleaf DIR]',
     '       boards check DESIGN_DIR [--interleaf DIR] [--json FILE|-] [--board FILE]... [--jobs N] [--timeout MS] [--chromium PATH]',
     '       boards import CANVAS_EXPORT_DIR DEST_DIR [--force]',
     '       boards version',
@@ -48,11 +48,12 @@ async function main() {
     return 0;
   }
   if (cmd === 'preview') {
-    const { pos, opt } = parse(rest, { port: 'value', host: 'value', interleaf: 'value' });
+    const { pos, opt } = parse(rest, { port: 'value', host: 'value', 'allow-host': 'list', interleaf: 'value' });
     if (pos.length !== 1) usage(2);
     const { startServer } = require(path.join(LIB, 'server.js'));
-    const srv = await startServer({ design: pos[0], interleaf: opt.interleaf, host: opt.host, port: opt.port ? Number(opt.port) : 4790, live: true });
+    const srv = await startServer({ design: pos[0], interleaf: opt.interleaf, host: opt.host, allowHosts: opt['allow-host'], port: opt.port ? Number(opt.port) : 4790, live: true });
     process.stdout.write('boards preview: ' + srv.design + '\n  Interleaf: ' + srv.interleaf + '\n  ' + srv.url + '_boards/\n');
+    for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, function () { srv.close().then(function () { process.exit(0); }); });
     await new Promise(function () {});
   }
   if (cmd === 'check') {

@@ -13,6 +13,8 @@ function findChromium(given) {
   throw new Error('no Chromium found (tried ' + list.join(', ') + '); set CHROMIUM or pass --chromium, or run in Alpine: tools/in-alpine');
 }
 
+function noSandbox() { return process.env.BOARDS_NO_SANDBOX === '1' || typeof process.getuid === 'function' && process.getuid() === 0; }
+
 // openBrowser({chromium, args}) → a puppeteer Browser
 async function openBrowser(opts) {
   opts = opts || {};
@@ -23,9 +25,11 @@ async function openBrowser(opts) {
   return puppeteer.launch({
     executablePath: findChromium(opts.chromium),
     headless: true,
-    args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--font-render-hinting=none', '--hide-scrollbars',
+    // Chromium's own sandbox stays on, except as root (it refuses to start) or when the caller
+    // runs it in a container that is the sandbox (tools/in-alpine sets BOARDS_NO_SANDBOX=1)
+    args: (noSandbox() ? ['--no-sandbox'] : []).concat(['--disable-dev-shm-usage', '--disable-gpu', '--font-render-hinting=none', '--hide-scrollbars',
       // pages rendered side by side are background tabs: keep their timers and rendering running
-      '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows'].concat(opts.args || []),
+      '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows']).concat(opts.args || []),
   });
 }
 

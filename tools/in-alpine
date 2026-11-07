@@ -17,7 +17,7 @@ mounts="-v $ROOT:$ROOT"
 case "$PWD/" in "$ROOT"/*) ;; *) mounts="$mounts -v $PWD:$PWD" ;; esac
 tty=; [ -t 0 ] && [ -t 1 ] && tty=-t
 # shellcheck disable=SC2086
-exec docker run --rm -i $tty $mounts -w "$PWD" -e HOME=/tmp/home -e CHROMIUM=/usr/bin/chromium-browser \
+exec docker run --rm -i $tty $mounts -w "$PWD" -e HOME=/tmp/home -e CHROMIUM=/usr/bin/chromium-browser -e BOARDS_NO_SANDBOX=1 \
 	-e BOARDS_UID="$(id -u)" -e BOARDS_GID="$(id -g)" -e BOARDS_ROOT="$ROOT" "$IMAGE" sh -euc '
 	mkdir -p /tmp/home && chown "$BOARDS_UID:$BOARDS_GID" /tmp/home
 	[ -x /usr/bin/chromium-browser ] || export CHROMIUM=/usr/bin/chromium

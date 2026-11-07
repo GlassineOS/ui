@@ -12,7 +12,7 @@ const LEAVE_OUT = [
   { test: function (r) { return r === 'SKILL.md'; }, why: "claude.ai's instructions" },
   { test: function (r) { return r === 'index.html'; }, why: "claude.ai's canvas page" },
   { test: function (r) { return /(^|\/)support\.js$/.test(r); }, why: "claude.ai's runtime hook (the preview serves its own)" },
-  { test: function (r) { return r === 'ds' || r.startsWith('ds/'); }, why: 'the embedded design-system copy (served from GlassineOS/ui)' },
+  { test: function (r) { return /(^|\/)ds(\/|$)/.test(r); }, why: 'the embedded design-system copy (served from GlassineOS/ui)' },
   { test: function (r) { return /(^|\/)\./.test(r); }, why: 'hidden' },
 ];
 
@@ -21,7 +21,12 @@ function walk(root) {
   (function w(rel) {
     for (const e of fs.readdirSync(path.join(root, rel), { withFileTypes: true })) {
       const r = rel ? rel + '/' + e.name : e.name;
-      if (e.isDirectory()) { out.push({ rel: r, dir: true }); w(r); } else out.push({ rel: r, dir: false });
+      // lstat: a link is never followed, so nothing outside the export is read or copied
+      const st = fs.lstatSync(path.join(root, r));
+      if (st.isSymbolicLink()) out.push({ rel: r, link: true });
+      else if (st.isDirectory()) { out.push({ rel: r, dir: true }); w(r); }
+      else if (st.isFile()) out.push({ rel: r, dir: false });
+      else out.push({ rel: r, special: true });
     }
   })('');
   return out;
@@ -41,9 +46,12 @@ function importCanvas(src, dest, opts) {
     if (skipped.has(parent)) { skipped.add(e.rel); continue; }
     const rule = LEAVE_OUT.find(function (x) { return x.test(e.rel); });
     if (rule) { left.push({ path: e.rel + (e.dir ? '/' : ''), why: rule.why }); if (e.dir) skipped.add(e.rel); continue; }
+    if (e.link) { left.push({ path: e.rel, why: 'symbolic link (not followed)' }); continue; }
+    if (e.special) { left.push({ path: e.rel, why: 'not a regular file' }); continue; }
     if (e.dir) continue;
     const to = path.join(dest, e.rel);
     fs.mkdirSync(path.dirname(to), { recursive: true });
+    try { if (fs.lstatSync(to).isSymbolicLink()) fs.unlinkSync(to); } catch (x) { /* not there */ } // never write through a link
     if (e.rel === 'canvas.json') {
       const c = JSON.parse(fs.readFileSync(path.join(src, e.rel), 'utf8'));
       const ds = c.designSystems;

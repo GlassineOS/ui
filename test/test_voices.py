@@ -122,7 +122,7 @@ try:
     ok(os.path.exists(gtk4_white), "gen-apps: the plain call still writes")
     g4 = open(os.path.join(rf, "usr", "share", "glassine", "gtk4", "stationery.css")).read()
     g3 = open(os.path.join(rf, "usr", "share", "themes", "glassine-editorial", "gtk-3.0", "gtk.css")).read()
-    ok("${" not in g4 and '"stationery" theme' in g4 and "toast { box-shadow: none; background-color: #141414;" in g4,
+    ok("${" not in g4 and '"stationery" theme' in g4 and "toast { box-shadow: none; background-color: #111111;" in g4,
        "gen-apps: the GTK 4 template filled (stationery)")
     ok("@define-color glassine_btn transparent;" in g3 and "base.css" in g3, "gen-apps: the GTK 3 theme (editorial)")
     ta = open(os.path.join(rf, "usr", "bin", "glassine-theme-apply")).read()

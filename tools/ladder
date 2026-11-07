@@ -1,0 +1,417 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-2.0-or-later
+"""ladder: the E-ink colours on the 16-grey ladder (spec 002 FR-021).
+
+    ladder --check            exit 1 (and say where) when an E-ink colour is off the ladder,
+                              or a style that applies on e-ink has a gradient or a blur
+    ladder --map-apps         rewrite the off-ladder greys of voices/voices.json's "apps"
+                              section to their ladder grey (rule below) and say which
+    ladder --map HEX ...      print the ladder grey of each grey (the same rule)
+
+What is checked:
+    interleaf/tokens.json     every colour token and every shadow token in the E-ink themes
+                              (eink, stationery-eink), with aliases and the fallback followed
+    interleaf/components/     every declaration of bundle.css that applies in an E-ink theme
+      bundle.css              of the web form (eink, white-eink, editorial-eink,
+                              stationery-eink), with var() followed through the tokens and the
+                              voice's --v-* variables. "Applies" is gen-interleaf's cascade
+                              (reads()): a rule under [data-theme^="VOICE"] or
+                              [data-theme="THEME"] replaces the same property of the same
+                              selector without it, so a shared declaration that an E-ink
+                              rule replaces does not apply on e-ink; one scoped to a Paper or
+                              Night theme never does
+    voices/voices.json        every value of every voice (the voice data is the E-ink form),
+                              apart from prose (keys starting with "_", apps.gtk3Note) and
+                              the on-screen keyboard's non-colour options
+
+A colour is exactly one of #000000, #111111, ... #ffffff (six digits; the keyboard's
+options are written without the "#"); "transparent", "currentColor", "inherit" and "none"
+are not colours. A gradient is any *-gradient(); a blur is a box-shadow or text-shadow with
+a blur radius other than 0, filter/backdrop-filter, or blur()/drop-shadow().
+
+The mapping rule (--map, --map-apps): the panel shows a grey v at the level
+lut(v) >> 4 (the top nibble), lut(v) = round(255 (v/255)^1.8): the desktop's grey curve
+at its default gamma 1.8 (GlassineOS/epd: epd_grey_luma_lut, and levels_of keeps the
+top nibble). A grey maps to the ladder grey on the same level; where several ladder greys
+share it (#000000 ... #333333 are all level 0), to the nearest of them in value; where none
+has it, to a ladder grey on the nearest level, and between two equally near levels to the
+lower (darker) one, which is where the hand corrections went (#b4b4b4, level 8, to
+#aaaaaa, level 7).
+"""
+import importlib.machinery
+import importlib.util
+import json
+import math
+import os
+import re
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TOKENS = os.path.join(ROOT, "interleaf", "tokens.json")
+BUNDLE = os.path.join(ROOT, "interleaf", "components", "bundle.css")
+VOICES = os.path.join(ROOT, "voices", "voices.json")
+
+GAMMA = 1.8
+LADDER = tuple("#%02x%02x%02x" % (17 * k, 17 * k, 17 * k) for k in range(16))
+# the E-ink themes of the tokens, and the web form's theme ids that use them
+EINK_TOKEN_THEMES = ("eink", "stationery-eink")
+EINK_WEB_THEMES = ("eink", "white-eink", "editorial-eink", "stationery-eink")
+NOT_COLOURS = ("transparent", "currentcolor", "inherit", "none", "initial", "unset")
+# the on-screen keyboard's options that are not colours (apps.wvkbd)
+WVKBD_PLAIN = ("fn", "R", "gap", "stroke-width")
+# prose in the voice data: not values
+PROSE_KEY = re.compile(r"^_|^gtk3Note$")
+
+# Values that are off the ladder but not changed here: each waits for a design decision.
+# The check prints them on every run and fails if one is no longer there (so the list stays
+# true). (where, value): why
+PENDING = {
+    ("tokens: index-line (stationery-eink)", "rgba(0, 0, 0, 0.16)"):
+        "translucent: the index-card lines, which e-ink does not draw (bundle.css); "
+        "eink has {rule}",
+    ("stationery: apps.wvkbd.swipe", "ffffff60"):
+        "the keyboard's swipe trail is drawn translucent (alpha 0x60) over the keys",
+    ("stationery: apps.wvkbd.swipe-sp", "ffffff60"): "as swipe",
+    ("white: apps.wvkbd.swipe", "11111160"): "as stationery's swipe",
+    ("white: apps.wvkbd.swipe-sp", "11111160"): "as stationery's swipe",
+    ("editorial: apps.wvkbd.swipe", "11111160"): "as stationery's swipe",
+    ("editorial: apps.wvkbd.swipe-sp", "11111160"): "as stationery's swipe",
+}
+
+
+# ---- the mapping rule -------------------------------------------------------------------
+
+def lut(v, gamma=GAMMA):
+    """the desktop's grey curve: lround(255 (v/255)^gamma)"""
+    return int(math.floor(255.0 * (v / 255.0) ** gamma + 0.5))
+
+
+def level(v, gamma=GAMMA):
+    """the panel level (0-15) of the grey value v: the top nibble after the curve"""
+    return lut(v, gamma) >> 4
+
+
+def grey_of(hexv):
+    """'#rrggbb' or 'rrggbb' of a neutral grey -> its value; ValueError otherwise"""
+    m = re.fullmatch(r"#?([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})", hexv)
+    if not m or len(set(c.lower() for c in m.groups())) != 1:
+        raise ValueError("not a grey #rrggbb: %r" % hexv)
+    return int(m.group(1), 16)
+
+
+def to_ladder(hexv, gamma=GAMMA):
+    """the ladder grey (as '#rrggbb') of a grey by the mapping rule"""
+    v = grey_of(hexv)
+    want = level(v, gamma)
+    lv = [(level(17 * k, gamma), 17 * k) for k in range(16)]
+    dist = min(abs(l - want) for l, _ in lv)
+    near = [(l, g) for l, g in lv if abs(l - want) == dist]
+    low = min(l for l, _ in near)            # two equally near levels: the lower
+    g = min((g for l, g in near if l == low), key=lambda g: (abs(g - v), g))
+    return "#%02x%02x%02x" % (g, g, g)
+
+
+# ---- reading values ---------------------------------------------------------------------
+
+HEX = re.compile(r"#[0-9a-fA-F]+\b")
+FUNC_COLOUR = re.compile(r"\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color|color-mix)\(", re.I)
+GRADIENT = re.compile(r"\b[a-z-]*gradient\(", re.I)
+BLUR_FN = re.compile(r"\b(?:blur|drop-shadow)\(", re.I)
+# CSS named colours (CSS Color 4) that are not system words; checked in CSS (bundle.css,
+# apps.gtk3Rules) where a word can be a colour
+NAMED = set("""aliceblue antiquewhite aqua aquamarine azure beige bisque black blanchedalmond blue
+blueviolet brown burlywood cadetblue chartreuse chocolate coral cornflowerblue cornsilk crimson cyan
+darkblue darkcyan darkgoldenrod darkgray darkgreen darkgrey darkkhaki darkmagenta darkolivegreen
+darkorange darkorchid darkred darksalmon darkseagreen darkslateblue darkslategray darkslategrey
+darkturquoise darkviolet deeppink deepskyblue dimgray dimgrey dodgerblue firebrick floralwhite
+forestgreen fuchsia gainsboro ghostwhite gold goldenrod gray green greenyellow grey honeydew hotpink
+indianred indigo ivory khaki lavender lavenderblush lawngreen lemonchiffon lightblue lightcoral
+lightcyan lightgoldenrodyellow lightgray lightgreen lightgrey lightpink lightsalmon lightseagreen
+lightskyblue lightslategray lightslategrey lightsteelblue lightyellow lime limegreen linen magenta
+maroon mediumaquamarine mediumblue mediumorchid mediumpurple mediumseagreen mediumslateblue
+mediumspringgreen mediumturquoise mediumvioletred midnightblue mintcream mistyrose moccasin
+navajowhite navy oldlace olive olivedrab orange orangered orchid palegoldenrod palegreen
+paleturquoise palevioletred papayawhip peachpuff peru pink plum powderblue purple rebeccapurple red
+rosybrown royalblue saddlebrown salmon sandybrown seagreen seashell sienna silver skyblue slateblue
+slategray slategrey snow springgreen steelblue tan teal thistle tomato turquoise violet wheat white
+whitesmoke yellow yellowgreen""".split())
+LENGTH = re.compile(r"^-?(?:\d+\.?\d*|\.\d+)(?:px|em|rem|pt|%)?$")
+
+
+def split_top(s):
+    parts, depth, start = [], 0, 0
+    for i, ch in enumerate(s):
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+        elif ch == "," and depth == 0:
+            parts.append(s[start:i])
+            start = i + 1
+    parts.append(s[start:])
+    return parts
+
+
+def shadow_blurs(s, need_colour=False):
+    """the parts of a shadow list that have a blur radius other than 0 (need_colour: only
+    parts that name a colour, so that a radius list such as "0 10px 10px 0" is not one)"""
+    out = []
+    for part in split_top(s):
+        if need_colour and not (HEX.search(part) or FUNC_COLOUR.search(part) or "var(" in part):
+            continue
+        lengths = [w for w in re.sub(r"\([^()]*\)", " ", part).split() if LENGTH.match(w)]
+        if len(lengths) >= 3 and float(re.sub(r"[a-z%]+$", "", lengths[2])) != 0:
+            out.append(part.strip())
+    return out
+
+
+def colour_faults(s, css=False):
+    """what in the value s is a colour off the ladder (a list of the offending texts)"""
+    bad = []
+    for m in FUNC_COLOUR.finditer(s):
+        depth, i = 0, m.end() - 1
+        for i in range(m.end() - 1, len(s)):
+            depth += {"(": 1, ")": -1}.get(s[i], 0)
+            if depth == 0:
+                break
+        bad.append(s[m.start():i + 1])
+    for m in HEX.finditer(s):
+        if m.group(0).lower() not in LADDER:
+            bad.append(m.group(0))
+    if css:
+        for w in re.findall(r"(?<![\w-])([a-zA-Z]+)(?![\w(-])", re.sub(r"var\([^()]*\)", "", s)):
+            if w.lower() in NAMED:
+                bad.append(w)
+    return bad
+
+
+def style_faults(s, prop=None):
+    """the gradients and blurs in a value (prop: its CSS property, when known)"""
+    bad = ["gradient: " + m.group(0) for m in GRADIENT.finditer(s)]
+    bad += ["blur: " + m.group(0) for m in BLUR_FN.finditer(s)]
+    if prop in ("filter", "backdrop-filter", "-webkit-backdrop-filter") and s.strip() not in ("none", ""):
+        bad.append("%s: %s" % (prop, s.strip()))
+    if prop is None or prop in ("box-shadow", "text-shadow", "-gtk-icon-shadow") or prop.startswith("--"):
+        bad += ["blur: " + p for p in shadow_blurs(s, need_colour=prop is None)]
+    return bad
+
+
+# ---- the three sources ------------------------------------------------------------------
+
+def load_gen():
+    path = os.path.join(ROOT, "tools", "gen-interleaf")
+    loader = importlib.machinery.SourceFileLoader("gen_interleaf", path)
+    mod = importlib.util.module_from_spec(importlib.util.spec_from_loader("gen_interleaf", loader))
+    loader.exec_module(mod)
+    return mod
+
+
+def check_tokens(gen, tok):
+    faults = []
+    for name, (fam, t) in tok.by_name.items():
+        if fam not in ("color", "shadow"):
+            continue
+        for theme in EINK_TOKEN_THEMES:
+            v = tok.resolve(name, theme)
+            if v is None:
+                continue
+            where = "tokens: %s (%s)" % (name, theme)
+            if fam == "color":
+                if v.strip().lower() not in LADDER:
+                    faults.append((where, v, "not a ladder grey"))
+                continue
+            for b in colour_faults(v, css=True):
+                faults.append((where, v, "colour off the ladder: " + b))
+            for b in style_faults(v, "box-shadow"):
+                faults.append((where, v, b))
+    return faults
+
+
+VAR = re.compile(r"var\(\s*--([A-Za-z0-9_-]+)\s*(?:,\s*((?:[^()]|\([^()]*(?:\([^()]*\))*[^()]*\))*))?\)")
+
+
+def effective(gen, theme, css):
+    """{(selector, property): value} of the declarations that apply in a web theme"""
+    eff = {}
+    for sel, decls in gen.css_rules(css):
+        for one in gen.split_top(sel):
+            applies, themed_sel, base = gen.selector_for(one.strip(), theme)
+            if not applies:
+                continue
+            for k, v in decls:
+                old = eff.get((base, k))
+                if old is None or themed_sel or not old[0]:
+                    eff[(base, k)] = (themed_sel, v)
+    return {key: v for key, (_, v) in eff.items()}
+
+
+def expand(gen, tok, theme, eff, v, depth=0):
+    """v with every var() replaced by its value in the theme (a token, a --v-* variable of
+    the voice, or the var()'s own fallback)"""
+    if depth > 20:
+        raise ValueError("var() chain too deep: %r" % v)
+
+    def one(m):
+        name, fb = m.group(1), m.group(2)
+        if name in tok.by_name:
+            r = tok.resolve(name, gen.token_theme(theme))
+            if r is not None:
+                return expand(gen, tok, theme, eff, r, depth + 1)
+        if (":root", "--" + name) in eff:
+            return expand(gen, tok, theme, eff, eff[(":root", "--" + name)], depth + 1)
+        return expand(gen, tok, theme, eff, fb, depth + 1) if fb is not None else ""
+    prev = None
+    while prev != v:
+        prev, v = v, VAR.sub(one, v)
+    return v
+
+
+def check_bundle(gen, tok, css):
+    faults = []
+    for theme in EINK_WEB_THEMES:
+        eff = effective(gen, theme, css)
+        for (sel, prop), raw in sorted(eff.items()):
+            v = expand(gen, tok, theme, eff, raw)
+            where = "bundle.css (%s): %s { %s }" % (theme, sel, prop)
+            for b in colour_faults(v, css=True):
+                faults.append((where, raw, "colour off the ladder: " + b))
+            for b in style_faults(v, prop):
+                faults.append((where, raw, b))
+    return faults
+
+
+GTK_DECL = re.compile(r"([a-z-]+)\s*:\s*([^;{}]*)")
+
+
+def walk(o, path):
+    if isinstance(o, dict):
+        for k, v in o.items():
+            yield from walk(v, path + [k])
+    elif isinstance(o, list):
+        for i, v in enumerate(o):
+            yield from walk(v, path + [str(i)])
+    else:
+        yield path, o
+
+
+def check_voices(data):
+    faults = []
+    for name, voice in data["voices"].items():
+        for path, v in walk(voice, []):
+            if not isinstance(v, str) or any(PROSE_KEY.search(p) for p in path):
+                continue
+            where = "%s: %s" % (name, ".".join(path))
+            if path[:2] == ["apps", "wvkbd"]:
+                if path[2] in WVKBD_PLAIN:
+                    continue
+                if v.lower() not in tuple(c[1:] for c in LADDER):
+                    faults.append((where, v, "not a ladder grey (rrggbb)"))
+                continue
+            if path[:2] == ["apps", "gtk3Rules"]:
+                for prop, val in GTK_DECL.findall(v):
+                    for b in colour_faults(val, css=True):
+                        faults.append((where, v, "colour off the ladder: " + b))
+                    for b in style_faults(val, prop):
+                        faults.append((where, v, b))
+                continue
+            for b in colour_faults(v):
+                faults.append((where, v, "colour off the ladder: " + b))
+            for b in style_faults(v):
+                faults.append((where, v, b))
+    return faults
+
+
+def check(tokens=None, bundle=None, voices=None):
+    """(faults, pending seen): faults = [(where, value, why)]"""
+    gen = load_gen()
+    tok = gen.Tokens(tokens if tokens is not None else json.load(open(TOKENS)))
+    css = bundle if bundle is not None else open(BUNDLE).read()
+    data = voices if voices is not None else json.load(open(VOICES))
+    faults = check_tokens(gen, tok) + check_bundle(gen, tok, css) + check_voices(data)
+    out, seen = [], set()
+    for f in faults:
+        if (f[0], f[1]) in PENDING:
+            seen.add((f[0], f[1]))
+        else:
+            out.append(f)
+    return out, seen
+
+
+# ---- apps -------------------------------------------------------------------------------
+
+def map_apps(data):
+    """rewrite the off-ladder greys of every voice's apps section; [(where, old, new)]"""
+    changes = []
+
+    def fix(where, s, bare):
+        pat = re.compile(r"(?<![0-9A-Za-z])[0-9a-fA-F]{6}(?![0-9A-Za-z])") if bare else re.compile(r"#[0-9a-fA-F]{6}\b")
+
+        def one(m):
+            old = m.group(0).lower()
+            if (old if not bare else "#" + old) in LADDER:
+                return m.group(0)
+            new = to_ladder(old)
+            new = new[1:] if bare else new
+            changes.append((where, old, new))
+            return new
+        return pat.sub(one, s)
+
+    for name, voice in data["voices"].items():
+        apps = voice["apps"]
+        for sec in ("gtk3", "gtk4"):
+            for k in apps[sec]:
+                apps[sec][k] = fix("%s: apps.%s.%s" % (name, sec, k), apps[sec][k], False)
+        apps["gtk3Rules"] = [fix("%s: apps.gtk3Rules.%d" % (name, i), r, False)
+                             for i, r in enumerate(apps["gtk3Rules"])]
+        for k, v in apps["wvkbd"].items():
+            if k not in WVKBD_PLAIN and re.fullmatch(r"[0-9a-fA-F]{6}", v):
+                apps["wvkbd"][k] = fix("%s: apps.wvkbd.%s" % (name, k), v, True)
+    return changes
+
+
+def main(argv):
+    if argv == ["--check"]:
+        try:
+            faults, seen = check()
+        except (KeyError, ValueError) as e:
+            print("ladder: %s" % (e.args[0] if e.args else e), file=sys.stderr)
+            return 1
+        for f in faults:
+            print("ladder: %s: %s: %s" % f, file=sys.stderr)
+        gone = [k for k in PENDING if k not in seen]
+        for k in sorted(seen):
+            print("ladder: pending (a design decision): %s: %s: %s" % (k[0], k[1], PENDING[k]))
+        for k in gone:
+            print("ladder: %s: %s is listed as pending but no longer there: remove it from PENDING"
+                  % k, file=sys.stderr)
+        if faults or gone:
+            print("ladder: %d E-ink value(s) off the ladder (spec 002 FR-021)" % (len(faults) + len(gone)),
+                  file=sys.stderr)
+            return 1
+        return 0
+    if argv == ["--map-apps"]:
+        text = open(VOICES).read()
+        data = json.loads(text)
+        changes = map_apps(data)
+        for c in changes:
+            print("%s: #%s -> %s" % (c[0], c[1].lstrip("#"), c[2] if c[2].startswith("#") else "#" + c[2]))
+        if changes:
+            with open(VOICES, "w") as fh:
+                fh.write(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
+        return 0
+    if len(argv) >= 2 and argv[0] == "--map":
+        try:
+            for h in argv[1:]:
+                v = grey_of(h)
+                n = to_ladder(h)
+                print("#%s level %d -> %s level %d" % (h.lstrip("#").lower(), level(v), n, level(grey_of(n))))
+        except ValueError as e:
+            print("ladder: %s" % e, file=sys.stderr)
+            return 1
+        return 0
+    print(__doc__, file=sys.stderr)
+    return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

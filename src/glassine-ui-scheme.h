@@ -4,7 +4,7 @@
 #ifndef GLASSINE_UI_SCHEME_H
 #define GLASSINE_UI_SCHEME_H
 #define UI_RULE UI_RGB(0xbbbbbb)
-#define UI_DIM UI_RGB(0xb4b4b4)
+#define UI_DIM UI_RGB(0xaaaaaa)
 #define UI_PAPER UI_RGB(0xffffff)
 #define UI_HIGHLIGHT UI_RGB(0xcccccc)
 #endif

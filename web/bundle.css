@@ -229,3 +229,20 @@
 [data-theme^="stationery"] .il-footer a:hover { color: var(--gilt); }
 
 @media (prefers-reduced-motion: reduce) { .il-page * { transition: none !important; } }
+
+/* ---------- E-ink ----------
+   On e-ink every colour is one of the 16 ladder greys and nothing is a gradient or a blur
+   (tools/ladder checks it): the panel shows each pixel as one grey level. These rules
+   replace, in the E-ink themes only, the declarations above that would break that. */
+/* White: the highlighter band under a link, flat (the lower part of the line, as the
+   Paper gradient's hard stop draws it) */
+[data-theme="eink"], [data-theme="white-eink"] { --v-link-bg: none; }
+[data-theme="eink"] .il-link, [data-theme="white-eink"] .il-link { box-shadow: inset 0 -0.5em 0 var(--highlight); }
+/* Stationery: flat lips for the translucent ones, no drop shadow, no index-card lines
+   (patterns switch off on e-ink), the stamp's inner ring as an outline */
+[data-theme="stationery-eink"] { --v-ui-edge: 0 0 0 1px var(--gilt), 0 2px 0 var(--shade); }
+[data-theme="stationery-eink"] .il-search { box-shadow: inset 0 2px 0 var(--shade), 0 0 0 1px var(--gilt); }
+[data-theme="stationery-eink"] .il-admonition__seal { color: var(--on-accent); }
+[data-theme="stationery-eink"] .il-verified::before { background: none; outline: 1px solid var(--gold); outline-offset: -6px; }
+[data-theme="stationery-eink"] .il-code { box-shadow: 0 0 0 1px var(--rule); }
+[data-theme="stationery-eink"] .il-code pre { background: var(--paper); }

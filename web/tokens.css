@@ -186,8 +186,8 @@
   --ink: #111111;
   --ink-soft: #444444;
   --rule: #bbbbbb;
-  --shade: #b4b4b4;
-  --dim: #b4b4b4;
+  --shade: #aaaaaa;
+  --dim: #aaaaaa;
   --accent: #111111;
   --accent-2: #111111;
   --accent-3: #111111;
@@ -206,10 +206,10 @@
   --focus: #111111;
   --focus-on-leather: var(--focus);
   --focus-on-cream: var(--focus);
-  --keycap: 0 3px 0 #b4b4b4;
+  --keycap: 0 3px 0 #aaaaaa;
   --passe-partout: 0 0 0 5px #ffffff, 0 0 0 6px #111111;
   --offset: 3px 3px 0 #111111;
-  --card-stack: 0 3px 0 #b4b4b4;
+  --card-stack: 0 3px 0 #aaaaaa;
 }
 [data-theme="stationery-eink"] {
   --paper: #ffffff;
@@ -217,8 +217,8 @@
   --ink: #111111;
   --ink-soft: #444444;
   --rule: #bbbbbb;
-  --shade: #b4b4b4;
-  --dim: #b4b4b4;
+  --shade: #aaaaaa;
+  --dim: #aaaaaa;
   --accent: #222222;
   --accent-2: #222222;
   --accent-3: #222222;
@@ -237,7 +237,7 @@
   --focus: #111111;
   --focus-on-leather: #bbbbbb;
   --focus-on-cream: #111111;
-  --keycap: 0 3px 0 #b4b4b4;
+  --keycap: 0 3px 0 #aaaaaa;
   --passe-partout: 0 0 0 5px #ffffff, 0 0 0 6px #111111;
   --offset: 3px 3px 0 #111111;
   --sheet-stack: 0 0 0 1.5px #111111;

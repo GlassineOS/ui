@@ -209,7 +209,10 @@ tools/in-alpine CMD...      # CMD in alpine:3.24 with Chromium and node, as the 
   board's own enum and boolean props. Every file a board loads as `support.js` is the runtime;
   `ds/interleaf/*` at any depth comes from Interleaf (default: this checkout's `interleaf/`), never from
   a copy in the design folder. Saving a board, the canvas or Interleaf reloads the page. It listens on
-  127.0.0.1; `--host 0.0.0.0` lets the hub reach it. Node only, no npm packages.
+  127.0.0.1; `--host 0.0.0.0` lets the hub reach it. It answers only requests addressed to
+  `localhost`, an IP address or the `--host` name (so a web page can't reach it through a name of its
+  own, DNS rebinding), and doesn't follow a link that leads out of the design folder or Interleaf.
+  Node only, no npm packages.
 - `check` renders every board of the folder in headless Chromium at its canvas size (else its
   `$preview` size) and writes a JSON report (`--json -` for stdout) and a summary: per board the render,
   script and load errors (`errors`), the features outside the subset (`unsupported`), console errors

@@ -86,12 +86,31 @@ function within(root, rel) {
   return r === '' || !r.startsWith('..') && !path.isAbsolute(r) ? p : null;
 }
 
-function sendFile(res, file) {
-  fs.stat(file, function (err, st) {
-    if (err || !st.isFile()) { res.writeHead(404, { 'content-type': 'text/plain' }); res.end('not found\n'); return; }
-    res.writeHead(200, { 'content-type': MIME[path.extname(file).toLowerCase()] || 'application/octet-stream', 'cache-control': 'no-cache' });
-    fs.createReadStream(file).on('error', function () { res.destroy(); }).pipe(res);
+// the file only if it is inside root once links are resolved: a link in the design folder that
+// points out of it is not followed
+function sendFile(res, file, root) {
+  const notFound = function () { res.writeHead(404, { 'content-type': 'text/plain' }); res.end('not found\n'); };
+  fs.realpath(file, function (err, real) {
+    const r = err ? null : path.relative(root, real);
+    if (r === null || r.startsWith('..') || path.isAbsolute(r)) return notFound();
+    fs.stat(real, function (err2, st) {
+      if (err2 || !st.isFile()) return notFound();
+      res.writeHead(200, { 'content-type': MIME[path.extname(file).toLowerCase()] || 'application/octet-stream', 'cache-control': 'no-cache' });
+      fs.createReadStream(real).on('error', function () { res.destroy(); }).pipe(res);
+    });
   });
+}
+
+// A Host header the server answers: localhost, an IP address, or the name it was started with. A
+// page on another site that rebinds its own name to this address (DNS rebinding) sends that name,
+// and gets nothing.
+function hostAllowed(header, bound) {
+  if (!header) return false;
+  let name;
+  try { name = new URL('http://' + header).hostname.toLowerCase(); } catch (e) { return false; }
+  if (name === 'localhost' || name.endsWith('.localhost')) return true;
+  if (/^\[[0-9a-f:.]+\]$/.test(name) || /^\d{1,3}(\.\d{1,3}){3}$/.test(name)) return true;
+  return !!bound && name === String(bound).toLowerCase().replace(/^\[|\]$/g, '');
 }
 
 // startServer({design, interleaf, host = '127.0.0.1', port = 0, live = true}) → {url, port, close()}
@@ -100,6 +119,8 @@ function startServer(opts) {
   const interleaf = path.resolve(opts.interleaf || path.join(UI_ROOT, 'interleaf'));
   if (!fs.existsSync(path.join(design))) throw new Error('no design folder at ' + design);
   if (!fs.existsSync(path.join(interleaf, 'tokens.json'))) throw new Error('no Interleaf at ' + interleaf + ' (tokens.json missing); pass --interleaf DIR');
+  // the roots with their own links resolved, for the check in sendFile()
+  const realDesign = fs.realpathSync(design), realInterleaf = fs.realpathSync(interleaf), realPreview = fs.realpathSync(PREVIEW_DIR);
   const host = opts.host || '127.0.0.1';
   const live = opts.live !== false;
   const clients = new Set();
@@ -114,6 +135,7 @@ function startServer(opts) {
   });
 
   function handle(req, res) {
+    if (!hostAllowed(req.headers.host, host)) { res.writeHead(421, { 'content-type': 'text/plain' }); res.end('unknown host\n'); return; }
     let u;
     try { u = new URL(req.url, 'http://x'); } catch (e) { res.writeHead(400); res.end(); return; }
     let p;
@@ -136,10 +158,10 @@ function startServer(opts) {
       res.end(body);
       return;
     }
-    if (p === '/_boards/' || p === '/_boards/index.html') return sendFile(res, path.join(PREVIEW_DIR, 'index.html'));
+    if (p === '/_boards/' || p === '/_boards/index.html') return sendFile(res, path.join(PREVIEW_DIR, 'index.html'), realPreview);
     if (p.startsWith('/_boards/')) {
       const f = within(PREVIEW_DIR, p.slice('/_boards/'.length));
-      return f ? sendFile(res, f) : (res.writeHead(404), res.end());
+      return f ? sendFile(res, f, realPreview) : (res.writeHead(404), res.end());
     }
     if (/(^|\/)support\.js$/.test(p)) {
       res.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8', 'cache-control': 'no-cache' });
@@ -149,12 +171,12 @@ function startServer(opts) {
     const ds = /(?:^|\/)ds\/interleaf\/(.*)$/.exec(p);
     if (ds) {
       const f = within(interleaf, ds[1]);
-      return f ? sendFile(res, f) : (res.writeHead(404), res.end());
+      return f ? sendFile(res, f, realInterleaf) : (res.writeHead(404), res.end());
     }
     const f = within(design, p.slice(1));
     if (!f) { res.writeHead(404); res.end(); return; }
     if (fs.existsSync(f) && fs.statSync(f).isDirectory()) { res.writeHead(302, { location: '/_boards/' }); res.end(); return; }
-    sendFile(res, f);
+    sendFile(res, f, realDesign);
   }
 
   if (live) {

@@ -4,6 +4,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
+const http = require('http');
 const path = require('path');
 const ROOT = path.resolve(__dirname, '..', '..');
 const { startServer, describe } = require('../../boards/lib/server.js');
@@ -57,6 +58,67 @@ test('server: a NUL byte in the path is refused and the server stays up', async 
     }
     assert.strictEqual((await fetch(srv.url + 'Main.dc.html')).status, 200);
   } finally { await srv.close(); }
+});
+
+// GET with a given Host header, or none for null (fetch can't set one)
+function getHost(url, host) {
+  return new Promise((resolve, reject) => {
+    const u = new URL(url);
+    const o = host === null ? { setHost: false } : { headers: { host: host } };
+    http.get(Object.assign({ host: u.hostname, port: u.port, path: u.pathname }, o), (res) => {
+      let body = '';
+      res.on('data', (d) => { body += d; });
+      res.on('end', () => resolve({ status: res.statusCode, body: body }));
+    }).on('error', reject);
+  });
+}
+
+test('server: links that leave the design folder or Interleaf are not followed', async () => {
+  const base = path.join(TMP, 'serve-links'), design = path.join(base, 'design'), il = path.join(base, 'interleaf');
+  fs.rmSync(base, { recursive: true, force: true });
+  fs.mkdirSync(path.join(design, 'data'), { recursive: true });
+  fs.mkdirSync(path.join(base, 'outside'));
+  fs.mkdirSync(il);
+  fs.writeFileSync(path.join(il, 'tokens.json'), '{"name":"t"}');
+  fs.writeFileSync(path.join(base, 'secret.txt'), 'SECRET');
+  fs.writeFileSync(path.join(base, 'outside', 'x.txt'), 'SECRET');
+  fs.writeFileSync(path.join(design, 'A.txt'), 'inside');
+  fs.symlinkSync('../secret.txt', path.join(design, 'link.txt'));
+  fs.symlinkSync('../outside', path.join(design, 'dir'));
+  fs.symlinkSync('../A.txt', path.join(design, 'data', 'same.txt'));
+  fs.symlinkSync('../secret.txt', path.join(il, 'leak.json'));
+  // the design folder itself may be a link
+  fs.symlinkSync('design', path.join(base, 'design-link'));
+  const srv = await startServer({ design: path.join(base, 'design-link'), interleaf: il, live: false });
+  try {
+    const get = async (p) => { const r = await fetch(srv.url + p); return { status: r.status, body: await r.text() }; };
+    assert.deepStrictEqual(await get('A.txt'), { status: 200, body: 'inside' });
+    assert.deepStrictEqual(await get('data/same.txt'), { status: 200, body: 'inside' });
+    for (const p of ['link.txt', 'dir/x.txt', 'ds/interleaf/leak.json']) {
+      const r = await get(p);
+      assert.strictEqual(r.status, 404, p);
+      assert.doesNotMatch(r.body, /SECRET/, p);
+    }
+  } finally { await srv.close(); }
+});
+
+test('server: answers only Host names it can trust (no DNS rebinding)', async () => {
+  const srv = await startServer({ design: SAMPLES, interleaf: INTERLEAF, live: false });
+  try {
+    const u = srv.url + 'Main.dc.html';
+    for (const h of ['127.0.0.1:' + srv.port, 'localhost:' + srv.port, 'localhost', '[::1]:' + srv.port, '192.168.1.20:' + srv.port]) {
+      assert.strictEqual((await getHost(u, h)).status, 200, h);
+    }
+    for (const h of ['evil.example:' + srv.port, 'evil.example', '127.0.0.1@evil.example', null]) {
+      const r = await getHost(u, h);
+      // without a Host, node's own check answers 400 before ours
+      assert.strictEqual(r.status, h === null ? 400 : 421, String(h));
+      assert.doesNotMatch(r.body, /DCLogic/, String(h));
+    }
+    assert.strictEqual((await getHost(srv.url + '_boards/api/canvas', 'evil.example')).status, 421);
+  } finally { await srv.close(); }
+  const named = await startServer({ design: SAMPLES, interleaf: INTERLEAF, live: false, host: 'localhost' });
+  try { assert.strictEqual((await getHost(named.url + 'Main.dc.html', 'LOCALHOST:' + named.port)).status, 200); } finally { await named.close(); }
 });
 
 test('server: refuses a missing Interleaf', async () => {

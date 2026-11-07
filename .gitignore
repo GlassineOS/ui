@@ -2,3 +2,4 @@
 /specs/*/*
 !/specs/*/spec.md
 __pycache__/
+/node_modules/

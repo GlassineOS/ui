@@ -220,6 +220,13 @@ it, and every case the fixture's `expect` lists must be caught: its kind, theme,
 state, its colours, and a ratio at most the one measured. The test prints the case that matched
 each expectation.
 
+Known limits of the measure (follow-ups):
+
+- **The worst colour is the darker or the lighter extreme** of the backdrop under the glyphs. When
+  the text's luminance lies between the two, a mid-tone between them (a mid-grey stripe, a
+  gradient step) can be nearer to it than either, and is not found. At 4.5:1 that needs both
+  extremes to pass with the text between them; at the 3:1 of large text the window is wider.
+
 ## Voices
 
 Contract: voice data, version 1 (`"contract": 1` in the file).

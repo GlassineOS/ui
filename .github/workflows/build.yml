@@ -1,5 +1,10 @@
 name: build
-on: [push, pull_request, workflow_dispatch]
+# one run per change: pushes to main, and pull requests (a push to a PR branch runs as the PR)
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
@@ -7,7 +12,28 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+      # a pull request runs the library checks only when tools/ci-scope says they can be
+      # affected; main and manual runs always run everything
+      - name: scope
+        id: scope
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = pull_request ]; then
+            scope=$(git diff --name-only HEAD^1 HEAD | sh tools/ci-scope)
+          else
+            scope=lib
+          fi
+          echo "scope=$scope" >> "$GITHUB_OUTPUT"
+          echo "checks: $scope"
+      - name: make check-forms on Alpine
+        if: steps.scope.outputs.scope == 'forms'
+        run: |
+          docker run --rm -v "$PWD":/src -w /src alpine:3.24 sh -euc '
+            apk add -q python3 make
+            make check-forms'
       - name: make check on Alpine
+        if: steps.scope.outputs.scope == 'lib'
         run: |
           docker run --rm -v "$PWD":/src -w /src alpine:3.24 sh -euc '
             apk add -q build-base pkgconf cairo-dev pango-dev librsvg-dev glib-dev \
@@ -22,4 +48,4 @@ jobs:
           docker run --rm -v "$PWD":/src -w /src -e CHROMIUM=/usr/bin/chromium-browser alpine:3.24 sh -euc '
             apk add -q chromium nodejs npm font-dejavu make
             npm ci --ignore-scripts --no-audit --no-fund
-            make boards-check'
+            make check-boards boards-check'

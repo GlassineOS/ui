@@ -1,0 +1,21 @@
+<!-- @dsCard group="Content" height=260 subtitle="Rules, not stripes" -->
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Table — preview</title></head>
+<body style="margin:0">
+<div class="il-page" style="padding:24px 32px">
+  <div class="il-table-wrap">
+    <table class="il-table">
+      <thead><tr><th scope="col">Stage</th><th scope="col">What it is</th><th scope="col">Replaceable?</th></tr></thead>
+      <tbody>
+        <tr><td><strong>PBL</strong></td><td>primary boot loader, in the SoC’s ROM</td><td>no</td></tr>
+        <tr><td><strong>XBL</strong></td><td>sets up RAM, checks the next stage’s signature</td><td>no</td></tr>
+        <tr><td><strong>ABL</strong></td><td>the Android bootloader: fastboot, slots, kernel loading</td><td><span class="il-mark">yes, if unfused</span></td></tr>
+        <tr><td><strong>Kernel</strong></td><td>Linux, from an Android boot image</td><td><span class="il-mark">yes</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<script>/* static preview */</script>
+</body>
+</html>

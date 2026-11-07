@@ -1,0 +1,102 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-2.0-or-later
+"""export-claude DIR: stage Interleaf in the file layout of a claude.ai design-system
+project, for publishing it there (002 FR-040). It writes files and nothing else: it
+publishes nothing and reads nothing from claude.ai (this repository is the source).
+
+    DIR/README.md                         interleaf/README.md (the guidelines)
+    DIR/tokens.json                       interleaf/tokens.json, every theme's fallback
+                                          written out (claude.ai has only "the first theme")
+    DIR/components/bundle.css             interleaf/components/bundle.css
+    DIR/components/NAME/README.md         interleaf/components/NAME/ (the files there)
+    DIR/components/NAME/preview.html
+    DIR/design-system.json                the project's metadata, naming this repository
+                                          as the last writer
+
+DIR must not exist or be empty.
+"""
+import importlib.machinery
+import importlib.util
+import json
+import os
+import shutil
+import subprocess
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SRC = os.path.join(ROOT, "interleaf")
+COMPONENT_FILES = ("README.md", "preview.html")
+
+
+def load_gen():
+    path = os.path.join(ROOT, "tools", "gen-interleaf")
+    loader = importlib.machinery.SourceFileLoader("gen_interleaf", path)
+    mod = importlib.util.module_from_spec(importlib.util.spec_from_loader("gen_interleaf", loader))
+    loader.exec_module(mod)
+    return mod
+
+
+def tokens_for_claude(gen, data):
+    """the tokens with each FALLBACK theme's borrowed values written out, so that claude.ai
+    (where a missing value is the first theme's) shows what the web form and the voices show"""
+    data = json.loads(json.dumps(data))
+    tok = gen.Tokens(data)
+    for theme, parent in gen.FALLBACK.items():
+        for fam in ("color", "shadow"):
+            for t in data.get(fam, {}).get("tokens", []):
+                v = t["value"]
+                if isinstance(v, dict) and theme not in v:
+                    got = tok.raw(t["name"], parent, eink_only=True)
+                    if got is not None:
+                        v[theme] = got
+    return data
+
+
+def last_change():
+    """this repository as the writer: its commit, when git can say"""
+    try:
+        sha, at = subprocess.run(["git", "-C", ROOT, "log", "-1", "--format=%h %cI"], check=True,
+                                 capture_output=True, text=True).stdout.split()
+    except (OSError, subprocess.CalledProcessError, ValueError):
+        return None
+    return {"by": "GlassineOS/ui", "at": at, "via": "CI · GlassineOS/ui@" + sha,
+            "note": "Published from GlassineOS/ui: change Interleaf there, not here."}
+
+
+def design_system():
+    ds = {"v": 3, "layout": "files", "title": "Interleaf", "namespace": "Interleaf", "libraries": [],
+          "sections": {}, "groups": [], "assetGroups": {}, "blobs": {},
+          "docs": {"readme": "project/README.md", "sections": []}}
+    lc = last_change()
+    if lc:
+        ds["lastChange"] = lc
+    return ds
+
+
+def export(out):
+    if os.path.exists(out) and os.listdir(out):
+        raise SystemExit("export-claude: %s is not empty" % out)
+    gen = load_gen()
+    os.makedirs(os.path.join(out, "components"), exist_ok=True)
+    shutil.copyfile(os.path.join(SRC, "README.md"), os.path.join(out, "README.md"))
+    data = tokens_for_claude(gen, json.load(open(os.path.join(SRC, "tokens.json"))))
+    with open(os.path.join(out, "tokens.json"), "w") as fh:
+        fh.write(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
+    shutil.copyfile(os.path.join(SRC, "components", "bundle.css"), os.path.join(out, "components", "bundle.css"))
+    for name in sorted(os.listdir(os.path.join(SRC, "components"))):
+        src = os.path.join(SRC, "components", name)
+        if not os.path.isdir(src):
+            continue
+        os.makedirs(os.path.join(out, "components", name))
+        for f in COMPONENT_FILES:
+            if os.path.exists(os.path.join(src, f)):
+                shutil.copyfile(os.path.join(src, f), os.path.join(out, "components", name, f))
+    with open(os.path.join(out, "design-system.json"), "w") as fh:
+        fh.write(json.dumps(design_system(), indent=2, ensure_ascii=False) + "\n")
+    print("export-claude: staged in %s" % out)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2 or sys.argv[1].startswith("-"):
+        sys.exit(__doc__)
+    export(sys.argv[1])

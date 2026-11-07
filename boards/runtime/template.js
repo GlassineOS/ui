@@ -376,7 +376,11 @@
           const code = n.children.length ? n.children[0].text.trim() : '';
           if (!A.src || code) { issue('unsupported', 'inline <script> in <head>', '', n.line); continue; }
           const s = decode(A.src.value || '', issue, A.src.line);
-          if (/(^|\/)support\.js$/.test(s)) continue; // the runtime's own hook
+          if (/(^|\/)support\.js$/.test(s)) {
+            // the runtime's own hook: it must run while the page is parsed
+            for (const a of n.attrs) if (['src', 'type'].indexOf(a.name) < 0 || a.name === 'type' && a.value && a.value !== 'text/javascript') issue('unsupported', 'attribute of the support.js script', a.name, a.line);
+            continue;
+          }
           if (/^[a-z][a-z0-9+.-]*:|^\/\//i.test(s)) { issue('unsupported', 'remote <script> in <head>', s, n.line); continue; }
           doc.headScripts.push({ src: s, line: n.line });
           continue;

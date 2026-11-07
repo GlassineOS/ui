@@ -190,6 +190,7 @@ test('unsupported board structure is named', () => {
   assert.ok(features(parse('<div></div>', undefined, '<script>window.x = 1</script>\n')).includes('inline <script> in <head>'));
   assert.ok(features(parse('<div></div>', undefined, '<script src="https://cdn.example/x.js"></script>\n')).includes('remote <script> in <head>'));
   assert.ok(features(parse('<div></div>', undefined, '<style>a{}</style>\n')).includes('element in <head>'));
+  assert.ok(features(T.parseBoard(board('<div></div>').replace('<script src="./support.js">', '<script defer src="./support.js">'), 'X')).includes('attribute of the support.js script'));
   assert.ok(features(T.parseBoard('<html><body><div></div></body></html>', 'X')).includes('board without <x-dc>'));
   const extra = T.parseBoard(board('<div></div>').replace('</body>', '<p>stray</p></body>'), 'X');
   assert.ok(features(extra).includes('content in <body> outside <x-dc> and the logic script'));

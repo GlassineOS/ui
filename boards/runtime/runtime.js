@@ -62,14 +62,16 @@
     return scripts.get(src);
   }
 
+  const helmets = new Set();
   function injectHelmet(doc) {
     for (const n of doc.helmet) {
       const key = n.tag + '|' + JSON.stringify(n.attrs) + '|' + n.text;
-      if (document.head.querySelector('[data-dc-helmet="' + CSS.escape(key) + '"]')) continue;
+      if (helmets.has(key)) continue;
+      helmets.add(key);
       const el = document.createElement(n.tag);
       for (const k of Object.keys(n.attrs)) el.setAttribute(k, n.attrs[k]);
       if (n.text) el.textContent = n.text;
-      el.setAttribute('data-dc-helmet', key);
+      el.setAttribute('data-dc-helmet', doc.file);
       document.head.appendChild(el);
     }
   }
@@ -269,8 +271,9 @@
   async function start() {
     const url = location.href.split('#')[0].split('?')[0];
     status.board = fileOf(url);
-    const pt = document.querySelector('plaintext');
-    if (pt) pt.remove();
+    // the parser stopped at <plaintext>; should the board have been parsed anyway (support.js not
+    // loaded as a plain script), its raw template must not show beside the mount
+    for (const e of document.querySelectorAll('plaintext, x-dc, script[data-dc-script]')) e.remove();
     const root = document.createElement('div');
     root.id = 'dc-root';
     root.style.display = 'contents';

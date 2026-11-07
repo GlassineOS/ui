@@ -26,8 +26,8 @@ make install             # PREFIX=/usr/local DESTDIR= PYTHONDIR=<site-packages u
 make check               # generated forms current, the library, the tests
 ```
 
-Needs cairo, pango, librsvg, glib (dev), python3, PyGObject (Gtk 3, Pango), pycairo. CI runs
-`make check` in `alpine:3.24` (`.github/workflows/build.yml` lists the packages).
+Needs cairo, pango, librsvg, glib (dev), python3, PyGObject (Gtk 3, Pango), pycairo, and node 24 or later
+(the board tests). CI runs `make check` in `alpine:3.24` (`.github/workflows/build.yml` lists the packages).
 
 `make check` runs:
 

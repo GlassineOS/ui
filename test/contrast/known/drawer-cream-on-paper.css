@@ -1,0 +1,9 @@
+/* Known failure: cream navigation on paper in the Stationery drawer.
+ *
+ * Built from the Navigation guideline: Material gives each drawer level the page background, and
+ * in Stationery each one must paint `accent` itself because the cream text is only legible on
+ * leather ("The audit measured cream on paper at 1.08:1"). The fix is the rule that paints leather
+ * on every drawer panel; this puts the page background back on the drawer's nested levels, as
+ * Material does, while their text stays `on-accent`.
+ * Expected: on-accent #f1e6cb on paper #f6efdd, 1.08:1, in Stationery Paper. */
+[data-theme^="stationery"] .il-drawer :is(.il-nav, .il-nav-group) { background: var(--paper); }

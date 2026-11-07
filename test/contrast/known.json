@@ -1,0 +1,17 @@
+{
+ "about": "The acceptance set of known contrast failures (spec 002 Acceptance, SC-002). Each fixture puts one failure back into the styles or tokens; test/contrast/known-failures.js runs the check with it and expects at least one case that fails with the fixture and passes without it.",
+ "known": [
+  { "fixture": "known/drawer-cream-on-paper.css", "name": "cream navigation on paper in the Stationery drawer",
+    "components": ["Navigation"], "themes": ["stationery-paper"], "expect": { "kind": "text", "element": "il-drawer" } },
+  { "fixture": "known/night-details-summary.css", "name": "Night details summaries",
+    "components": ["Details"], "themes": ["stationery-night"], "expect": { "kind": "text", "element": "summary" } },
+  { "fixture": "known/focus-pen-on-leather.css", "name": "focus rings on leather",
+    "components": ["Navigation", "Footer"], "themes": ["stationery-paper", "stationery-eink"], "expect": { "kind": "focus-ring" } },
+  { "fixture": "known/focus-pen-on-cream.css", "name": "focus rings on cream",
+    "components": ["Header"], "themes": ["stationery-paper", "stationery-eink"], "expect": { "kind": "focus-ring", "element": "il-search" } },
+  { "fixture": "known/footer-credit-ink-soft.css", "name": "the footer credit",
+    "components": ["Footer"], "themes": ["stationery-paper", "stationery-eink"], "expect": { "kind": "text", "element": "il-footer" } },
+  { "fixture": "known/night-code-comments.css", "name": "Night code comments",
+    "components": ["CodeBlock"], "themes": ["stationery-night"], "expect": { "kind": "text", "element": "span.c" } }
+ ]
+}

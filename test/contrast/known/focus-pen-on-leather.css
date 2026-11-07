@@ -1,0 +1,9 @@
+/* Known failure: focus rings on leather.
+ *
+ * Built from the Navigation, Footer and Header guidelines and the focus tokens: before
+ * `focus-on-leather` the ring was the pen everywhere ("The navy pen on leather measured
+ * 1.01-1.13:1"). This sets the token back to the pen in every Stationery theme, so the links on the
+ * leather desk, in the drawer and in the footer get the blue-black pen ring.
+ * Expected: #23315a on the leathers (#5a1e1a, #1e3a2c, #1b2a45) and leather-dark, 1.01-1.31:1,
+ * in Stationery Paper; #111111 on #111111 in Stationery E-ink. */
+[data-theme^="stationery"] { --focus-on-leather: var(--focus); }

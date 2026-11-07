@@ -1,0 +1,9 @@
+/* Known failure: Night details summaries.
+ *
+ * Built from the Details guideline: a fixed text colour over a themed background "is what made
+ * the Stationery Night summary invisible (#2a2420 on #2a241d, 1:1)", and Material clears the
+ * summary's background unless a voice rule beats its selector. This gives the Stationery summary
+ * Stationery Paper's ink as a fixed colour and lets the page show through, as it did before the
+ * pairing rule (sheet + ink) and the specificity note.
+ * Expected: #2a2420 on #2a241d, 1:1, in Stationery Night. */
+[data-theme^="stationery"] .il-details > summary { background: transparent; color: #2a2420; }

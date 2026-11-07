@@ -1,0 +1,33 @@
+{
+ "about": "Known open contrast failures on main (tools/contrast --open). Each is reported as \"open\" and does not fail the check until it is fixed; an entry that no longer fails is stale and fails the check, so remove it with the fix. Every entry has its measurement and a proposed fix.",
+ "open": [
+  {
+   "component": "Header",
+   "kind": "generated",
+   "pseudo": "::placeholder",
+   "element": "div.il-page > header.il-header > label.il-search > input",
+   "measured": "the search field's placeholder has the browser's fixed grey #757575: 4.02:1 on Stationery Paper's cream #f6efdd, 4.07:1 on White Night #121212, 3.33-4.38:1 in 10 of the 27 combinations",
+   "proposal": "ink-soft, the guidelines' secondary text (5:1 in every theme), as a themed colour instead of a fixed one: .il-search input::placeholder { color: var(--ink-soft); opacity: 1; }"
+  },
+  {
+   "component": "Link",
+   "kind": "text",
+   "element": "div.il-page > p > a.il-link",
+   "themes": [
+    "white-night"
+   ],
+   "measured": "pen 1: pen #9db2ff over the link's highlight band #5a4710: 4.37:1 (< 4.5:1); pens 2 and 3 pass",
+   "proposal": "White Night highlight #5a4710 -> #4f3e0e: 5.05:1 for the pen over the band; ink #eeeeee on it goes from 7.72:1 to 8.93:1"
+  },
+  {
+   "component": "Header",
+   "kind": "focus-ring",
+   "element": "div.il-page > header.il-header > div > button.il-btn",
+   "themes": [
+    "stationery-paper"
+   ],
+   "measured": "the focus-on-cream ring (#3a110f) sits 2px off the button, on the header's leather-dark (#3a110f): 1:1, invisible. What changes is 1px more gold under it (the halo), about 2.95:1 by area",
+   "proposal": "keep the 2px offset and draw the halo outside the ring: box-shadow: 0 0 0 2px var(--paper), 0 0 0 6px var(--focus-on-leather). Field | cream gap | dark ring | gold halo | leather: the ring stands against the field, the halo (7.3:1) against the leather, as the Header guideline describes"
+  }
+ ]
+}

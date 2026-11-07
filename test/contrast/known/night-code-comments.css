@@ -1,0 +1,9 @@
+/* Known failure: Night code comments.
+ *
+ * Built from the guidelines' accessibility section ("Stationery Night ink-soft raised to
+ * #ccbfa4") and the CodeBlock guideline (comments in ink-soft, highlighted lines on highlight).
+ * The value before the raise is not in this repository: its history starts with the fixed
+ * system. #b3a58a stands in for it: the same warm hue a step darker than #ccbfa4, still 6.3:1 on
+ * Night paper, so only the comment on the highlighted line (#5a4a1e) fails, at 3.56:1.
+ * Expected: the CodeBlock comment "# expect v5" in Stationery Night. */
+[data-theme="stationery-night"] { --ink-soft: #b3a58a; }

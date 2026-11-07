@@ -31,6 +31,8 @@ make check               # generated forms current, the library, the tests
 make check-forms         # the tokens, the voice data and their generated forms only (python3, seconds)
 make check-lib           # the library build and its tests (the sample sheet takes most of the time)
 make check-boards        # the design-board tools under node (no browser)
+make contrast-check      # the contrast check of every component (Chromium; see "Contrast check")
+make contrast-test       # its self-test and the known failures it must catch (Chromium)
 make generate            # write the generated forms (tools/gen-interleaf, then tools/gen-voices)
 ```
 
@@ -41,7 +43,8 @@ CI runs `make check` on main. On a pull request, `tools/ci-scope` reads the chan
 none of them can reach the library (`src/`, `python/`, `voices/`, the build files, the library
 tests), it runs `make check-forms` alone. A token change that reaches the library rewrites
 `voices/voices.json`, so it always gets the full run. The boards job runs `make check-boards` and
-`make boards-check` on every change.
+`make boards-check` on every change, the contrast job `make contrast-check contrast-test` (its
+report, `out/contrast.json`, is kept as the run's artifact).
 
 `make check` runs:
 
@@ -58,6 +61,8 @@ tests), it runs `make check-forms` alone. A token change that reaches the librar
 - `test/test_paint.py`: the Python drawing API call by call.
 - `test/c-api.sh`: a separate program built with `pkg-config glassine-ui` against an installed copy.
 - `test/pc-prefix.sh`: the installed `.pc` names the prefix it was installed with.
+- `test/contrast/*.test.js` (node): the contrast check's arithmetic (WCAG ratios and targets, the
+  PNG decoder, the worst colour beneath, the focus-ring measure). See "Contrast check".
 - `test/boards/*.test.js` (node): the board reader (holes, attributes, props, the subset checks, the
   renderer without a DOM), the preview server and the import tool. See "Boards".
 - `test/sheet.sh`: the sample sheet (every box, rule, text style and an icon in the three voices) drawn
@@ -132,6 +137,51 @@ Load `tokens.css`, then `bundle.css`. Two attributes choose the look:
 
 Without either attribute a page gets `white-paper` and pen 1. The fonts are loaded as the component
 styles do it (an `@import` of Google Fonts at the top of `bundle.css`).
+
+## Contrast check
+
+Spec 002 FR-020. `tools/contrast` (or `make contrast-check`, in Alpine: `tools/in-alpine make
+contrast-check`) renders every component preview of `interleaf/components/` with the web form, in
+all 27 combinations of `web/combinations.json`, at desktop (1280px) and phone (390px) width, in
+headless Chromium, and measures it against the guidelines' targets (WCAG 2.2 AA):
+
+- **Text**, 4.5:1 (3:1 at 24px, or 18.66px at weight 700): every visible text node, and the text the
+  styles generate (`::before` and `::after` content such as the section numerals, list markers,
+  `::first-letter`, placeholders). The text's colour is its computed colour (alpha and opacity
+  included). The colour beneath is read from a render with all text and text decorations made
+  transparent, over the box of the text's glyphs; of its darkest and lightest pixel the one with
+  the lower ratio counts. So patterns, highlighter bands, tabs and images count with their worst
+  colour. Text that scrolls under a frame is read 2px inside the scroller's edges.
+- **Focus rings**, 3:1: every link, button, field and summary is rendered with `:focus` and
+  `:focus-visible` forced (CDP), and `:focus-within` on its ancestors, and without. Each pixel that
+  changes has the ratio of its focused to its unfocused colour; the ring's ratio is the best one
+  that as many pixels reach as a 1px line around the element has. A ring in the colour of what it
+  covers measures 1:1, and a neighbour lying under part of a 2px ring does not hide it.
+- **States**: default; hover (forced) and focus on every interactive element, in every pen; text
+  inside an `aria-current` element is reported as `current`; every closed `<details>` is opened
+  (`open`).
+- **Disabled controls** (`:disabled`, `aria-disabled="true"`, the `dim` token) are exempt from WCAG:
+  their cases are `info`, never failures.
+- **E-ink** is measured on the token values as rendered; how the display engine turns them into
+  panel levels is not part of the check.
+- Requests that leave the local server are blocked, so web fonts fall back; contrast does not depend
+  on the font family.
+
+The report (`--json FILE`) has one case per measurement: `result` (`pass`, `fail`, `open`, `info`),
+`ratio`, `target`, `fg` and `bg` (the worst pair), `kind` (`text`, `generated`, `focus-ring`),
+`pseudo`, `element`, `text`, `control` (the hovered or focused element), `state`, `component`,
+`voice`, `scheme`, `pen`, `theme`, `width`. A short summary groups the failures. Options narrow the
+run: `--component NAME`, `--theme ID|VOICE|SCHEME`, `--width desktop|phone`, `--jobs N`.
+
+Known open failures on main are listed in `test/contrast/open.json`, each with its measurement and a
+proposed fix: they are reported as `open` and do not fail the check. An entry that no longer fails is
+stale and fails the check, so it goes with its fix.
+
+`make contrast-test` runs `test/contrast/selftest.js` (a page of known answers: patterns, bands,
+generated text, large text, the disabled exemption, rings, hover, current, open) and
+`test/contrast/known-failures.js`: the acceptance set of known failures (spec 002 SC-002), one fixture
+each in `test/contrast/known/` (listed in `known.json`, how each was built in its comment). Each is
+injected on its own (`--inject`) and must make a case fail that passes without it.
 
 ## Voices
 

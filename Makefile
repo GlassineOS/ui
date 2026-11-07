@@ -6,6 +6,8 @@
 #   make check           the generated forms are current, the library builds, the tests pass:
 #                        check-forms (python3 alone, seconds), check-lib, check-boards (node)
 #   make boards-check    the design-board samples in headless Chromium (in Alpine: tools/in-alpine)
+#   make contrast-check  the contrast check of every component (Chromium; tools/in-alpine)
+#   make contrast-test   the contrast check's self-test and the known failures it must catch
 VERSION = 1.0.0
 SOMAJOR = 1
 PREFIX ?= /usr/local
@@ -81,7 +83,7 @@ check-lib: all
 
 # the design-board tools under node (reader, renderer, server, import); no browser
 check-boards:
-	$(NODE) --test test/boards/*.test.js
+	$(NODE) --test test/boards/*.test.js test/contrast/*.test.js
 
 # the sample boards rendered and clicked through (needs Chromium; tools/in-alpine provides one)
 # the samples read the real Interleaf (default); BOARDS_INTERLEAF=DIR serves another copy as is
@@ -90,9 +92,20 @@ boards-check:
 	tools/boards check boards/samples $(if $(BOARDS_INTERLEAF),--interleaf $(BOARDS_INTERLEAF)) --json $(O)/boards-check.json
 	$(NODE) test/boards/samples-e2e.js
 
+# the contrast check (spec 002 FR-020): every component in all 27 combinations, desktop and phone
+# width, hover, focus, current and open states, against WCAG 2.2 AA (needs Chromium: tools/in-alpine).
+# Known open failures are listed in test/contrast/open.json. contrast-test: the check's self-test,
+# and the known failures of the acceptance set, each of which it must catch.
+CONTRAST_JOBS ?= 8
+contrast-check:
+	$(NODE) tools/contrast --jobs $(CONTRAST_JOBS) --open test/contrast/open.json --json $(O)/contrast.json
+contrast-test:
+	$(NODE) test/contrast/selftest.js
+	CONTRAST_JOBS=$(CONTRAST_JOBS) $(NODE) test/contrast/known-failures.js
+
 clean:
 	rm -f $(O)/libglassine-ui.so* $(O)/glassine-ui.pc $(O)/pc.vars
 	rm -rf $(O)/test
 
-.PHONY: all generate install check check-forms check-lib check-boards boards-check clean FORCE
+.PHONY: all generate install check check-forms check-lib check-boards boards-check contrast-check contrast-test clean FORCE
 FORCE:

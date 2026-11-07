@@ -1,0 +1,11 @@
+/* Known failure: focus rings on the cream controls in the leather header.
+ *
+ * Built from the Header guideline: "The cream search field and buttons use a focus-on-cream ring
+ * with a focus-on-leather halo ... The pen ring measured 1.01-1.46:1 here." This takes the ring
+ * and halo away again: the search field and the buttons get the pen ring and keep their usual
+ * edges, so the ring lies on the header's leather-dark.
+ * Expected: the search field's ring, #23315a on #3a110f (Stationery Paper) and #111111 on
+ * #111111 (Stationery E-ink). */
+[data-theme^="stationery"] :is(.il-search, .il-btn):focus-within,
+[data-theme^="stationery"] .il-header .il-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; box-shadow: var(--v-ui-edge); }
+[data-theme^="stationery"] .il-search:focus-within { box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.25), 0 0 0 1px var(--gilt); }

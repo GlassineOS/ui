@@ -46,7 +46,8 @@ in review.
 - **FR-001**: Boards in claude.ai's design-component format render: templated text and attributes, conditions,
   repetition, nested boards, events, state and the component logic, and the head content a board declares.
 - **FR-002**: The renderer is the organization's own, written from the format reference that claude.ai serves
-  with every design canvas. No part of claude.ai's editor or runtime is in the organization's sources.
+  with every design canvas. Neither that reference nor any part of claude.ai's editor or runtime is in the
+  organization's sources.
 - **FR-005**: The supported subset of the format is versioned here. A board that uses anything outside it fails
   as in FR-003, which is how a change of the format on claude.ai's side shows.
 - **FR-003**: Format features the renderer does not support fail visibly, naming the board and the feature;
@@ -69,7 +70,8 @@ in review.
 
 **Publishing to claude.ai**
 - **FR-030**: On request, a repository's boards are published to their claude.ai canvas, together with the
-  Interleaf version of spec 002 FR-040. Nothing is read from claude.ai.
+  Interleaf version of spec 002 FR-040. claude.ai is never a source: the boards are changed only in their
+  repositories.
 
 ## Contracts
 
@@ -94,6 +96,8 @@ Device-neutral. No device risk: nothing flashes or touches boot, recovery or use
 
 - The designer persona and the hub's browser view (hub).
 - Editing boards in a visual editor; the boards are edited as files.
+- Noticing when claude.ai changes the meaning of a format feature the subset already supports (it matters only
+  for publishing, FR-030).
 - Implementing the designed screens in the programs.
 
 ## Success criteria

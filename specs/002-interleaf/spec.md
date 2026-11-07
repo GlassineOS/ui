@@ -62,9 +62,11 @@ scheme and pen, locally with one command and on a published page.
 - **FR-020**: A contrast check covers every voice × scheme × pen combination (27), at desktop and phone width,
   every component, and the states the guidelines name: hover and focus in every pen, the current navigation
   item, opened details, text over patterns and highlighter bands (against the worst colour beneath), and text
-  that the styles generate themselves. Targets are the guidelines' (WCAG 2.2 AA).
-- **FR-021**: In the E-ink schemes every colour maps to exactly one of the panel's 16 greys (its nearest level,
-  never halfway between two), and no style uses a gradient or a blur.
+  that the styles generate themselves. Targets are the guidelines' (WCAG 2.2 AA). In the E-ink schemes contrast
+  is measured on the token values; how the display engine turns them into panel levels is not part of this
+  check.
+- **FR-021**: In the E-ink schemes every colour is exactly one of the 16 ladder greys (`#000000`, `#111111` …
+  `#ffffff`), and no style uses a gradient or a blur.
 - **FR-022**: Each component's preview is rendered in every combination and compared with a stored reference;
   a difference produces an image an agent and a reviewer can look at.
 - **FR-023**: All checks run without a display and give results an agent can read (pass or fail per case, the
@@ -77,7 +79,7 @@ scheme and pen, locally with one command and on a published page.
 
 **Publishing to claude.ai**
 - **FR-040**: On request, a version of the system is published to the claude.ai design system and into the
-  copies embedded in the design canvases there. Nothing is read from claude.ai.
+  copies embedded in the design canvases there. claude.ai is never a source: Interleaf is changed only here.
 
 ## Contracts
 

@@ -226,6 +226,19 @@ Known limits of the measure (follow-ups):
   the text's luminance lies between the two, a mid-tone between them (a mid-grey stripe, a
   gradient step) can be nearer to it than either, and is not found. At 4.5:1 that needs both
   extremes to pass with the text between them; at the 3:1 of large text the window is wider.
+- **Generated text is found at the default state only.** `::before`, `::after` and `::marker` are
+  read from the document tree once per page, so generated text that exists only on hover or focus,
+  or only inside a `<details>` once it is opened, is probably not measured.
+- **Text is read where it lies at scroll position 0.** Text scrolled out of a scroller's clip (the
+  code block's long lines at phone width, and what lies under them on the highlighted line) is not
+  measured.
+- **`currentColor` drawings leave the backdrop with the text.** The backdrop makes all text
+  transparent, so a border, outline, shadow or background drawn in `currentColor` disappears from
+  it too, and a dark shape beneath text can drop out of the extremes. For focus rings that makes a
+  false failure, not a false pass. Today the bundle's one use is the summary's chevron
+  (`.il-details > summary::before`), which lies beside the text.
+- **The colour is the computed `color`.** A style with `-webkit-text-fill-color` or a blend mode
+  would paint another colour than the one measured; the bundle has none.
 
 ## Voices
 

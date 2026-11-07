@@ -294,9 +294,7 @@ tools/in-alpine CMD...      # CMD in alpine:3.24 with Chromium and node, as the 
   starting with `.`, no symbolic link that leads outside, no NUL in a path. It listens on 127.0.0.1;
   `--host 0.0.0.0` lets the hub reach it. It answers only requests whose `Host` (and `Origin`, when
   sent) is localhost, the bound address (every local address when bound to all), or a name given
-  with `--allow-host` (the hub's name for this machine, for example). Boards are code from a canvas
-  export: they run in the browser with the preview's origin, so they can reach its pages and the
-  canvas API, and they may load from other sites (fonts). Preview only designs you would run.
+  with `--allow-host` (the hub's name for this machine, for example).
 - `check` renders every board of the folder in headless Chromium at its canvas size (else its
   `$preview` size) and writes a JSON report (`--json -` for stdout) and a summary: per board the render,
   script and load errors (`errors`), the features outside the subset (`unsupported`), console errors
@@ -304,13 +302,18 @@ tools/in-alpine CMD...      # CMD in alpine:3.24 with Chromium and node, as the 
   (`external`, such as fonts: listed, not failures). It exits 1 when a board fails or a board on the
   canvas is missing. It needs Chromium and `puppeteer-core` (`npm ci`; the version is pinned in
   `package.json` and `package-lock.json`); `tools/in-alpine tools/boards check …` provides both.
-  Chromium runs with its own sandbox, except as root or with `BOARDS_NO_SANDBOX=1` (`tools/in-alpine`
-  sets it: the container is the sandbox there).
+  Chromium runs with its sandbox, except as root or in a container, where it can't start
+  (`BOARDS_NO_SANDBOX=1` turns it off elsewhere).
 - `import` copies a canvas exported from claude.ai into a design folder: boards, `canvas.json` and the
   sample data. It leaves out claude.ai's own files (`artifact-type/`, `SKILL.md`, `index.html`, any
-  `support.js`), the embedded `ds/` copies (at any depth) and every symbolic link (never followed, so
-  nothing outside the export is copied), removes `designSystems` from `canvas.json`, and lists what it
-  left out.
+  `support.js`), the embedded `ds/` copy (in any folder) and symbolic links (never followed), removes
+  `designSystems` from `canvas.json`, and lists what it left out.
+
+What a board can do: its logic is JavaScript from the export, and `preview` and `check` run it as it
+is, so open only boards you would run anyway. A board page has the same origin as the preview's own
+pages and API (`/_boards/`), so it can script them and read everything the server serves: the design
+folder and Interleaf, nothing outside them. It can also load from and send to other sites. The
+preview has no login: with `--host`, anyone who can reach the port can read the design folder.
 
 `make boards-check` renders the samples in `boards/samples/` (every feature of the subset, against
 this checkout's `interleaf/`; `BOARDS_INTERLEAF=DIR` for another copy) and clicks

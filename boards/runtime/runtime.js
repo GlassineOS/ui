@@ -256,9 +256,8 @@
     const url = new URL(node.file, rec.url).href;
     let child = boards.get(url);
     if (!child) { loadBoard(url); child = boards.get(url); }
-    const style = 'position:relative;' + styleText(node.style ? T.evalBinding(node.style, scope, function (m) {
-      report({ board: rec.file, kind: 'render', feature: '', detail: '', line: node.line, message: m });
-    }) : '');
+    const onError = function (message) { report({ board: rec.file, kind: 'render', feature: '', detail: '', line: node.line, message: message }); };
+    const style = 'position:relative;' + styleText(node.style ? T.evalBinding(node.style, scope, onError) : '');
     if (child.state === 'ready') return h('div', { 'data-dc-import': node.name, style: style }, h(Boundary, { board: child.file }, h(child.Class, props)));
     if (child.state === 'error') return h('div', { 'data-dc-import': node.name, style: style }, errorBox(child.file, child.problems.map(issueLine)));
     child.waiters.add(owner);

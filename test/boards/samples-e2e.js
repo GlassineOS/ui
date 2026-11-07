@@ -37,6 +37,7 @@ async function main() {
     assert.strictEqual(rep.summary.clean, 0);
     assert.deepStrictEqual(by['Bad.dc.html'].unsupported.map((e) => e.feature).sort(), ['element', 'expression in a hole']);
     assert.ok(by['Host.dc.html'].unsupported.every((e) => e.board === 'Bad.dc.html'));
+    assert.ok(by['Host.dc.html'].errors.some((e) => e.board === 'Host.dc.html' && e.kind === 'render' && e.line === 10 && /\{\{ s \}\} inside a string is object/.test(e.message)), JSON.stringify(by['Host.dc.html'].errors));
     assert.match(by['Throws.dc.html'].errors[0].message, /in text is object/);
     // a <dc-import> cycle is named on the importing board's line, not a stack overflow
     const cyc = (b) => by[b].unsupported.filter((e) => e.feature === 'dc-import cycle').map((e) => e.board + ':' + e.line + ' ' + e.detail).sort();

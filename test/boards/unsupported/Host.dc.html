@@ -7,10 +7,12 @@
 </head>
 <body>
 <x-dc>
-<div><p>Imports a board outside the subset.</p><dc-import name="Bad" hint-size="100px,40px"></dc-import></div>
+<div><p>Imports a board outside the subset, with an object inside its style.</p><dc-import name="Bad" style="color: {{ s }}" hint-size="100px,40px"></dc-import></div>
 </x-dc>
 <script type="text/x-dc" data-dc-script>
-class Component extends DCLogic {}
+class Component extends DCLogic {
+  renderVals() { return { s: { not: 'a colour' } }; }
+}
 </script>
 </body>
 </html>

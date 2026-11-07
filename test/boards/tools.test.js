@@ -7,8 +7,9 @@ const fs = require('fs');
 const http = require('http');
 const path = require('path');
 const ROOT = path.resolve(__dirname, '..', '..');
-const { startServer, describe } = require('../../boards/lib/server.js');
+const { startServer, describe, listBoards } = require('../../boards/lib/server.js');
 const { importCanvas } = require('../../boards/lib/import.js');
+const { needsNoSandbox } = require('../../boards/lib/browser.js');
 const SAMPLES = path.join(ROOT, 'boards', 'samples');
 const INTERLEAF = path.join(__dirname, 'fixtures', 'interleaf');
 const TMP = path.join(ROOT, 'out', 'test', 'boards');
@@ -31,6 +32,16 @@ test('describe: dc-import cycles are named on the importing line', () => {
   assert.deepStrictEqual(by['loop/Pong.dc.html'].map((i) => [i.line, i.detail]), [[12, 'loop/Pong.dc.html → Ping.dc.html → loop/Pong.dc.html']]);
   assert.deepStrictEqual(by['Missing.dc.html'], []);
   assert.deepStrictEqual(by['Host.dc.html'], []);
+});
+
+test('listBoards: leaves out ds/ at any depth', () => {
+  const dir = path.join(TMP, 'list');
+  fs.rmSync(dir, { recursive: true, force: true });
+  for (const f of ['A.dc.html', 'sub/B.dc.html', 'ds/X.dc.html', 'sub/ds/Y.dc.html', '.hidden/Z.dc.html']) {
+    fs.mkdirSync(path.dirname(path.join(dir, f)), { recursive: true });
+    fs.writeFileSync(path.join(dir, f), '<html></html>');
+  }
+  assert.deepStrictEqual(listBoards(dir), ['A.dc.html', 'sub/B.dc.html']);
 });
 
 test('server: runtime at any support.js, Interleaf from the checkout, design files, canvas API', async () => {
@@ -148,13 +159,14 @@ test('import: leaves out claude.ai files and the embedded ds/, drops designSyste
   w('history/B.dc.html', '<html></html>');
   w('data/fixtures.js', 'window.X = 1;');
   w('ds/interleaf/tokens.json', '{}');
+  w('history/ds/interleaf/tokens.json', '{}');
   w('artifact-type/x.json', '{}');
   w('SKILL.md', '#');
   w('index.html', '<html></html>');
   w('support.js', '');
   const r = importCanvas(src, dest);
   assert.deepStrictEqual(r.copied.sort(), ['A.dc.html', 'canvas.json', 'data/fixtures.js', 'history/B.dc.html']);
-  assert.deepStrictEqual(r.left.map((l) => l.path).sort(), ['SKILL.md', 'artifact-type/', 'canvas.json: designSystems', 'ds/', 'index.html', 'support.js']);
+  assert.deepStrictEqual(r.left.map((l) => l.path).sort(), ['SKILL.md', 'artifact-type/', 'canvas.json: designSystems', 'ds/', 'history/ds/', 'index.html', 'support.js']);
   const c = JSON.parse(fs.readFileSync(path.join(dest, 'canvas.json'), 'utf8'));
   assert.strictEqual(c.designSystems, undefined);
   assert.deepStrictEqual(c.boards, { 'A.dc.html': { x: 0 } });
@@ -257,4 +269,12 @@ test('import: an embedded ds/ is left out at any depth', () => {
   const r = importCanvas(src, dest);
   assert.deepStrictEqual(r.copied.sort(), ['canvas.json', 'sub/A.dc.html']);
   assert.ok(r.left.some((l) => l.path === 'sub/ds/'));
+});
+
+test('browser: Chromium keeps its sandbox unless root, in a container, or BOARDS_NO_SANDBOX=1', () => {
+  assert.strictEqual(needsNoSandbox({}, false, false), false);
+  assert.strictEqual(needsNoSandbox({}, true, false), true);
+  assert.strictEqual(needsNoSandbox({}, false, true), true);
+  assert.strictEqual(needsNoSandbox({ BOARDS_NO_SANDBOX: '1' }, false, false), true);
+  assert.strictEqual(needsNoSandbox({ BOARDS_NO_SANDBOX: '0' }, false, false), false);
 });

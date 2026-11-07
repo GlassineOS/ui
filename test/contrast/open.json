@@ -2,16 +2,6 @@
  "about": "Known open contrast failures on main (tools/contrast --open). Each is reported as \"open\" and does not fail the check until it is fixed; an entry that no longer fails is stale and fails the check, so remove it with the fix. Every entry has its measurement and a proposed fix.",
  "open": [
   {
-   "component": "Link",
-   "kind": "text",
-   "element": "div.il-page > p > a.il-link",
-   "themes": [
-    "white-night"
-   ],
-   "measured": "pen 1: pen #9db2ff over the link's highlight band #5a4710: 4.37:1 (< 4.5:1); pens 2 and 3 pass",
-   "proposal": "White Night highlight #5a4710 -> #4f3e0e: 5.05:1 for the pen over the band; ink #eeeeee on it goes from 7.72:1 to 8.93:1"
-  },
-  {
    "component": "Header",
    "kind": "focus-ring",
    "element": "div.il-page > header.il-header > div > button.il-btn",

@@ -21,7 +21,12 @@ function walk(root) {
   (function w(rel) {
     for (const e of fs.readdirSync(path.join(root, rel), { withFileTypes: true })) {
       const r = rel ? rel + '/' + e.name : e.name;
-      if (e.isDirectory()) { out.push({ rel: r, dir: true }); w(r); } else out.push({ rel: r, dir: false });
+      // lstat: a link in an export could point anywhere on this machine; it is never followed
+      const st = fs.lstatSync(path.join(root, r));
+      if (st.isSymbolicLink()) out.push({ rel: r, link: true });
+      else if (st.isDirectory()) { out.push({ rel: r, dir: true }); w(r); }
+      else if (st.isFile()) out.push({ rel: r, dir: false });
+      else out.push({ rel: r, special: true });
     }
   })('');
   return out;
@@ -41,6 +46,8 @@ function importCanvas(src, dest, opts) {
     if (skipped.has(parent)) { skipped.add(e.rel); continue; }
     const rule = LEAVE_OUT.find(function (x) { return x.test(e.rel); });
     if (rule) { left.push({ path: e.rel + (e.dir ? '/' : ''), why: rule.why }); if (e.dir) skipped.add(e.rel); continue; }
+    if (e.link) { left.push({ path: e.rel, why: 'a symbolic link (not followed)' }); continue; }
+    if (e.special) { left.push({ path: e.rel, why: 'not a regular file' }); continue; }
     if (e.dir) continue;
     const to = path.join(dest, e.rel);
     fs.mkdirSync(path.dirname(to), { recursive: true });

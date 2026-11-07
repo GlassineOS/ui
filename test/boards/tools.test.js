@@ -90,3 +90,21 @@ test('import: leaves out claude.ai files and the embedded ds/, drops designSyste
   assert.throws(() => importCanvas(src, dest), /not empty/);
   assert.doesNotThrow(() => importCanvas(src, dest, { force: true }));
 });
+
+test('import: symbolic links are left out, never followed', () => {
+  const base = path.join(TMP, 'links'), src = path.join(base, 'export'), dest = path.join(base, 'design');
+  fs.rmSync(base, { recursive: true, force: true });
+  fs.mkdirSync(path.join(src, 'data'), { recursive: true });
+  fs.mkdirSync(path.join(base, 'outside'));
+  fs.writeFileSync(path.join(base, 'secret.txt'), 'SECRET');
+  fs.writeFileSync(path.join(base, 'outside', 'x.dc.html'), 'SECRET');
+  fs.writeFileSync(path.join(src, 'canvas.json'), '{"boards":{}}');
+  fs.writeFileSync(path.join(src, 'A.dc.html'), '<html></html>');
+  fs.symlinkSync(path.join(base, 'secret.txt'), path.join(src, 'data', 'fixtures.js'));
+  fs.symlinkSync('../outside', path.join(src, 'dir'));
+  fs.symlinkSync('missing', path.join(src, 'dangling.js'));
+  const r = importCanvas(src, dest);
+  assert.deepStrictEqual(r.copied.sort(), ['A.dc.html', 'canvas.json']);
+  assert.deepStrictEqual(r.left.filter((l) => /symbolic link/.test(l.why)).map((l) => l.path).sort(), ['dangling.js', 'data/fixtures.js', 'dir']);
+  for (const p of ['data/fixtures.js', 'dir', 'dangling.js']) assert.ok(!fs.existsSync(path.join(dest, p)), p);
+});

@@ -221,6 +221,8 @@ tools/in-alpine CMD...      # CMD in alpine:3.24 with Chromium and node, as the 
   (`external`, such as fonts: listed, not failures). It exits 1 when a board fails or a board on the
   canvas is missing. It needs Chromium and `puppeteer-core` (`npm ci`; the version is pinned in
   `package.json` and `package-lock.json`); `tools/in-alpine tools/boards check …` provides both.
+  Chromium runs with its sandbox, except as root or in a container, where it can't start
+  (`BOARDS_NO_SANDBOX=1` turns it off elsewhere).
 - `import` copies a canvas exported from claude.ai into a design folder: boards, `canvas.json` and the
   sample data. It leaves out claude.ai's own files (`artifact-type/`, `SKILL.md`, `index.html`, any
   `support.js`), the embedded `ds/` copy (in any folder) and symbolic links (never followed), removes

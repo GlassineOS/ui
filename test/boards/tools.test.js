@@ -9,6 +9,7 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..', '..');
 const { startServer, describe, listBoards } = require('../../boards/lib/server.js');
 const { importCanvas } = require('../../boards/lib/import.js');
+const { needsNoSandbox } = require('../../boards/lib/browser.js');
 const SAMPLES = path.join(ROOT, 'boards', 'samples');
 const INTERLEAF = path.join(__dirname, 'fixtures', 'interleaf');
 const TMP = path.join(ROOT, 'out', 'test', 'boards');
@@ -189,4 +190,12 @@ test('import: symbolic links are left out, never followed', () => {
   assert.deepStrictEqual(r.copied.sort(), ['A.dc.html', 'canvas.json']);
   assert.deepStrictEqual(r.left.filter((l) => /symbolic link/.test(l.why)).map((l) => l.path).sort(), ['dangling.js', 'data/fixtures.js', 'dir']);
   for (const p of ['data/fixtures.js', 'dir', 'dangling.js']) assert.ok(!fs.existsSync(path.join(dest, p)), p);
+});
+
+test('browser: Chromium keeps its sandbox unless root, in a container, or BOARDS_NO_SANDBOX=1', () => {
+  assert.strictEqual(needsNoSandbox({}, false, false), false);
+  assert.strictEqual(needsNoSandbox({}, true, false), true);
+  assert.strictEqual(needsNoSandbox({}, false, true), true);
+  assert.strictEqual(needsNoSandbox({ BOARDS_NO_SANDBOX: '1' }, false, false), true);
+  assert.strictEqual(needsNoSandbox({ BOARDS_NO_SANDBOX: '0' }, false, false), false);
 });

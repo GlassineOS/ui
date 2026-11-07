@@ -73,9 +73,10 @@ three schemes (Paper, Night, E-ink), with three pens. `interleaf/` holds it:
 
 A theme is a voice and a scheme: `white-paper`, `white-night`, `editorial-paper`, `editorial-night`,
 `stationery-paper`, `stationery-night`, `eink` (White and Editorial) and `stationery-eink`. A token's
-value is one value for every theme, or one per theme. A theme without a value of its own takes
-`stationery-eink` -> `eink`'s, then the first theme's (`white-paper`). A value `{name}` is an alias
-of another token in the same theme.
+value is one value for every theme, or one per theme. Where a theme has no value of its own,
+`stationery-eink` takes `eink`'s, and every theme then takes the first theme's (`white-paper`'s): a
+Night theme without its own `passe-partout` has Paper's. A value `{name}` is an alias of another
+token in the same theme.
 
 The voices' scheme (`voices/voices.json`, section `scheme`) is generated from the E-ink themes:
 White and Editorial from `eink`, Stationery from `stationery-eink`, with every alias resolved and

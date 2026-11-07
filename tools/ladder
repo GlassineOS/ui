@@ -25,7 +25,7 @@ What is checked:
                               the on-screen keyboard's non-colour options
 
 A colour is exactly one of #000000, #111111, ... #ffffff (six digits; the keyboard's
-options are written without the "#"); "transparent", "currentColor", "inherit" and "none"
+options are written without the "#", and may end in "ff", opaque); "transparent", "currentColor", "inherit" and "none"
 are not colours. A gradient is any *-gradient(); a blur is a box-shadow or text-shadow with
 a blur radius other than 0, filter/backdrop-filter, or blur()/drop-shadow().
 
@@ -302,8 +302,11 @@ def check_voices(data):
             if path[:2] == ["apps", "wvkbd"]:
                 if path[2] in WVKBD_PLAIN:
                     continue
-                if v.lower() not in tuple(c[1:] for c in LADDER):
-                    faults.append((where, v, "not a ladder grey (rrggbb)"))
+                vv = v.lower()
+                if vv.endswith("ff") and len(vv) == 8:      # rrggbbff: opaque
+                    vv = vv[:6]
+                if vv not in tuple(c[1:] for c in LADDER):
+                    faults.append((where, v, "not an opaque ladder grey (rrggbb, rrggbbff)"))
                 continue
             if path[:2] == ["apps", "gtk3Rules"]:
                 for prop, val in GTK_DECL.findall(v):
@@ -367,12 +370,13 @@ def map_apps(data):
             if k not in WVKBD_PLAIN and re.fullmatch(r"[0-9a-fA-F]{6}", v):
                 kb[k] = fix("%s: apps.wvkbd.%s" % (name, k), v, True)
         # a translucent colour (the swipe trail, drawn over the key's face: fg, or fg-sp for
-        # the special keys) becomes the ladder grey of what it showed there
+        # the special keys) becomes the ladder grey of what it showed there, written with
+        # alpha ff: wvkbd keeps its default alpha for a swipe colour without one
         for k, v in kb.items():
-            if k not in WVKBD_PLAIN and re.fullmatch(r"[0-9a-fA-F]{8}", v):
+            if k not in WVKBD_PLAIN and re.fullmatch(r"[0-9a-fA-F]{8}", v) and not v.lower().endswith("ff"):
                 face = kb["fg-sp" if k.endswith("-sp") else "fg"]
                 g = over(v[:6], int(v[6:], 16), face)
-                new = to_ladder("%02x%02x%02x" % (g, g, g), ink=ink)[1:]
+                new = to_ladder("%02x%02x%02x" % (g, g, g), ink=ink)[1:] + "ff"
                 changes.append(("%s: apps.wvkbd.%s" % (name, k), v.lower(), new))
                 kb[k] = new
     return changes

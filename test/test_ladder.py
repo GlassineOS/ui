@@ -242,7 +242,7 @@ ch = L.map_apps(v)
 a = v["voices"]["stationery"]["apps"]
 ok(a["gtk3"]["soft"] == "#bbbbbb" and a["wvkbd"]["stroke"] == "bbbbbb" and "#dddddd" in a["gtk3Rules"][0]
    and a["gtk4"]["ink"] == "#111111", "--map-apps rewrites the GTK colours, the GTK rules and the keyboard (without #)")
-ok(v["voices"]["white"]["apps"]["wvkbd"]["swipe"] == "aaaaaa" and len(ch) == 5,
+ok(v["voices"]["white"]["apps"]["wvkbd"]["swipe"] == "aaaaaaff" and len(ch) == 5,
    "--map-apps makes the swipe trail the opaque grey it showed over the key face")
 ok(L.map_apps(copy.deepcopy(VOICES)) == [], "this repository's apps section is already mapped")
 

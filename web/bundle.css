@@ -70,8 +70,13 @@
    ring reached only 1.01-1.46:1 on Stationery leather and cream fields). */
 .il-page :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 [data-theme^="stationery"] :is(.il-header, .il-desk, .il-drawer, .il-footer) :focus-visible { outline-color: var(--focus-on-leather); }
-[data-theme^="stationery"] :is(.il-search, .il-btn):focus-within,
-[data-theme^="stationery"] .il-header .il-btn:focus-visible { outline: 2px solid var(--focus-on-cream); outline-offset: 2px; box-shadow: 0 0 0 4px var(--focus-on-leather); }
+/* Cream controls on the leather header: the 2px offset is filled with the control's cream and the
+   halo lies outside the ring (cream | ring | halo | leather): the ring stands against the cream,
+   the halo against the leather. The ring alone on the leather is invisible (focus-on-cream is the
+   header's leather-dark). The field's own input draws no second ring inside it. */
+[data-theme^="stationery"] .il-header :is(.il-search, .il-btn):focus-within,
+[data-theme^="stationery"] .il-header .il-btn:focus-visible { outline: 2px solid var(--focus-on-cream); outline-offset: 2px; box-shadow: 0 0 0 2px var(--paper), 0 0 0 6px var(--focus-on-leather); }
+[data-theme^="stationery"] .il-header .il-search input:focus-visible { outline: none; }
 [data-theme^="stationery"] .il-sheet :focus-visible { outline-color: var(--focus); }
 .il-label { font-family: var(--v-label); font-size: var(--v-label-size); font-weight: var(--v-label-w); text-transform: var(--v-label-case); font-variant: var(--v-label-variant); letter-spacing: var(--v-label-ls); color: var(--v-label-color); }
 .il-h1 { margin: 0; font-family: var(--v-head); font-size: var(--v-h1); line-height: 1.08; font-weight: var(--v-h1-w); font-style: var(--v-h1-style); letter-spacing: var(--v-h1-ls); text-wrap: balance; }

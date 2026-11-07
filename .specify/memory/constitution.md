@@ -61,10 +61,12 @@ upstream license. Nothing is submitted upstream unsolicited. AI-assisted commits
 
 ### Contracts
 
-- **Owned:** the voice tokens (names and meaning), the C library's API and the Python module's API.
-  The shell, Home, Settings and setup build on them: a breaking change raises the major version and
-  changes those consumers in the same release.
-- **Consumed:** the Interleaf design system's tokens (from the design canvas), cairo, pango, librsvg.
+- **Owned:** the Interleaf design system (tokens, components, guidelines) and its web form, the voice
+  tokens (names and meaning), the C library's API and the Python module's API, and the design-board
+  preview and checks. The shell, Home, Settings, setup, the documentation site and the hub build on
+  them: a breaking change raises the major version and changes those consumers in the same release.
+- **Consumed:** claude.ai's design-component format (the subset the boards use), cairo, pango, librsvg.
+  The claude.ai copies of Interleaf are published to from here, never read.
 
 ### Tests
 

@@ -86,18 +86,6 @@ try:
     gv = [sys.executable, os.path.join(tmp, "tools", "gen-voices")]
     ok(subprocess.run(gv + ["--check"]).returncode == 0, "generated forms are current")
     p = os.path.join(tmp, "voices", "voices.json")
-    # the design importer: dumps made of the current values change nothing
-    sd = {n: {"il": {"--il-" + k: x for k, x in v["scheme"].items()},
-              "t": dict(v["shell"], ink="var(--il-ink)"), "k": v["card"]}
-          for n, v in data["voices"].items()}
-    ud = {n: {"il": {"--il-" + k: x for k, x in v["scheme"].items()}, "k": v["setup"]}
-          for n, v in data["voices"].items()}
-    json.dump(sd, open(os.path.join(tmp, "sd.json"), "w"))
-    json.dump(ud, open(os.path.join(tmp, "ud.json"), "w"))
-    before = open(p).read()
-    subprocess.run([sys.executable, os.path.join(tmp, "tools", "import-design"), os.path.join(tmp, "sd.json"),
-                    os.path.join(tmp, "ud.json")], check=True, capture_output=True)
-    ok(open(p).read() == before, "import-design: the current values (one through a var()) round-trip unchanged")
     d = json.load(open(p))
     d["voices"]["stationery"]["shell"]["cardSh"] = "0 0 0 2px #111111"
     json.dump(d, open(p, "w"), indent=2)

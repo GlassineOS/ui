@@ -204,7 +204,10 @@ stale and fails the check, so it goes with its fix.
 generated text, large text, the disabled exemption, rings, hover, current, open) and
 `test/contrast/known-failures.js`: the acceptance set of known failures (spec 002 SC-002), one fixture
 each in `test/contrast/known/` (listed in `known.json`, how each was built in its comment). Each is
-injected on its own (`--inject`) and must make a case fail that passes without it.
+injected on its own (`--inject`). A case is caught when it fails with the fixture and passes without
+it, and every case the fixture's `expect` lists must be caught: its kind, theme, text, element and
+state, its colours, and a ratio at most the one measured. The test prints the case that matched
+each expectation.
 
 ## Voices
 

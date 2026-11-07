@@ -1,0 +1,10 @@
+{
+  "name": "glassine-ui-boards",
+  "private": true,
+  "description": "Dev and check dependencies of the design-board checks (tools/boards check). The runtime and the preview need none.",
+  "license": "GPL-2.0-or-later",
+  "engines": { "node": ">=24" },
+  "devDependencies": {
+    "puppeteer-core": "25.16.0"
+  }
+}

@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Card</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>.card { box-sizing: border-box; width: 200px; padding: 10px 12px; border: 1.5px solid #111111; border-radius: 8px; background: #ffffff; }</style>
+</helmet>
+<button type="button" class="card" data-index="{{ index }}" onClick="{{ onPick }}" style="text-align: left; font: inherit; cursor: pointer">
+  <b>{{ itemTitle }}</b><br>
+  <span>{{ itemCount }} open</span>
+</button>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"itemTitle":{"editor":"text","default":"A card"},"itemCount":{"editor":"int","default":2},"index":{"editor":null},"onPick":{"editor":null},"$preview":{"width":280,"height":120}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { itemTitle: this.props.itemTitle ?? 'A card', itemCount: this.props.itemCount ?? 0, index: this.props.index ?? 0, onPick: this.props.onPick };
+  }
+}
+</script>
+</body>
+</html>

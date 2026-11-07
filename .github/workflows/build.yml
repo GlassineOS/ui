@@ -37,5 +37,15 @@ jobs:
         run: |
           docker run --rm -v "$PWD":/src -w /src alpine:3.24 sh -euc '
             apk add -q build-base pkgconf cairo-dev pango-dev librsvg-dev glib-dev \
-              python3 py3-gobject3 py3-cairo gtk+3.0 font-dejavu adwaita-icon-theme
+              python3 py3-gobject3 py3-cairo gtk+3.0 font-dejavu adwaita-icon-theme nodejs
             make check'
+  boards:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: design boards in headless Chromium on Alpine
+        run: |
+          docker run --rm -v "$PWD":/src -w /src -e CHROMIUM=/usr/bin/chromium-browser alpine:3.24 sh -euc '
+            apk add -q chromium nodejs npm font-dejavu make
+            npm ci --ignore-scripts --no-audit --no-fund
+            make check-boards boards-check'

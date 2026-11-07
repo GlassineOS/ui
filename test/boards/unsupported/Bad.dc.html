@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bad</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div>
+  <p>{{ a + b }}</p>
+  <sc-switch value="{{ a }}"></sc-switch>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{}'>
+class Component extends DCLogic {
+  renderVals() { return { a: 1, b: 2 }; }
+}
+</script>
+</body>
+</html>

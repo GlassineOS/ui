@@ -1,0 +1,90 @@
+#!/usr/bin/env node
+// SPDX-License-Identifier: GPL-2.0-or-later
+// tools/boards: design boards (spec 003).
+//   boards preview DESIGN_DIR [--port N] [--host H] [--allow-host NAME]... [--interleaf DIR]
+//   boards check   DESIGN_DIR [--interleaf DIR] [--json FILE|-] [--board FILE]... [--jobs N]
+//                  [--timeout MS] [--chromium PATH]
+//   boards import  CANVAS_EXPORT_DIR DEST_DIR [--force]
+//   boards version
+'use strict';
+const fs = require('fs');
+const path = require('path');
+const LIB = path.join(__dirname, '..', 'boards', 'lib');
+
+function usage(code) {
+  process.stderr.write([
+    'usage: boards preview DESIGN_DIR [--port N] [--host H] [--allow-host NAME]... [--interleaf DIR]',
+    '       boards check DESIGN_DIR [--interleaf DIR] [--json FILE|-] [--board FILE]... [--jobs N] [--timeout MS] [--chromium PATH]',
+    '       boards import CANVAS_EXPORT_DIR DEST_DIR [--force]',
+    '       boards version',
+    '',
+  ].join('\n'));
+  process.exit(code);
+}
+
+function parse(argv, spec) {
+  const pos = [], opt = {};
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === '-h' || a === '--help') usage(0);
+    if (a.startsWith('--')) {
+      const [k, inline] = a.slice(2).split('=', 2);
+      if (!(k in spec)) { process.stderr.write('boards: unknown option --' + k + '\n'); usage(2); }
+      if (spec[k] === 'flag') { opt[k] = true; continue; }
+      const v = inline !== undefined ? inline : argv[++i];
+      if (v === undefined) { process.stderr.write('boards: --' + k + ' needs a value\n'); usage(2); }
+      if (spec[k] === 'list') (opt[k] = opt[k] || []).push(v); else opt[k] = v;
+    } else pos.push(a);
+  }
+  return { pos: pos, opt: opt };
+}
+
+async function main() {
+  const cmd = process.argv[2];
+  const rest = process.argv.slice(3);
+  if (cmd === 'version') {
+    const T = require(path.join(__dirname, '..', 'boards', 'runtime', 'template.js'));
+    process.stdout.write('boards subset ' + T.SUBSET_VERSION + '\n');
+    return 0;
+  }
+  if (cmd === 'preview') {
+    const { pos, opt } = parse(rest, { port: 'value', host: 'value', 'allow-host': 'list', interleaf: 'value' });
+    if (pos.length !== 1) usage(2);
+    const { startServer } = require(path.join(LIB, 'server.js'));
+    const srv = await startServer({ design: pos[0], interleaf: opt.interleaf, host: opt.host, allowHosts: opt['allow-host'], port: opt.port ? Number(opt.port) : 4790, live: true });
+    process.stdout.write('boards preview: ' + srv.design + '\n  Interleaf: ' + srv.interleaf + '\n  ' + srv.url + '_boards/\n');
+    for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, function () { srv.close().then(function () { process.exit(0); }); });
+    await new Promise(function () {});
+  }
+  if (cmd === 'check') {
+    const { pos, opt } = parse(rest, { interleaf: 'value', json: 'value', board: 'list', jobs: 'value', timeout: 'value', chromium: 'value' });
+    if (pos.length !== 1) usage(2);
+    const { checkDesign, textSummary } = require(path.join(LIB, 'check.js'));
+    const rep = await checkDesign({ design: pos[0], interleaf: opt.interleaf, boards: opt.board, jobs: opt.jobs ? Number(opt.jobs) : 4,
+      timeout: opt.timeout ? Number(opt.timeout) : 30000, chromium: opt.chromium });
+    const json = JSON.stringify(rep, null, 1) + '\n';
+    const out = opt.json || path.join('out', 'boards-check.json');
+    if (out === '-') process.stdout.write(json);
+    else { fs.mkdirSync(path.dirname(path.resolve(out)), { recursive: true }); fs.writeFileSync(out, json); }
+    process[out === '-' ? 'stderr' : 'stdout'].write(textSummary(rep) + '\n' + (out === '-' ? '' : '  report: ' + out + '\n'));
+    return rep.summary.failing || rep.summary.missing ? 1 : 0;
+  }
+  if (cmd === 'import') {
+    const { pos, opt } = parse(rest, { force: 'flag' });
+    if (pos.length !== 2) usage(2);
+    const { importCanvas } = require(path.join(LIB, 'import.js'));
+    const r = importCanvas(pos[0], pos[1], { force: opt.force });
+    process.stdout.write('boards import: ' + r.copied.length + ' files into ' + path.resolve(pos[1]) + '\n');
+    if (r.left.length) {
+      process.stdout.write('  left out:\n');
+      for (const l of r.left) process.stdout.write('    ' + l.path + '  (' + l.why + ')\n');
+    }
+    return 0;
+  }
+  usage(cmd ? 2 : 0);
+}
+
+main().then(function (code) { process.exitCode = code || 0; }, function (e) {
+  process.stderr.write('boards: ' + (e && e.message || e) + '\n');
+  process.exitCode = 2;
+});

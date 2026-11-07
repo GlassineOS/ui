@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Main sample</title>
+<script src="./support.js"></script>
+<script src="data/sample.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body { margin: 0; font: 15px/1.4 system-ui, sans-serif; }
+.cards { display: flex; flex-wrap: wrap; gap: 8px; }
+</style>
+</helmet>
+<main id="main" data-voice="{{ voice }}" style="padding: 24px; background: {{ paper }}; color: #111111; min-height: 100%">
+  <h1 style="margin: 0 0 8px">Samples &amp; checks · {{ owner }}</h1>
+  <p id="settings">voice={{ voice }} scheme={{ scheme }} pen={{ pen }} compact={{ compact }}</p>
+  <p id="token">paper token: {{ paper }}</p>
+  <div class="cards">
+    <sc-for list="{{ items }}" as="it" hint-placeholder-count="3">
+      <dc-import name="Card" item-title="{{ it.title }}" item-count="{{ it.count }}" index="{{ $index }}" on-pick="{{ it.pick }}" style="flex: none" hint-size="200px,90px"></dc-import>
+    </sc-for>
+  </div>
+  <p id="picked">picked: {{ picked }}</p>
+  <sc-if value="{{ showDetails }}" hint-placeholder-val="{{ false }}">
+    <table id="table" style="border-collapse: collapse; margin: 12px 0">
+      <tbody>
+        <sc-for list="{{ items }}" as="row" hint-placeholder-count="3">
+          <tr><td style="padding: 2px 8px">{{ $index }}</td><td style="padding: 2px 8px">{{ row.title }}</td><td style="padding: 2px 8px">{{ row.count }}</td></tr>
+        </sc-for>
+      </tbody>
+    </table>
+  </sc-if>
+  <label>Pick <select id="select" onChange="{{ choose }}" value="{{ picked }}">
+    <sc-for list="{{ items }}" as="o" hint-placeholder-count="3"><option value="{{ o.id }}">{{ o.title }}</option></sc-for>
+  </select></label>
+  <button type="button" id="toggle" onClick="{{ toggle }}" aria-pressed="{{ showDetails }}">Details</button>
+  <nav style="margin-top: 16px; display: flex; gap: 12px">
+    <a id="to-counter" href="Counter.dc.html">Counter</a>
+    <a id="to-nested" href="sub/Nested.dc.html">Nested</a>
+    <a id="to-form" href="{{ formHref }}">Form</a>
+  </nav>
+  <svg width="40" height="20" viewBox="0 0 40 20" aria-hidden="true"><rect x="1" y="1" width="38" height="18" rx="4" fill="none" stroke="#111111"></rect></svg>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"compact":{"editor":"boolean","default":false},"$preview":{"width":900,"height":760}}'>
+class Component extends DCLogic {
+  state = { picked: 'a', details: true };
+  static tokens = null;
+  componentDidMount() {
+    if (Component.tokens) return;
+    // the design system, served by the preview from GlassineOS/ui
+    fetch('ds/interleaf/tokens.json').then(r => r.json()).then(j => { Component.tokens = j; this.forceUpdate(); });
+  }
+  renderVals() {
+    const S = window.SAMPLE;
+    const voice = this.props.voice ?? 'white';
+    const scheme = this.props.scheme ?? 'paper';
+    const paper = Component.tokens ? Component.tokens.color.tokens.find(t => t.name === 'paper').value[voice + '-' + scheme] || '#ffffff' : '#ffffff';
+    return {
+      owner: S.owner, voice, scheme, pen: this.props.pen ?? '1', compact: String(!!this.props.compact), paper,
+      items: S.items.map(it => ({ ...it, pick: () => this.setState({ picked: it.id }) })),
+      picked: this.state.picked, showDetails: this.state.details,
+      choose: e => this.setState({ picked: e.target.value }),
+      toggle: () => this.setState(s => ({ details: !s.details })),
+      formHref: 'Form.dc.html',
+    };
+  }
+}
+</script>
+</body>
+</html>

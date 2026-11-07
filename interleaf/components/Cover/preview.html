@@ -1,0 +1,53 @@
+<!-- @dsCard height=288 -->
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Interleaf — cover</title>
+<style>
+  body { margin: 0; }
+  .cv { position: relative; width: 960px; height: 288px; overflow: hidden; background: var(--paper); }
+  .cv svg { position: absolute; left: 0; top: 0; }
+  .slab { fill: var(--accent); }
+  .s-a { fill: var(--sheet); stroke: var(--ink); stroke-width: 1; rx: var(--radius-paper); }
+  .s-b { fill: var(--paper); stroke: var(--ink); stroke-width: 1; rx: var(--radius-paper); }
+  .band { fill: var(--highlight); rx: var(--radius-chip); }
+  .line { stroke: var(--ink-soft); stroke-width: 2; stroke-linecap: round; }
+  .ring { fill: none; stroke: var(--pen); stroke-width: 2.5; stroke-linecap: round; }
+  .gilt { fill: var(--gilt); }
+  .name { position: absolute; left: 40px; bottom: 58px; margin: 0; max-width: 440px; font-family: var(--font-serif); font-size: 88px; line-height: 0.92; font-weight: 600; letter-spacing: -0.02em; color: var(--ink); }
+  [data-theme^="stationery"] .name { font-family: var(--font-garamond); font-style: italic; font-weight: 500; letter-spacing: 0; }
+  [data-theme^="white"] .name, [data-theme="eink"] .name { font-family: var(--font-plex); letter-spacing: -0.035em; }
+  .tag { position: absolute; left: 42px; bottom: 30px; margin: 0; max-width: 440px; font-family: var(--font-plex); font-size: 14px; color: var(--ink-soft); }
+</style>
+</head>
+<body>
+<div class="cv">
+  <svg width="960" height="288" viewBox="0 0 960 288" aria-hidden="true">
+    <!--
+      blocks: accent slab 160×288 (space-16 ×2.5, bleeds right) · five interleaved sheets 176×200 in sheet/paper · highlight band 136×20 · gilt edge 4px
+      arrangement: one tall slab at the right edge with a stack of sheets fanning toward it from x=560
+      pattern: interleaved sheets (the name itself: glassine between pages), ink hairline outlines; plus one pen ring as the reader's mark
+      scales: offsets space-3 (12px) and space-2 (8px); rx radius-paper; band rx radius-chip; text lines 2px ink-soft on a 16px pitch (space-4)
+    -->
+    <rect class="slab" x="800" y="0" width="160" height="288"></rect>
+    <rect class="gilt" x="796" y="0" width="4" height="288"></rect>
+    <rect class="s-a" x="560" y="72" width="176" height="200"></rect>
+    <rect class="s-b" x="572" y="64" width="176" height="200"></rect>
+    <rect class="s-a" x="584" y="56" width="176" height="200"></rect>
+    <rect class="s-b" x="596" y="48" width="176" height="200"></rect>
+    <rect class="s-b" x="608" y="40" width="176" height="200"></rect>
+    <rect class="band" x="624" y="94" width="136" height="20"></rect>
+    <line class="line" x1="628" y1="72" x2="760" y2="72"></line>
+    <line class="line" x1="628" y1="88" x2="744" y2="88"></line>
+    <line class="line" x1="628" y1="104" x2="756" y2="104"></line>
+    <line class="line" x1="628" y1="120" x2="720" y2="120"></line>
+    <line class="line" x1="628" y1="152" x2="752" y2="152"></line>
+    <line class="line" x1="628" y1="168" x2="704" y2="168"></line>
+    <line class="line" x1="628" y1="184" x2="740" y2="184"></line>
+    <path class="ring" d="M700 160 C 742 156, 770 164, 764 176 C 756 192, 690 194, 672 182 C 660 172, 676 160, 712 158"></path>
+  </svg>
+  <p class="name">Interleaf</p>
+  <p class="tag">Structure buys freedom. One frame, three voices, a pen of your own.</p>
+</div>
+<script>/* static cover */</script>
+</body>
+</html>

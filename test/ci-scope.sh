@@ -14,6 +14,9 @@ t forms "README.md
 specs/002-interleaf/spec.md"
 t forms "test/test_interleaf.py"
 t forms "tools/gen-interleaf"
+t forms "tools/gen-reference
+test/test_reference.py
+.github/workflows/reference.yml"
 t lib   "interleaf/tokens.json
 voices/voices.json"
 t lib   "src/glassine-ui-draw.c"

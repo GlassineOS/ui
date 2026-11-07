@@ -102,12 +102,15 @@ _fonts = {}
 
 def font(s, weight=None):
     """CSS font shorthand ("italic 500 22px/1.1 'EB Garamond',serif") ->
-    (Pango.FontDescription, line-height factor or None)"""
+    (Pango.FontDescription, line-height factor or None). Anything else raises
+    ValueError, as tools/gen-voices does for the same input."""
     key = (s, weight)
     if key in _fonts:
         return _fonts[key]
-    m = _FONT.match(s.strip())
-    italic, w, size, lh, fam = m.groups() if m else (None, None, "15", None, "sans-serif")
+    m = _FONT.match(s.strip()) if isinstance(s, str) else None
+    if not m:
+        raise ValueError("font: %r" % (s,))
+    italic, w, size, lh, fam = m.groups()
     fam = fam.split(",")[0].strip().strip("'\"")
     d = Pango.FontDescription()
     d.set_family(fam)
@@ -147,7 +150,10 @@ def _grow(r, d):
 
 
 def box(cr, x, y, w, h, radius="0", bg=None, shadow=None, bd=None):
-    """a CSS element: outer shadows, background, inset shadows, border"""
+    """a CSS element: outer shadows, background, inset shadows, border. Nothing
+    for w <= 0 or h <= 0, as in C. The caller's line width, cap and dash stay."""
+    if w <= 0 or h <= 0:
+        return
     r = radii(radius, w, h) if not isinstance(radius, list) else radius
     sh = shadows(shadow)
     for inset, dx, dy, sp, col in reversed(sh):          # outer: below, last first
@@ -173,10 +179,10 @@ def box(cr, x, y, w, h, radius="0", bg=None, shadow=None, bd=None):
             rrect(cr, x + dx + sp, y + dy + sp, w - 2 * sp, h - 2 * sp, _grow(r, -sp))
             cr.fill()
         cr.restore()
-        cr.set_fill_rule(cairo.FILL_RULE_WINDING)
     b = border(bd) if isinstance(bd, str) else bd
     if b and b[2]:
         bw, style, col = b
+        cr.save()                                         # the caller's line state stays
         cr.set_source_rgba(*col)
         if style == "double":
             t = max(1.0, round(bw / 3))
@@ -189,7 +195,7 @@ def box(cr, x, y, w, h, radius="0", bg=None, shadow=None, bd=None):
             _dash(cr, style, bw)
             rrect(cr, x + bw / 2, y + bw / 2, w - bw, h - bw, _grow(r, -bw / 2))
             cr.stroke()
-            cr.set_dash([])
+        cr.restore()
 
 
 def _dash(cr, style, w):
@@ -204,7 +210,8 @@ def _dash(cr, style, w):
 
 
 def rule(cr, x, y, w, bd):
-    """a border-bottom whose lower edge is at y (the element's bottom)"""
+    """a border-bottom whose lower edge is at y (the element's bottom). The
+    caller's line width, cap and dash stay."""
     b = border(bd) if isinstance(bd, str) else bd
     if not b or not b[2]:
         return
@@ -220,13 +227,13 @@ def rule(cr, x, y, w, bd):
         cr.rectangle(x, y - bw, w, bw)
         cr.fill()
         return
+    cr.save()
     cr.set_line_width(bw)
     _dash(cr, style, bw)
     cr.move_to(x + (bw / 2 if style == "dotted" else 0), y - bw / 2)
     cr.line_to(x + w, y - bw / 2)
     cr.stroke()
-    cr.set_dash([])
-    cr.set_line_cap(cairo.LINE_CAP_BUTT)
+    cr.restore()
 
 
 def fill(cr, x, y, w, h, col):
@@ -560,6 +567,7 @@ def icon(cr, name, sz, cx, cy, col, scale=2):
     if name in ("arrow_forward", "arrow_back"):     # Material's arrows (the themes only have chevrons)
         if not c:
             return True
+        cr.save()                                     # the caller's line state stays
         cr.set_source_rgba(*c)
         d = 1 if name == "arrow_forward" else -1
         h = sz * 0.31
@@ -572,15 +580,18 @@ def icon(cr, name, sz, cx, cy, col, scale=2):
         cr.line_to(cx + d * h, cy)
         cr.line_to(cx + d * (h - sz * 0.27), cy + sz * 0.27)
         cr.stroke()
-        cr.set_line_cap(cairo.LINE_CAP_BUTT)
+        cr.restore()
         return True
     if name in RINGED:
         if c:
+            cr.save()
             cr.set_source_rgba(*c)
             cr.set_line_width(max(1.5, sz / 12))
             cr.new_sub_path()
             cr.arc(cx, cy, sz * 0.40, 0, 6.2832)
             cr.stroke()
+            cr.restore()
+            cr.set_source_rgba(*c)                        # the "!" below
         if name == "radio_button_unchecked" or (name == "error" and not c):
             return True
         if name == "error":                      # Material's error: a ring with "!"

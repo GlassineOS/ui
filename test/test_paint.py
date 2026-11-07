@@ -66,5 +66,41 @@ for f in (FONT, "16px sans-serif"):
            "measure = text for %s %s" % (f, kw))
 ok(P.measure(cr, "Sample", FONT, ls=.2)[0] > P.measure(cr, "Sample", FONT)[0], "letter spacing widens")
 
+# ---- degenerate boxes draw nothing (as in C) ----------------------------------------
+for w, h in ((-20, 10), (0, 10), (20, 0), (20, -5)):
+    s, cr = canvas()
+    P.box(cr, 50, 50, w, h, "4px", "#111111", "3px 3px 0 #111111", "2px dotted #111111")
+    ok(painted(s) == 0, "box %gx%g draws nothing" % (w, h))
+
+# ---- the caller's line width, cap, join and dash stay ------------------------------
+def line_state(cr):
+    return cr.get_line_width(), cr.get_line_cap(), cr.get_line_join(), cr.get_dash()
+
+
+for what, call in (("box dotted", lambda cr: P.box(cr, 10, 10, 60, 30, "4px", None, None, "2px dotted #111111")),
+                   ("box dashed", lambda cr: P.box(cr, 10, 10, 60, 30, "4px", None, None, "2px dashed #111111")),
+                   ("box double", lambda cr: P.box(cr, 10, 10, 60, 30, "4px", None, None, "3px double #111111")),
+                   ("rule dotted", lambda cr: P.rule(cr, 10, 50, 60, "2px dotted #111111")),
+                   ("rule dashed", lambda cr: P.rule(cr, 10, 50, 60, "2px dashed #111111")),
+                   ("icon arrow_forward", lambda cr: P.icon(cr, "arrow_forward", 24, 50, 50, "#111111")),
+                   ("icon error", lambda cr: P.icon(cr, "error", 24, 50, 50, "#111111"))):
+    s, cr = canvas()
+    cr.set_line_width(7)
+    cr.set_line_cap(cairo.LINE_CAP_SQUARE)
+    cr.set_line_join(cairo.LINE_JOIN_BEVEL)
+    cr.set_dash([4, 1])
+    before = line_state(cr)
+    call(cr)
+    ok(line_state(cr) == before and painted(s) > 0, what + ": draws, and the line state stays")
+
+# ---- a font shorthand that isn't one raises, as tools/gen-voices does ---------------
+for bad in ("bold 16px sans-serif", "16pt serif", "", "500 sans-serif", None):
+    try:
+        P.font(bad)
+        ok(False, "font(%r) raises" % (bad,))
+    except ValueError:
+        ok(True, "font(%r) raises ValueError" % (bad,))
+ok(P.font("italic 500 22px/1.1 'EB Garamond',serif")[1] == 1.1, "font: a shorthand parses")
+
 print("paint: %s" % ("all passed" if not fails else "%d FAILED" % fails))
 sys.exit(1 if fails else 0)

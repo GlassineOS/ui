@@ -99,7 +99,9 @@ Contract: Python API, version 1 (`glassine_ui.API`).
   `text`, `measure`, `ls_em`; `icon(cr, name, size, cx, cy, colour)` (the design's Material names,
   mapped to icon-theme names in `ICONS`, or a theme name). A transparent colour (`None`,
   `'transparent'`) draws nothing, as 0 does in C: `text` still measures, `icon` still says whether
-  there is such an icon.
+  there is such an icon. `box` draws nothing for a width or height <= 0, as in C; `box`, `rule` and
+  `icon` leave the context's line width, cap, join and dash as they were; `font` raises `ValueError`
+  for anything that isn't a CSS font shorthand, as `tools/gen-voices` does.
 
 ### Where C and Python differ
 

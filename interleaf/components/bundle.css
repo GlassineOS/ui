@@ -103,6 +103,8 @@
 [data-theme^="editorial"] .il-search { background: transparent; box-shadow: inset 0 -1px 0 var(--ink); }
 [data-theme^="stationery"] .il-search { background: var(--paper); box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.25), 0 0 0 1px var(--gilt); }
 .il-search input { border: 0; outline: none; background: transparent; color: inherit; font: inherit; font-size: 16px; width: 100%; }
+/* The placeholder is secondary text on the field: ink-soft, not the browser's fixed grey. */
+.il-search input::placeholder { color: var(--ink-soft); opacity: 1; }
 [data-theme^="editorial"] .il-search input, [data-theme^="stationery"] .il-search input { font-style: italic; }
 .il-btn { min-height: 44px; padding: 0 var(--space-4); border: 0; border-radius: var(--v-ui-radius); background: var(--paper); color: var(--ink); box-shadow: var(--v-ui-edge); font-family: var(--v-label); font-size: var(--v-label-size); font-weight: var(--v-label-w); text-transform: var(--v-label-case); font-variant: var(--v-label-variant); letter-spacing: var(--v-label-ls); cursor: pointer; display: inline-flex; align-items: center; gap: var(--space-2); }
 [data-theme^="editorial"] .il-btn { background: transparent; }

@@ -2,14 +2,6 @@
  "about": "Known open contrast failures on main (tools/contrast --open). Each is reported as \"open\" and does not fail the check until it is fixed; an entry that no longer fails is stale and fails the check, so remove it with the fix. Every entry has its measurement and a proposed fix.",
  "open": [
   {
-   "component": "Header",
-   "kind": "generated",
-   "pseudo": "::placeholder",
-   "element": "div.il-page > header.il-header > label.il-search > input",
-   "measured": "the search field's placeholder has the browser's fixed grey #757575: 4.02:1 on Stationery Paper's cream #f6efdd, 4.07:1 on White Night #121212, 3.33-4.38:1 in 10 of the 27 combinations",
-   "proposal": "ink-soft, the guidelines' secondary text (5:1 in every theme), as a themed colour instead of a fixed one: .il-search input::placeholder { color: var(--ink-soft); opacity: 1; }"
-  },
-  {
    "component": "Link",
    "kind": "text",
    "element": "div.il-page > p > a.il-link",

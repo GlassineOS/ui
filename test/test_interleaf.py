@@ -190,6 +190,9 @@ ok(".il-type-body {" in css and not re.search(r"^\.body ", css, re.M), "type sty
 comp = os.path.join(ROOT, "interleaf", "components")
 names = sorted(n for n in os.listdir(comp) if os.path.isdir(os.path.join(comp, n)))
 ok(len(names) == 13, "13 components")
+# a component has a README; Cover's is not written yet (the import had none), and no other may be missing
+no_readme = [n for n in names if not os.path.exists(os.path.join(comp, n, "README.md"))]
+ok(set(no_readme) <= {"Cover"}, "every component but Cover has a README%s" % (": missing " + ", ".join(no_readme) if set(no_readme) - {"Cover"} else ""))
 ok(all(open(os.path.join(comp, n, "preview.html")).readline().startswith("<!-- @dsCard ") for n in names),
    "every preview starts with its @dsCard line")
 

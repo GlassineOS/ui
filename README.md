@@ -69,7 +69,7 @@ three schemes (Paper, Night, E-ink), with three pens. `interleaf/` holds it:
 | `interleaf/tokens.json` | the tokens: `color` (the themes and a value per theme), `type` (families, type styles per voice), `spacing`, `radius`, `shadow` (a value per theme), `layout`, `stroke`; each with its `usage` |
 | `interleaf/README.md` | the guidelines: the three layers, themes, colour rules, accessibility targets, type, edges |
 | `interleaf/components/bundle.css` | the component styles (`.il-*`); they read the tokens' variables and the voice from the theme id's prefix |
-| `interleaf/components/NAME/` | a component's guidelines (`README.md`) and live preview (`preview.html`, its first line the card marker claude.ai reads) |
+| `interleaf/components/NAME/` | a component's guidelines (`README.md`; `Cover` has none yet) and live preview (`preview.html`, its first line the card marker claude.ai reads) |
 
 A theme is a voice and a scheme: `white-paper`, `white-night`, `editorial-paper`, `editorial-night`,
 `stationery-paper`, `stationery-night`, `eink` (White and Editorial) and `stationery-eink`. A token's

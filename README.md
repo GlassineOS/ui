@@ -228,6 +228,12 @@ tools/in-alpine CMD...      # CMD in alpine:3.24 with Chromium and node, as the 
   `support.js`), the embedded `ds/` copy (in any folder) and symbolic links (never followed), removes
   `designSystems` from `canvas.json`, and lists what it left out.
 
+What a board can do: its logic is JavaScript from the export, and `preview` and `check` run it as it
+is, so open only boards you would run anyway. A board page has the same origin as the preview's own
+pages and API (`/_boards/`), so it can script them and read everything the server serves: the design
+folder and Interleaf, nothing outside them. It can also load from and send to other sites. The
+preview has no login: with `--host`, anyone who can reach the port can read the design folder.
+
 `make boards-check` renders the samples in `boards/samples/` (every feature of the subset) and clicks
 through them (`test/boards/samples-e2e.js`: state, branches, links, the preview pages, and the boards
 in `test/boards/unsupported/` failing with the right features); CI runs it in Alpine

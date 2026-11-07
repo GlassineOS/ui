@@ -139,6 +139,17 @@ int main(int argc, char **argv)
         for (int x = 100; x < 200; x++)
             hatched += (*(unsigned *)(d + y * st + x * 4) & 0xff) < 0x80;
     OK(hatched > 500 && hatched < 4000, "a hatch: lines, not a fill");
+    /* 135 is a CSS angle: the stripes run bottom left to top right (/), across the gradient that runs
+     * top left to bottom right. In this 100 px square (centre 150,50) a stripe is x + y = 198, 9.9
+     * further for the next (step 7 along the gradient is 7 * sqrt(2) in x + y). Along the stripe every
+     * pixel is dark; the mirror image of those pixels, on a \ line, is not. */
+    int xs[] = { 128, 135, 143, 150, 158, 165, 172 }, on = 0, mirrored = 0;
+    for (int i = 0; i < 7; i++) {
+        on += (*(unsigned *)(d + (198 - xs[i]) * st + xs[i] * 4) & 0xff) < 0x80;
+        mirrored += (*(unsigned *)(d + (198 - xs[i]) * st + (299 - xs[i]) * 4) & 0xff) < 0x80;
+    }
+    OK(on == 7, "a hatch at 135: the stripe runs bottom left to top right (/)");
+    OK(mirrored < 4, "and not top left to bottom right (\\)");
     unsigned outside = *(unsigned *)(d + 5 * st + 95 * 4);
     OK(outside == 0xffffffffu, "a hatch stays inside its rect");
     cairo_destroy(cr);

@@ -141,8 +141,10 @@ int ui_icon(UiGc *g, const char *name, double px, double cx, double cy, ui_col c
  * tried in order, then the name itself; at the glyph's visual size within px
  * (glassine_ui.paint's ICONS and ISCALE). Returns 0 if none is installed. */
 int ui_icon_material(UiGc *g, const char *name, double px, double cx, double cy, ui_col c);
-/* parallel lines lw thick, step apart, at angle degrees (CSS repeating-linear-gradient
- * angles: 135 runs from top left to bottom right), inside the rounded rect */
+/* parallel lines lw thick, step apart, inside the rounded rect. angle is a CSS
+ * repeating-linear-gradient angle: the direction the gradient runs (0 up, clockwise), and
+ * the lines stand across it. 135 runs from top left to bottom right, so its lines run from
+ * bottom left to top right (/); 45 gives \ . step is measured along the gradient. */
 void ui_hatch(UiGc *g, double x, double y, double w, double h, double r, double angle, double lw, double step, ui_col c);
 UiFont ui_font_with(const UiFont *f, int weight);
 UiFont ui_font_px(const UiFont *f, float px);

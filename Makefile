@@ -29,7 +29,14 @@ $(LIB): $(SRC) $(HDR)
 	ln -sf libglassine-ui.so.$(VERSION) $(O)/libglassine-ui.so.$(SOMAJOR)
 	ln -sf libglassine-ui.so.$(SOMAJOR) $(O)/libglassine-ui.so
 
-$(O)/glassine-ui.pc: glassine-ui.pc.in Makefile
+# the paths the .pc names, kept in a stamp that changes only when they do: a
+# make install PREFIX=/usr after a plain make writes the .pc again
+PCVARS = $(PREFIX)|$(LIBDIR)|$(INCLUDEDIR)|$(VERSION)
+$(O)/pc.vars: FORCE
+	@mkdir -p $(O)
+	@echo '$(PCVARS)' | cmp -s - $@ || echo '$(PCVARS)' > $@
+
+$(O)/glassine-ui.pc: glassine-ui.pc.in Makefile $(O)/pc.vars
 	@mkdir -p $(O)
 	sed -e 's|@PREFIX@|$(PREFIX)|' -e 's|@LIBDIR@|$(LIBDIR)|' -e 's|@INCLUDEDIR@|$(INCLUDEDIR)|' \
 	    -e 's|@VERSION@|$(VERSION)|' glassine-ui.pc.in > $@
@@ -52,10 +59,12 @@ check: all
 	$(PYTHON) tools/gen-voices --check
 	$(PYTHON) test/test_voices.py
 	sh test/c-api.sh
+	sh test/pc-prefix.sh
 	sh test/sheet.sh
 
 clean:
-	rm -f $(O)/libglassine-ui.so* $(O)/glassine-ui.pc
+	rm -f $(O)/libglassine-ui.so* $(O)/glassine-ui.pc $(O)/pc.vars
 	rm -rf $(O)/test
 
-.PHONY: all generate install check clean
+.PHONY: all generate install check clean FORCE
+FORCE:

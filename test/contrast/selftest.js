@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // SPDX-License-Identifier: GPL-2.0-or-later
 // The contrast check measured against a page of known answers (selftest/Cases/preview.html):
-// worst colour beneath a pattern and a band, generated text, large text, the disabled exemption,
-// focus rings, hover, the current item and opened details. Needs Chromium (tools/in-alpine, CI).
+// worst colour beneath a pattern and a band (also a band in the text's own colour), generated
+// text, large text, the disabled exemption, focus rings, hover, the current item and opened details. Needs Chromium (tools/in-alpine, CI).
 'use strict';
 const path = require('path');
 const C = require(path.join(__dirname, '..', '..', 'tools', 'lib', 'contrast.js'));
@@ -11,6 +11,7 @@ const C = require(path.join(__dirname, '..', '..', 'tools', 'lib', 'contrast.js'
 const EXPECT = [
   ['text over a pattern: the worst stripe counts', function (c) { return c.text === 'stripes-fail' && c.state === 'default'; }, 'fail'],
   ['text over a highlighter band: the band counts', function (c) { return c.text === 'band-fail'; }, 'fail'],
+  ['text in the colour of the band under half of it: the band counts', function (c) { return c.text === 'same-colour-band-fail' && c.ratio < 1.1; }, 'fail'],
   ['generated ::after text is measured', function (c) { return c.pseudo === '::after' && /gen-after-low/.test(c.text); }, 'fail'],
   ['its host text passes', function (c) { return c.text === 'gen-host-pass'; }, 'pass'],
   ['large text: 3:1', function (c) { return c.text === 'large-pass'; }, 'pass'],

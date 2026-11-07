@@ -8,7 +8,8 @@
 //   list markers, ::first-letter, input placeholders). Its colour is the computed colour (with its
 //   alpha and the opacity of its ancestors). The colour beneath is read from a render of the page
 //   with all text and text decorations transparent (the backdrop), over the box of the text's
-//   glyphs (where the render with text differs from the backdrop). Of the darkest and the lightest
+//   glyphs (where a render with all text black differs from one with all text white, so text in
+//   the colour of what lies beneath it stays in the box). Of the darkest and the lightest
 //   pixel there, the one with the lower ratio is the worst colour: patterns, highlighter bands,
 //   tabs and images under the text count. Target 4.5:1, or 3:1 for large text (24px, or 18.66px
 //   at weight 700). Text that scrolls under a frame is read 2px inside the scroller's edges.
@@ -33,14 +34,25 @@ const ROOT = path.resolve(__dirname, '..', '..');
 const PREVIEWS = path.join(ROOT, 'interleaf', 'components');
 const WEB = path.join(ROOT, 'web');
 const WIDTHS = { desktop: 1280, phone: 390 };
-const RING_MARGIN = 40, DIFF = 10, GLYPH_DIFF = 2;
+// GLYPH_DIFF: a glyph pixel differs by up to 255 between the black and the white text render; a
+// quarter of that is a quarter of the pixel covered. The backdrop alone differs by less: the
+// circled numerals' rotated ring measured up to 31 between the two renders (raster noise).
+const RING_MARGIN = 40, DIFF = 10, GLYPH_DIFF = 64;
 
 // the text of every element and pseudo-element transparent: what is left is the backdrop
 const HIDE_CSS = 'html.ct-hide *, html.ct-hide *::before, html.ct-hide *::after, html.ct-hide *::marker, ' +
   'html.ct-hide *::first-letter, html.ct-hide *::placeholder { color: transparent !important; ' +
   '-webkit-text-fill-color: transparent !important; text-shadow: none !important; ' +
   'text-decoration-color: transparent !important; caret-color: transparent !important; }\n' +
+  // the glyphs alone, black and then white over the backdrop: where the two differ is where text paints
+  probeCss('ct-black', '#000000') + probeCss('ct-white', '#ffffff') +
   '*, *::before, *::after { transition: none !important; animation: none !important; caret-color: transparent !important; }';
+
+function probeCss(cls, color) {
+  return ['*', '*::before', '*::after', '*::marker', '*::first-letter', '*::placeholder'].map(function (p) { return 'html.' + cls + ' ' + p; }).join(', ') +
+    ' { color: ' + color + ' !important; -webkit-text-fill-color: ' + color + ' !important; text-shadow: none !important; ' +
+    'text-decoration-color: transparent !important; caret-color: transparent !important; }\n';
+}
 
 const MIME = { '.css': 'text/css; charset=utf-8', '.html': 'text/html; charset=utf-8', '.json': 'application/json',
   '.woff2': 'font/woff2', '.woff': 'font/woff', '.ttf': 'font/ttf', '.otf': 'font/otf', '.svg': 'image/svg+xml', '.png': 'image/png' };
@@ -259,16 +271,18 @@ async function capture(cdp, clip) {
 
 function px(img, x, y) { const i = (y * img.width + x) * 4; return [img.data[i], img.data[i + 1], img.data[i + 2], 1]; }
 
-// the box of a text's glyphs: the pixels of a rect where the page with text (a) differs from the
-// backdrop (b). A box that also holds a border or a shape (the circled numerals) is cut down to the
-// glyphs; text that does not differ from its backdrop at all keeps the whole box, inset by 1px.
-function glyphBox(a, b, q) {
+// the box of a text's glyphs: the pixels of a rect where the render with all text black (k) differs
+// from the one with all text white (w). Both have the backdrop beneath, so a glyph differs whatever
+// its colour and whatever lies beneath it, and the backdrop alone never does. A box that also holds
+// a border or a shape (the circled numerals) is cut down to the glyphs; a rect with no glyph pixels
+// at all (a colour emoji) keeps the whole box, inset by 1px.
+function glyphBox(k, w, b, q) {
   const x0 = Math.max(0, Math.floor(q[0] - b.x)), x1 = Math.min(b.width, Math.ceil(q[2] - b.x));
   const y0 = Math.max(0, Math.floor(q[1] - b.y)), y1 = Math.min(b.height, Math.ceil(q[3] - b.y));
   let gx0 = Infinity, gy0 = Infinity, gx1 = -1, gy1 = -1;
   for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) {
     const i = (y * b.width + x) * 4;
-    if (Math.abs(a.data[i] - b.data[i]) > GLYPH_DIFF || Math.abs(a.data[i + 1] - b.data[i + 1]) > GLYPH_DIFF || Math.abs(a.data[i + 2] - b.data[i + 2]) > GLYPH_DIFF) {
+    if (Math.abs(k.data[i] - w.data[i]) > GLYPH_DIFF || Math.abs(k.data[i + 1] - w.data[i + 1]) > GLYPH_DIFF || Math.abs(k.data[i + 2] - w.data[i + 2]) > GLYPH_DIFF) {
       if (x < gx0) gx0 = x; if (x > gx1) gx1 = x; if (y < gy0) gy0 = y; if (y > gy1) gy1 = y;
     }
   }
@@ -280,11 +294,12 @@ function glyphBox(a, b, q) {
   return [gx0, gy0, gx1 + 1, gy1 + 1];
 }
 
-// the darkest and the lightest pixel of the backdrop (b) under the glyphs of the text's boxes
-function extremes(a, b, rects) {
+// the darkest and the lightest pixel of the backdrop (shot.b) under the glyphs of the text's boxes
+function extremes(shot, rects) {
+  const b = shot.b;
   let lo = null, hi = null, loL = 2, hiL = -1;
   for (const q of rects) {
-    const g = glyphBox(a, b, q);
+    const g = glyphBox(shot.k, shot.w, b, q);
     for (let y = g[1]; y < g[3]; y++) for (let x = g[0]; x < g[2]; x++) {
       const c = px(b, x, y), l = W.luminance(c);
       if (l < loL) { loL = l; lo = c; }
@@ -297,7 +312,7 @@ function extremes(a, b, rects) {
 function measureText(shot, item) {
   const fg = W.parse(item.color);
   let worst = null;
-  for (const bg of extremes(shot.a, shot.b, item.rects)) {
+  for (const bg of extremes(shot, item.rects)) {
     const f = W.over(fg, bg, item.opacity);
     const r = W.ratio(f, bg);
     if (!worst || r < worst.ratio) worst = { ratio: r, fg: f, bg: bg };
@@ -378,17 +393,24 @@ async function gather(page, cdp, doc, roots, skip) {
   return res.items;
 }
 
-// the clip with text (a) and without (b, the backdrop)
+// the clip without text (b, the backdrop), and with all text black (k) and white (w) over it
 async function shoot(page, cdp, clip) {
-  const a = await capture(cdp, clip);
-  await setHidden(page, true);
-  const b = await capture(cdp, clip);
+  const out = {};
+  for (const m of [['b', 'ct-hide'], ['k', 'ct-black'], ['w', 'ct-white']]) {
+    await setHidden(page, m[1]);
+    out[m[0]] = await capture(cdp, clip);
+  }
   await setHidden(page, false);
-  return { a: a, b: b };
+  return out;
 }
 
-async function setHidden(page, on) {
-  await page.evaluate(function (on) { document.documentElement.classList.toggle('ct-hide', on); }, on);
+// the render mode: false (as styled), true or 'ct-hide' (no text), 'ct-black', 'ct-white' (the probes)
+async function setHidden(page, mode) {
+  const cls = mode === true ? 'ct-hide' : mode || '';
+  await page.evaluate(function (cls) {
+    const l = document.documentElement.classList;
+    for (const c of ['ct-hide', 'ct-black', 'ct-white']) l.toggle(c, c === cls);
+  }, cls);
 }
 
 async function nodeIdOf(cdp, rootId, id) {

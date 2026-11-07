@@ -7,6 +7,7 @@
   .row { padding: 8px 16px; }
   .stripes { background: repeating-linear-gradient(90deg, #ffffff 0 6px, #8a8a8a 6px 12px); color: #555555; }
   .band { color: #767676; background: linear-gradient(transparent 60%, #9a9a9a 60%); }
+  .same { color: #595959; background: linear-gradient(90deg, #595959 50%, #ffffff 50%); }
   .gen::after { content: " gen-after-low"; color: #c8c8c8; }
   .big { font-size: 24px; color: #8a8a8a; }
   .small { font-size: 16px; color: #8a8a8a; }
@@ -24,6 +25,7 @@
 <body>
 <div class="row stripes">stripes-fail</div>
 <div class="row"><span class="band">band-fail</span></div>
+<div class="row"><span class="same">same-colour-band-fail</span></div>
 <div class="row gen">gen-host-pass</div>
 <div class="row big">large-pass</div>
 <div class="row small">small-fail</div>

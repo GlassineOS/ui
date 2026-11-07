@@ -52,12 +52,36 @@ test('PNG: filters 0-4, RGB and RGBA', function () {
   }
 });
 
+// the three renders of a shot: the backdrop (b), and the glyphs (where glyph(x, y)) black (k) and white (w) over it
+function shot(w, h, backdrop, glyph) {
+  const over = function (c) { return img(w, h, function (x, y) { return glyph(x, y) ? c : backdrop(x, y); }); };
+  return { b: img(w, h, backdrop), k: over([0, 0, 0]), w: over([255, 255, 255]) };
+}
+
 test('the worst colour beneath: the darker stripe of a pattern under grey text', function () {
-  const b = img(20, 10, function (x) { return x % 4 < 2 ? [255, 255, 255] : [138, 138, 138]; });
-  const a = img(20, 10, function (x, y) { return y > 2 && y < 7 && x > 3 && x < 15 ? [85, 85, 85] : (x % 4 < 2 ? [255, 255, 255] : [138, 138, 138]); });
-  const m = C.measureText({ a: a, b: b }, { color: 'rgb(85, 85, 85)', opacity: 1, rects: [[0, 0, 20, 10]] });
+  const s = shot(20, 10, function (x) { return x % 4 < 2 ? [255, 255, 255] : [138, 138, 138]; },
+    function (x, y) { return y > 2 && y < 7 && x > 3 && x < 15; });
+  const m = C.measureText(s, { color: 'rgb(85, 85, 85)', opacity: 1, rects: [[0, 0, 20, 10]] });
   assert.strictEqual(W.hex(m.bg), '#8a8a8a');
   assert.ok(m.ratio < 3);
+});
+
+test('the worst colour beneath: text in the colour of a band under half of it still counts the band', function () {
+  // #595959 text, its left half over a #595959 band and its right half over white: where the text
+  // lies on the band it is invisible, and those glyphs must stay in the box (1:1, not 7:1)
+  const s = shot(40, 10, function (x) { return x < 20 ? [89, 89, 89] : [255, 255, 255]; },
+    function (x, y) { return y > 2 && y < 7 && x > 3 && x < 37 && x % 3 !== 0; });
+  const m = C.measureText(s, { color: 'rgb(89, 89, 89)', opacity: 1, rects: [[0, 0, 40, 10]] });
+  assert.strictEqual(W.hex(m.bg), '#595959');
+  assert.strictEqual(m.ratio.toFixed(2), '1.00');
+});
+
+test('the glyph box: a shape in the rect next to the glyphs is cut away', function () {
+  // a dark border at the rect's left edge (the circled numerals' ring) is not beneath the glyphs
+  const s = shot(30, 10, function (x) { return x < 2 ? [17, 17, 17] : [255, 255, 255]; },
+    function (x, y) { return y > 2 && y < 7 && x > 8 && x < 22; });
+  const m = C.measureText(s, { color: 'rgb(17, 17, 17)', opacity: 1, rects: [[0, 0, 30, 10]] });
+  assert.strictEqual(W.hex(m.bg), '#ffffff');
 });
 
 test('focus ring: a 2px dark ring passes, one in the colour beneath fails', function () {

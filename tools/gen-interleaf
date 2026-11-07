@@ -170,6 +170,7 @@ def tokens_css(tok):
         for n in names:
             v = tok.raw(n, theme)
             if v is not None:
+                tok.resolve(n, theme)   # an alias cycle or a missing target is an error, not a broken var()
                 out.append("  --%s: %s;" % (n, css_value(v)))
         out.append("}")
     for p in PENS[1:]:
@@ -181,6 +182,7 @@ def tokens_css(tok):
     out.append(":root {")
     for n, (fam, t) in tok.by_name.items():
         if not isinstance(t["value"], dict) and fam in ("color",) + PLAIN:
+            tok.resolve(n, tok.first)
             out.append("  --%s: %s;" % (n, css_value(t["value"])))
     for k, stack in tok.data["type"]["families"].items():
         out.append("  --font-%s: %s;" % (k, stack))

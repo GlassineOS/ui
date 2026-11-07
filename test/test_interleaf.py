@@ -268,6 +268,32 @@ try:
     json.dump(d, open(tp, "w"), indent=2)
     r = run(gi)
     ok(r.returncode == 1 and "Traceback" not in r.stderr and "nope" in r.stderr, "an alias of no token: an error naming it")
+    # the same outside the E-ink scheme tokens: the web form is not written with a broken var()
+    d = json.loads(good)
+    for t in d["color"]["tokens"]:
+        if t["name"] == "pen":
+            t["value"]["white-night"] = "{nope}"
+    json.dump(d, open(tp, "w"), indent=2)
+    r = run(gi)
+    ok(r.returncode == 1 and "Traceback" not in r.stderr and "nope" in r.stderr and "--pen: var(--nope)" not in
+       open(os.path.join(tmp, "web", "tokens.css")).read(), "an alias of no token in a Night theme: an error, nothing written")
+    d = json.loads(good)
+    for t in d["color"]["tokens"]:
+        if t["name"] == "gilt":
+            t["value"]["editorial-paper"] = "{gold}"
+        if t["name"] == "gold":
+            t["value"]["editorial-paper"] = "{gilt}"
+    json.dump(d, open(tp, "w"), indent=2)
+    r = run(gi)
+    ok(r.returncode == 1 and "Traceback" not in r.stderr and "alias cycle" in r.stderr and "gilt" in r.stderr
+       and "--gilt: var(--gold)" not in open(os.path.join(tmp, "web", "tokens.css")).read(),
+       "an alias cycle in a Paper theme: an error, nothing written")
+    d = json.loads(good)
+    for t in d["color"]["tokens"]:
+        if t["name"] == "grey-0":
+            t["value"] = "{nope}"
+    json.dump(d, open(tp, "w"), indent=2)
+    ok(run(gi).returncode == 1, "an alias of no token in a token without themes: an error")
     open(tp, "w").write(good)
 
     # export-claude (002 FR-040)

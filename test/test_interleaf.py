@@ -111,9 +111,72 @@ ok(css.startswith("/* GENERATED") and ':root, [data-theme="white-paper"] {' in c
    "tokens.css: the first theme on :root")
 ok('[data-theme="eink"], [data-theme="white-eink"], [data-theme="editorial-eink"] {' in css,
    "tokens.css: White and Editorial on e-ink share the eink theme")
-ok('[data-pen="2"]:is(:root, [data-theme]), [data-pen="2"] [data-theme] { --accent: var(--accent-2); '
-   '--highlight: var(--highlight-2); }' in css and css.index('[data-pen="2"]') > css.index('[data-theme="stationery-eink"] {'),
-   "tokens.css: pen 2 after the themes")
+
+
+def cascade(css_text, chain):
+    """the custom properties computed on the last element of chain (a list of attribute dicts,
+    the first being <html>), by CSS's rules for what tokens.css uses: compound selectors of
+    :root and [attr] / [attr="v"], specificity then source order, custom properties inherited
+    as computed values, var(--x) substituted where it is declared"""
+    rules = []
+    for sels, body in re.findall(r"([^{}]+)\{([^{}]*)\}", re.sub(r"/\*.*?\*/", "", css_text, flags=re.S)):
+        decls = re.findall(r"(--[a-z0-9-]+)\s*:\s*([^;]+);", body)
+        if decls and sels.strip().startswith((":root", "[")):
+            for sel in sels.split(","):
+                rules.append((sel.strip(), decls))
+
+    def matches(sel, i, attrs):
+        for part in re.findall(r":root|\[[^\]]+\]", sel):
+            if part == ":root":
+                if i != 0:
+                    return False
+                continue
+            name, _, val = part[1:-1].partition("=")
+            if name not in attrs or (val and attrs[name] != val.strip('"')):
+                return False
+        return True
+
+    computed = {}
+    for i, attrs in enumerate(chain):
+        hit = sorted(((len(re.findall(r":root|\[", sel)), n, sel) for n, (sel, _) in enumerate(rules)
+                      if matches(sel, i, attrs)))
+        declared = {}
+        for _, n, _ in hit:
+            declared.update(dict(rules[n][1]))
+        mine = dict(computed)
+        for prop, v in declared.items():
+            mine[prop] = v.strip()
+        for prop in declared:
+            while "var(" in mine[prop]:
+                mine[prop] = re.sub(r"var\((--[a-z0-9-]+)\)", lambda m: mine[m.group(1)], mine[prop])
+        computed = mine
+    return computed
+
+
+def pen_of(*chain):
+    return cascade(css, [dict(a) for a in chain])["--accent"]
+
+
+T = lambda theme, **kw: dict({"data-theme": theme}, **kw)
+page = {"data-theme": "white-paper", "data-pen": "3"}
+ok(pen_of({}) == tok.raw("accent", "white-paper") and pen_of({"data-pen": "2"}) == tok.raw("accent-2", "white-paper"),
+   "pen: <html data-pen> picks the default theme's pen")
+ok(pen_of(page) == tok.raw("accent-3", "white-paper"), "pen: data-pen next to data-theme")
+ok(pen_of(page, T("white-paper", **{"data-pen": "2"})) == tok.raw("accent-2", "white-paper"),
+   "pen: a nested data-theme element's pen 2 beats the ancestor's pen 3")
+ok(pen_of(page, T("white-paper", **{"data-pen": "1"})) == tok.raw("accent", "white-paper"),
+   "pen: a nested data-theme element's pen 1 beats the ancestor's pen 3")
+ok(pen_of(page, T("white-paper")) == tok.raw("accent", "white-paper"),
+   "pen: a nested data-theme element without a pen has pen 1, not its ancestor's")
+ok(pen_of(page, {"data-pen": "2"}) == tok.raw("accent-3", "white-paper"),
+   "pen: a data-pen without data-theme does nothing (the ancestor's computed value is inherited)")
+ok(pen_of(T("white-paper", **{"data-pen": "1"}), T("editorial-paper", **{"data-pen": "2"}))
+   == tok.raw("accent-2", "editorial-paper"), "pen: another voice nested, its own pen")
+ok(cascade(css, [page, T("editorial-paper", **{"data-pen": "2"})])["--pen"] == tok.raw("accent-2", "editorial-paper")
+   and cascade(css, [page, T("editorial-paper")])["--pen"] == tok.raw("accent", "editorial-paper"),
+   "pen: the aliases (--pen) follow the nested element's pen")
+ok(pen_of(T("white-night", **{"data-pen": "3"})) == tok.raw("accent-3", "white-night"),
+   "pen: the pen on a non-default theme's element")
 ok("--pen: var(--accent);" in css and "--on-accent-soft: var(--ink-soft);" in css, "tokens.css: aliases as var()")
 declared = set(re.findall(r"(--[a-z0-9-]+)\s*:", css + bundle))
 used = set(re.findall(r"var\((--[a-z0-9-]+)", bundle))

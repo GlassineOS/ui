@@ -114,8 +114,11 @@ Load `tokens.css`, then `bundle.css`. Two attributes choose the look:
   the component styles take the voice from the id's prefix.
 - `data-pen`: `1` (or no attribute: the house pen), `2` or `3`: `accent` and `highlight` become
   `accent-N` and `highlight-N`, and the tokens that alias them (`pen`, `wax`, `focus`, ...) follow.
-  It goes on the element that has `data-theme` or on an ancestor of it. On e-ink the three pens are
-  the same greys.
+  It goes on the element that has `data-theme` (or on `<html>`, for the page's default theme), not on
+  an ancestor of it: a pen is not inherited, so a `data-theme` element without its own `data-pen` has
+  pen 1, and a nested `data-theme` element with `data-pen="1|2|3"` has that pen whatever its
+  ancestors have. A `data-pen` on an element with no `data-theme` does nothing. On e-ink the three
+  pens are the same greys.
 
 Without either attribute a page gets `white-paper` and pen 1. The fonts are loaded as the component
 styles do it (an `@import` of Google Fonts at the top of `bundle.css`).

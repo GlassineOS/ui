@@ -13,3 +13,4 @@ for v in white editorial stationery; do
     PYTHONPATH="$R/python" ${PYTHON:-python3} "$R/test/sheet.py" $v "$T/sheet-py-$v.png" "$T/sheet-py-$v.txt"
 done
 ${PYTHON:-python3} "$R/test/compare.py" "$T"
+${PYTHON:-python3} "$R/test/compare-selftest.py" "$T"

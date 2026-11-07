@@ -28,13 +28,20 @@ Needs cairo, pango, librsvg, glib (dev), python3, PyGObject (Gtk 3, Pango), pyca
 
 `make check` runs:
 
-- `tools/gen-voices --check`: the generated C table and Python module match the data.
-- `test/test_voices.py`: sections, the fallback to White, a changed value reaching both forms, the
-  design importer.
+- `tools/gen-voices --check`: the generated C table, `glassine-ui-scheme.h` and the Python module
+  match the data.
+- `test/test_voices.py`: sections, the fallback to White, a changed value (and a changed scheme token)
+  reaching every form, the design importer.
+- `test/test_paint.py`: the Python drawing API call by call.
 - `test/c-api.sh`: a separate program built with `pkg-config glassine-ui` against an installed copy.
+- `test/pc-prefix.sh`: the installed `.pc` names the prefix it was installed with.
 - `test/sheet.sh`: the sample sheet (every box, rule, text style and an icon in the three voices) drawn
-  by the C library and by the Python module, compared cell by cell (one grey step = 255/15). The known
-  differences are listed in `test/compare.py` with their cause; see "Where C and Python differ".
+  by the C library and by the Python module, compared cell by cell in every colour channel (one grey
+  step = 255/15). The known differences are listed in `test/compare.py` with their cause (see "Where C
+  and Python differ"), each bounded: a shape by how many pixels may differ, text by a mask (the
+  differences within its ink, the same darkest grey, ink within 3x). So FR-012's one grey step holds
+  for the cells not listed; the listed ones are held to these bounds, and
+  `test/compare-selftest.py` checks that a regression in one fails.
 
 ## Voices
 

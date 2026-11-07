@@ -37,6 +37,27 @@ def painted(s):
                if d[y * st + x * 4: y * st + x * 4 + 3] != b"\xff\xff\xff")
 
 
+# ---- the CSS readers ---------------------------------------------------------------
+ok(P.color("#111") == P.color("#111111") == (17 / 255, 17 / 255, 17 / 255, 1.0), "color: #rgb and #rrggbb")
+ok(P.color("rgba(17,17,17,.5)") == (17 / 255, 17 / 255, 17 / 255, .5), "color: rgba()")
+ok(P.color("transparent") is None and P.color("none") is None and P.color(None) is None, "color: transparent -> None")
+ok(P.px("12px") == 12 and P.px("50%", 30) == 15 and P.px("0") == 0, "px: px, percent, 0")
+ok(P.radii("4px", 100, 40) == [4] * 4 and P.radii("4px 8px", 100, 40) == [4, 8, 4, 8]
+   and P.radii("999px", 100, 40) == [20] * 4, "radii: one, two values, clamped to half the short side")
+ok(P.border("1.5px dashed #111111") == (1.5, "dashed", P.color("#111111")) and P.border("none") is None,
+   "border: width, style, colour; none")
+ok(P.shadows("inset 0 0 0 2px #111111, 3px 3px 0 #111111")
+   == [(True, 0, 0, 2, P.color("#111111")), (False, 3, 3, 0, P.color("#111111"))], "shadows: CSS order, inset")
+ok(P.ls_em(".08em") == .08 and P.ls_em("0") == 0, "ls_em")
+
+# ---- box: the background, an outer ring below it, a border inside -------------------
+s, cr = canvas()
+P.box(cr, 20, 20, 60, 40, "0", "#ffffff", "0 0 0 2px #111111", "1px solid #888888")
+s.flush()
+px_at = lambda x, y: s.get_data()[y * s.get_stride() + x * 4 + 1]     # noqa: E731
+ok(px_at(19, 40) == 0x11 and px_at(20, 40) == 0x88 and px_at(50, 40) == 0xff and px_at(17, 40) == 0xff,
+   "box: the ring outside, the border on its edge, the background inside")
+
 # ---- transparent colours draw nothing (as in C, where 0 skips the draw) ------------
 s, cr = canvas()
 w0, h0 = P.text(cr, "Sample", FONT, 10, 10, "#111111")

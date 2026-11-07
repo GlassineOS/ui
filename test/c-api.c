@@ -54,6 +54,34 @@ int main(int argc, char **argv)
     ui_stroke_rrect(&g, 120, 10, 60, 40, 4, -1, v->ink, 1);
     OK(cairo_status(cr) == CAIRO_STATUS_SUCCESS, "a dashed stroke 0 wide leaves the context usable");
     ui_fill_rect(&g, 150, 70, 10, 10, v->ink);
+    /* ui_text_wrap: one line, wrapped lines, at most maxlines */
+    const char *para = "Sample text that is long enough to wrap in a narrow column of the card";
+    double h1 = ui_text_wrap(&lay, &v->nameFont, "Sample", 0, 0, 180, 3, 0, v->ink);
+    double h3 = ui_text_wrap(&lay, &v->nameFont, para, 0, 0, 120, 3, 0, v->ink);
+    double h2 = ui_text_wrap(&lay, &v->nameFont, para, 0, 0, 120, 2, 0, v->ink);
+    double h9 = ui_text_wrap(&lay, &v->nameFont, para, 0, 0, 120, 9, 0, v->ink);
+    OK(h1 > 10 && h2 > 1.8 * h1 && h3 > h2 && h9 > h3, "wrap: more lines are taller, up to maxlines");
+    OK(ui_text_wrap(&lay, &v->nameFont, para, 0, 0, 120, 2, 1.6, v->ink) > h2, "wrap: a line height above the font's is taller");
+
+    /* the rules: solid, dashes (3:2), dots (1:1) along one row */
+    cairo_surface_t *rs = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 200, 30);
+    cairo_t *rcr = cairo_create(rs);
+    UiGc rg = { rcr, 1, v };
+    ui_fill_rect(&rg, 0, 0, 200, 30, UI_RGB(0xffffff));
+    ui_hline(&rg, 0, 4, 200, 2, v->ink, 0);
+    ui_hline(&rg, 0, 14, 200, 2, v->ink, 1);
+    ui_hline(&rg, 0, 24, 200, 2, v->ink, 2);
+    cairo_surface_flush(rs);
+    int inked[3] = { 0, 0, 0 };
+    for (int r = 0; r < 3; r++)
+        for (int x = 0; x < 200; x++)
+            inked[r] += *(unsigned *)(cairo_image_surface_get_data(rs) + (5 + 10 * r) * cairo_image_surface_get_stride(rs) + x * 4) == v->ink;
+    OK(inked[0] == 200, "a solid rule: every pixel");
+    OK(inked[1] >= 112 && inked[1] <= 128, "a dashed rule: 3 of every 5 pixels");
+    OK(inked[2] >= 92 && inked[2] <= 108, "a dotted rule: 1 of every 2 pixels");
+    cairo_destroy(rcr);
+    cairo_surface_destroy(rs);
+
     /* the caller's line width and dash stay */
     double dash[1] = { 5 };
     cairo_set_line_width(cr, 7);

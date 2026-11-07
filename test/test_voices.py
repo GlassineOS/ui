@@ -89,6 +89,21 @@ try:
     py = open(os.path.join(tmp, "python", "glassine_ui", "_voices.py")).read()
     ok("{ 0, 0, 2, UI_RGB(0x111111), 0 }" in c, "the C table has the new edge")
     ok("'cardSh': '0 0 0 2px #111111'" in py, "the Python data has the new edge")
+    # the shared scheme tokens: a change reaches glassine-ui-scheme.h, and one
+    # voice alone can't change them
+    d = json.load(open(p))
+    for v in d["voices"].values():
+        v["scheme"]["dim"] = "#a0a0a0"
+    json.dump(d, open(p, "w"), indent=2)
+    r = subprocess.run(gv + ["--check"], capture_output=True, text=True)
+    ok(r.returncode == 1 and "glassine-ui-scheme.h" in r.stderr, "--check fails on a changed scheme token, naming scheme.h")
+    subprocess.run(gv, check=True, capture_output=True)
+    ok("#define UI_DIM UI_RGB(0xa0a0a0)" in open(os.path.join(tmp, "src", "glassine-ui-scheme.h")).read(),
+       "scheme.h has the new token")
+    d["voices"]["editorial"]["scheme"]["dim"] = "#b4b4b4"
+    json.dump(d, open(p, "w"), indent=2)
+    r = subprocess.run(gv, capture_output=True, text=True)
+    ok(r.returncode != 0 and "scheme dim differs between voices" in r.stderr, "a scheme token one voice changes alone is refused")
 finally:
     shutil.rmtree(tmp)
 

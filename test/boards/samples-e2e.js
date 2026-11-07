@@ -38,16 +38,14 @@ async function main() {
     assert.deepStrictEqual(by['Bad.dc.html'].unsupported.map((e) => e.feature).sort(), ['element', 'expression in a hole']);
     assert.ok(by['Host.dc.html'].unsupported.every((e) => e.board === 'Bad.dc.html'));
     assert.match(by['Throws.dc.html'].errors[0].message, /in text is object/);
-    // a dc-import cycle is named with the line that closes it, not a stack overflow
-    const cyc = by['Cycle.dc.html'].unsupported.find((e) => e.feature === 'dc-import cycle');
-    assert.ok(cyc, JSON.stringify(by['Cycle.dc.html']));
-    assert.strictEqual(cyc.board, 'CycleB.dc.html');
-    assert.strictEqual(cyc.line, 11);
-    assert.ok(!by['Cycle.dc.html'].console.some((c) => /call stack/i.test(c.text)) && !by['Cycle.dc.html'].errors.some((e) => /call stack/i.test(e.message)));
-    // a missing board names the importing board and line
-    const miss = by['Missing.dc.html'].errors.find((e) => e.feature === 'dc-import');
-    assert.ok(miss, JSON.stringify(by['Missing.dc.html']));
-    assert.deepStrictEqual([miss.board, miss.line, miss.detail], ['Missing.dc.html', 11, 'Nope']);
+    // a <dc-import> cycle is named on the importing board's line, not a stack overflow
+    const cyc = (b) => by[b].unsupported.filter((e) => e.feature === 'dc-import cycle').map((e) => e.board + ':' + e.line + ' ' + e.detail).sort();
+    assert.deepStrictEqual(cyc('Self.dc.html'), ['Self.dc.html:11 Self.dc.html → Self.dc.html']);
+    assert.deepStrictEqual(cyc('Ping.dc.html'), ['Ping.dc.html:11 Ping.dc.html → loop/Pong.dc.html → Ping.dc.html',
+      'loop/Pong.dc.html:12 loop/Pong.dc.html → Ping.dc.html → loop/Pong.dc.html']);
+    for (const b of ['Self.dc.html', 'Ping.dc.html', 'loop/Pong.dc.html']) assert.ok(!by[b].errors.some((e) => /call stack/.test(e.message)), b);
+    // a missing import is named on the <dc-import> that names it
+    assert.ok(by['Missing.dc.html'].errors.some((e) => e.board === 'Missing.dc.html' && e.feature === '<dc-import>' && e.detail === 'Nope' && e.line === 11 && /Nope\.dc\.html: HTTP 404/.test(e.message)), JSON.stringify(by['Missing.dc.html'].errors));
     // an error in the logic carries the board file's line
     const thrown = by['LineThrow.dc.html'].errors.find((e) => e.feature === 'renderVals()');
     assert.strictEqual(thrown.line, 15);

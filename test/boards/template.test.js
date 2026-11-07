@@ -116,6 +116,7 @@ test('dc-import: props kebab→camel, raw values, style and hint-size', () => {
   const doc = parse('<dc-import name="Card" item="{{ it }}" on-fit="{{ fit }}" show-win="{{ true }}" label="a {{ n }}" theme="white" style="position: static" hint-size="760px,1140px"></dc-import>');
   assert.deepStrictEqual(doc.issues, []);
   assert.deepStrictEqual(doc.imports, ['Card']);
+  assert.ok(doc.importLines.Card > 0);
   const imports = [];
   const it = { a: 1 }, fit = () => 0;
   render(doc, { it, fit, n: 2 }, imports);
@@ -228,6 +229,13 @@ test('a block start tag closes an open <p>, as in HTML', () => {
 test('dc-import lines are kept for reports', () => {
   const doc = parse('<div>\n<dc-import name="A" hint-size="1px,1px"></dc-import>\n<dc-import name="A" hint-size="1px,1px"></dc-import></div>');
   assert.deepStrictEqual(doc.imports, ['A']);
-  assert.deepStrictEqual(doc.importLines.map((i) => i.name), ['A', 'A']);
-  assert.ok(doc.importLines[1].line > doc.importLines[0].line);
+  assert.strictEqual(doc.importLines.A, 11);
+});
+
+test('importCycles: the imports that lead back to the board, with the way there', () => {
+  const g = { A: ['B', 'C'], B: ['A'], C: ['D'], D: [], S: ['S'] };
+  const of = (f) => (g[f] || []).map((t, i) => ({ name: t, file: t, line: i + 1 }));
+  assert.deepStrictEqual(T.importCycles('A', of), [{ name: 'B', line: 1, chain: ['A', 'B', 'A'] }]);
+  assert.deepStrictEqual(T.importCycles('S', of), [{ name: 'S', line: 1, chain: ['S', 'S'] }]);
+  assert.deepStrictEqual(T.importCycles('C', of), []);
 });

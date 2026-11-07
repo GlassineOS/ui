@@ -9,7 +9,6 @@
 'use strict';
 const fs = require('fs');
 const http = require('http');
-const os = require('os');
 const path = require('path');
 const T = require('../runtime/template.js');
 
@@ -61,16 +60,29 @@ function describe(dir) {
   const onDisk = new Set(files);
   const entries = canvas.boards || {};
   const names = Array.from(new Set((canvas.order || []).filter(function (f) { return entries[f]; }).concat(Object.keys(entries), files)));
+  const docs = new Map();
+  for (const f of files) docs.set(f, T.parseBoard(fs.readFileSync(path.join(dir, f), 'utf8'), f));
+  // as the runtime resolves them: beside the importing board, or from the design folder for "/…"
+  const importsOf = function (f) {
+    const d = docs.get(f);
+    if (!d || d.issues.length) return [];
+    return d.imports.map(function (n) {
+      const file = path.posix.normalize(n[0] === '/' ? n.slice(1) + '.dc.html' : path.posix.join(path.posix.dirname(f), n + '.dc.html'));
+      return { name: n, file: file, line: d.importLines[n] };
+    });
+  };
   const boards = names.map(function (f) {
     const c = entries[f] || null;
     const b = { file: f, exists: onDisk.has(f), onCanvas: !!c, title: c && c.title || f, page: c && c.page || null,
       x: c ? c.x : null, y: c ? c.y : null, w: c ? c.w : null, h: c ? c.h : null,
       interactive: !!(c && c.is_interactive), expand: c && c.expand || null, props: {}, preview: null, issues: [] };
     if (b.exists) {
-      const doc = T.parseBoard(fs.readFileSync(path.join(dir, f), 'utf8'), f);
+      const doc = docs.get(f);
       b.props = doc.props;
       b.preview = doc.preview;
-      b.issues = doc.issues;
+      b.issues = doc.issues.concat(T.importCycles(f, importsOf).map(function (c) {
+        return { kind: 'unsupported', feature: 'dc-import cycle', detail: c.chain.join(' → '), line: c.line };
+      }));
       if (!c) b.title = doc.title || f;
     }
     const w = b.w || b.preview && b.preview.width || 1280, hh = b.h || b.preview && b.preview.height || 800;
@@ -111,25 +123,21 @@ function sendFile(res, file) {
   });
 }
 
-// The names a request's Host (and Origin, when sent) may carry: localhost, the bound address, every
-// local address when bound to all of them, and the names given with allowHosts. Anything else is
-// refused, so a page elsewhere cannot read the design folder through DNS rebinding.
-function allowedHosts(host, extra) {
-  const ok = new Set(['localhost', '127.0.0.1', '::1']);
-  const wild = host === '0.0.0.0' || host === '::' || host === '';
-  if (!wild) ok.add(host.replace(/^\[|\]$/g, '').toLowerCase());
-  else {
-    const ifs = os.networkInterfaces();
-    for (const k of Object.keys(ifs)) for (const a of ifs[k] || []) ok.add(a.address.toLowerCase().replace(/%.*$/, ''));
-    ok.add(os.hostname().toLowerCase());
-  }
-  for (const h of extra || []) ok.add(String(h).toLowerCase());
-  return ok;
+// The names a request's Host (and Origin, when sent) may carry: localhost, an IP address (a name
+// another site controls can be rebound to this address, an IP literal can't), the bound name, and
+// the names given with allowHosts. Anything else gets 421, so a page elsewhere cannot read the
+// design folder through DNS rebinding.
+function hostAllowed(name, bound, extra) {
+  if (!name) return false;
+  name = name.toLowerCase().replace(/^\[|\]$/g, '');
+  if (name === 'localhost' || name.endsWith('.localhost')) return true;
+  if (/^[0-9a-f:.]+$/.test(name) && name.indexOf(':') >= 0 || /^\d{1,3}(\.\d{1,3}){3}$/.test(name)) return true;
+  if (bound && name === String(bound).toLowerCase().replace(/^\[|\]$/g, '')) return true;
+  return (extra || []).some(function (h) { return String(h).toLowerCase() === name; });
 }
 function hostName(v) {
   if (!v) return null;
-  const m = /^\[([^\]]+)\](?::\d+)?$/.exec(v) || /^([^:]+)(?::\d+)?$/.exec(v);
-  return m ? m[1].toLowerCase() : null;
+  try { return new URL('http://' + v).hostname; } catch (e) { return null; }
 }
 
 // startServer({design, interleaf, host = '127.0.0.1', port = 0, live = true, allowHosts}) → {url, port, close()}
@@ -139,16 +147,15 @@ function startServer(opts) {
   const interleaf = path.resolve(opts.interleaf || path.join(UI_ROOT, 'interleaf'));
   if (!fs.existsSync(path.join(interleaf, 'tokens.json'))) throw new Error('no Interleaf at ' + interleaf + ' (tokens.json missing); pass --interleaf DIR');
   const host = opts.host || '127.0.0.1';
-  const hosts = allowedHosts(host, opts.allowHosts);
   const live = opts.live !== false;
   const clients = new Set();
   const watchers = [];
 
   function handle(req, res) {
-    const hn = hostName(req.headers.host);
-    let on = null;
-    if (req.headers.origin && req.headers.origin !== 'null') { try { on = new URL(req.headers.origin).hostname.replace(/^\[|\]$/g, '').toLowerCase(); } catch (e) { on = '?'; } }
-    if (!hn || !hosts.has(hn) || on !== null && !hosts.has(on)) { res.writeHead(403, { 'content-type': 'text/plain' }); res.end('host not allowed (see --allow-host)\n'); return; }
+    const ok = function (n) { return hostAllowed(n, host, opts.allowHosts); };
+    let origin = null;
+    if (req.headers.origin && req.headers.origin !== 'null') { try { origin = new URL(req.headers.origin).hostname; } catch (e) { origin = '?'; } }
+    if (!ok(hostName(req.headers.host)) || origin !== null && !ok(origin)) { res.writeHead(421, { 'content-type': 'text/plain' }); res.end('unknown host (see --allow-host)\n'); return; }
     let u;
     try { u = new URL(req.url, 'http://x'); } catch (e) { res.writeHead(400); res.end(); return; }
     let p;

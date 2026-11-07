@@ -24,6 +24,15 @@ test('describe: canvas entries, data-props, sizes', () => {
   assert.ok(d.boards.every((b) => b.exists && b.onCanvas && !b.issues.length));
 });
 
+test('describe: dc-import cycles are named on the importing line', () => {
+  const by = Object.fromEntries(describe(path.join(__dirname, 'unsupported')).boards.map((b) => [b.file, b.issues.filter((i) => i.feature === 'dc-import cycle')]));
+  assert.deepStrictEqual(by['Self.dc.html'].map((i) => [i.line, i.detail]), [[11, 'Self.dc.html → Self.dc.html']]);
+  assert.deepStrictEqual(by['Ping.dc.html'].map((i) => [i.line, i.detail]), [[11, 'Ping.dc.html → loop/Pong.dc.html → Ping.dc.html']]);
+  assert.deepStrictEqual(by['loop/Pong.dc.html'].map((i) => [i.line, i.detail]), [[12, 'loop/Pong.dc.html → Ping.dc.html → loop/Pong.dc.html']]);
+  assert.deepStrictEqual(by['Missing.dc.html'], []);
+  assert.deepStrictEqual(by['Host.dc.html'], []);
+});
+
 test('server: runtime at any support.js, Interleaf from the checkout, design files, canvas API', async () => {
   const srv = await startServer({ design: SAMPLES, interleaf: INTERLEAF, live: false });
   try {
@@ -48,6 +57,77 @@ test('server: runtime at any support.js, Interleaf from the checkout, design fil
     assert.strictEqual((await get('_boards/')).status, 200);
     assert.strictEqual((await get('_boards/events')).status, 404);
   } finally { await srv.close(); }
+});
+
+test('server: a NUL byte in the path is refused and the server stays up', async () => {
+  const srv = await startServer({ design: SAMPLES, interleaf: INTERLEAF, live: false });
+  try {
+    for (const p of ['A%00.dc.html', 'a%00b', '_boards/x%00.js', 'ds/interleaf/tokens%00.json', 'sub/ds/interleaf/%00']) {
+      assert.strictEqual((await fetch(srv.url + p)).status, 400, p);
+    }
+    assert.strictEqual((await fetch(srv.url + 'Main.dc.html')).status, 200);
+  } finally { await srv.close(); }
+});
+
+// GET with a given Host header, or none for null (fetch can't set one)
+function getHost(url, host) {
+  return new Promise((resolve, reject) => {
+    const u = new URL(url);
+    const o = host === null ? { setHost: false } : { headers: { host: host } };
+    http.get(Object.assign({ host: u.hostname, port: u.port, path: u.pathname }, o), (res) => {
+      let body = '';
+      res.on('data', (d) => { body += d; });
+      res.on('end', () => resolve({ status: res.statusCode, body: body }));
+    }).on('error', reject);
+  });
+}
+
+test('server: links that leave the design folder or Interleaf are not followed', async () => {
+  const base = path.join(TMP, 'serve-links'), design = path.join(base, 'design'), il = path.join(base, 'interleaf');
+  fs.rmSync(base, { recursive: true, force: true });
+  fs.mkdirSync(path.join(design, 'data'), { recursive: true });
+  fs.mkdirSync(path.join(base, 'outside'));
+  fs.mkdirSync(il);
+  fs.writeFileSync(path.join(il, 'tokens.json'), '{"name":"t"}');
+  fs.writeFileSync(path.join(base, 'secret.txt'), 'SECRET');
+  fs.writeFileSync(path.join(base, 'outside', 'x.txt'), 'SECRET');
+  fs.writeFileSync(path.join(design, 'A.txt'), 'inside');
+  fs.symlinkSync('../secret.txt', path.join(design, 'link.txt'));
+  fs.symlinkSync('../outside', path.join(design, 'dir'));
+  fs.symlinkSync('../A.txt', path.join(design, 'data', 'same.txt'));
+  fs.symlinkSync('../secret.txt', path.join(il, 'leak.json'));
+  // the design folder itself may be a link
+  fs.symlinkSync('design', path.join(base, 'design-link'));
+  const srv = await startServer({ design: path.join(base, 'design-link'), interleaf: il, live: false });
+  try {
+    const get = async (p) => { const r = await fetch(srv.url + p); return { status: r.status, body: await r.text() }; };
+    assert.deepStrictEqual(await get('A.txt'), { status: 200, body: 'inside' });
+    assert.deepStrictEqual(await get('data/same.txt'), { status: 200, body: 'inside' });
+    for (const p of ['link.txt', 'dir/x.txt', 'ds/interleaf/leak.json']) {
+      const r = await get(p);
+      assert.strictEqual(r.status, 404, p);
+      assert.doesNotMatch(r.body, /SECRET/, p);
+    }
+  } finally { await srv.close(); }
+});
+
+test('server: answers only Host names it can trust (no DNS rebinding)', async () => {
+  const srv = await startServer({ design: SAMPLES, interleaf: INTERLEAF, live: false });
+  try {
+    const u = srv.url + 'Main.dc.html';
+    for (const h of ['127.0.0.1:' + srv.port, 'localhost:' + srv.port, 'localhost', '[::1]:' + srv.port, '192.168.1.20:' + srv.port]) {
+      assert.strictEqual((await getHost(u, h)).status, 200, h);
+    }
+    for (const h of ['evil.example:' + srv.port, 'evil.example', '127.0.0.1@evil.example', null]) {
+      const r = await getHost(u, h);
+      // without a Host, node's own check answers 400 before ours
+      assert.strictEqual(r.status, h === null ? 400 : 421, String(h));
+      assert.doesNotMatch(r.body, /DCLogic/, String(h));
+    }
+    assert.strictEqual((await getHost(srv.url + '_boards/api/canvas', 'evil.example')).status, 421);
+  } finally { await srv.close(); }
+  const named = await startServer({ design: SAMPLES, interleaf: INTERLEAF, live: false, host: 'localhost' });
+  try { assert.strictEqual((await getHost(named.url + 'Main.dc.html', 'LOCALHOST:' + named.port)).status, 200); } finally { await named.close(); }
 });
 
 test('server: refuses a missing Interleaf', async () => {
@@ -82,6 +162,23 @@ test('import: leaves out claude.ai files and the embedded ds/, drops designSyste
   assert.doesNotThrow(() => importCanvas(src, dest, { force: true }));
 });
 
+test('import: symbolic links are left out, never followed', () => {
+  const base = path.join(TMP, 'links'), src = path.join(base, 'export'), dest = path.join(base, 'design');
+  fs.rmSync(base, { recursive: true, force: true });
+  fs.mkdirSync(path.join(src, 'data'), { recursive: true });
+  fs.mkdirSync(path.join(base, 'outside'));
+  fs.writeFileSync(path.join(base, 'secret.txt'), 'SECRET');
+  fs.writeFileSync(path.join(base, 'outside', 'x.dc.html'), 'SECRET');
+  fs.writeFileSync(path.join(src, 'canvas.json'), '{"boards":{}}');
+  fs.writeFileSync(path.join(src, 'A.dc.html'), '<html></html>');
+  fs.symlinkSync(path.join(base, 'secret.txt'), path.join(src, 'data', 'fixtures.js'));
+  fs.symlinkSync('../outside', path.join(src, 'dir'));
+  fs.symlinkSync('missing', path.join(src, 'dangling.js'));
+  const r = importCanvas(src, dest);
+  assert.deepStrictEqual(r.copied.sort(), ['A.dc.html', 'canvas.json']);
+  assert.deepStrictEqual(r.left.filter((l) => /symbolic link/.test(l.why)).map((l) => l.path).sort(), ['dangling.js', 'data/fixtures.js', 'dir']);
+  for (const p of ['data/fixtures.js', 'dir', 'dangling.js']) assert.ok(!fs.existsSync(path.join(dest, p)), p);
+});
 // a raw request, so Host and Origin can be set
 function req(url, p, headers) {
   const u = new URL(url);
@@ -113,15 +210,7 @@ function secDesign() {
   return { design, il };
 }
 
-test('server: a NUL byte is refused and the server lives on', async () => {
-  const srv = await startServer({ design: SAMPLES, interleaf: INTERLEAF, live: false });
-  try {
-    for (const p of ['/a%00b', '/A%00.dc.html', '/_boards/x%00', '/ds/interleaf/tokens%00.json']) assert.strictEqual((await req(srv.url, p)).status, 400, p);
-    assert.strictEqual((await req(srv.url, '/Main.dc.html')).status, 200);
-  } finally { await srv.close(); }
-});
-
-test('server: no dotfiles, no links out of the design folder or Interleaf', async () => {
+test('server: no dotfiles; links that stay inside are served', async () => {
   const { design, il } = secDesign();
   const srv = await startServer({ design, interleaf: il, live: false });
   try {
@@ -137,12 +226,12 @@ test('server: no dotfiles, no links out of the design folder or Interleaf', asyn
   } finally { await srv.close(); }
 });
 
-test('server: only localhost, the bound address and allowed names in Host and Origin', async () => {
+test('server: Origin as Host, and names given with allowHosts', async () => {
   const srv = await startServer({ design: SAMPLES, interleaf: INTERLEAF, live: false, allowHosts: ['hub.example'] });
   try {
     const port = srv.port;
-    assert.strictEqual((await req(srv.url, '/Main.dc.html', { host: 'evil.example:' + port })).status, 403);
-    assert.strictEqual((await req(srv.url, '/Main.dc.html', { origin: 'http://evil.example:' + port })).status, 403);
+    assert.strictEqual((await req(srv.url, '/Main.dc.html', { host: 'evil.example:' + port })).status, 421);
+    assert.strictEqual((await req(srv.url, '/Main.dc.html', { origin: 'http://evil.example:' + port })).status, 421);
     assert.strictEqual((await req(srv.url, '/Main.dc.html', { host: 'localhost:' + port })).status, 200);
     assert.strictEqual((await req(srv.url, '/Main.dc.html', { host: '127.0.0.1:' + port, origin: 'http://127.0.0.1:' + port })).status, 200);
     assert.strictEqual((await req(srv.url, '/Main.dc.html', { host: 'hub.example:' + port })).status, 200);
@@ -158,23 +247,14 @@ test('server: the default Interleaf is interleaf/ of this checkout', async () =>
   } finally { await srv.close(); }
 });
 
-test('import: symbolic links are left out and never followed; ds/ at any depth', () => {
-  const root = path.join(TMP, 'links'), src = path.join(root, 'export'), dest = path.join(root, 'design');
+test('import: an embedded ds/ is left out at any depth', () => {
+  const root = path.join(TMP, 'nested-ds'), src = path.join(root, 'export'), dest = path.join(root, 'design');
   fs.rmSync(root, { recursive: true, force: true });
   fs.mkdirSync(path.join(src, 'sub', 'ds', 'interleaf'), { recursive: true });
-  fs.mkdirSync(path.join(root, 'secrets'), { recursive: true });
-  fs.writeFileSync(path.join(root, 'secret.txt'), 'secret');
-  fs.writeFileSync(path.join(root, 'secrets', 'key'), 'secret');
   fs.writeFileSync(path.join(src, 'canvas.json'), '{"v":3}');
-  fs.writeFileSync(path.join(src, 'A.dc.html'), '<html></html>');
+  fs.writeFileSync(path.join(src, 'sub', 'A.dc.html'), '<html></html>');
   fs.writeFileSync(path.join(src, 'sub', 'ds', 'interleaf', 'tokens.json'), '{}');
-  fs.symlinkSync('../secret.txt', path.join(src, 'a.txt'));
-  fs.symlinkSync('../secrets', path.join(src, 'data'));
   const r = importCanvas(src, dest);
-  assert.deepStrictEqual(r.copied.sort(), ['A.dc.html', 'canvas.json']);
-  const left = Object.fromEntries(r.left.map((l) => [l.path, l.why]));
-  assert.strictEqual(left['a.txt'], 'symbolic link (not followed)');
-  assert.strictEqual(left['data'], 'symbolic link (not followed)');
-  assert.ok(left['sub/ds/']);
-  assert.ok(!fs.existsSync(path.join(dest, 'a.txt')) && !fs.existsSync(path.join(dest, 'data')));
+  assert.deepStrictEqual(r.copied.sort(), ['canvas.json', 'sub/A.dc.html']);
+  assert.ok(r.left.some((l) => l.path === 'sub/ds/'));
 });

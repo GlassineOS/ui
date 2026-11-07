@@ -28,12 +28,19 @@ Verified so far: the host tests below. Nothing has been checked on hardware from
 make                     # out/libglassine-ui.so, out/glassine-ui.pc
 make install             # PREFIX=/usr/local DESTDIR= PYTHONDIR=<site-packages under PREFIX>
 make check               # generated forms current, the library, the tests
+make check-forms         # the tokens, the voice data and their generated forms only (python3, seconds)
+make check-lib           # the library build and its tests (the sample sheet takes most of the time)
 make generate            # write the generated forms (tools/gen-interleaf, then tools/gen-voices)
 make export-claude       # Interleaf staged for claude.ai in out/claude/interleaf
 ```
 
 Needs cairo, pango, librsvg, glib (dev), python3, PyGObject (Gtk 3, Pango), pycairo. CI runs
 `make check` in `alpine:3.24` (`.github/workflows/build.yml` lists the packages).
+
+CI runs `make check` on main. On a pull request, `tools/ci-scope` reads the changed paths: when
+none of them can reach the library (`src/`, `python/`, `voices/`, the build files, the library
+tests), it runs `make check-forms` alone. A token change that reaches the library rewrites
+`voices/voices.json`, so it always gets the full run.
 
 `make check` runs:
 
@@ -46,6 +53,7 @@ Needs cairo, pango, librsvg, glib (dev), python3, PyGObject (Gtk 3, Pango), pyca
 - `test/test_interleaf.py`: aliases and theme fallbacks, the voices' scheme from the E-ink themes, a
   changed token reaching the voices' scheme and the web form, the stale-form check, the 27
   combinations and the variables the component styles read, the `tools/export-claude` layout.
+- `test/ci-scope.sh`: which changed paths `tools/ci-scope` sends to the library checks.
 - `test/test_paint.py`: the Python drawing API call by call.
 - `test/c-api.sh`: a separate program built with `pkg-config glassine-ui` against an installed copy.
 - `test/pc-prefix.sh`: the installed `.pc` names the prefix it was installed with.

@@ -29,5 +29,5 @@ exec docker run --rm -i $tty $mounts -w "$PWD" --user "$(id -u):$(id -g)" \
 	-e BOARDS_ROOT="$ROOT" "$IMAGE" sh -euc '
 	mkdir -p "$HOME"
 	[ -x "$CHROMIUM" ] || export CHROMIUM=/usr/bin/chromium
-	[ -d "$BOARDS_ROOT/node_modules/puppeteer-core" ] || (cd "$BOARDS_ROOT" && npm ci --ignore-scripts --no-audit --no-fund >&2)
+	[ "$BOARDS_ROOT/node_modules/.package-lock.json" -nt "$BOARDS_ROOT/package-lock.json" ] || (cd "$BOARDS_ROOT" && npm ci --ignore-scripts --no-audit --no-fund >&2)
 	exec "$@"' sh "$@"

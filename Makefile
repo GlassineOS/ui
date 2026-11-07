@@ -6,6 +6,9 @@
 #   make check           the generated forms are current, the library builds, the tests pass:
 #                        check-forms (python3 alone, seconds), check-lib, check-boards (node)
 #   make boards-check    the design-board samples in headless Chromium (in Alpine: tools/in-alpine)
+#   make references      the component previews and the sample boards against their references
+#                        (Chromium as pinned in tools/chromium.pin: tools/in-alpine make references)
+#   make references-update   write those references (after a change that is meant to change pixels)
 VERSION = 1.0.0
 SOMAJOR = 1
 PREFIX ?= /usr/local
@@ -90,9 +93,23 @@ boards-check:
 	tools/boards check boards/samples $(if $(BOARDS_INTERLEAF),--interleaf $(BOARDS_INTERLEAF)) --json $(O)/boards-check.json
 	$(NODE) test/boards/samples-e2e.js
 
+# reference images (README "References"): the component previews (002 FR-022) and the sample
+# boards (003 FR-011); reports and the images of differences in out/references/
+references: previews-check boards-references
+references-update: previews-update boards-references-update
+previews-check:
+	tools/previews
+previews-update:
+	tools/previews --update
+boards-references:
+	tools/boards references boards/samples $(if $(BOARDS_INTERLEAF),--interleaf $(BOARDS_INTERLEAF))
+boards-references-update:
+	tools/boards references boards/samples --update $(if $(BOARDS_INTERLEAF),--interleaf $(BOARDS_INTERLEAF))
+
 clean:
 	rm -f $(O)/libglassine-ui.so* $(O)/glassine-ui.pc $(O)/pc.vars
 	rm -rf $(O)/test
 
-.PHONY: all generate install check check-forms check-lib check-boards boards-check clean FORCE
+.PHONY: all generate install check check-forms check-lib check-boards boards-check references references-update \
+	previews-check previews-update boards-references boards-references-update clean FORCE
 FORCE:

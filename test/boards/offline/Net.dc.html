@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Net</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&amp;family=Nope+Sans&amp;display=swap">
+<link rel="stylesheet" href="https://example.org/site.css">
+</helmet>
+<p style="font-family: Kalam">{{ text }}</p>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":200,"height":60}}'>
+class Component extends DCLogic {
+  renderVals() { return { text: 'hand' }; }
+}
+</script>
+</body>
+</html>

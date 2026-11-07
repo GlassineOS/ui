@@ -1,0 +1,50 @@
+#!/usr/bin/env node
+// SPDX-License-Identifier: GPL-2.0-or-later
+// tools/previews: Interleaf's component previews against their references (spec 002 FR-022, FR-023).
+//   previews [--update] [--component NAME]... [--width desktop|phone]... [--combination THEME-PEN]...
+//            [--refs DIR] [--out DIR] [--json FILE|-] [--jobs N] [--timeout MS] [--chromium PATH]
+// Every component's preview.html in the 27 combinations (web/combinations.json) at desktop and phone
+// width, compared with test/references/components/; --update writes the references instead.
+'use strict';
+const fs = require('fs');
+const path = require('path');
+const LIB = path.join(__dirname, '..', 'boards', 'lib');
+
+function usage(code) {
+  process.stderr.write('usage: previews [--update] [--component NAME]... [--width desktop|phone]... [--combination THEME-PEN]...\n' +
+    '                [--refs DIR] [--out DIR] [--json FILE|-] [--jobs N] [--timeout MS] [--chromium PATH]\n');
+  process.exit(code);
+}
+
+async function main() {
+  const spec = { update: 'flag', component: 'list', width: 'list', combination: 'list', refs: 'value', out: 'value', json: 'value', jobs: 'value',
+    timeout: 'value', chromium: 'value' };
+  const opt = {};
+  const argv = process.argv.slice(2);
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === '-h' || a === '--help') usage(0);
+    if (!a.startsWith('--')) usage(2);
+    const [k, inline] = a.slice(2).split('=', 2);
+    if (!(k in spec)) { process.stderr.write('previews: unknown option --' + k + '\n'); usage(2); }
+    if (spec[k] === 'flag') { opt[k] = true; continue; }
+    const v = inline !== undefined ? inline : argv[++i];
+    if (v === undefined) { process.stderr.write('previews: --' + k + ' needs a value\n'); usage(2); }
+    if (spec[k] === 'list') (opt[k] = opt[k] || []).push(v); else opt[k] = v;
+  }
+  const { checkPreviews } = require(path.join(LIB, 'previews.js'));
+  const R = require(path.join(LIB, 'references.js'));
+  const rep = await checkPreviews({ update: opt.update, components: opt.component, widths: opt.width, combinations: opt.combination,
+    refs: opt.refs, out: opt.out, jobs: opt.jobs ? Number(opt.jobs) : 4, timeout: opt.timeout ? Number(opt.timeout) : 30000, chromium: opt.chromium });
+  const out = opt.json || path.join(rep.out, 'report.json');
+  const json = JSON.stringify(rep, null, 1) + '\n';
+  if (out === '-') process.stdout.write(json);
+  else { fs.mkdirSync(path.dirname(path.resolve(out)), { recursive: true }); fs.writeFileSync(out, json); }
+  process[out === '-' ? 'stderr' : 'stdout'].write(R.textSummary(rep, 'component references') + '\n' + (out === '-' ? '' : '  report: ' + out + '\n'));
+  return rep.summary.ok ? 0 : 1;
+}
+
+main().then(function (code) { process.exitCode = code || 0; }, function (e) {
+  process.stderr.write('previews: ' + (e && e.message || e) + '\n');
+  process.exitCode = 2;
+});

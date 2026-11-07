@@ -1,0 +1,66 @@
+{
+ "contract": 1,
+ "kind": "boards",
+ "chromium": "156.0.8078.79",
+ "tolerance": {
+  "threshold": 0,
+  "pixels": 0
+ },
+ "cases": {
+  "Card.dc.html/280x120/own": {
+   "file": "831b841d122fe6fc.png",
+   "width": 280,
+   "height": 120
+  },
+  "Counter.dc.html/480x360/own": {
+   "file": "4f3836f22f64fdca.png",
+   "width": 480,
+   "height": 360
+  },
+  "Form.dc.html/480x420/own": {
+   "file": "2f5d8eb999e23269.png",
+   "width": 480,
+   "height": 420
+  },
+  "Main.dc.html/390x760/editorial-night-2": {
+   "file": "e807444a44134a95.png",
+   "width": 390,
+   "height": 760
+  },
+  "Main.dc.html/390x760/own": {
+   "file": "4e12eac85320a0e8.png",
+   "width": 390,
+   "height": 760
+  },
+  "Main.dc.html/390x760/stationery-eink-1": {
+   "file": "a44c68d7c50fea36.png",
+   "width": 390,
+   "height": 760
+  },
+  "Main.dc.html/900x760/editorial-night-2": {
+   "file": "3c90434d9b6a8cc9.png",
+   "width": 900,
+   "height": 760
+  },
+  "Main.dc.html/900x760/own": {
+   "file": "a003ee4494bae8b5.png",
+   "width": 900,
+   "height": 760
+  },
+  "Main.dc.html/900x760/stationery-eink-1": {
+   "file": "868bf8c07a996355.png",
+   "width": 900,
+   "height": 760
+  },
+  "sub/Badge.dc.html/160x40/own": {
+   "file": "c4e4897f3b47d8cb.png",
+   "width": 160,
+   "height": 40
+  },
+  "sub/Nested.dc.html/420x200/own": {
+   "file": "f8e20eb60c15df05.png",
+   "width": 420,
+   "height": 200
+  }
+ }
+}

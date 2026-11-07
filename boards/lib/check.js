@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Design boards: the render check (spec 003 FR-012). Renders every board of a design folder in
 // headless Chromium at its canvas size (or its $preview size) and reports, per board, render errors,
-// unsupported format features and console errors.
+// unsupported format features, console errors and requests to other sites (renders have no network).
 'use strict';
 const path = require('path');
 const { startServer, describe } = require('./server.js');
 const { openBrowser, renderBoard, pool } = require('./browser.js');
+const { readConfig, vendoredFaces } = require('./references.js');
 const T = require('../runtime/template.js');
 
 // checkDesign({design, interleaf, chromium, boards: [file], jobs, timeout}) → report
@@ -18,9 +19,11 @@ async function checkDesign(opts) {
   const srv = await startServer({ design: design, interleaf: opts.interleaf, live: false });
   let browser;
   try {
+    // no network: Google Fonts stylesheets are answered from the vendored fonts (browser.js isolate())
+    const faces = vendoredFaces(srv.url, srv.interleaf, design, readConfig(design));
     browser = await openBrowser({ chromium: opts.chromium });
     const results = await pool(boards, opts.jobs || 4, function (b) {
-      return renderBoard(browser, srv.url, b.file, { width: b.size.width, height: b.size.height, timeout: opts.timeout });
+      return renderBoard(browser, srv.url, b.file, { width: b.size.width, height: b.size.height, timeout: opts.timeout, faces: faces });
     });
     const failed = results.filter(function (r) { return !r.ok; });
     return {
@@ -46,9 +49,8 @@ function textSummary(rep) {
     for (const e of r.errors) lines.push('    ' + e.kind + ': ' + (e.board && e.board !== r.board ? e.board + ': ' : '') + (e.line ? 'line ' + e.line + ': ' : '') + [e.feature, e.detail, e.message].filter(Boolean).join(' '));
     for (const c of r.console) lines.push('    console: ' + c.text.slice(0, 300));
     for (const q of r.requests) lines.push('    request: ' + q.error + ' ' + q.url);
+    for (const q of r.external) lines.push('    elsewhere: ' + q.error + ' ' + q.url);
   }
-  const ext = rep.boards.reduce(function (n, r) { return n + r.external.length; }, 0);
-  if (ext) lines.push('  (' + ext + ' failed requests to other sites, e.g. fonts; not counted)');
   return lines.join('\n');
 }
 

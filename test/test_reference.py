@@ -11,6 +11,8 @@
 """
 import filecmp
 import html.parser
+import importlib.machinery
+import importlib.util
 import json
 import os
 import re
@@ -60,6 +62,13 @@ def parse(path):
     p = Page()
     p.feed(open(path, encoding="utf-8").read())
     return p
+
+
+def load_generator():
+    loader = importlib.machinery.SourceFileLoader("gen_reference", GEN)
+    mod = importlib.util.module_from_spec(importlib.util.spec_from_loader("gen_reference", loader))
+    loader.exec_module(mod)
+    return mod
 
 
 def build(dest):
@@ -184,6 +193,13 @@ try:
     r = build(a)
     ok(r.returncode == 0 and not os.path.exists(os.path.join(a, "stale.html")) and same(filecmp.dircmp(a, b)),
        "--out: an earlier build is replaced, stale files gone")
+
+    # the generator's own functions
+    G = load_generator()
+    link = G.inline('[x](http://a/b"onmouseover="alert(1)) and [y](http://a/?p=1&q=<2>)')
+    ok('href="http://a/b&quot;onmouseover=&quot;alert(1"' in link and 'onmouseover="' not in link
+       and 'href="http://a/?p=1&amp;q=&lt;2&gt;"' in link,
+       "links: a quote in the target cannot end the href, & and < are escaped once")
 finally:
     shutil.rmtree(TMP, ignore_errors=True)
 

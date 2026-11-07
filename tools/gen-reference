@@ -70,7 +70,10 @@ def inline(text):
 
 def inline_plain(text):
     s = esc(text, quote=False)
-    s = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)", lambda m: '<a class="il-link" href="%s">%s</a>' % (m.group(2), m.group(1)), s)
+    # s is already escaped but for quotes, which would end the attribute: escape those in the target
+    s = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)",
+               lambda m: '<a class="il-link" href="%s">%s</a>'
+               % (m.group(2).replace('"', "&quot;").replace("'", "&#x27;"), m.group(1)), s)
     s = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", s)
     s = re.sub(r"(?<![\w*])\*(?!\s)(.+?)(?<!\s)\*(?![\w*])", r"<em>\1</em>", s)
     return s

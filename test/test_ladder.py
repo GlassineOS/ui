@@ -127,6 +127,10 @@ def f_bundle_eink_rule(t, b, v):
     return b + '\n[data-theme="editorial-eink"] .il-mark { background: #f0f0f0; }\n'
 
 
+def f_bundle_url_semicolon(t, b, v):
+    return b + '\n.il-x { background: url(data:image/png;base64,AAAA), linear-gradient(#111111, #ffffff); }\n'
+
+
 def f_voice_shadow(t, b, v):
     v["voices"]["white"]["shell"]["btnSh"] = "inset 0 0 0 1.5px #111111,0 3px 0 #b4b4b4"
 
@@ -180,6 +184,7 @@ FIXTURES = [
     (f_bundle_filter, "bundle.css (eink): .il-header { backdrop-filter }", "a backdrop blur"),
     (f_bundle_var_chain, "bundle.css (white-eink): :root { --v-desk }", "a gradient behind a var() fallback"),
     (f_bundle_eink_rule, "bundle.css (editorial-eink): .il-mark { background }", "an E-ink rule's own colour"),
+    (f_bundle_url_semicolon, "bundle.css (eink): .il-x { background }", "a gradient after a ; inside url()"),
     (f_voice_shadow, "white: shell.btnSh", "a voice shadow off the ladder"),
     (f_voice_blur, "editorial: card.tabSh", "a voice shadow with a blur"),
     (f_voice_short_hex, "stationery: shell.gripLip", "a three-digit colour"),

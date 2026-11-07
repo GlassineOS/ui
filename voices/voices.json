@@ -75,6 +75,8 @@
         ],
         "gripBg": "#111111",
         "gripDrag": "#ffffff",
+        "gripGap": "0",
+        "gripLip": "none",
         "gripR": "2px",
         "gripSh": "none",
         "grips": 1,
@@ -165,7 +167,10 @@
         ],
         "wsFont": "500 13px 'IBM Plex Mono'"
       },
-      "c": {},
+      "c": {
+        "_why": "focusR: the shell's keyboard ring has an outer radius of 4 px (its centre line 3), Settings' and setup's 6 px (their t13 ring, written in their code, not in the design dumps); kept so no pixel changes, a design question",
+        "focusR": 4
+      },
       "card": {
         "F": "'IBM Plex Sans',sans-serif",
         "big": "500 26px/1 'IBM Plex Mono',monospace",
@@ -302,6 +307,78 @@
         "tagF": "500 10.5px 'IBM Plex Mono',monospace",
         "tagR": "4px",
         "traySh": "inset 0 0 0 1.5px #111111"
+      },
+      "inline": {
+        "focusOff": "2px",
+        "focusR": "6px",
+        "focusW": "2px",
+        "miniBarBg": "#ffffff",
+        "miniBarRule": "1.5px solid #111111",
+        "miniBtnSh": "0 2px 0 #b4b4b4",
+        "miniHlR": "3px",
+        "miniLbl": "Label",
+        "miniLblPx": "9.5px/1",
+        "miniR": "10px",
+        "miniStitch": "none",
+        "netOnBg": "#eeeeee"
+      },
+      "apps": {
+        "gtkFont": "IBM Plex Sans 10",
+        "gtk3Note": "glassine-white: white paper, ink rules, ink-edged buttons with a grey lip (glassine-shell \"white\")",
+        "gtk3": {
+          "bg": "#ffffff",
+          "fg": "#111111",
+          "sub": "#4a4a4a",
+          "view": "#ffffff",
+          "btn": "#ffffff",
+          "btn_fg": "#111111",
+          "btn_line": "#111111",
+          "line": "#111111",
+          "soft": "#b4b4b4",
+          "sel": "#111111",
+          "sel_fg": "#ffffff",
+          "head_bg": "#ffffff",
+          "head_fg": "#111111"
+        },
+        "gtk3Rules": [
+          "button, entry, spinbutton:not(.vertical), combobox button { border-radius: 10px; }",
+          "headerbar, .titlebar, menubar { border-bottom: 1px solid @glassine_line; }",
+          "switch { border-radius: 14px; }",
+          "switch slider { border-radius: 12px; }",
+          "popover.background, menu, .menu { border-radius: 12px; }",
+          "button, combobox button { box-shadow: inset 0 -3px #b4b4b4; }",
+          "button:active, button:checked, button.suggested-action, button.destructive-action { box-shadow: none; }",
+          "button.flat, headerbar button, toolbar button { box-shadow: none; }"
+        ],
+        "gtk4": {
+          "paper": "#ffffff",
+          "ink": "#111111",
+          "accent": "#111111",
+          "onAccent": "#ffffff",
+          "headBg": "#ffffff",
+          "headFg": "#111111",
+          "headBorder": "#111111",
+          "line": "#111111"
+        },
+        "wvkbd": {
+          "fn": "IBM Plex Sans Medium 16",
+          "R": "6",
+          "gap": "3",
+          "stroke-width": "1",
+          "bg": "ffffff",
+          "fg": "ffffff",
+          "fg-sp": "e4e4e4",
+          "stroke": "111111",
+          "stroke-sp": "111111",
+          "press": "111111",
+          "press-sp": "111111",
+          "swipe": "11111160",
+          "swipe-sp": "11111160",
+          "text": "111111",
+          "text-sp": "111111",
+          "text-press": "ffffff",
+          "text-press-sp": "ffffff"
+        }
       }
     },
     "editorial": {
@@ -378,6 +455,8 @@
         ],
         "gripBg": "#111111",
         "gripDrag": "#ffffff",
+        "gripGap": "0",
+        "gripLip": "none",
         "gripR": "0",
         "gripSh": "none",
         "grips": 1,
@@ -469,8 +548,9 @@
         "wsFont": "italic 400 16px 'Source Serif 4'"
       },
       "c": {
-        "_why": "btn.bg: the shell fills the editorial button white (the design: transparent), because some sit on top of the apps (dividers, the move)",
-        "btn.bg": "#ffffff"
+        "_why": "btn.bg: the shell fills the editorial button white (the design: transparent), because some sit on top of the apps (dividers, the move); focusR: the shell's keyboard ring has an outer radius of 4 px (its centre line 3), Settings' and setup's 6 px (their t13 ring, written in their code, not in the design dumps); kept so no pixel changes, a design question",
+        "btn.bg": "#ffffff",
+        "focusR": 4
       },
       "card": {
         "F": "'Source Serif 4',serif",
@@ -608,6 +688,80 @@
         "tagF": "400 13px 'Source Serif 4',serif",
         "tagR": "0",
         "traySh": "inset 0 -1px 0 #111111"
+      },
+      "inline": {
+        "focusOff": "2px",
+        "focusR": "6px",
+        "focusW": "2px",
+        "miniBarBg": "#ffffff",
+        "miniBarRule": "3px double #111111",
+        "miniBtnSh": "2px 2px 0 #111111",
+        "miniHlR": "0",
+        "miniLbl": "label",
+        "miniLblPx": "13px/1",
+        "miniR": "0",
+        "miniStitch": "none",
+        "netOnBg": "#ffffff"
+      },
+      "apps": {
+        "gtkFont": "Source Serif 4 10",
+        "gtk3Note": "glassine-editorial: white newsprint, ink outlines, pill buttons, underlined\nfields, a double rule under the header (glassine-shell \"editorial\")",
+        "gtk3": {
+          "bg": "#ffffff",
+          "fg": "#111111",
+          "sub": "#555555",
+          "view": "#ffffff",
+          "btn": "transparent",
+          "btn_fg": "#111111",
+          "btn_line": "#111111",
+          "line": "#111111",
+          "soft": "#b5b5b5",
+          "sel": "#111111",
+          "sel_fg": "#ffffff",
+          "head_bg": "#ffffff",
+          "head_fg": "#111111"
+        },
+        "gtk3Rules": [
+          "button, combobox button { border-radius: 999px; }",
+          ".linked > button { border-radius: 0; }",
+          "entry, spinbutton:not(.vertical) { border-radius: 0; border-width: 0 0 1px 0; background: transparent; }",
+          "entry:focus, spinbutton:focus:not(.vertical) { box-shadow: inset 0 -1px @glassine_fg; }",
+          "headerbar, .titlebar, menubar { border-bottom: 3px double @glassine_line; }",
+          "switch { border-radius: 999px; }",
+          "switch slider { border-radius: 999px; }",
+          "notebook > header tab:checked { box-shadow: inset 0 -2px @glassine_fg; }",
+          "row { border-bottom: 1px solid @glassine_soft; }",
+          "popover.background, menu, .menu { border-radius: 0; }"
+        ],
+        "gtk4": {
+          "paper": "#ffffff",
+          "ink": "#111111",
+          "accent": "#111111",
+          "onAccent": "#ffffff",
+          "headBg": "#ffffff",
+          "headFg": "#111111",
+          "headBorder": "#111111",
+          "line": "#111111"
+        },
+        "wvkbd": {
+          "fn": "Source Serif 4 17",
+          "R": "0",
+          "gap": "2",
+          "stroke-width": "1",
+          "bg": "ffffff",
+          "fg": "ffffff",
+          "fg-sp": "dedede",
+          "stroke": "111111",
+          "stroke-sp": "111111",
+          "press": "111111",
+          "press-sp": "111111",
+          "swipe": "11111160",
+          "swipe-sp": "11111160",
+          "text": "111111",
+          "text-sp": "111111",
+          "text-press": "ffffff",
+          "text-press-sp": "ffffff"
+        }
       }
     },
     "stationery": {
@@ -684,6 +838,8 @@
         ],
         "gripBg": "#bbbbbb",
         "gripDrag": "#bbbbbb",
+        "gripGap": "12px",
+        "gripLip": "#bdbdbd",
         "gripR": "50%",
         "gripSh": "none",
         "grips": 3,
@@ -774,7 +930,13 @@
         ],
         "wsFont": "italic 400 16px 'EB Garamond'"
       },
-      "c": {},
+      "c": {
+        "_why": "focusR: the shell's keyboard ring has an outer radius of 4 px (its centre line 3), Settings' and setup's 6 px (their t13 ring, written in their code, not in the design dumps); kept so no pixel changes, a design question; gripBg, gripDrag, divStitchC: glassine-swayd's drag handles draw white grips (dragged too) and a #a0a0a0 stitch where the design has #bbbbbb (gilt); kept so no pixel changes, a design question",
+        "divStitchC": "#a0a0a0",
+        "focusR": 4,
+        "gripBg": "#ffffff",
+        "gripDrag": "#ffffff"
+      },
       "card": {
         "F": "'EB Garamond',serif",
         "big": "400 32px/1 'EB Garamond',serif",
@@ -911,6 +1073,80 @@
         "tagF": "400 14px 'EB Garamond',serif",
         "tagR": "2px",
         "traySh": "inset 0 0 0 1.5px #111111"
+      },
+      "inline": {
+        "focusOff": "2px",
+        "focusR": "6px",
+        "focusW": "2px",
+        "miniBarBg": "#111111",
+        "miniBarRule": "none",
+        "miniBtnSh": "inset 0 0 0 1px #bbbbbb",
+        "miniHlR": "0",
+        "miniLbl": "label",
+        "miniLblPx": "13px/1",
+        "miniR": "3px",
+        "miniStitch": "1px dashed #bbbbbb",
+        "netOnBg": "#eeeeee"
+      },
+      "apps": {
+        "gtkFont": "EB Garamond 11",
+        "gtk3Note": "glassine-stationery: white cardstock, the black cloth header, recessed keys\n(glassine-shell \"stationery\")",
+        "gtk3": {
+          "bg": "#ffffff",
+          "fg": "#1b1b1b",
+          "sub": "#555555",
+          "view": "#ffffff",
+          "btn": "#ffffff",
+          "btn_fg": "#1b1b1b",
+          "btn_line": "#1b1b1b",
+          "line": "#1b1b1b",
+          "soft": "#c4c4c4",
+          "sel": "#1b1b1b",
+          "sel_fg": "#ffffff",
+          "head_bg": "#111111",
+          "head_fg": "#ffffff"
+        },
+        "gtk3Rules": [
+          "button, combobox button { border-radius: 10px; box-shadow: inset 0 3px #d0d0d0; }",
+          "button:active, button:checked, button.suggested-action, button.destructive-action { box-shadow: inset 0 3px #000000; }",
+          "button.flat, headerbar button, toolbar button { box-shadow: none; }",
+          "entry, spinbutton:not(.vertical) { border-radius: 4px; box-shadow: inset 0 3px #d0d0d0; }",
+          "headerbar, .titlebar, menubar { border-bottom: 3px solid #a0a0a0; }",
+          "headerbar button:active, headerbar button:checked { background: #ffffff; color: #1b1b1b; }",
+          "switch { border-radius: 999px; box-shadow: inset 0 3px #d0d0d0; }",
+          "switch slider { border-radius: 999px; }",
+          "popover.background, menu, .menu { border-radius: 4px; }",
+          "row:selected { box-shadow: none; }"
+        ],
+        "gtk4": {
+          "paper": "#ffffff",
+          "ink": "#1b1b1b",
+          "accent": "#1b1b1b",
+          "onAccent": "#ffffff",
+          "headBg": "#111111",
+          "headFg": "#ffffff",
+          "headBorder": "#a0a0a0",
+          "line": "#141414"
+        },
+        "wvkbd": {
+          "fn": "EB Garamond Medium 19",
+          "R": "4",
+          "gap": "3",
+          "stroke-width": "1",
+          "bg": "111111",
+          "fg": "ffffff",
+          "fg-sp": "d4d4d4",
+          "stroke": "b0b0b0",
+          "stroke-sp": "7a7a7a",
+          "press": "1b1b1b",
+          "press-sp": "1b1b1b",
+          "swipe": "ffffff60",
+          "swipe-sp": "ffffff60",
+          "text": "1b1b1b",
+          "text-sp": "1b1b1b",
+          "text-press": "ffffff",
+          "text-press-sp": "ffffff"
+        }
       }
     }
   }

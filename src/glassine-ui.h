@@ -85,6 +85,16 @@ typedef struct {
     int frac, roman;
     const char *qsTitle, *lTitle, *nTitle;
     const char *oTitle, *curTag;        /* the overview: its title, the current screen's tag */
+    /* the keyboard's focus ring (section "inline"): focusW thick, focusOff outside the
+     * control, focusR its outer radius */
+    float focusW, focusOff, focusR;
+    /* the drag handles between tiles (glassine-swayd): the bar (divBg, divDrag while
+     * dragged; an inside edge divEdgeW in divEdgeC), grips gripW x gripH (gripRound:
+     * ellipses), grips of them gripGap apart, gripLip a crescent at a round grip's
+     * foot (0: none), divStitch a stitched strap in divStitchC */
+    ui_col divBg, divDrag; float divEdgeW; ui_col divEdgeC;
+    float gripW, gripH; ui_col gripBg, gripDrag; int gripRound, grips; float gripGap; ui_col gripLip;
+    int divStitch; ui_col divStitchC;
 } UiVoice;
 
 extern const UiVoice *const ui_voices[];   /* white, editorial, stationery */
@@ -126,6 +136,16 @@ double ui_text_wrap(UiGc *g, const UiFont *f, const char *s, double x, double y,
  * others in their own colours. Returns 0 if there is no such icon or its file
  * doesn't render, in the layout pass too (which renders it once, and keeps it). */
 int ui_icon(UiGc *g, const char *name, double px, double cx, double cy, ui_col c);
+/* the same for an icon named as the design names it (Material Symbols:
+ * "chevron_left", "star", ...): the installed icon-theme names it maps to,
+ * tried in order, then the name itself; at the glyph's visual size within px
+ * (glassine_ui.paint's ICONS and ISCALE). Returns 0 if none is installed. */
+int ui_icon_material(UiGc *g, const char *name, double px, double cx, double cy, ui_col c);
+/* parallel lines lw thick, step apart, inside the rounded rect. angle is a CSS
+ * repeating-linear-gradient angle: the direction the gradient runs (0 up, clockwise), and
+ * the lines stand across it. 135 runs from top left to bottom right, so its lines run from
+ * bottom left to top right (/); 45 gives \ . step is measured along the gradient. */
+void ui_hatch(UiGc *g, double x, double y, double w, double h, double r, double angle, double lw, double step, ui_col c);
 UiFont ui_font_with(const UiFont *f, int weight);
 UiFont ui_font_px(const UiFont *f, float px);
 

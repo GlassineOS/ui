@@ -127,6 +127,31 @@ int main(int argc, char **argv)
     unsigned edge = *(unsigned *)(d + 30 * st + 10 * 4), inside = *(unsigned *)(d + 30 * st + 40 * 4);
     OK(edge == 0xff111111u && inside == 0xffffffffu, "the card: an ink edge, a paper inside");
     OK(*(unsigned *)(d + 75 * st + 155 * 4) == 0xff111111u, "and a draw after it lands");
+    UiGc lay2 = { cr, 0, v };
+    OK(ui_icon_material(&lay2, "chevron_left", 24, 12, 12, v->ink) == ui_icon(&lay2, "go-previous-symbolic", 24, 12, 12, v->ink),
+       "a Material name: its icon-theme name");
+    OK(!ui_icon_material(&lay2, "no-such-icon-anywhere", 24, 12, 12, v->ink), "an unknown name: none");
+    ui_fill_rect(&g, 100, 0, 100, 100, v->screenBg);
+    ui_hatch(&g, 100, 0, 100, 100, 0, 135, 1, 7, v->ink);
+    cairo_surface_flush(s);
+    int hatched = 0;
+    for (int y = 0; y < 100; y++)
+        for (int x = 100; x < 200; x++)
+            hatched += (*(unsigned *)(d + y * st + x * 4) & 0xff) < 0x80;
+    OK(hatched > 500 && hatched < 4000, "a hatch: lines, not a fill");
+    /* 135 is a CSS angle: the stripes run bottom left to top right (/), across the gradient that runs
+     * top left to bottom right. In this 100 px square (centre 150,50) a stripe is x + y = 198, 9.9
+     * further for the next (step 7 along the gradient is 7 * sqrt(2) in x + y). Along the stripe every
+     * pixel is dark; the mirror image of those pixels, on a \ line, is not. */
+    int xs[] = { 128, 135, 143, 150, 158, 165, 172 }, on = 0, mirrored = 0;
+    for (int i = 0; i < 7; i++) {
+        on += (*(unsigned *)(d + (198 - xs[i]) * st + xs[i] * 4) & 0xff) < 0x80;
+        mirrored += (*(unsigned *)(d + (198 - xs[i]) * st + (299 - xs[i]) * 4) & 0xff) < 0x80;
+    }
+    OK(on == 7, "a hatch at 135: the stripe runs bottom left to top right (/)");
+    OK(mirrored < 4, "and not top left to bottom right (\\)");
+    unsigned outside = *(unsigned *)(d + 5 * st + 95 * 4);
+    OK(outside == 0xffffffffu, "a hatch stays inside its rect");
     cairo_destroy(cr);
     cairo_surface_destroy(s);
     printf("c-api: %s\n", fails ? "FAILED" : "all passed");

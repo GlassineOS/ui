@@ -1,0 +1,258 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-2.0-or-later
+"""gen-interleaf: the forms of the Interleaf tokens (interleaf/tokens.json).
+
+    gen-interleaf            write them
+    gen-interleaf --check    exit 1 (and say which) when one is out of date
+
+Generated (do not edit by hand):
+    voices/voices.json       the "scheme" section of each voice (002 FR-002): White and
+                             Editorial from the theme "eink", Stationery from
+                             "stationery-eink"; every other section is kept as it is
+    web/tokens.css           the CSS custom properties of every theme and the pen
+                             selection (002 FR-010)
+    web/bundle.css           the component styles (interleaf/components/bundle.css)
+    web/combinations.json    the 27 voice x scheme x pen combinations and the attributes
+                             that select each
+
+Then run tools/gen-voices: it reads voices/voices.json.
+
+A token's value is a string (every theme) or one value per theme. A theme without a
+value of its own takes its fallback's (FALLBACK), then the first theme's. A value
+"{name}" is an alias of another token in the same theme.
+"""
+import json
+import os
+import re
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TOKENS = os.path.join(ROOT, "interleaf", "tokens.json")
+BUNDLE = os.path.join(ROOT, "interleaf", "components", "bundle.css")
+VOICES = os.path.join(ROOT, "voices", "voices.json")
+
+# a theme without its own value of a token takes this theme's, then the first theme's
+FALLBACK = {"stationery-eink": "eink"}
+# the families of single CSS values, in the order tokens.css declares them
+PLAIN = ("spacing", "radius", "layout", "stroke")
+# the E-ink theme each voice's scheme comes from (002 FR-002)
+VOICE_THEME = {"white": "eink", "editorial": "eink", "stationery": "stationery-eink"}
+# the keys of a voice's scheme (spec 001's voice data): colour and shadow tokens, and "theme"
+SCHEME_COLOURS = ("accent", "dim", "focus", "focus-on-cream", "focus-on-leather", "gilt", "gold", "highlight",
+                  "ink", "ink-soft", "leather-dark", "on-accent", "on-accent-soft", "paper", "pen", "rule",
+                  "shade", "sheet", "wax")
+SCHEME_SHADOWS = ("card-stack", "keycap", "offset", "passe-partout")
+# the web form's combinations (002 FR-010): voice x scheme -> the data-theme id. The tokens'
+# "eink" theme is shared by White and Editorial; the component styles read the voice from
+# the id's prefix, so the web form gives it a name per voice ("eink" itself stays White's).
+WEB_VOICES = ("white", "editorial", "stationery")
+WEB_SCHEMES = ("paper", "night", "eink")
+WEB_THEME = {("white", "eink"): "white-eink", ("editorial", "eink"): "editorial-eink"}
+WEB_ALIASES = {"eink": ("white-eink", "editorial-eink")}
+PENS = (1, 2, 3)
+THEME_ATTR, PEN_ATTR = "data-theme", "data-pen"
+# a type style's class: .il-type-NAME (the component styles' own prefix, so that a page's
+# .body or .label stays its own)
+TYPE_CLASS = "il-type-"
+ALIAS = re.compile(r"^\{([A-Za-z0-9][A-Za-z0-9_.-]*)\}$")
+_SPLIT = re.compile(r",(?![^(]*\))")
+
+
+class Tokens:
+    def __init__(self, data):
+        self.data = data
+        self.themes = [t["id"] for t in data["color"]["themes"]]
+        self.first = self.themes[0]
+        self.by_name = {}
+        for fam in ("color", "shadow") + PLAIN:
+            for t in data.get(fam, {}).get("tokens", []):
+                if t["name"] in self.by_name:
+                    raise ValueError("token %s: defined twice" % t["name"])
+                self.by_name[t["name"]] = (fam, t)
+
+    def chain(self, theme, eink_only=False):
+        """the themes whose value a theme takes, in order"""
+        out, t = [], theme
+        while t and t not in out:
+            out.append(t)
+            t = FALLBACK.get(t)
+        if not eink_only and self.first not in out:
+            out.append(self.first)
+        return out
+
+    def raw(self, name, theme, eink_only=False):
+        """a token's own value in a theme (an alias stays "{name}"); None: no value"""
+        if name not in self.by_name:
+            raise KeyError("no token %r" % name)
+        v = self.by_name[name][1]["value"]
+        if isinstance(v, str):
+            return v
+        for t in self.chain(theme, eink_only):
+            if t in v:
+                return v[t]
+        return None
+
+    def resolve(self, name, theme, eink_only=False, seen=()):
+        """a token's value in a theme with every alias followed"""
+        if name in seen:
+            raise ValueError("token %s: alias cycle %s" % (name, " -> ".join(seen + (name,))))
+        v = self.raw(name, theme, eink_only)
+        if v is None:
+            return None
+        m = ALIAS.match(v.strip())
+        if m:
+            r = self.resolve(m.group(1), theme, eink_only, seen + (name,))
+            if r is None:
+                raise ValueError("token %s (%s): alias of %s, which has no value" % (name, theme, m.group(1)))
+            return r
+        return v
+
+
+def shadow_list(s):
+    """a box-shadow list in the voice data's form: the shadows joined by ',' alone"""
+    return ",".join(p.strip() for p in _SPLIT.split(s))
+
+
+# ---- the voices' scheme -----------------------------------------------------------------
+
+def scheme(tok, voice):
+    theme = VOICE_THEME.get(voice)
+    if not theme:
+        raise ValueError("voice %s: no E-ink theme in gen-interleaf's VOICE_THEME" % voice)
+    out = {"theme": theme}
+    for name in SCHEME_COLOURS + SCHEME_SHADOWS:
+        v = tok.resolve(name, theme, eink_only=True)
+        if v is None:
+            raise ValueError("token %s: no value in the E-ink theme %s (voice %s)" % (name, theme, voice))
+        if name in SCHEME_COLOURS and not re.fullmatch(r"#[0-9a-f]{6}", v):
+            raise ValueError("token %s (%s): not an e-ink colour #rrggbb: %r" % (name, theme, v))
+        out[name] = shadow_list(v) if name in SCHEME_SHADOWS else v
+    return dict(sorted(out.items()))
+
+
+def voices_json(tok, old):
+    data = json.loads(old)
+    for name, v in data["voices"].items():
+        v["scheme"] = scheme(tok, name)
+    return json.dumps(data, indent=2, ensure_ascii=False) + "\n"
+
+
+# ---- the web form -----------------------------------------------------------------------
+
+def css_value(v):
+    m = ALIAS.match(v.strip())
+    return "var(--%s)" % m.group(1) if m else v
+
+
+def themed(tok):
+    """the colour and shadow tokens that have a value per theme"""
+    return [n for n, (fam, t) in tok.by_name.items() if fam in ("color", "shadow") and isinstance(t["value"], dict)]
+
+
+def selectors(theme):
+    ids = (theme,) + WEB_ALIASES.get(theme, ())
+    return ", ".join('[%s="%s"]' % (THEME_ATTR, i) for i in ids)
+
+
+def tokens_css(tok):
+    out = ["/* GENERATED by tools/gen-interleaf from interleaf/tokens.json: do not edit by hand.",
+           " * Interleaf's web form (spec 002): load it before bundle.css. The theme (voice x scheme)",
+           " * is chosen by %s, the pen by %s=\"1|2|3\" on the same element or an" % (THEME_ATTR, PEN_ATTR),
+           " * ancestor of it; without them the first theme and pen 1. combinations.json lists all 27.",
+           " * SPDX-License-Identifier: GPL-2.0-or-later */"]
+    names = themed(tok)
+    for theme in tok.themes:
+        sel = selectors(theme)
+        if theme == tok.first:
+            sel = ":root, " + sel
+        out.append(sel + " {")
+        for n in names:
+            v = tok.raw(n, theme)
+            if v is not None:
+                out.append("  --%s: %s;" % (n, css_value(v)))
+        out.append("}")
+    for p in PENS[1:]:
+        out.append('[%s="%d"]:is(:root, [%s]), [%s="%d"] [%s] { --accent: var(--accent-%d); '
+                   "--highlight: var(--highlight-%d); }" % (PEN_ATTR, p, THEME_ATTR, PEN_ATTR, p, THEME_ATTR, p, p))
+    out.append(":root {")
+    for n, (fam, t) in tok.by_name.items():
+        if not isinstance(t["value"], dict) and fam in ("color",) + PLAIN:
+            out.append("  --%s: %s;" % (n, css_value(t["value"])))
+    for k, stack in tok.data["type"]["families"].items():
+        out.append("  --font-%s: %s;" % (k, stack))
+    out.append("}")
+    for g in tok.data["type"]["groups"]:
+        for s in g["styles"]:
+            decl = ["font-family: var(--font-%s)" % s.get("family", g["family"]), "font-size: %s" % s["fontSize"]]
+            for key, prop in (("lineHeight", "line-height"), ("fontWeight", "font-weight"),
+                              ("fontStyle", "font-style"), ("letterSpacing", "letter-spacing")):
+                if key in s:
+                    decl.append("%s: %s" % (prop, s[key]))
+            if "opticalSize" in s:
+                decl.append("font-variation-settings: 'opsz' %s" % s["opticalSize"])
+            out.append(".%s%s { %s; }" % (TYPE_CLASS, s["name"], "; ".join(decl)))
+    return "\n".join(out) + "\n"
+
+
+def bundle_css(tok):
+    return ("/* GENERATED by tools/gen-interleaf from interleaf/components/bundle.css: do not edit by hand. */\n"
+            + open(BUNDLE).read())
+
+
+def web_theme(tok, voice, sch):
+    t = WEB_THEME.get((voice, sch), "%s-%s" % (voice, sch))
+    known = set(tok.themes) | {a for al in WEB_ALIASES.values() for a in al}
+    if t not in known:
+        raise ValueError("web form: %s x %s: no theme %s" % (voice, sch, t))
+    return t
+
+
+def combinations(tok):
+    rows = [{"voice": v, "scheme": s, "pen": p, "attributes": {THEME_ATTR: web_theme(tok, v, s), PEN_ATTR: str(p)}}
+            for v in WEB_VOICES for s in WEB_SCHEMES for p in PENS]
+    return json.dumps({"contract": 1, "combinations": rows}, indent=1) + "\n"
+
+
+# ---- writing ----------------------------------------------------------------------------
+
+OUTPUTS = {
+    "voices/voices.json": lambda tok: voices_json(tok, open(VOICES).read()),
+    "web/tokens.css": tokens_css,
+    "web/bundle.css": bundle_css,
+    "web/combinations.json": combinations,
+}
+
+
+def main(argv):
+    if argv not in ([], ["--check"]):
+        print("usage: gen-interleaf [--check]", file=sys.stderr)
+        return 2
+    check = argv == ["--check"]
+    try:
+        tok = Tokens(json.load(open(TOKENS)))
+        texts = {rel: fn(tok) for rel, fn in OUTPUTS.items()}
+    except (KeyError, ValueError) as e:
+        print("gen-interleaf: %s" % (e.args[0] if e.args else e), file=sys.stderr)
+        return 1
+    stale = []
+    for rel, text in texts.items():
+        path = os.path.join(ROOT, rel)
+        old = open(path).read() if os.path.exists(path) else None
+        if old == text:
+            continue
+        if check:
+            stale.append(rel)
+        else:
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, "w") as fh:
+                fh.write(text)
+            print("wrote", rel)
+    if stale:
+        print("gen-interleaf: out of date with interleaf/tokens.json (run make generate): " + ", ".join(stale),
+              file=sys.stderr)
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

@@ -24,6 +24,15 @@ test('describe: canvas entries, data-props, sizes', () => {
   assert.ok(d.boards.every((b) => b.exists && b.onCanvas && !b.issues.length));
 });
 
+test('describe: dc-import cycles are named on the importing line', () => {
+  const by = Object.fromEntries(describe(path.join(__dirname, 'unsupported')).boards.map((b) => [b.file, b.issues.filter((i) => i.feature === 'dc-import cycle')]));
+  assert.deepStrictEqual(by['Self.dc.html'].map((i) => [i.line, i.detail]), [[11, 'Self.dc.html → Self.dc.html']]);
+  assert.deepStrictEqual(by['Ping.dc.html'].map((i) => [i.line, i.detail]), [[11, 'Ping.dc.html → loop/Pong.dc.html → Ping.dc.html']]);
+  assert.deepStrictEqual(by['loop/Pong.dc.html'].map((i) => [i.line, i.detail]), [[12, 'loop/Pong.dc.html → Ping.dc.html → loop/Pong.dc.html']]);
+  assert.deepStrictEqual(by['Missing.dc.html'], []);
+  assert.deepStrictEqual(by['Host.dc.html'], []);
+});
+
 test('server: runtime at any support.js, Interleaf from the checkout, design files, canvas API', async () => {
   const srv = await startServer({ design: SAMPLES, interleaf: INTERLEAF, live: false });
   try {

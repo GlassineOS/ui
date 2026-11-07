@@ -294,7 +294,7 @@
         if (!/^[a-z][a-z0-9-]*$/.test(a.name)) { issue('unsupported', 'prop name on <dc-import> (use kebab-case)', a.name, a.line); continue; }
         imp.props.push({ name: kebabToCamel(a.name), b: binding(a.value, issue, a.line) });
       }
-      if (ctx) ctx.imports.push(name);
+      if (ctx) ctx.imports.push({ name: name, line: n.line });
       return imp;
     }
     if (tag === 'helmet') { issue('unsupported', '<helmet> below the top of <x-dc>', '', n.line); return null; }
@@ -346,11 +346,12 @@
   function onlyWhitespace(n) { return n.type === 'text' && !n.text.trim(); }
 
   // parseBoard(src, file) → {file, lang, title, meta, headScripts, helmet, template, code, codeLine,
-  //   props, preview, imports, issues}. A board with issues must not be rendered.
+  //   props, preview, imports, importLines, issues}. A board with issues must not be rendered.
+  //   imports: the names of the boards it imports; importLines: name → line of its first <dc-import>.
   function parseBoard(src, file) {
     const issues = [];
     const issue = function (kind, feature, detail, line) { issues.push({ kind: kind, feature: feature, detail: detail || '', line: line || 0 }); };
-    const doc = { file: file || '', subset: SUBSET_VERSION, lang: '', title: '', meta: [], headScripts: [], helmet: [], template: [], code: '', codeLine: 0, props: {}, preview: null, imports: [], issues: issues };
+    const doc = { file: file || '', subset: SUBSET_VERSION, lang: '', title: '', meta: [], headScripts: [], helmet: [], template: [], code: '', codeLine: 0, props: {}, preview: null, imports: [], importLines: Object.create(null), issues: issues };
     const nodes = parseHTML(src, issue);
     const html = findEl(nodes, 'html');
     let head, body;
@@ -447,8 +448,35 @@
       content.push(n);
     }
     doc.template = compileNodes(content, issue, ctx);
-    doc.imports = Array.from(new Set(ctx.imports));
+    for (const i of ctx.imports) if (!(i.name in doc.importLines)) { doc.importLines[i.name] = i.line; doc.imports.push(i.name); }
     return doc;
+  }
+
+  // importCycles(file, importsOf) → [{name, line, chain}]: the <dc-import>s of file that lead back
+  // to it, with the boards on the way (chain starts and ends at file). importsOf(file) → [{name,
+  // file, line}], the boards a board imports, resolved by the caller (URLs in the browser, paths in
+  // node); [] when it isn't known.
+  function importCycles(file, importsOf) {
+    const out = [];
+    for (const imp of importsOf(file)) {
+      const back = pathTo(imp.file, file, importsOf);
+      if (back) out.push({ name: imp.name, line: imp.line, chain: [file].concat(back) });
+    }
+    return out;
+  }
+  function pathTo(from, to, importsOf) {
+    const prev = new Map([[from, null]]);
+    const queue = [from];
+    while (queue.length) {
+      const f = queue.shift();
+      if (f === to) {
+        const p = [];
+        for (let x = f; x !== null; x = prev.get(x)) p.unshift(x);
+        return p;
+      }
+      for (const i of importsOf(f)) if (!prev.has(i.file)) { prev.set(i.file, f); queue.push(i.file); }
+    }
+    return null;
   }
 
   // ---- render ---------------------------------------------------------------------------------
@@ -570,6 +598,7 @@
     kebabToCamel: kebabToCamel,
     decode: decode,
     parseBoard: parseBoard,
+    importCycles: importCycles,
     rootScope: rootScope,
     childScope: childScope,
     lookup: lookup,

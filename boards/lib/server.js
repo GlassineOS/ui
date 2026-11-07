@@ -60,16 +60,29 @@ function describe(dir) {
   const onDisk = new Set(files);
   const entries = canvas.boards || {};
   const names = Array.from(new Set((canvas.order || []).filter(function (f) { return entries[f]; }).concat(Object.keys(entries), files)));
+  const docs = new Map();
+  for (const f of files) docs.set(f, T.parseBoard(fs.readFileSync(path.join(dir, f), 'utf8'), f));
+  // as the runtime resolves them: beside the importing board, or from the design folder for "/…"
+  const importsOf = function (f) {
+    const d = docs.get(f);
+    if (!d || d.issues.length) return [];
+    return d.imports.map(function (n) {
+      const file = path.posix.normalize(n[0] === '/' ? n.slice(1) + '.dc.html' : path.posix.join(path.posix.dirname(f), n + '.dc.html'));
+      return { name: n, file: file, line: d.importLines[n] };
+    });
+  };
   const boards = names.map(function (f) {
     const c = entries[f] || null;
     const b = { file: f, exists: onDisk.has(f), onCanvas: !!c, title: c && c.title || f, page: c && c.page || null,
       x: c ? c.x : null, y: c ? c.y : null, w: c ? c.w : null, h: c ? c.h : null,
       interactive: !!(c && c.is_interactive), expand: c && c.expand || null, props: {}, preview: null, issues: [] };
     if (b.exists) {
-      const doc = T.parseBoard(fs.readFileSync(path.join(dir, f), 'utf8'), f);
+      const doc = docs.get(f);
       b.props = doc.props;
       b.preview = doc.preview;
-      b.issues = doc.issues;
+      b.issues = doc.issues.concat(T.importCycles(f, importsOf).map(function (c) {
+        return { kind: 'unsupported', feature: 'dc-import cycle', detail: c.chain.join(' → '), line: c.line };
+      }));
       if (!c) b.title = doc.title || f;
     }
     const w = b.w || b.preview && b.preview.width || 1280, hh = b.h || b.preview && b.preview.height || 800;

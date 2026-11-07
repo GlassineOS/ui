@@ -110,8 +110,9 @@
     status.pending++;
     rec.promise = (async function () {
       try {
-        const res = await fetch(url, { cache: 'no-cache' });
-        if (!res.ok) throw { kind: 'load', feature: 'board file', message: 'HTTP ' + res.status };
+        let res;
+        try { res = await fetch(url, { cache: 'no-cache' }); } catch (e) { rec.missing = String(e && e.message || e); throw { kind: 'load', feature: 'board file', message: rec.missing }; }
+        if (!res.ok) { rec.missing = 'HTTP ' + res.status; throw { kind: 'load', feature: 'board file', message: rec.missing }; }
         rec.doc = T.parseBoard(await res.text(), rec.file);
         if (rec.doc.issues.length) {
           for (const i of rec.doc.issues) { const e = Object.assign({ board: rec.file }, i); report(e); rec.problems.push(e); }
@@ -141,14 +142,43 @@
     return rec.promise;
   }
 
-  // the board and every board it imports, before the first render (cycle-safe)
+  // the boards a loaded board imports: [{name, file (URL), line}]
+  function importsOf(url) {
+    const rec = boards.get(url);
+    if (!rec || rec.state !== 'ready') return [];
+    return rec.doc.imports.map(function (n) { return { name: n, file: new URL(n + '.dc.html', url).href, line: rec.doc.importLines[n] }; });
+  }
+
+  // the board and every board it imports, before the first render (cycle-safe). A board that
+  // isn't there is also reported on the <dc-import> that names it.
   async function loadTree(url, done) {
     done = done || new Set();
     if (done.has(url)) return;
     done.add(url);
     const rec = await loadBoard(url);
     if (rec.state !== 'ready') return;
-    await Promise.all(rec.doc.imports.map(function (n) { return loadTree(new URL(n + '.dc.html', url).href, done); }));
+    const imps = importsOf(url);
+    await Promise.all(imps.map(function (i) { return loadTree(i.file, done); }));
+    for (const i of imps) {
+      const child = boards.get(i.file);
+      if (child && child.missing) report({ board: rec.file, kind: 'load', feature: '<dc-import>', detail: i.name, line: i.line, message: child.file + ': ' + child.missing });
+    }
+  }
+
+  // A board whose <dc-import> leads back to itself would render without end: each such board is
+  // an error, on the line of that <dc-import> (found once the tree has loaded, before rendering).
+  function markCycles() {
+    const found = [];
+    for (const rec of boards.values()) {
+      if (rec.state !== 'ready') continue;
+      for (const c of T.importCycles(rec.url, importsOf)) found.push({ rec: rec, c: c });
+    }
+    for (const f of found) {
+      const p = { board: f.rec.file, kind: 'unsupported', feature: 'dc-import cycle', detail: f.c.chain.map(fileOf).join(' → '), line: f.c.line, message: '' };
+      report(p);
+      f.rec.problems.push(p);
+      f.rec.state = 'error';
+    }
   }
 
   function scheduleSettle() {
@@ -279,6 +309,7 @@
     root.style.display = 'contents';
     document.body.appendChild(root);
     await loadTree(url);
+    markCycles();
     const rec = boards.get(url);
     if (rec.doc) {
       if (rec.doc.lang) document.documentElement.lang = rec.doc.lang;

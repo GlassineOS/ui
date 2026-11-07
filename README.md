@@ -178,7 +178,8 @@ the line and the feature, and the check reports it as `unsupported`.
   imports `history/X.dc.html`); every other attribute is a prop, kebab-case to camelCase
   (`on-fit` → `onFit`); `style` styles the block that holds the child (`position: relative` unless the
   style says otherwise); `hint-size="W,H"` sizes it until the child has loaded. An imported board gets
-  only the props written on the tag.
+  only the props written on the tag. A board that imports itself, directly or through others, is
+  unsupported (`dc-import cycle`, on the line of the `<dc-import>`).
 - The logic: `class Component extends DCLogic` (plain JavaScript, no `import`/`export`, no
   `render()`), with `renderVals()`, `this.props`, `state` as a class field or set in the constructor,
   `setState` (object or function), `forceUpdate()`, `componentDidMount`/`DidUpdate`/`WillUnmount`,

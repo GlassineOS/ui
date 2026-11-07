@@ -37,6 +37,14 @@ async function main() {
     assert.deepStrictEqual(by['Bad.dc.html'].unsupported.map((e) => e.feature).sort(), ['element', 'expression in a hole']);
     assert.ok(by['Host.dc.html'].unsupported.every((e) => e.board === 'Bad.dc.html'));
     assert.match(by['Throws.dc.html'].errors[0].message, /in text is object/);
+    // a <dc-import> cycle is named on the importing board's line, not a stack overflow
+    const cyc = (b) => by[b].unsupported.filter((e) => e.feature === 'dc-import cycle').map((e) => e.board + ':' + e.line + ' ' + e.detail).sort();
+    assert.deepStrictEqual(cyc('Self.dc.html'), ['Self.dc.html:11 Self.dc.html → Self.dc.html']);
+    assert.deepStrictEqual(cyc('Ping.dc.html'), ['Ping.dc.html:11 Ping.dc.html → loop/Pong.dc.html → Ping.dc.html',
+      'loop/Pong.dc.html:12 loop/Pong.dc.html → Ping.dc.html → loop/Pong.dc.html']);
+    for (const b of ['Self.dc.html', 'Ping.dc.html', 'loop/Pong.dc.html']) assert.ok(!by[b].errors.some((e) => /call stack/.test(e.message)), b);
+    // a missing import is named on the <dc-import> that names it
+    assert.ok(by['Missing.dc.html'].errors.some((e) => e.board === 'Missing.dc.html' && e.feature === '<dc-import>' && e.detail === 'Nope' && e.line === 11 && /Nope\.dc\.html: HTTP 404/.test(e.message)), JSON.stringify(by['Missing.dc.html'].errors));
   });
 
   const srv = await startServer({ design: path.join(ROOT, 'boards/samples'), interleaf: INTERLEAF, live: true });

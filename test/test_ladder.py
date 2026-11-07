@@ -131,6 +131,12 @@ def f_bundle_url_semicolon(t, b, v):
     return b + '\n.il-x { background: url(data:image/png;base64,AAAA), linear-gradient(#111111, #ffffff); }\n'
 
 
+def f_bundle_important(t, b, v):
+    return b + '\n.il-x { background: linear-gradient(#111111, #ffffff) !important; }\n' \
+        + '[data-theme="eink"] .il-x, [data-theme="white-eink"] .il-x, [data-theme="editorial-eink"] .il-x, ' \
+        + '[data-theme="stationery-eink"] .il-x { background: none; }\n'
+
+
 def f_voice_shadow(t, b, v):
     v["voices"]["white"]["shell"]["btnSh"] = "inset 0 0 0 1.5px #111111,0 3px 0 #b4b4b4"
 
@@ -185,6 +191,8 @@ FIXTURES = [
     (f_bundle_var_chain, "bundle.css (white-eink): :root { --v-desk }", "a gradient behind a var() fallback"),
     (f_bundle_eink_rule, "bundle.css (editorial-eink): .il-mark { background }", "an E-ink rule's own colour"),
     (f_bundle_url_semicolon, "bundle.css (eink): .il-x { background }", "a gradient after a ; inside url()"),
+    (f_bundle_important, "bundle.css (eink): .il-x { background }",
+     "a shared !important gradient that a plain E-ink rule does not replace"),
     (f_voice_shadow, "white: shell.btnSh", "a voice shadow off the ladder"),
     (f_voice_blur, "editorial: card.tabSh", "a voice shadow with a blur"),
     (f_voice_short_hex, "stationery: shell.gripLip", "a three-digit colour"),
@@ -228,6 +236,10 @@ b = BUNDLE + '\n.il-desk { box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); }\n' \
     + '[data-theme="eink"] .il-desk, [data-theme="white-eink"] .il-desk, [data-theme="editorial-eink"] .il-desk, ' \
     + '[data-theme="stationery-eink"] .il-desk { box-shadow: none; }\n'
 ok(L.check(None, b, None)[0] == [], "a shared blur that an E-ink rule replaces does not apply on e-ink")
+b = BUNDLE + '\n.il-x { background: linear-gradient(#111111, #ffffff); }\n' \
+    + '[data-theme="eink"] .il-x, [data-theme="white-eink"] .il-x, [data-theme="editorial-eink"] .il-x, ' \
+    + '[data-theme="stationery-eink"] .il-x { background: none !important; }\n'
+ok(L.check(None, b, None)[0] == [], "an !important E-ink rule replaces a shared gradient")
 ok(L.shadow_blurs("0 10px 10px 0", need_colour=True) == [] and L.shadow_blurs("0 10px 10px 0") != [],
    "a radius list in the voice data is not a shadow")
 v = copy.deepcopy(VOICES)

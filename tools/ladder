@@ -225,6 +225,7 @@ def check_tokens(gen, tok):
     return faults
 
 
+IMPORTANT = re.compile(r"\s*!\s*important\s*$", re.I)
 VAR = re.compile(r"var\(\s*--([A-Za-z0-9_-]+)\s*(?:,\s*((?:[^()]|\([^()]*(?:\([^()]*\))*[^()]*\))*))?\)")
 
 
@@ -237,10 +238,14 @@ def effective(gen, theme, css):
             if not applies:
                 continue
             for k, v in decls:
+                important = bool(IMPORTANT.search(v))
+                v = IMPORTANT.sub("", v)
                 old = eff.get((base, k))
-                if old is None or themed_sel or not old[0]:
-                    eff[(base, k)] = (themed_sel, v)
-    return {key: v for key, (_, v) in eff.items()}
+                if old is not None and old[2] and not important:
+                    continue                    # !important wins over a later plain declaration
+                if old is None or themed_sel or not old[0] or important > old[2]:
+                    eff[(base, k)] = (themed_sel, v, important)
+    return {key: v for key, (_, v, _i) in eff.items()}
 
 
 def expand(gen, tok, theme, eff, v, depth=0):

@@ -80,6 +80,7 @@ three schemes (Paper, Night, E-ink), with three pens. `interleaf/` holds it:
 | `interleaf/tokens.json` | the tokens: `color` (the themes and a value per theme), `type` (families, type styles per voice), `spacing`, `radius`, `shadow` (a value per theme), `layout`, `stroke`; each with its `usage` |
 | `interleaf/README.md` | the guidelines: the three layers, themes, colour rules, accessibility targets, type, edges |
 | `interleaf/components/bundle.css` | the component styles (`.il-*`); they read the tokens' variables and the voice from the theme id's prefix |
+| `interleaf/fonts/` | the text fonts, vendored (woff2, `fonts.css`, each licence; see "Fonts") |
 | `interleaf/components/NAME/` | a component's guidelines (`README.md`; `Cover` has none yet) and live preview (`preview.html`, its first line the card marker `@dsCard`: group, height, subtitle) |
 
 A theme is a voice and a scheme: `white-paper`, `white-night`, `editorial-paper`, `editorial-night`,
@@ -115,6 +116,7 @@ the hub, the design boards):
 | `web/tokens.css` | the tokens as CSS custom properties: colours and shadows per theme, the pen selection, then spacing, radius, layout, stroke, the greys and the font families (`--font-plex`, ...) on `:root`, and a class per type style (`.il-type-display`, `.il-type-ed-body`, ...) |
 | `web/bundle.css` | the component styles, as `interleaf/components/bundle.css` |
 | `web/combinations.json` | the 27 combinations: `voice`, `scheme`, `pen` and the `attributes` that select each |
+| `web/fonts/` | the fonts, as `interleaf/fonts/` (`fonts.css`, the woff2 files, their licences) |
 
 Load `tokens.css`, then `bundle.css`. Two attributes choose the look:
 
@@ -130,8 +132,25 @@ Load `tokens.css`, then `bundle.css`. Two attributes choose the look:
   ancestors have. A `data-pen` on an element with no `data-theme` does nothing. On e-ink the three
   pens are the same greys.
 
-Without either attribute a page gets `white-paper` and pen 1. The fonts are loaded as the component
-styles do it (an `@import` of Google Fonts at the top of `bundle.css`).
+Without either attribute a page gets `white-paper` and pen 1. The fonts come with it: `bundle.css`
+imports `web/fonts/fonts.css` (one `@font-face` per file), so a page that loads the web form loads
+nothing from another site. Serve `web/` as a whole.
+
+### Fonts
+
+`interleaf/fonts/` holds the text fonts the component styles use, vendored as woff2, each family
+with its licence (`OFL.txt`, SIL Open Font License 1.1): IBM Plex Sans and IBM Plex Mono (White),
+Source Serif 4 (Editorial), EB Garamond (Stationery), Kalam (White's hand). `tools/fetch-fonts`
+writes them from a pinned google/fonts commit (checked by sha256) and keeps only what the styles
+use: the weights and styles (variable fonts cut down to that weight range, IBM Plex Sans to its
+normal width), the Latin letters with their extensions, punctuation, arrows and symbols, and every
+OpenType feature (small caps). Its output is the same on every run. Characters outside it (Greek,
+Cyrillic, emoji) come from the system's fallback fonts. `tools/gen-interleaf` copies the folder to
+`web/fonts/`, and `make check-forms` fails when the copy differs.
+
+Changing the fonts: edit the list in `tools/fetch-fonts`, run `tools/in-alpine tools/fetch-fonts`
+(fontTools and brotli are in that image) and `make generate`, then regenerate the references
+(README "References").
 
 ## Voices
 

@@ -1,0 +1,154 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-2.0-or-later
+"""fetch-fonts: vendor Interleaf's text fonts into interleaf/fonts/ (spec 002).
+
+    fetch-fonts              download, check, cut down and write interleaf/fonts/
+    fetch-fonts --list       print the faces it writes
+
+The families are the ones the component styles use (interleaf/components/bundle.css):
+IBM Plex Sans and Mono (White), Source Serif 4 (Editorial), EB Garamond (Stationery) and
+Kalam (White's hand). All are under the SIL Open Font License 1.1; each family's OFL.txt is
+written beside its fonts. The sources are pinned to a google/fonts commit and their sha256.
+
+Each face keeps only what the styles use: the weights (a variable font is cut down to the
+weight range and, for IBM Plex Sans, to the normal width), and the Latin letters (with the
+extensions), punctuation, arrows and symbols (UNICODES); all OpenType features stay (small caps,
+old-style figures). The output is woff2, plus interleaf/fonts/fonts.css with one @font-face
+per file. Then run tools/gen-interleaf (make generate): it copies the fonts into web/.
+
+Needs python3 with fontTools and brotli (Alpine: py3-fonttools py3-brotli; tools/in-alpine
+has both) and network access. The output is the same for the same sources and fontTools.
+"""
+import hashlib
+import io
+import os
+import shutil
+import sys
+import urllib.request
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+OUT = os.path.join(ROOT, "interleaf", "fonts")
+GF = "https://raw.githubusercontent.com/google/fonts/0b58fb370093f9a9f4ff785d94405710b79de67c/ofl/"
+
+# family, folder in google/fonts, OFL.txt sha256, faces:
+#   (source file, sha256, output file, style, weight (single or "lo hi"), axis limits)
+FAMILIES = [
+    ("IBM Plex Sans", "ibmplexsans", "7e6b2818edbd8f6a01ae80641cc8f16a51080d08fb4e532be3a0b6f74adb07da", [
+        ("IBMPlexSans[wdth,wght].ttf", "3b031aa4216174205bd8471f88a49b91f093169e9e87bd5262242bc5967fe2e3",
+         "IBMPlexSans.woff2", "normal", "400 600", {"wdth": 100, "wght": (400, 600)}),
+        ("IBMPlexSans-Italic[wdth,wght].ttf", "0b94c5e981993764db32bf9c610ecc60cbd34ad77ec2f10ba03c64ab75124d8e",
+         "IBMPlexSans-Italic.woff2", "italic", "400", {"wdth": 100, "wght": 400}),
+    ]),
+    ("IBM Plex Mono", "ibmplexmono", "7e6b2818edbd8f6a01ae80641cc8f16a51080d08fb4e532be3a0b6f74adb07da", [
+        ("IBMPlexMono-Regular.ttf", "6a3412f058c7d8dfd9170c41e85ade48e5156ecb89356110ca57a0a27734af46",
+         "IBMPlexMono-Regular.woff2", "normal", "400", None),
+        ("IBMPlexMono-Medium.ttf", "a9b4c49bb299e05b5f6c481e7fb5e78943d2793249a0c8874ab574a2d1ea6755",
+         "IBMPlexMono-Medium.woff2", "normal", "500", None),
+        ("IBMPlexMono-SemiBold.ttf", "d3c38e55c78f5b0f28009fddba4834ec503278936a5986032424c9bd2d23aa46",
+         "IBMPlexMono-SemiBold.woff2", "normal", "600", None),
+        ("IBMPlexMono-Italic.ttf", "3362fc791b0652193328b862c1c5f23a789bc7288b1617fa63302f88689a2a34",
+         "IBMPlexMono-Italic.woff2", "italic", "400", None),
+    ]),
+    ("Source Serif 4", "sourceserif4", "5f94c3fd3a23131a417ab5a0c8452de57e70c3cfb9f604d88241f7065ebf9fd9", [
+        ("SourceSerif4[opsz,wght].ttf", "97b2d4da6e3cb494b5a1e66ae176914d852ccabef49e0c02c0df25f3e39aca0b",
+         "SourceSerif4.woff2", "normal", "400 600", {"wght": (400, 600)}),
+        ("SourceSerif4-Italic[opsz,wght].ttf", "15fbc7e4679489a501998c3669272637a6646388ef7e4bd77eebb5bf967a1f42",
+         "SourceSerif4-Italic.woff2", "italic", "400 600", {"wght": (400, 600)}),
+    ]),
+    ("EB Garamond", "ebgaramond", "6f9e3a1c51f617e7b110862426204ec7a56d8c6d2f731373b5de6b8d069099b6", [
+        ("EBGaramond[wght].ttf", "b7f1dd91643e4f81f60e43fa9c4ba117663a001621913dcfd213706a4d83e6d9",
+         "EBGaramond.woff2", "normal", "400 600", {"wght": (400, 600)}),
+        ("EBGaramond-Italic[wght].ttf", "3b681621f9c52ef3e013955305009c5d00f85a50c612897a3b4f18bbce490458",
+         "EBGaramond-Italic.woff2", "italic", "400 500", {"wght": (400, 500)}),
+    ]),
+    ("Kalam", "kalam", "f62ef357d3a1c3d27edd35a6e1ba350e8a8d13499797964eeadefbf0b3b15d1f", [
+        ("Kalam-Regular.ttf", "57cecb63d4608019371954274ae1d8c397764debd5b19d4a33c1efa4dc923c0b",
+         "Kalam-Regular.woff2", "normal", "400", None),
+        ("Kalam-Bold.ttf", "2f6576601db015d4f6c08678120277fc8510b98c06e932ce7a6a9cbff4cbdded",
+         "Kalam-Bold.woff2", "normal", "700", None),
+    ]),
+]
+
+# Latin (with the extensions), combining marks, punctuation, currency,
+# letterlike symbols, arrows, maths, geometric shapes, dingbats (❧) and the Latin ligatures
+UNICODES = ("U+0000-024F,U+0259,U+02B0-036F,U+1E00-1EFF,"
+            "U+2000-206F,U+20A0-20CF,U+2100-214F,U+2150-218F,U+2190-21FF,U+2200-22FF,U+2300-23FF,"
+            "U+25A0-25FF,U+2600-27BF,U+FB00-FB06,U+FEFF,U+FFFD")
+
+
+def fetch(url, sha):
+    with urllib.request.urlopen(url) as r:
+        data = r.read()
+    got = hashlib.sha256(data).hexdigest()
+    if got != sha:
+        raise SystemExit("fetch-fonts: bad checksum for %s: %s" % (url, got))
+    return data
+
+
+def cut(data, limits):
+    from fontTools.ttLib import TTFont
+    from fontTools.varLib import instancer
+    from fontTools import subset
+    font = TTFont(io.BytesIO(data), recalcTimestamp=False)
+    if limits:
+        font = instancer.instantiateVariableFont(font, limits, updateFontNames=False)
+        # read back: the subsetter trips over the instancer's lazily loaded tables
+        buf = io.BytesIO()
+        font.save(buf)
+        font = TTFont(io.BytesIO(buf.getvalue()), recalcTimestamp=False)
+    opts = subset.Options()
+    opts.layout_features = ["*"]
+    opts.name_IDs = ["*"]
+    opts.name_languages = ["*"]
+    opts.notdef_outline = True
+    opts.hinting = False
+    opts.flavor = "woff2"
+    sub = subset.Subsetter(opts)
+    sub.populate(unicodes=subset.parse_unicodes(UNICODES))
+    sub.subset(font)
+    out = io.BytesIO()
+    font.flavor = "woff2"
+    font.save(out, reorderTables=False)
+    return out.getvalue()
+
+
+def css():
+    out = ["/* Interleaf's text fonts (SIL Open Font License 1.1, see each folder's OFL.txt).",
+           "   Written by tools/fetch-fonts: do not edit by hand. */"]
+    for family, folder, _, faces in FAMILIES:
+        for _, _, name, style, weight, _ in faces:
+            out.append("@font-face { font-family: \"%s\"; font-style: %s; font-weight: %s; font-display: block; "
+                       "src: url(\"%s/%s\") format(\"woff2\"); }" % (family, style, weight, folder, name))
+    return "\n".join(out) + "\n"
+
+
+def main(argv):
+    if argv == ["--list"]:
+        for family, folder, _, faces in FAMILIES:
+            for _, _, name, style, weight, _ in faces:
+                print("%s\t%s %s\t%s/%s" % (family, style, weight, folder, name))
+        return 0
+    if argv:
+        print(__doc__.strip().splitlines()[2], file=sys.stderr)
+        return 2
+    tmp = OUT + ".new"
+    shutil.rmtree(tmp, ignore_errors=True)
+    os.makedirs(tmp)
+    for family, folder, ofl, faces in FAMILIES:
+        os.makedirs(os.path.join(tmp, folder))
+        with open(os.path.join(tmp, folder, "OFL.txt"), "wb") as fh:
+            fh.write(fetch(GF + folder + "/OFL.txt", ofl))
+        for src, sha, name, _, _, limits in faces:
+            url = GF + folder + "/" + urllib.request.quote(src)
+            with open(os.path.join(tmp, folder, name), "wb") as fh:
+                fh.write(cut(fetch(url, sha), limits))
+            print("fetch-fonts: %s/%s" % (folder, name))
+    with open(os.path.join(tmp, "fonts.css"), "w") as fh:
+        fh.write(css())
+    shutil.rmtree(OUT, ignore_errors=True)
+    os.rename(tmp, OUT)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

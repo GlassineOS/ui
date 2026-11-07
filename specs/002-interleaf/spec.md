@@ -34,12 +34,6 @@ and none of their own sources changed apart from the version they pin.
 **Then** they see the guidelines, every token and every component with a live preview, and can switch voice,
 scheme and pen, locally with one command and on a published page.
 
-### Scenario 4 – Publishing to claude.ai (Priority: P3)
-
-**Given** a released version,
-**When** the maintainer asks for it,
-**Then** the claude.ai design system and the copies embedded in the design canvases there show this version.
-
 ## Requirements
 
 **Source**
@@ -77,10 +71,6 @@ scheme and pen, locally with one command and on a published page.
   previews, and a voice, scheme and pen picker.
 - **FR-031**: The reference opens locally with one command and is published from the main branch.
 
-**Publishing to claude.ai**
-- **FR-040**: On request, a version of the system is published to the claude.ai design system and into the
-  copies embedded in the design canvases there. claude.ai is never a source: Interleaf is changed only here.
-
 ## Contracts
 
 | Contract | Owned / consumed | Version | Spec location |
@@ -88,7 +78,6 @@ scheme and pen, locally with one command and on a published page.
 | Interleaf tokens (names, meaning, values) | owned | 1 | this spec |
 | Web form (variables, component styles, how voice/scheme/pen are chosen) | owned | 1 | this spec |
 | Voice data | owned | 1 | spec 001 |
-| Interleaf on claude.ai | published to | n/a | FR-040 |
 
 ## Device scope and risk
 

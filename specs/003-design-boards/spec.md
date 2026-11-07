@@ -68,11 +68,6 @@ in review.
 - **FR-020**: Repositories with boards use this repository's renderer, preview, checks and Interleaf by a pinned
   version, never by a copy.
 
-**Publishing to claude.ai**
-- **FR-030**: On request, a repository's boards are published to their claude.ai canvas, together with the
-  Interleaf version of spec 002 FR-040. claude.ai is never a source: the boards are changed only in their
-  repositories.
-
 ## Contracts
 
 | Contract | Owned / consumed | Version | Spec location |
@@ -96,8 +91,7 @@ Device-neutral. No device risk: nothing flashes or touches boot, recovery or use
 
 - The designer persona and the hub's browser view (hub).
 - Editing boards in a visual editor; the boards are edited as files.
-- Noticing when claude.ai changes the meaning of a format feature the subset already supports (it matters only
-  for publishing, FR-030).
+- Noticing when claude.ai changes the meaning of a format feature the subset already supports.
 - Implementing the designed screens in the programs.
 
 ## Success criteria

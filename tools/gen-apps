@@ -107,10 +107,16 @@ def outputs(rootfs, data):
 
 
 def main(argv):
-    check = "--check" in argv
+    flags = [a for a in argv if a.startswith("--")]
     args = [a for a in argv if not a.startswith("--")]
-    if len(args) != 1:
-        sys.exit(__doc__)
+    # a flag that is not --check must never fall through to a write: shell's make check runs this
+    unknown = [f for f in flags if f != "--check"]
+    if unknown or len(args) != 1:
+        if unknown:
+            print("gen-apps: unknown argument %s" % ", ".join(unknown), file=sys.stderr)
+        print(__doc__, file=sys.stderr)
+        return 2
+    check = bool(flags)
     rootfs = args[0]
     with open(DATA) as fh:
         data = json.load(fh)

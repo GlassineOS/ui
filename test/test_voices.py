@@ -121,6 +121,17 @@ try:
     ok(r.returncode == 1 and "gtk4/white.css" in r.stderr, "gen-apps --check: missing files are out of date")
     subprocess.run(ga + [rf], check=True, capture_output=True)
     ok(subprocess.run(ga + ["--check", rf]).returncode == 0, "gen-apps: current after writing")
+    # shell's make check runs `gen-apps --check`: a mistyped flag must not turn it into a writer
+    gtk4_white = os.path.join(rf, "usr", "share", "glassine", "gtk4", "white.css")
+    os.remove(gtk4_white)
+    for bad in (["--chek", rf], ["--check", "--chek", rf], ["--", rf], ["--check"], [], [rf, rf]):
+        r = subprocess.run(ga + bad, capture_output=True, text=True)
+        ok(r.returncode == 2 and "gen-apps ROOTFS" in r.stderr and not r.stdout and not os.path.exists(gtk4_white),
+           "gen-apps %s: usage, exit 2, nothing written" % (" ".join(bad).replace(rf, "ROOTFS") or "(no argument)"))
+    r = subprocess.run(ga + ["--chek", rf], capture_output=True, text=True)
+    ok("--chek" in r.stderr, "gen-apps: the unknown flag is named")
+    subprocess.run(ga + [rf], check=True, capture_output=True)
+    ok(os.path.exists(gtk4_white), "gen-apps: the plain call still writes")
     g4 = open(os.path.join(rf, "usr", "share", "glassine", "gtk4", "stationery.css")).read()
     g3 = open(os.path.join(rf, "usr", "share", "themes", "glassine-editorial", "gtk-3.0", "gtk.css")).read()
     ok("${" not in g4 and '"stationery" theme' in g4 and "toast { box-shadow: none; background-color: #141414;" in g4,

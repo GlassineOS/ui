@@ -1,0 +1,22 @@
+{
+ "v": 3,
+ "title": "Board samples",
+ "launch": { "view": "canvas", "page": "screens" },
+ "pages": [
+  { "id": "screens", "name": "Screens" },
+  { "id": "parts", "name": "Parts" }
+ ],
+ "boards": {
+  "Main.dc.html": { "x": 0, "y": 0, "w": 900, "h": 760, "title": "Main · every feature on one board", "page": "screens", "is_interactive": true },
+  "Counter.dc.html": { "x": 980, "y": 0, "w": 480, "h": 360, "title": "Counter · state, lifecycle, refs", "page": "screens", "is_interactive": true },
+  "Form.dc.html": { "x": 980, "y": 440, "w": 480, "h": 420, "title": "Form · inputs and keys", "page": "screens", "is_interactive": true },
+  "Card.dc.html": { "x": 0, "y": 0, "w": 280, "h": 120, "title": "Card · imported", "page": "parts" },
+  "sub/Nested.dc.html": { "x": 360, "y": 0, "w": 420, "h": 200, "title": "Nested · imports from its own folder", "page": "parts", "is_interactive": true },
+  "sub/Badge.dc.html": { "x": 360, "y": 280, "w": 160, "h": 40, "title": "Badge", "page": "parts" }
+ },
+ "order": ["Main.dc.html", "Counter.dc.html", "Form.dc.html", "Card.dc.html", "sub/Nested.dc.html", "sub/Badge.dc.html"],
+ "notes": {
+  "n1": { "x": 0, "y": 820, "w": 600, "text": "Samples of the supported board subset. CI renders each one (tools/boards check) and clicks through them (test/boards/samples-e2e.js).", "page": "screens" },
+  "t1": { "x": 0, "y": -200, "text": "Parts", "kind": "title1", "page": "parts" }
+ }
+}

@@ -3,6 +3,7 @@
 #   make install         PREFIX=/usr/local DESTDIR=; PYTHONDIR= for the Python package
 #   make generate        the generated forms of voices/voices.json (tools/gen-voices)
 #   make check           the generated forms are current, the library builds, the tests pass
+#   make boards-check    the design-board samples in headless Chromium (in Alpine: tools/in-alpine)
 VERSION = 1.0.0
 SOMAJOR = 1
 PREFIX ?= /usr/local
@@ -10,6 +11,7 @@ LIBDIR ?= $(PREFIX)/lib
 INCLUDEDIR ?= $(PREFIX)/include
 DATADIR ?= $(PREFIX)/share
 PYTHON ?= python3
+NODE ?= node
 PYTHONDIR ?= $(shell $(PYTHON) -c 'import sysconfig; print(sysconfig.get_path("purelib", vars={"base": "$(PREFIX)"}))' 2>/dev/null)
 CC ?= cc
 CFLAGS ?= -O2
@@ -64,10 +66,17 @@ check: all
 	sh test/pc-prefix.sh
 	sh test/build-flags.sh
 	sh test/sheet.sh
+	$(NODE) --test test/boards/*.test.js
+
+# the sample boards rendered and clicked through (needs Chromium; tools/in-alpine provides one)
+BOARDS_INTERLEAF = test/boards/fixtures/interleaf
+boards-check:
+	tools/boards check boards/samples --interleaf $(BOARDS_INTERLEAF) --json $(O)/boards-check.json
+	$(NODE) test/boards/samples-e2e.js
 
 clean:
 	rm -f $(O)/libglassine-ui.so* $(O)/glassine-ui.pc $(O)/pc.vars
 	rm -rf $(O)/test
 
-.PHONY: all generate install check clean FORCE
+.PHONY: all generate install check boards-check clean FORCE
 FORCE:

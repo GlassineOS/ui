@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Badge</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<span class="badge" style="display: inline-block; padding: 2px 8px; border: 1px solid #111111; border-radius: 999px">{{ text }}</span>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"text":{"editor":"text","default":"badge"},"$preview":{"width":160,"height":40}}'>
+class Component extends DCLogic {
+  renderVals() { return { text: this.props.text ?? 'badge' }; }
+}
+</script>
+</body>
+</html>

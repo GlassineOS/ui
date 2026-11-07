@@ -202,7 +202,8 @@ void ui_rrect(UiGc *g, double x, double y, double w, double h, double r, ui_col 
 
 void ui_stroke_rrect(UiGc *g, double x, double y, double w, double h, double r, double lw, ui_col c, int dashed)
 {
-    if (!g->paint || !c) return;
+    /* lw <= 0: nothing to stroke, and a { 0, 0 } dash would put cr in an error state */
+    if (!g->paint || !c || lw <= 0) return;
     float r4[4] = { r, r, r, r };
     path_rr4(g->cr, x + lw / 2, y + lw / 2, w - lw, h - lw, r4, -lw / 2);
     double d[2] = { 3 * lw, 2 * lw };

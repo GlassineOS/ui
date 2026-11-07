@@ -30,11 +30,18 @@ int main(void)
     OK(w > 10 && h > 10, "text measured");
     UiGc lay = { cr, 0, v };
     OK(ui_text(&lay, &v->nameFont, "Sample", 0, 0, 0, 0, v->ink, NULL) == w, "layout pass measures the same");
+    /* a zero-width border (several voice borders are 0), dashed: nothing drawn,
+     * and the context still draws */
+    ui_stroke_rrect(&g, 120, 10, 60, 40, 4, 0, v->ink, 1);
+    ui_stroke_rrect(&g, 120, 10, 60, 40, 4, -1, v->ink, 1);
+    OK(cairo_status(cr) == CAIRO_STATUS_SUCCESS, "a dashed stroke 0 wide leaves the context usable");
+    ui_fill_rect(&g, 150, 70, 10, 10, v->ink);
     cairo_surface_flush(s);
     unsigned char *d = cairo_image_surface_get_data(s);
     int st = cairo_image_surface_get_stride(s);
     unsigned edge = *(unsigned *)(d + 30 * st + 10 * 4), inside = *(unsigned *)(d + 30 * st + 40 * 4);
     OK(edge == 0xff111111u && inside == 0xffffffffu, "the card: an ink edge, a paper inside");
+    OK(*(unsigned *)(d + 75 * st + 155 * 4) == 0xff111111u, "and a draw after it lands");
     cairo_destroy(cr);
     cairo_surface_destroy(s);
     printf("c-api: %s\n", fails ? "FAILED" : "all passed");

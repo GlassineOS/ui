@@ -45,7 +45,7 @@
   { "fixture": "known/night-code-comments.css", "name": "Night code comments",
     "components": ["CodeBlock"], "themes": ["stationery-night"],
     "expect": [
-     {"kind": "text", "theme": "stationery-night", "text": "# expect v5", "element": "pre > span.hl > span.c", "state": "default", "fg": "#b3a58a", "bg": "#5a4a1e", "maxRatio": 3.56}
+     {"kind": "text", "theme": "stationery-night", "text": "# expect v5", "element": "pre > span.hl > span.c", "state": "default", "fg": "#b8a98d", "bg": "#5a4a1e", "maxRatio": 3.74}
     ] }
  ]
 }

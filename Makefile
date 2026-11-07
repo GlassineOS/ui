@@ -7,6 +7,8 @@
 #                        (tools/ladder), the library builds, the tests pass:
 #                        check-forms (python3 alone, seconds), check-lib, check-boards (node)
 #   make boards-check    the design-board samples in headless Chromium (in Alpine: tools/in-alpine)
+#   make reference       the browsable Interleaf reference (tools/gen-reference) in out/reference/
+#   make serve-reference build it and serve it on http://127.0.0.1:8000/ (REFERENCE_HOST, REFERENCE_PORT)
 VERSION = 1.0.1
 SOMAJOR = 1
 PREFIX ?= /usr/local
@@ -72,6 +74,7 @@ check-forms:
 	$(PYTHON) test/test_voices.py
 	$(PYTHON) test/test_ladder.py
 	$(PYTHON) test/test_interleaf.py
+	$(PYTHON) test/test_reference.py
 	sh test/ci-scope.sh
 
 # the library: the build, the drawing APIs, the sample sheet
@@ -93,9 +96,20 @@ boards-check:
 	tools/boards check boards/samples $(if $(BOARDS_INTERLEAF),--interleaf $(BOARDS_INTERLEAF)) --json $(O)/boards-check.json
 	$(NODE) test/boards/samples-e2e.js
 
+# the Interleaf reference (spec 002 FR-030, FR-031): static, every link relative; CI publishes it
+# from main (.github/workflows/reference.yml)
+REFERENCE_HOST ?= 127.0.0.1
+REFERENCE_PORT ?= 8000
+reference:
+	$(PYTHON) tools/gen-reference --out $(O)/reference
+
+serve-reference: reference
+	@echo "Interleaf reference: http://$(REFERENCE_HOST):$(REFERENCE_PORT)/ (Ctrl-C stops it)"
+	$(PYTHON) -m http.server --bind $(REFERENCE_HOST) --directory $(O)/reference $(REFERENCE_PORT)
+
 clean:
 	rm -f $(O)/libglassine-ui.so* $(O)/glassine-ui.pc $(O)/pc.vars
-	rm -rf $(O)/test
+	rm -rf $(O)/test $(O)/reference
 
-.PHONY: all generate install check check-forms check-lib check-boards boards-check clean FORCE
+.PHONY: all generate install check check-forms check-lib check-boards boards-check reference serve-reference clean FORCE
 FORCE:

@@ -32,6 +32,8 @@ make check-forms         # the tokens, the voice data and their generated forms 
 make check-lib           # the library build and its tests (the sample sheet takes most of the time)
 make check-boards        # the design-board tools under node (no browser)
 make generate            # write the generated forms (tools/gen-interleaf, then tools/gen-voices)
+make reference           # the Interleaf reference in out/reference/ (see "Reference")
+make serve-reference     # build it and serve it on http://127.0.0.1:8000/
 ```
 
 Needs cairo, pango, librsvg, glib (dev), python3, PyGObject (Gtk 3, Pango), pycairo, and node 24 or later
@@ -58,6 +60,9 @@ tests), it runs `make check-forms` alone. A token change that reaches the librar
 - `test/test_interleaf.py`: aliases and theme fallbacks, the voices' scheme from the E-ink themes, a
   changed token reaching the voices' scheme and the web form, the stale-form check, the 27
   combinations and the variables the component styles read, the coverage check.
+- `test/test_reference.py`: the reference builds (twice, the same), every token, type style,
+  family and component appears, every preview loads the web form, the picker offers all 27
+  combinations, every link and source resolves. No browser.
 - `test/ci-scope.sh`: which changed paths `tools/ci-scope` sends to the library checks.
 - `test/test_paint.py`: the Python drawing API call by call.
 - `test/c-api.sh`: a separate program built with `pkg-config glassine-ui` against an installed copy.
@@ -152,6 +157,24 @@ Load `tokens.css`, then `bundle.css`. Two attributes choose the look:
 
 Without either attribute a page gets `white-paper` and pen 1. The fonts are loaded as the component
 styles do it (an `@import` of Google Fonts at the top of `bundle.css`).
+
+### Reference
+
+`tools/gen-reference` builds a browsable reference of Interleaf from this repository (spec 002
+FR-030, FR-031): the guidelines, every token (usage, the value in each theme, a swatch or sample),
+every component with its guidelines and a live preview, and a voice, scheme and pen picker that
+offers the combinations of `web/combinations.json` and sets them on the page and in every preview.
+It is styled with the web form itself and needs python3 alone.
+
+```
+make reference           # write out/reference/ (open out/reference/index.html, or:)
+make serve-reference     # serve it on 127.0.0.1:8000 (REFERENCE_HOST=, REFERENCE_PORT=)
+```
+
+The picker remembers the choice in the browser; `?voice=editorial&scheme=eink&pen=2` on any page
+picks one. Every link is relative, so the same files work from disk, the local server and a
+sub-path. `.github/workflows/reference.yml` builds it on every push to main and publishes it to
+GitHub Pages (https://glassineos.github.io/ui/ once Pages uses GitHub Actions as its source).
 
 ## Voices
 

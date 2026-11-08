@@ -177,15 +177,23 @@ nothing from another site. Serve `web/` as a whole.
 
 ### Fonts
 
-`interleaf/fonts/` holds the text fonts the component styles use, vendored as woff2, each family
-with its licence (`OFL.txt`, SIL Open Font License 1.1): IBM Plex Sans and IBM Plex Mono (White),
-Source Serif 4 (Editorial), EB Garamond (Stationery), Kalam (White's hand). `tools/fetch-fonts`
-writes them from a pinned google/fonts commit (checked by sha256) and keeps only what the styles
-use: the weights and styles (variable fonts cut down to that weight range, IBM Plex Sans to its
-normal width), the Latin letters with their extensions, punctuation, arrows and symbols, and every
-OpenType feature (small caps). Its output is the same on every run. Characters outside it (Greek,
-Cyrillic, emoji) come from the system's fallback fonts. `tools/gen-interleaf` copies the folder to
-`web/fonts/`, and `make check-forms` fails when the copy differs.
+`interleaf/fonts/` holds the text fonts the component styles use, as woff2, each family with its
+licence (`OFL.txt`, SIL Open Font License 1.1): IBM Plex Sans and IBM Plex Mono (White), Source Serif
+4 (Editorial), EB Garamond (Stationery), Kalam (White's hand). `tools/fetch-fonts` writes them.
+
+- **IBM Plex** reserves the font name "Plex", and the OFL forbids that name on a modified version, so
+  these files are IBM's web builds, byte for byte: `fonts/complete/woff2/` of the npm releases
+  `@ibm/plex-sans` 1.1.0 and `@ibm/plex-mono` 2.5.0, with the licence from the same release, each
+  checked by sha256. They are never cut or converted; `make check-forms` compares them with the
+  release's checksums.
+- **The other three** have no reserved name. They come from a pinned google/fonts commit (checked by
+  sha256), cut to what the styles use: the weights and styles (variable fonts to that weight range),
+  the Latin letters with their extensions, punctuation, arrows and symbols, and every OpenType feature
+  (small caps). `tools/fetch-fonts` refuses to cut a family whose licence reserves a name.
+
+The output is the same on every run. Characters a font lacks come from the system's fallback fonts.
+`tools/gen-interleaf` copies the folder to `web/fonts/`, and `make check-forms` fails when the copy
+differs.
 
 Changing the fonts: edit the list in `tools/fetch-fonts`, run `tools/in-alpine tools/fetch-fonts`
 (fontTools and brotli are in that image) and `make generate`, then regenerate the references

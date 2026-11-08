@@ -9,6 +9,7 @@
 - coverage: every colour in every theme, every shadow where a theme's component styles read it
 """
 import importlib.machinery
+import hashlib
 import importlib.util
 import json
 import os
@@ -214,6 +215,16 @@ used = [("IBM Plex Sans", "normal", w) for w in (400, 500, 600)] + [("IBM Plex S
     + [("Kalam", "normal", w) for w in (400, 700)]
 gaps = ["%s %s %d" % u for u in used if not covers(*u)]
 ok(not gaps, "fonts: every weight and style the styles use has a face%s" % (": missing " + ", ".join(gaps) if gaps else ""))
+# IBM Plex reserves its font name, so its files are IBM's, byte for byte; only families with no
+# reserved name may be cut
+fetch = load("fetch_fonts", "tools/fetch-fonts")
+sha = lambda p: hashlib.sha256(open(p, "rb").read()).hexdigest()
+bad = [n for _, folder, _, _, _, _, fs in fetch.PLEX for _, s, n, _, _ in fs if sha(os.path.join(fonts_dir, folder, n)) != s]
+ok(not bad, "IBM Plex: every file is IBM's release file, byte for byte%s" % (": " + ", ".join(bad) if bad else ""))
+ok(all(sha(os.path.join(fonts_dir, folder, "OFL.txt")) == ls for _, folder, _, _, _, ls, _ in fetch.PLEX),
+   "IBM Plex: the licence is the one from that release")
+reserved = [f for _, f, _, _ in fetch.FAMILIES if b"with Reserved Font Name" in open(os.path.join(fonts_dir, f, "OFL.txt"), "rb").read()]
+ok(not reserved, "fonts: no family that is cut reserves its name%s" % (": " + ", ".join(reserved) if reserved else ""))
 web_fonts = os.path.join(ROOT, "web", "fonts")
 same = sorted(os.listdir(web_fonts)) == sorted(os.listdir(fonts_dir)) and all(
     open(os.path.join(web_fonts, f, n) if os.path.isdir(os.path.join(fonts_dir, f)) else os.path.join(web_fonts, f), "rb").read()

@@ -2,19 +2,27 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 """fetch-fonts: vendor Interleaf's text fonts into interleaf/fonts/ (spec 002).
 
-    fetch-fonts              download, check, cut down and write interleaf/fonts/
+    fetch-fonts              download, check, cut down where allowed, write interleaf/fonts/
     fetch-fonts --list       print the faces it writes
 
 The families are the ones the component styles use (interleaf/components/bundle.css):
 IBM Plex Sans and Mono (White), Source Serif 4 (Editorial), EB Garamond (Stationery) and
-Kalam (White's hand). All are under the SIL Open Font License 1.1; each family's OFL.txt is
-written beside its fonts. The sources are pinned to a google/fonts commit and their sha256.
+Kalam (White's hand). All are under the SIL Open Font License 1.1; each family's licence is
+written beside its fonts.
 
-Each face keeps only what the styles use: the weights (a variable font is cut down to the
-weight range and, for IBM Plex Sans, to the normal width), and the Latin letters (with the
-extensions), punctuation, arrows and symbols (UNICODES); all OpenType features stay (small caps,
-old-style figures). The output is woff2, plus interleaf/fonts/fonts.css with one @font-face
-per file. Then run tools/gen-interleaf (make generate): it copies the fonts into web/.
+IBM Plex is copied byte for byte. Its licence reserves the font name "Plex", and condition 3
+of the OFL forbids that name on a modified version, which cutting or converting a font is.
+PLEX therefore takes IBM's own web builds from the npm releases, each checked by sha256 (the
+tarball and every file), with the licence from the same release. Never run them through cut().
+
+The other three families have no reserved font name. FAMILIES takes them from a pinned
+google/fonts commit (sha256) and keeps only what the styles use: the weights (a variable
+font is cut down to the weight range) and the Latin letters (with the extensions),
+punctuation, arrows and symbols (UNICODES); all OpenType features stay (small caps, old-style
+figures). A family whose licence reserves a name is refused there.
+
+The output is woff2, plus interleaf/fonts/fonts.css with one @font-face per file. Then run
+tools/gen-interleaf (make generate): it copies the fonts into web/.
 
 Needs python3 with fontTools and brotli (Alpine: py3-fonttools py3-brotli; tools/in-alpine
 has both) and network access. The output is the same for the same sources and fontTools.
@@ -24,31 +32,45 @@ import io
 import os
 import shutil
 import sys
+import tarfile
 import urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "interleaf", "fonts")
 GF = "https://raw.githubusercontent.com/google/fonts/0b58fb370093f9a9f4ff785d94405710b79de67c/ofl/"
 
+# IBM's own web builds, byte for byte: family, folder, npm tarball, its sha256, the licence in
+# it and its sha256, faces: (member, sha256, output file, style, weight)
+PLEX = [
+    ("IBM Plex Sans", "ibmplexsans", "https://registry.npmjs.org/@ibm/plex-sans/-/plex-sans-1.1.0.tgz",
+     "c3818979c2a2c82927ea3e7c485e389a18de0b7462887dd4f7acc9a525568962",
+     "package/LICENSE.txt", "7e6b2818edbd8f6a01ae80641cc8f16a51080d08fb4e532be3a0b6f74adb07da", [
+        ("package/fonts/complete/woff2/IBMPlexSans-Regular.woff2", "ba711a3085ff9f27440b6b9c4550cfc47c97bf36591d5da958b975bb3add8c1a",
+         "IBMPlexSans-Regular.woff2", "normal", "400"),
+        ("package/fonts/complete/woff2/IBMPlexSans-Medium.woff2", "5660f8a658f8bb50dbc005232f885eadffd2bc1c235c4f6fbb63469d1f9cde6d",
+         "IBMPlexSans-Medium.woff2", "normal", "500"),
+        ("package/fonts/complete/woff2/IBMPlexSans-SemiBold.woff2", "f78048030eab62e860efa39a0df79e2e5581bf122eb95b9bc42c0b8a4988d205",
+         "IBMPlexSans-SemiBold.woff2", "normal", "600"),
+        ("package/fonts/complete/woff2/IBMPlexSans-Italic.woff2", "13284fab1821ba6e3652c1580fcf2bbfd8c9309520c69b3d1224dab40b37c597",
+         "IBMPlexSans-Italic.woff2", "italic", "400"),
+    ]),
+    ("IBM Plex Mono", "ibmplexmono", "https://registry.npmjs.org/@ibm/plex-mono/-/plex-mono-2.5.0.tgz",
+     "55b5ffcfcd5e9db36ef2070b2b07a573434ca02c6f3be2b921c0b88fff29acad",
+     "package/LICENSE.txt", "7e6b2818edbd8f6a01ae80641cc8f16a51080d08fb4e532be3a0b6f74adb07da", [
+        ("package/fonts/complete/woff2/IBMPlexMono-Regular.woff2", "ba204497f16b6d334cee9d1e963a831b73e3a56e1d6300a8489d18df7214b350",
+         "IBMPlexMono-Regular.woff2", "normal", "400"),
+        ("package/fonts/complete/woff2/IBMPlexMono-Medium.woff2", "33faf307fa6031fb4062276d7320a6d632de890cbb347576fd80cfa01077bc25",
+         "IBMPlexMono-Medium.woff2", "normal", "500"),
+        ("package/fonts/complete/woff2/IBMPlexMono-SemiBold.woff2", "6a825b4824c01cbb401e829e5a066a1818411bcb3538b5a5792c5ca9b82343c3",
+         "IBMPlexMono-SemiBold.woff2", "normal", "600"),
+        ("package/fonts/complete/woff2/IBMPlexMono-Italic.woff2", "2024bf2b08027dcd6d09091385756e327744bbe26b782c411381dffc40ffc622",
+         "IBMPlexMono-Italic.woff2", "italic", "400"),
+    ]),
+]
+
 # family, folder in google/fonts, OFL.txt sha256, faces:
 #   (source file, sha256, output file, style, weight (single or "lo hi"), axis limits)
 FAMILIES = [
-    ("IBM Plex Sans", "ibmplexsans", "7e6b2818edbd8f6a01ae80641cc8f16a51080d08fb4e532be3a0b6f74adb07da", [
-        ("IBMPlexSans[wdth,wght].ttf", "3b031aa4216174205bd8471f88a49b91f093169e9e87bd5262242bc5967fe2e3",
-         "IBMPlexSans.woff2", "normal", "400 600", {"wdth": 100, "wght": (400, 600)}),
-        ("IBMPlexSans-Italic[wdth,wght].ttf", "0b94c5e981993764db32bf9c610ecc60cbd34ad77ec2f10ba03c64ab75124d8e",
-         "IBMPlexSans-Italic.woff2", "italic", "400", {"wdth": 100, "wght": 400}),
-    ]),
-    ("IBM Plex Mono", "ibmplexmono", "7e6b2818edbd8f6a01ae80641cc8f16a51080d08fb4e532be3a0b6f74adb07da", [
-        ("IBMPlexMono-Regular.ttf", "6a3412f058c7d8dfd9170c41e85ade48e5156ecb89356110ca57a0a27734af46",
-         "IBMPlexMono-Regular.woff2", "normal", "400", None),
-        ("IBMPlexMono-Medium.ttf", "a9b4c49bb299e05b5f6c481e7fb5e78943d2793249a0c8874ab574a2d1ea6755",
-         "IBMPlexMono-Medium.woff2", "normal", "500", None),
-        ("IBMPlexMono-SemiBold.ttf", "d3c38e55c78f5b0f28009fddba4834ec503278936a5986032424c9bd2d23aa46",
-         "IBMPlexMono-SemiBold.woff2", "normal", "600", None),
-        ("IBMPlexMono-Italic.ttf", "3362fc791b0652193328b862c1c5f23a789bc7288b1617fa63302f88689a2a34",
-         "IBMPlexMono-Italic.woff2", "italic", "400", None),
-    ]),
     ("Source Serif 4", "sourceserif4", "5f94c3fd3a23131a417ab5a0c8452de57e70c3cfb9f604d88241f7065ebf9fd9", [
         ("SourceSerif4[opsz,wght].ttf", "97b2d4da6e3cb494b5a1e66ae176914d852ccabef49e0c02c0df25f3e39aca0b",
          "SourceSerif4.woff2", "normal", "400 600", {"wght": (400, 600)}),
@@ -85,6 +107,16 @@ def fetch(url, sha):
     return data
 
 
+def unpack(tarball, member, sha):
+    """a file of a release tarball, as it is in the release"""
+    with tarfile.open(fileobj=io.BytesIO(tarball), mode="r:gz") as tar:
+        data = tar.extractfile(member).read()
+    got = hashlib.sha256(data).hexdigest()
+    if got != sha:
+        raise SystemExit("fetch-fonts: bad checksum for %s: %s" % (member, got))
+    return data
+
+
 def cut(data, limits):
     from fontTools.ttLib import TTFont
     from fontTools.varLib import instancer
@@ -112,21 +144,29 @@ def cut(data, limits):
     return out.getvalue()
 
 
+def all_faces():
+    """(family, folder, style, weight, output file), in the order of fonts.css"""
+    for family, folder, _, _, _, _, faces in PLEX:
+        for _, _, name, style, weight in faces:
+            yield family, folder, style, weight, name
+    for family, folder, _, faces in FAMILIES:
+        for _, _, name, style, weight, _ in faces:
+            yield family, folder, style, weight, name
+
+
 def css():
     out = ["/* Interleaf's text fonts (SIL Open Font License 1.1, see each folder's OFL.txt).",
            "   Written by tools/fetch-fonts: do not edit by hand. */"]
-    for family, folder, _, faces in FAMILIES:
-        for _, _, name, style, weight, _ in faces:
-            out.append("@font-face { font-family: \"%s\"; font-style: %s; font-weight: %s; font-display: block; "
-                       "src: url(\"%s/%s\") format(\"woff2\"); }" % (family, style, weight, folder, name))
+    for family, folder, style, weight, name in all_faces():
+        out.append("@font-face { font-family: \"%s\"; font-style: %s; font-weight: %s; font-display: block; "
+                   "src: url(\"%s/%s\") format(\"woff2\"); }" % (family, style, weight, folder, name))
     return "\n".join(out) + "\n"
 
 
 def main(argv):
     if argv == ["--list"]:
-        for family, folder, _, faces in FAMILIES:
-            for _, _, name, style, weight, _ in faces:
-                print("%s\t%s %s\t%s/%s" % (family, style, weight, folder, name))
+        for family, folder, style, weight, name in all_faces():
+            print("%s\t%s %s\t%s/%s" % (family, style, weight, folder, name))
         return 0
     if argv:
         print(__doc__.strip().splitlines()[2], file=sys.stderr)
@@ -134,10 +174,22 @@ def main(argv):
     tmp = OUT + ".new"
     shutil.rmtree(tmp, ignore_errors=True)
     os.makedirs(tmp)
+    for family, folder, url, tar_sha, licence, licence_sha, faces in PLEX:
+        os.makedirs(os.path.join(tmp, folder))
+        tarball = fetch(url, tar_sha)
+        with open(os.path.join(tmp, folder, "OFL.txt"), "wb") as fh:
+            fh.write(unpack(tarball, licence, licence_sha))
+        for member, sha, name, _, _ in faces:
+            with open(os.path.join(tmp, folder, name), "wb") as fh:
+                fh.write(unpack(tarball, member, sha))
+            print("fetch-fonts: %s/%s (as released)" % (folder, name))
     for family, folder, ofl, faces in FAMILIES:
         os.makedirs(os.path.join(tmp, folder))
+        licence = fetch(GF + folder + "/OFL.txt", ofl)
+        if b"with Reserved Font Name" in licence:
+            raise SystemExit("fetch-fonts: %s reserves its name: ship the unmodified release, don't cut it" % family)
         with open(os.path.join(tmp, folder, "OFL.txt"), "wb") as fh:
-            fh.write(fetch(GF + folder + "/OFL.txt", ofl))
+            fh.write(licence)
         for src, sha, name, _, _, limits in faces:
             url = GF + folder + "/" + urllib.request.quote(src)
             with open(os.path.join(tmp, folder, name), "wb") as fh:

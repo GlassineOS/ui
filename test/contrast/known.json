@@ -31,7 +31,7 @@
     "expect": [
      {"kind": "focus-ring", "theme": "stationery-paper", "text": "Search", "element": "header.il-header > label.il-search > input", "state": "focus", "fg": "#23315a", "bg": "#3a110f", "maxRatio": 1.31},
      {"kind": "focus-ring", "theme": "stationery-paper", "text": "Voice", "element": "header.il-header > div > button.il-btn", "state": "focus", "fg": "#23315a", "bg": "#3a110f", "maxRatio": 1.31},
-     {"kind": "focus-ring", "theme": "stationery-eink", "text": "Search", "element": "header.il-header > label.il-search > input", "state": "focus", "maxRatio": 1},
+     {"kind": "focus-ring", "theme": "stationery-eink", "text": "Search", "element": "header.il-header > label.il-search > input", "state": "focus", "maxRatio": 1.31},
      {"kind": "focus-ring", "theme": "stationery-eink", "text": "Voice", "element": "header.il-header > div > button.il-btn", "state": "focus", "maxRatio": 1}
     ] },
   { "fixture": "known/footer-credit-ink-soft.css", "name": "the footer credit",

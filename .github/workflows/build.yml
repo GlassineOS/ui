@@ -70,11 +70,11 @@ jobs:
       - name: render the changed boards, no network
         if: (success() || failure()) && github.event_name == 'pull_request'
         run: |
-          mkdir -p out
-          git diff --name-only HEAD^1 HEAD -- designs/ > out/designs-changed.txt
-          if [ -s out/designs-changed.txt ]; then
-            docker run --rm --network none -v "$PWD":/src -w /src -e CHROMIUM=/usr/bin/chromium-browser boards \
-              make designs-shots
+          # out/ belongs to the container that made it; the list goes in on stdin
+          changed=$(git diff --name-only HEAD^1 HEAD -- designs/)
+          if [ -n "$changed" ]; then
+            printf '%s\n' "$changed" | docker run --rm -i --network none -v "$PWD":/src -w /src \
+              -e CHROMIUM=/usr/bin/chromium-browser boards make designs-shots CHANGED=/dev/stdin
           fi
       - name: keep the images of the changed boards
         if: (success() || failure()) && github.event_name == 'pull_request'

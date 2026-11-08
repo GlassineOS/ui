@@ -517,22 +517,17 @@ boards-preview: | $(UI)
 	$(UI)/tools/boards preview design
 boards-check: | $(UI)
 	$(UI)/tools/in-alpine $(UI)/tools/boards check design
-boards-references: | $(UI)
-	$(UI)/tools/in-alpine $(UI)/tools/boards references design
-boards-references-update: | $(UI)
-	$(UI)/tools/in-alpine $(UI)/tools/boards references design --update
 ```
 
-The references live in that repository (`design/references/`, set by `design/references.json`), not
-here; a new ui version that changes pixels (Interleaf, the runtime, the pinned Chromium) shows up as
-differences there, and the repository updates its references when it moves its pin.
+A repository with boards stores no rendered images of them (003 FR-011): its CI runs `boards-check`.
+A `design/references.json` there holds only `fonts`, the families its boards load beyond Interleaf's.
 
 ## References
 
 Contract: references, version 1 (the store's `index.json` `"contract"`, and the report's).
 
 Rendered images compared with stored ones, for Interleaf's components (002 FR-022, FR-023) and for
-design boards (003 FR-011, FR-012):
+this repository's sample boards, which guard the board renderer (003 FR-011):
 
 ```
 make references              # both, below; tools/in-alpine make references for the pinned Chromium
@@ -550,8 +545,8 @@ tools/previews [--update] [--component NAME]... [--width desktop|phone]... [--co
   render is as tall as its content. References: `test/references/components/`.
 - **Boards:** every board of a design folder at its declared size (the canvas size, else its
   `$preview` size), in the combinations the folder lists in `references.json` (default: one per board,
-  the board's own props). References: `references/` in the design folder. In this repository the
-  samples (`boards/samples/`) are the test corpus.
+  the board's own props). References: `references/` in the design folder. Only the samples
+  (`boards/samples/`) have them: repositories with boards store no images.
 
   ```json
   {

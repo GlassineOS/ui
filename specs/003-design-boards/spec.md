@@ -9,8 +9,8 @@
 
 The designs of the shell and the hub are canvases of boards: screens, states and small interactive prototypes,
 built on Interleaf (spec 002). The boards live in the repository whose program they describe and are written in
-claude.ai's design-component format. They are rendered, clicked through, screenshotted and compared by people
-and by agents, without claude.ai. This repository provides what renders and checks them.
+claude.ai's design-component format. They are rendered, clicked through and screenshotted by people and by agents,
+without claude.ai. This repository provides what renders and checks them.
 
 ## User scenarios
 
@@ -25,8 +25,7 @@ edits to a board show on save.
 
 **Given** an agent has changed a board,
 **When** it runs the board checks,
-**Then** it gets a screenshot of every board at its sizes, an image of every difference from the stored
-references, and any error a board raised, all without a display.
+**Then** it gets a screenshot of every board at its sizes and any error a board raised, all without a display.
 
 ### Scenario 3 – Clicking through a prototype (Priority: P2)
 
@@ -58,10 +57,11 @@ in review.
 **Preview and checks**
 - **FR-010**: One command starts a local preview of a repository's boards, with live reload and a voice,
   scheme and pen picker.
-- **FR-011**: One command renders every board, without a display, at its declared sizes and in the
-  combinations the repository lists, and compares each with a stored reference; differences produce images.
-- **FR-012**: The checks report, per board, render errors, unsupported features (FR-003) and differences, in a
-  form an agent can read.
+- **FR-011**: One command renders every board, without a display, at its declared sizes. Repositories with
+  boards store no rendered images of them. This repository's sample boards are compared with stored references,
+  which guards the renderer; differences produce images.
+- **FR-012**: The checks report, per board, render errors and unsupported features (FR-003), in a form an agent
+  can read.
 - **FR-013**: The preview can be served to the hub, so a session's boards can be shown to the user there.
 
 **Use from other repositories**
@@ -84,7 +84,7 @@ Device-neutral. No device risk: nothing flashes or touches boot, recovery or use
 
 - Host: every board of the shell's and the hub's designs renders with no error and no unsupported feature.
 - Host: the interactive boards react to scripted clicks (state, branches, links) as their logic says.
-- Host: the checks run in CI for the sample boards here; a changed board produces a difference image.
+- Host: the checks run in CI for the sample boards here; a changed sample board produces a difference image.
 - By eye (the user): the boards of each design in the preview.
 
 ## Out of scope

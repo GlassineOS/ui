@@ -36,8 +36,8 @@ function describe(c) {
     const scope = k.components.join(',') + '/' + k.themes.join(',');
     if (!baselines[scope]) baselines[scope] = await C.check({ components: k.components, themes: k.themes, jobs: jobs });
     const base = baselines[scope];
-    const passing = {};
-    for (const c of base.cases) if (c.result === 'pass') passing[key(c)] = true;
+    const passing = {}, before = {};
+    for (const c of base.cases) { before[key(c)] = c; if (c.result === 'pass') passing[key(c)] = true; }
     const rep = await C.check({ components: k.components, themes: k.themes, jobs: jobs, injects: [path.join(__dirname, k.fixture)] });
     const caught = rep.cases.filter(function (c) { return c.result === 'fail' && passing[key(c)]; });
     dump[k.name] = caught;
@@ -46,7 +46,19 @@ function describe(c) {
     let missed = 0;
     for (const x of k.expect) {
       const got = caught.filter(function (c) { return matches(x, c); });
-      if (!got.length) { missed++; lines.push('     MISSING ' + JSON.stringify(x)); continue; }
+      if (!got.length) {
+        missed++;
+        lines.push('     MISSING ' + JSON.stringify(x));
+        // what was measured instead: the same kind, theme, text and element, any result
+        const near = rep.cases.filter(function (c) { return matches({ kind: x.kind, theme: x.theme, text: x.text, element: x.element, state: x.state }, c); });
+        for (const c of near.slice(0, 4)) {
+          const b = before[key(c)];
+          lines.push('       with the fixture ' + c.result + ' ' + describe(c) + (c.note ? ' [' + c.note + ']' : '') +
+            '; without: ' + (b ? b.result + ' ' + b.ratio + ':1' + (b.note ? ' [' + b.note + ']' : '') : 'no such case'));
+        }
+        if (!near.length) lines.push('       no case of that kind, theme, text and element with the fixture');
+        continue;
+      }
       const lo = got.reduce(function (a, c) { return c.ratio < a.ratio ? c : a; });
       lines.push('     ' + describe(lo) + (got.length > 1 ? ' (and ' + (got.length - 1) + ' more)' : ''));
     }

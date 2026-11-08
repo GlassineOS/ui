@@ -167,17 +167,12 @@ async function steady(page, opts) {
   }, !!opts.loadAllFonts, opts.quietMs === undefined ? 250 : opts.quietMs, opts.maxMs || 10000);
 }
 
-// capture(page, clip) → PNG buffer of the clip. One page at a time, brought to the front: a
-// background tab may get no frames, and then a screenshot never returns.
-let captureQueue = Promise.resolve();
-function capture(page, clip) {
-  const run = captureQueue.then(async function () {
-    await page.bringToFront();
-    await page.evaluate(function () { return new Promise(function (r) { requestAnimationFrame(function () { requestAnimationFrame(r); }); }); });
-    return Buffer.from(await page.screenshot({ type: 'png', clip: clip }));
-  });
-  captureQueue = run.catch(function () {});
-  return run;
+// capture(page, clip) → PNG buffer of the clip, after two frames. The page must be its browser's
+// only tab (one browser per worker, see pool()): a tab that is not in front may get no frames, and
+// then a screenshot never returns.
+async function capture(page, clip) {
+  await page.evaluate(function () { return new Promise(function (r) { requestAnimationFrame(function () { requestAnimationFrame(r); }); }); });
+  return Buffer.from(await page.screenshot({ type: 'png', clip: clip }));
 }
 
 // renderBoard(browser, base, file, {width, height, voice, scheme, pen, props, timeout, keepPage, faces})
@@ -240,14 +235,20 @@ async function renderBoard(browser, base, file, opts) {
   return r;
 }
 
-// run fn over items with at most n at a time, results in order
+// run fn(item, index, worker) over items with at most n at a time, results in order; worker is
+// 0..n-1, for what each worker keeps to itself (its browser)
 async function pool(items, n, fn) {
   const out = new Array(items.length);
   let next = 0;
-  async function worker() { while (next < items.length) { const i = next++; out[i] = await fn(items[i], i); } }
+  async function worker(_, w) { while (next < items.length) { const i = next++; out[i] = await fn(items[i], i, w); } }
   await Promise.all(Array.from({ length: Math.min(n, items.length) }, worker));
   return out;
 }
 
+// openBrowsers(n, opts) → n browsers, one per worker of a screenshot run
+function openBrowsers(n, opts) {
+  return Promise.all(Array.from({ length: Math.max(1, n) }, function () { return openBrowser(opts); }));
+}
+
 module.exports = { needsNoSandbox: needsNoSandbox, sandboxArgs: sandboxArgs, findChromium: findChromium, openBrowser: openBrowser, boardUrl: boardUrl,
-  renderBoard: renderBoard, pool: pool, fontFaces: fontFaces, googleFamilies: googleFamilies, isolate: isolate, steady: steady, watchTimers: watchTimers, capture: capture };
+  renderBoard: renderBoard, pool: pool, openBrowsers: openBrowsers, fontFaces: fontFaces, googleFamilies: googleFamilies, isolate: isolate, steady: steady, watchTimers: watchTimers, capture: capture };

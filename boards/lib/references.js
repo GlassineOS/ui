@@ -72,9 +72,9 @@ async function runCases(o) {
   }
   const images = new Map();
   const tol = TOLERANCE;
-  const results = await o.pool(o.cases, o.jobs || 4, async function (c) {
+  const results = await o.pool(o.cases, o.jobs || 4, async function (c, _, worker) {
     let r;
-    try { r = await o.render(c); } catch (e) { r = { png: null, errors: [{ kind: 'render', message: String(e && e.message || e) }] }; }
+    try { r = await o.render(c, worker); } catch (e) { r = { png: null, errors: [{ kind: 'render', message: String(e && e.message || e) }] }; }
     const res = { case: c.id, status: 'pass', width: null, height: null, differing: 0, maxDelta: 0, box: null,
       reference: null, actual: null, diff: null, errors: r.errors || [] };
     for (const k of Object.keys(c)) if (k !== 'id' && !(k in res)) res[k] = c[k];
@@ -219,14 +219,14 @@ function vendoredFaces(base, interleaf, design, config) {
 // shootDesign({design, interleaf, refs, out, update, boards: [file], jobs, timeout, chromium}) → report
 async function shootDesign(opts) {
   const { startServer, describe } = require('./server.js');
-  const { openBrowser, renderBoard, steady, capture, pool } = require('./browser.js');
+  const { openBrowsers, renderBoard, steady, capture, pool } = require('./browser.js');
   const design = path.resolve(opts.design);
   const config = readConfig(design);
   const refs = path.resolve(opts.refs || path.join(design, config.references || 'references'));
   const out = path.resolve(opts.out || path.join('out', 'references', 'boards'));
   const desc = describe(design);
   const srv = await startServer({ design: design, interleaf: opts.interleaf, live: false });
-  let browser;
+  let browsers = [];
   try {
     const all = webCombinations(srv.interleaf);
     const faces = vendoredFaces(srv.url, srv.interleaf, design, config);
@@ -244,13 +244,14 @@ async function shootDesign(opts) {
         cases.push({ id: b.file + '/' + s.width + 'x' + s.height + '/' + c.name, board: b.file, size: s, combination: c.name, _c: c });
       }
     }
-    browser = await openBrowser({ chromium: opts.chromium });
-    const version = await chromiumVersion(browser);
+    const jobs = opts.jobs || 4;
+    browsers = await openBrowsers(jobs, { chromium: opts.chromium });
+    const version = await chromiumVersion(browsers[0]);
     const rep = await runCases({
-      cases: cases, refs: refs, out: out, update: opts.update, kind: 'boards', chromium: version, jobs: opts.jobs, pool: pool,
+      cases: cases, refs: refs, out: out, update: opts.update, kind: 'boards', chromium: version, jobs: jobs, pool: pool,
       only: !!(opts.boards && opts.boards.length),
-      render: async function (c) {
-        const r = await renderBoard(browser, srv.url, c.board, { width: c.size.width, height: c.size.height, voice: c._c.voice, scheme: c._c.scheme,
+      render: async function (c, worker) {
+        const r = await renderBoard(browsers[worker], srv.url, c.board, { width: c.size.width, height: c.size.height, voice: c._c.voice, scheme: c._c.scheme,
           pen: c._c.pen, props: c._c.props, timeout: opts.timeout, keepPage: true, faces: faces });
         try {
           const errors = [];
@@ -272,7 +273,7 @@ async function shootDesign(opts) {
     rep.interleaf = shown(srv.interleaf);
     return rep;
   } finally {
-    if (browser) await browser.close();
+    await Promise.all(browsers.map(function (b) { return b.close(); }));
     await srv.close();
   }
 }

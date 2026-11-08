@@ -8,7 +8,7 @@ const fs = require('fs');
 const http = require('http');
 const path = require('path');
 const { within, sendFile, UI_ROOT } = require('./server.js');
-const { openBrowser, pool, isolate, steady, watchTimers, capture } = require('./browser.js');
+const { openBrowsers, pool, isolate, steady, watchTimers, capture } = require('./browser.js');
 const R = require('./references.js');
 
 const WIDTHS = { desktop: 1280, phone: 390 };
@@ -112,19 +112,20 @@ async function checkPreviews(opts) {
     cases.push({ id: n + '/' + w + '/' + cid, component: n, width: WIDTHS[w], widthName: w, combination: cid, attributes: c.attributes });
   }
   const srv = await serve(root);
-  let browser;
+  const jobs = opts.jobs || 4;
+  let browsers = [];
   try {
-    browser = await openBrowser({ chromium: opts.chromium });
-    const version = await R.chromiumVersion(browser);
+    browsers = await openBrowsers(jobs, { chromium: opts.chromium });
+    const version = await R.chromiumVersion(browsers[0]);
     const only = comps.length !== names.length || widths.length !== Object.keys(WIDTHS).length || chosen.length !== ids.length;
     const rep = await R.runCases({ cases: cases, refs: refs, out: out, update: opts.update, kind: 'components', chromium: version,
-      jobs: opts.jobs, pool: pool, only: only, render: function (c) { return shoot(browser, srv.url, c, opts.timeout); } });
+      jobs: jobs, pool: pool, only: only, render: function (c, worker) { return shoot(browsers[worker], srv.url, c, opts.timeout); } });
     for (const r of rep.cases) delete r.attributes;
     rep.check = 'component references';
     rep.widths = WIDTHS;
     return rep;
   } finally {
-    if (browser) await browser.close();
+    await Promise.all(browsers.map(function (b) { return b.close(); }));
     await srv.close();
   }
 }

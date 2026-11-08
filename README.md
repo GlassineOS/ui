@@ -568,7 +568,11 @@ tools/previews [--update] [--component NAME]... [--width desktop|phone]... [--co
   family that is not vendored is an error naming it. A web font that fails to load is an error. CI
   runs these checks in a container without network.
 - **Steady renders.** Reduced motion, animations and transitions at their end, no caret, focus
-  dropped, every font loaded, device scale 1, Chromium's font hinting off.
+  dropped, device scale 1, Chromium's font hinting off, one raster thread and no CPU-specific Skia
+  paths. Before the screenshot: every font and image loaded, none of the page's timers of up to 10 s
+  pending (a board that fills itself in after a delay), and no change to the document for 250 ms,
+  waiting at most 10 s. Each worker has its own browser with one tab: a tab that is not in front may
+  get no frames, and its screenshot then never returns.
 - **The report** (`out/references/components/report.json`, `out/references/boards/report.json`, or
   `--json`): per case its `status` (`pass`, `differs`, `no reference`, `error`, or `updated` with
   `--update`), `differing` (pixels), `maxDelta` (the largest channel difference), `box` (where the
@@ -586,8 +590,10 @@ tools/previews [--update] [--component NAME]... [--width desktop|phone]... [--co
 - **Tolerance: none.** A pixel differs when any colour channel differs at all (threshold 0), and a
   case fails at one differing pixel. With the fonts vendored, the Chromium version pinned, the
   same fonts for fallback (DejaVu in Alpine), software rendering and device scale 1, renders are
-  byte-identical run to run: all 702 component cases and all board cases matched exactly across
-  repeated runs, also with eight renders in parallel. A tolerance would hide what these checks are
+  pixel-identical run to run. Measured on Chromium 156.0.8078.79 with six renders in parallel: all
+  702 component cases, the 11 sample boards, and a second run against the first over the 65 boards
+  of the hub's canvas and the 123 of the shell's matched exactly (the shell's with Material Symbols
+  supplied through `fonts`). A tolerance would hide what these checks are
   for: a one-step grey change of an E-ink token moves a channel by 17, a token's hex typo by 1. If a
   case ever turns out unstable, fix the cause (an animation, a timer, a font) rather than widening
   the threshold.
@@ -603,7 +609,7 @@ tools/previews [--update] [--component NAME]... [--width desktop|phone]... [--co
   command, `tools/in-alpine make references-update`, then review the changed images
   (`git status test/references boards/samples/references`) and commit them with the change.
   `--component`, `--width`, `--combination` and `--board` narrow a run; a narrowed update keeps the
-  other references.
+  other references. A full component run takes two to three minutes.
 
 ## Licence
 

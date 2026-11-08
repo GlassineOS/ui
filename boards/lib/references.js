@@ -219,7 +219,7 @@ function vendoredFaces(base, interleaf, design, config) {
 // shootDesign({design, interleaf, refs, out, update, boards: [file], jobs, timeout, chromium}) → report
 async function shootDesign(opts) {
   const { startServer, describe } = require('./server.js');
-  const { openBrowser, renderBoard, steady, pool } = require('./browser.js');
+  const { openBrowser, renderBoard, steady, capture, pool } = require('./browser.js');
   const design = path.resolve(opts.design);
   const config = readConfig(design);
   const refs = path.resolve(opts.refs || path.join(design, config.references || 'references'));
@@ -261,7 +261,7 @@ async function shootDesign(opts) {
           for (const e of r.external) errors.push({ kind: 'external', message: e.error + ' ' + e.url, url: e.url });
           const fonts = await steady(r.page);
           for (const f of fonts) errors.push({ kind: 'font', message: 'font did not load: ' + f.family + ' ' + f.style + ' ' + f.weight });
-          const png = Buffer.from(await r.page.screenshot({ type: 'png', clip: { x: 0, y: 0, width: c.size.width, height: c.size.height } }));
+          const png = await capture(r.page, { x: 0, y: 0, width: c.size.width, height: c.size.height });
           return { png: png, errors: errors };
         } finally { await r.page.close(); }
       },

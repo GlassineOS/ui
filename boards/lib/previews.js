@@ -8,7 +8,7 @@ const fs = require('fs');
 const http = require('http');
 const path = require('path');
 const { within, sendFile, UI_ROOT } = require('./server.js');
-const { openBrowser, pool, isolate, steady } = require('./browser.js');
+const { openBrowser, pool, isolate, steady, watchTimers, capture } = require('./browser.js');
 const R = require('./references.js');
 
 const WIDTHS = { desktop: 1280, phone: 390 };
@@ -66,6 +66,7 @@ async function shoot(browser, base, c, timeout) {
   try {
     // a short viewport: the page's height is its content's, not the window's
     await page.setViewport({ width: c.width, height: 64, deviceScaleFactor: 1 });
+    await watchTimers(page);
     await isolate(page, { origin: base, onBlocked: function (e) { errors.push({ kind: 'external', message: e.error + ' ' + e.url, url: e.url }); } });
     page.on('pageerror', function (e) { errors.push({ kind: 'console', message: 'uncaught: ' + String(e && e.message || e) }); });
     page.on('console', function (m) { if (m.type() === 'error' && !/^Failed to load resource/.test(m.text())) errors.push({ kind: 'console', message: m.text() }); });
@@ -81,7 +82,7 @@ async function shoot(browser, base, c, timeout) {
       height = h;
       await page.setViewport({ width: c.width, height: Math.max(1, height), deviceScaleFactor: 1 });
     }
-    const png = Buffer.from(await page.screenshot({ type: 'png', clip: { x: 0, y: 0, width: c.width, height: Math.max(1, height) } }));
+    const png = await capture(page, { x: 0, y: 0, width: c.width, height: Math.max(1, height) });
     return { png: png, errors: errors };
   } finally { await page.close(); }
 }

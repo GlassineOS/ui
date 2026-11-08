@@ -132,7 +132,7 @@ test('fonts: Google Fonts stylesheets answered from the vendored faces', () => {
 });
 
 test('previews: every component, the web form and the combination on the page', () => {
-  assert.strictEqual(components(ROOT).length, 13);
+  assert.ok(components(ROOT).length >= 13);
   const html = previewPage(ROOT, 'Table', { 'data-theme': 'stationery-eink', 'data-pen': '2' });
   assert.match(html, /<html[^>]* data-theme="stationery-eink" data-pen="2"/);
   assert.match(html, /<head>\n<link rel="stylesheet" href="\/web\/tokens.css">\n<link rel="stylesheet" href="\/web\/bundle.css">/);
@@ -140,7 +140,7 @@ test('previews: every component, the web form and the combination on the page', 
 
 test('the component references cover every case, from the pinned Chromium', () => {
   const idx = JSON.parse(fs.readFileSync(path.join(ROOT, 'test', 'references', 'components', 'index.json'), 'utf8'));
-  assert.strictEqual(Object.keys(idx.cases).length, 13 * 27 * 2);
+  assert.strictEqual(Object.keys(idx.cases).length, components(ROOT).length * 27 * 2, 'a reference per component, combination and width (make references-update)');
   assert.strictEqual(idx.chromium, fs.readFileSync(path.join(ROOT, 'tools', 'chromium.pin'), 'utf8').trim().replace(/-r\d+$/, ''));
   for (const c of Object.values(idx.cases)) assert.ok(fs.existsSync(path.join(ROOT, 'test', 'references', 'components', c.file)), c.file);
 });

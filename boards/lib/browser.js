@@ -35,7 +35,11 @@ async function openBrowser(opts) {
   return puppeteer.launch({
     executablePath: findChromium(opts.chromium),
     headless: true,
+    // a stuck page fails its case within a minute, not three
+    protocolTimeout: 60000,
     args: sandboxArgs().concat(['--disable-dev-shm-usage', '--disable-gpu', '--font-render-hinting=none', '--hide-scrollbars',
+      // the same pixels on every run: one raster thread, whole tiles, no CPU-specific Skia paths, sRGB
+      '--num-raster-threads=1', '--disable-partial-raster', '--disable-skia-runtime-opts', '--force-color-profile=srgb',
       // pages rendered side by side are background tabs: keep their timers and rendering running
       '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows'], opts.args || []),
   });
@@ -110,7 +114,29 @@ async function isolate(page, opts) {
 
 // ---- a steady page: what a screenshot needs -----------------------------------------------------
 // No motion (reduced motion, animations and transitions at their end, no caret), every web font the
-// page uses loaded. → {fonts: [{family, style, weight, status}] that failed to load}
+// page uses loaded, every image loaded or failed, no timer of the page pending (watchTimers(), when
+// installed), and the document quiet (no change for quietMs, 250 by default; waiting at most maxMs,
+// 10000). → [{family, style, weight, status}] of the fonts
+// that failed to load
+// Installed before a page's own scripts (watchTimers()): counts the page's pending setTimeout calls
+// of up to 10 s, so steady() can wait for a board that fills itself in after a delay. Intervals
+// (clocks) are not counted.
+const TIMERS = '(' + function () {
+  const pending = new Set(), set = window.setTimeout, clear = window.clearTimeout;
+  window.setTimeout = function (fn, ms) {
+    const args = Array.prototype.slice.call(arguments, 2), d = Number(ms) || 0;
+    const id = set.call(window, function () {
+      pending.delete(id);
+      if (typeof fn === 'function') fn.apply(this, args); else (0, eval)(String(fn));
+    }, d);
+    if (d <= 10000) pending.add(id);
+    return id;
+  };
+  window.clearTimeout = function (id) { pending.delete(id); return clear.call(window, id); };
+  Object.defineProperty(window, '__steady', { value: { timers: function () { return pending.size; }, setTimeout: set } });
+} + ')();';
+async function watchTimers(page) { await page.evaluateOnNewDocument(TIMERS); }
+
 const STEADY_CSS = '*, *::before, *::after { animation-duration: 0s !important; animation-delay: 0s !important; ' +
   'animation-iteration-count: 1 !important; transition-duration: 0s !important; transition-delay: 0s !important; ' +
   'caret-color: transparent !important; scroll-behavior: auto !important; }';
@@ -118,16 +144,40 @@ async function steady(page, opts) {
   opts = opts || {};
   await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
   await page.addStyleTag({ content: STEADY_CSS });
-  return page.evaluate(async function (all) {
+  return page.evaluate(async function (all, quietMs, maxMs) {
+    const t0 = Date.now();
+    const st = window.__steady ? window.__steady.setTimeout : setTimeout;
+    const timers = function () { return window.__steady ? window.__steady.timers() : 0; };
+    const sleep = function (ms) { return new Promise(function (r) { st.call(window, r, ms); }); };
     if (document.activeElement && document.activeElement !== document.body && document.activeElement.blur) document.activeElement.blur();
-    const faces = Array.from(document.fonts);
-    if (all) await Promise.all(faces.map(function (f) { return f.load().catch(function () {}); }));
-    await document.fonts.ready;
-    // two frames: the last font swap laid out and painted
-    await new Promise(function (r) { requestAnimationFrame(function () { requestAnimationFrame(r); }); });
-    return faces.filter(function (f) { return f.status === 'error'; })
+    if (all) await Promise.all(Array.from(document.fonts).map(function (f) { return f.load().catch(function () {}); }));
+    // quiet: no change to the document for quietMs, the images settled, the fonts loaded
+    let last = Date.now();
+    const mo = new MutationObserver(function () { last = Date.now(); });
+    mo.observe(document, { subtree: true, childList: true, attributes: true, characterData: true });
+    while (Date.now() - t0 < maxMs) {
+      await document.fonts.ready;
+      const busy = timers() > 0 || Array.from(document.images).some(function (i) { return !i.complete; });
+      if (!busy && Date.now() - last >= quietMs) break;
+      await sleep(50);
+    }
+    mo.disconnect();
+    return Array.from(document.fonts).filter(function (f) { return f.status === 'error'; })
       .map(function (f) { return { family: f.family, style: f.style, weight: f.weight, status: f.status }; });
-  }, !!opts.loadAllFonts);
+  }, !!opts.loadAllFonts, opts.quietMs === undefined ? 250 : opts.quietMs, opts.maxMs || 10000);
+}
+
+// capture(page, clip) → PNG buffer of the clip. One page at a time, brought to the front: a
+// background tab may get no frames, and then a screenshot never returns.
+let captureQueue = Promise.resolve();
+function capture(page, clip) {
+  const run = captureQueue.then(async function () {
+    await page.bringToFront();
+    await page.evaluate(function () { return new Promise(function (r) { requestAnimationFrame(function () { requestAnimationFrame(r); }); }); });
+    return Buffer.from(await page.screenshot({ type: 'png', clip: clip }));
+  });
+  captureQueue = run.catch(function () {});
+  return run;
 }
 
 // renderBoard(browser, base, file, {width, height, voice, scheme, pen, props, timeout, keepPage, faces})
@@ -149,6 +199,7 @@ async function renderBoard(browser, base, file, opts) {
   // each refused URL once (a stylesheet a board's helmet adds can be asked for twice)
   const elsewhere = function (e) { if (!r.external.some(function (x) { return x.url === e.url && x.error === e.error; })) r.external.push(e); };
   await isolate(page, { origin: origin, faces: opts.faces, onBlocked: function (e) { if (!/^blocked/.test(e.error)) elsewhere(e); } });
+  if (opts.keepPage) await watchTimers(page);
   page.on('console', function (m) {
     if (m.type() !== 'error') return;
     const loc = m.location() || {};
@@ -199,4 +250,4 @@ async function pool(items, n, fn) {
 }
 
 module.exports = { needsNoSandbox: needsNoSandbox, sandboxArgs: sandboxArgs, findChromium: findChromium, openBrowser: openBrowser, boardUrl: boardUrl,
-  renderBoard: renderBoard, pool: pool, fontFaces: fontFaces, googleFamilies: googleFamilies, isolate: isolate, steady: steady };
+  renderBoard: renderBoard, pool: pool, fontFaces: fontFaces, googleFamilies: googleFamilies, isolate: isolate, steady: steady, watchTimers: watchTimers, capture: capture };

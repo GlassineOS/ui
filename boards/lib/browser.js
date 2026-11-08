@@ -175,6 +175,15 @@ async function capture(page, clip) {
   return Buffer.from(await page.screenshot({ type: 'png', clip: clip }));
 }
 
+// waitSettled(page, {timeout, settleMs}): the runtime has loaded every board of the page, and a
+// moment for what follows from that
+async function waitSettled(page, opts) {
+  opts = opts || {};
+  // polled on a timer: a page in a background tab gets no animation frames
+  await page.waitForFunction('window.__boards && window.__boards.settled', { polling: 100, timeout: opts.timeout || 30000 });
+  if (opts.settleMs !== 0) await new Promise(function (res) { setTimeout(res, opts.settleMs || 200); });
+}
+
 // renderBoard(browser, base, file, {width, height, voice, scheme, pen, props, timeout, keepPage, faces})
 //   → {board, url, size, settled, errors, unsupported, console, requests, external, page?}
 //   errors: the runtime's render, script and load errors; unsupported: the board's format features
@@ -216,10 +225,8 @@ async function renderBoard(browser, base, file, opts) {
   });
   try {
     await page.goto(url, { waitUntil: 'load', timeout: opts.timeout || 30000 });
-    // polled on a timer: a page in a background tab gets no animation frames
-    await page.waitForFunction('window.__boards && window.__boards.settled', { polling: 100, timeout: opts.timeout || 30000 });
+    await waitSettled(page, opts);
     r.settled = true;
-    if (opts.settleMs !== 0) await new Promise(function (res) { setTimeout(res, opts.settleMs || 200); });
   } catch (e) {
     let why = '';
     try { why = await page.evaluate('JSON.stringify({ready: document.readyState, pending: window.__boards && window.__boards.pending, fonts: document.fonts && document.fonts.status})'); } catch (x) { /* page gone */ }
@@ -251,4 +258,4 @@ function openBrowsers(n, opts) {
 }
 
 module.exports = { needsNoSandbox: needsNoSandbox, sandboxArgs: sandboxArgs, findChromium: findChromium, openBrowser: openBrowser, boardUrl: boardUrl,
-  renderBoard: renderBoard, pool: pool, openBrowsers: openBrowsers, fontFaces: fontFaces, googleFamilies: googleFamilies, isolate: isolate, steady: steady, watchTimers: watchTimers, capture: capture };
+  renderBoard: renderBoard, pool: pool, openBrowsers: openBrowsers, fontFaces: fontFaces, googleFamilies: googleFamilies, isolate: isolate, steady: steady, waitSettled: waitSettled, watchTimers: watchTimers, capture: capture };

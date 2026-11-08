@@ -43,6 +43,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
       # Chromium as pinned in tools/chromium.pin (the references' contract), and the npm dev
       # dependencies; the checks themselves run without network
       - name: Alpine with the pinned Chromium
@@ -56,13 +58,30 @@ jobs:
       - name: design boards and references in headless Chromium, no network
         run: |
           docker run --rm --network none -v "$PWD":/src -w /src -e CHROMIUM=/usr/bin/chromium-browser boards \
-            make -k check-boards boards-check references
+            make -k check-boards boards-check designs-check references
       - name: the differences
         if: failure()
         uses: actions/upload-artifact@v7
         with:
           name: references
           path: out/references/
+          if-no-files-found: ignore
+      # spec 003 FR-015: the boards a pull request changes, as images kept with the run
+      - name: render the changed boards, no network
+        if: (success() || failure()) && github.event_name == 'pull_request'
+        run: |
+          mkdir -p out
+          git diff --name-only HEAD^1 HEAD -- designs/ > out/designs-changed.txt
+          if [ -s out/designs-changed.txt ]; then
+            docker run --rm --network none -v "$PWD":/src -w /src -e CHROMIUM=/usr/bin/chromium-browser boards \
+              make designs-shots
+          fi
+      - name: keep the images of the changed boards
+        if: (success() || failure()) && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v7
+        with:
+          name: design-shots
+          path: out/shots/
           if-no-files-found: ignore
   contrast:
     runs-on: ubuntu-24.04

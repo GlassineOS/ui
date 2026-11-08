@@ -31,6 +31,7 @@ make check               # generated forms current, the library, the tests
 make check-forms         # the tokens, the voice data and their generated forms only (python3, seconds)
 make check-lib           # the library build and its tests (the sample sheet takes most of the time)
 make check-boards        # the design-board tools under node (no browser)
+make designs-check       # every design under designs/ (Chromium; see "Boards")
 make contrast-check      # the contrast check of every component (Chromium; see "Contrast check")
 make contrast-test       # its self-test and the known failures it must catch (Chromium)
 make generate            # write the generated forms (tools/gen-interleaf, then tools/gen-voices)
@@ -47,9 +48,10 @@ CI runs `make check` on main. On a pull request, `tools/ci-scope` reads the chan
 none of them can reach the library (`src/`, `python/`, `voices/`, the build files, the library
 tests), it runs `make check-forms` alone. A token change that reaches the library rewrites
 `voices/voices.json`, so it always gets the full run. The boards job runs `make check-boards`,
-`make boards-check` and `make references` on every change, in Alpine with the pinned Chromium and
-without network; when it fails, the reports and the images of the differences are uploaded as the
-`references` artifact. The contrast job runs `make contrast-check contrast-test` (its report,
+`make boards-check`, `make designs-check` and `make references` on every change, in Alpine with the
+pinned Chromium and without network; when it fails, the reports and the images of the differences are
+uploaded as the `references` artifact. On a pull request that changes files under `designs/`, it also
+renders the boards changed and keeps the images as the `design-shots` artifact (never in the repository). The contrast job runs `make contrast-check contrast-test` (its report,
 `out/contrast.json`, is kept as the run's artifact).
 
 `make check` runs:
@@ -390,8 +392,9 @@ Making them agree changes the pixels of the programs that use them, so it is a s
 ## Boards
 
 The design boards of the shell and the hub (spec 003) are files in claude.ai's design-component format
-(`*.dc.html` with a `canvas.json`). This repository renders, previews and checks them without claude.ai;
-the boards themselves live in the repository whose program they describe.
+(`*.dc.html` with a `canvas.json`), kept here under `designs/<project>/` (see `designs/README.md`). This
+repository renders, previews and checks them without claude.ai, against this checkout's Interleaf, so a
+design session works in one place.
 
 ### Supported subset
 
@@ -444,6 +447,9 @@ the line and the feature, and the check reports it as `unsupported`.
 ```
 tools/boards preview DESIGN_DIR [--port 4790] [--host 127.0.0.1] [--allow-host NAME]... [--interleaf DIR]
 tools/boards check   DESIGN_DIR [--interleaf DIR] [--json out/boards-check.json|-] [--board FILE]...
+tools/boards shot   BOARD_FILE [--voice V] [--scheme S] [--pen P] [--size WxH] [--click SELECTOR]... [--out FILE]
+                    [--interleaf DIR] [--timeout MS] [--chromium PATH]
+tools/boards shots  [--out out/shots] [--root DIR] [--jobs N] [--interleaf DIR] [--timeout MS] [--chromium PATH] < CHANGED_PATHS
 tools/boards references DESIGN_DIR [--update] [--refs DIR] [--out DIR] [--json FILE|-] [--board FILE]... [--allow-empty]
 tools/boards import  CANVAS_EXPORT_DIR DEST_DIR [--force]
 tools/in-alpine CMD...      # CMD in alpine:3.24 with the pinned Chromium and node, as the calling user
@@ -475,6 +481,24 @@ tools/in-alpine CMD...      # CMD in alpine:3.24 with the pinned Chromium and no
   `package.json` and `package-lock.json`); `tools/in-alpine tools/boards check …` provides both.
   Chromium runs with its sandbox, except as root or in a container, where it can't start
   (`BOARDS_NO_SANDBOX=1` turns it off elsewhere).
+- `shot` is how a design session sees its change: one board as an image, without a display, and every
+  error it raised (`tools/in-alpine tools/boards shot designs/shell/Main.dc.html`, a few seconds). The
+  design folder is the nearest ancestor holding `canvas.json` (else the board's directory). The default
+  size is the board's declared one (canvas size, else its `$preview` size); a voice, scheme or pen not
+  given stays the board's own, named by its default or else the web form's first combination (white,
+  paper, 1). `--click SELECTOR`, in order, each followed by the same settling as the first render, and
+  a link to another board is followed; a click that finds no target is an error, ends the series, and
+  the image holds what was reached. The image goes to
+  `out/shots/<board>-<voice>-<scheme>-<pen>-<WxH>.png` (or `--out`), and one JSON object to stdout:
+  `ok`, `image`, `board`, `design`, `voice`, `scheme`, `pen`, `size`, `clicks` (per selector `ok`, and
+  `error` or `skipped`), `notApplied` (settings asked for that the board has no prop for), `ms` and
+  `errors`: everything `check` reports, in one list, each entry with `board`, `kind`, `feature`,
+  `detail`, `line`, `message` (`kind` also `unsupported`, `console`, `request`, `external` with `url`,
+  `font`, `click`). Exit 0 when ok, 1 when not, 2 on a usage error (the voices, schemes and pens are
+  named when one is unknown).
+- `shots` reads changed paths from stdin (`git diff --name-only`) and renders the boards they touch,
+  each as `out/shots/<project>/<board>.png`, with a `report.json`: a changed board, or every board of a
+  folder when anything else in it changed. `make designs-shots` is what CI runs for FR-015.
 - `import` copies a canvas exported from claude.ai into a design folder: boards, `canvas.json` and the
   sample data. It leaves out claude.ai's own files (`artifact-type/`, `SKILL.md`, `index.html`, any
   `support.js`), the embedded `ds/` copy (in any folder) and symbolic links (never followed), removes
@@ -503,25 +527,6 @@ comparison; `references.js`: the reference store, the runner and the board refer
 - `references` renders every board at its declared sizes in the combinations the design folder lists
   and compares each with its reference image (see "References"); `--update` writes the references.
 
-### From another repository
-
-A repository with boards uses a pinned version of this one, never a copy (003 FR-020):
-
-```make
-UI_REF = <tag or commit of GlassineOS/ui>
-UI = $(HOME)/.cache/glassine/ui/$(UI_REF)
-$(UI):
-	git clone -q https://github.com/GlassineOS/ui $@
-	git -C $@ checkout -q $(UI_REF)
-boards-preview: | $(UI)
-	$(UI)/tools/boards preview design
-boards-check: | $(UI)
-	$(UI)/tools/in-alpine $(UI)/tools/boards check design
-```
-
-A repository with boards stores no rendered images of them (003 FR-011): its CI runs `boards-check`.
-A `design/references.json` there holds only `fonts`, the families its boards load beyond Interleaf's.
-
 ## References
 
 Contract: references, version 1 (the store's `index.json` `"contract"`, and the report's).
@@ -546,7 +551,8 @@ tools/previews [--update] [--component NAME]... [--width desktop|phone]... [--co
 - **Boards:** every board of a design folder at its declared size (the canvas size, else its
   `$preview` size), in the combinations the folder lists in `references.json` (default: one per board,
   the board's own props). References: `references/` in the design folder. Only the samples
-  (`boards/samples/`) have them: repositories with boards store no images.
+  (`boards/samples/`) have them: the designs under `designs/` store no images (003 FR-011); a design's
+  `references.json` holds at most `fonts`.
 
   ```json
   {

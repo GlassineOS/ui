@@ -7,6 +7,7 @@
 #                        (tools/ladder), the library builds, the tests pass:
 #                        check-forms (python3 alone, seconds), check-lib, check-boards (node)
 #   make boards-check    the design-board samples in headless Chromium (in Alpine: tools/in-alpine)
+#   make designs-check   every design under designs/, each folder (Chromium; tools/in-alpine)
 #   make references      the component previews and the sample boards against their references
 #                        (Chromium as pinned in tools/chromium.pin: tools/in-alpine make references)
 #   make references-update   write those references (after a change that is meant to change pixels)
@@ -101,6 +102,21 @@ boards-check:
 	tools/boards check boards/samples $(if $(BOARDS_INTERLEAF),--interleaf $(BOARDS_INTERLEAF)) --json $(O)/boards-check.json
 	$(NODE) test/boards/samples-e2e.js
 
+# Every design, one report per folder (out/designs-check/PROJECT.json); every folder is checked even
+# when one fails. No folders is success.
+DESIGNS = $(patsubst %/,%,$(wildcard designs/*/))
+designs-check:
+	@fail=0; for d in $(DESIGNS); do \
+	    tools/boards check $$d $(if $(BOARDS_INTERLEAF),--interleaf $(BOARDS_INTERLEAF)) \
+	        --json $(O)/designs-check/$$(basename $$d).json || fail=1; \
+	done; exit $$fail
+
+# the boards a proposed change touches, as images (003 FR-015). CHANGED holds the changed paths
+# (git diff --name-only); the images go to out/shots/ and never into the repository
+CHANGED ?= $(O)/designs-changed.txt
+designs-shots:
+	tools/boards shots --out $(O)/shots $(if $(BOARDS_INTERLEAF),--interleaf $(BOARDS_INTERLEAF)) < $(CHANGED)
+
 # reference images (README "References"): the component previews (002 FR-022) and the sample
 # boards (003 FR-011); reports and the images of differences in out/references/
 references: previews-check boards-references
@@ -141,7 +157,7 @@ clean:
 	rm -f $(O)/libglassine-ui.so* $(O)/glassine-ui.pc $(O)/pc.vars
 	rm -rf $(O)/test $(O)/reference
 
-.PHONY: all generate install check check-forms check-lib check-boards boards-check references references-update \
+.PHONY: all generate install check check-forms check-lib check-boards boards-check designs-check designs-shots references references-update \
 	previews-check previews-update boards-references boards-references-update contrast-check contrast-test reference \
 	serve-reference clean FORCE
 FORCE:

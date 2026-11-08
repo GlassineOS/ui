@@ -1,0 +1,18 @@
+{
+ "about": "The least number of cases each component's pages must measure (tools/contrast --coverage): text (text and generated text, in every state) and focusRing, per component on each of its pages (combination x width). Every page measures at least one text case even without an entry. The floors are the lowest counts measured over all 54 pages of each component; when a preview loses text or controls on purpose, lower its floor with it.",
+ "floors": {
+  "Admonition": { "text": 14, "focusRing": 0 },
+  "CodeBlock": { "text": 11, "focusRing": 1 },
+  "Cover": { "text": 2, "focusRing": 0 },
+  "Details": { "text": 8, "focusRing": 2 },
+  "Footer": { "text": 5, "focusRing": 1 },
+  "Header": { "text": 15, "focusRing": 5 },
+  "Link": { "text": 11, "focusRing": 1 },
+  "MarginNote": { "text": 2, "focusRing": 0 },
+  "Navigation": { "text": 30, "focusRing": 9 },
+  "Pagination": { "text": 12, "focusRing": 2 },
+  "SectionHeading": { "text": 7, "focusRing": 0 },
+  "Table": { "text": 15, "focusRing": 0 },
+  "VerifiedStamp": { "text": 3, "focusRing": 0 }
+ }
+}

@@ -1,0 +1,51 @@
+{
+ "about": "The acceptance set of known contrast failures (spec 002 Acceptance, SC-002). Each fixture puts one failure back into the styles or tokens; test/contrast/known-failures.js runs the check with it and without it. A case is caught when it fails with the fixture and passes without it. Every case in a fixture's expect must be caught: kind, theme and text exact, element a part of the case's path, state, fg and bg exact when given, and its ratio at most maxRatio. fg and bg are absent where the ring changes nothing (ratio 1).",
+ "known": [
+  { "fixture": "known/drawer-cream-on-paper.css", "name": "cream navigation on paper in the Stationery drawer",
+    "components": ["Navigation"], "themes": ["stationery-paper"],
+    "expect": [
+     {"kind": "text", "theme": "stationery-paper", "text": "Guides", "element": "il-drawer > nav.il-nav > div.il-nav-group > a", "state": "default", "fg": "#f1e6cb", "bg": "#f6efdd", "maxRatio": 1.08},
+     {"kind": "text", "theme": "stationery-paper", "text": "Devices", "element": "il-drawer > nav.il-nav > div.il-nav-group > a", "state": "default", "fg": "#f1e6cb", "bg": "#f6efdd", "maxRatio": 1.08},
+     {"kind": "text", "theme": "stationery-paper", "text": "Decisions", "element": "il-drawer > nav.il-nav > div.il-nav-group > a", "state": "default", "fg": "#f1e6cb", "bg": "#f6efdd", "maxRatio": 1.08}
+    ] },
+  { "fixture": "known/night-details-summary.css", "name": "Night details summaries",
+    "components": ["Details"], "themes": ["stationery-night"],
+    "expect": [
+     {"kind": "text", "theme": "stationery-night", "text": "Why v3 images fail silently", "element": "details.il-details > summary", "state": "default", "fg": "#2a2420", "bg": "#2a241d", "maxRatio": 1},
+     {"kind": "text", "theme": "stationery-night", "text": "Which loader works on this device", "element": "details.il-details[open] > summary", "state": "default", "fg": "#2a2420", "bg": "#2a241d", "maxRatio": 1}
+    ] },
+  { "fixture": "known/focus-pen-on-leather.css", "name": "focus rings on leather",
+    "components": ["Navigation", "Footer"], "themes": ["stationery-paper", "stationery-eink"],
+    "expect": [
+     {"kind": "focus-ring", "theme": "stationery-paper", "text": "Devices", "element": "il-desk > nav.il-nav > div.il-nav-group > a", "state": "focus", "fg": "#23315a", "bg": "#5a1e1a", "maxRatio": 1.01},
+     {"kind": "focus-ring", "theme": "stationery-paper", "text": "Devices", "element": "il-desk > nav.il-nav > div.il-nav-group > a", "state": "focus", "fg": "#23315a", "bg": "#1e3a2c", "maxRatio": 1.02},
+     {"kind": "focus-ring", "theme": "stationery-paper", "text": "Devices", "element": "il-desk > nav.il-nav > div.il-nav-group > a", "state": "focus", "fg": "#23315a", "bg": "#1b2a45", "maxRatio": 1.13},
+     {"kind": "focus-ring", "theme": "stationery-paper", "text": "Guides", "element": "il-drawer > nav.il-nav > div.il-nav-group > a", "state": "focus", "fg": "#23315a", "bg": "#5a1e1a", "maxRatio": 1.01},
+     {"kind": "focus-ring", "theme": "stationery-paper", "text": "Material for MkDocs", "element": "footer.il-footer > span > a", "state": "focus", "fg": "#23315a", "bg": "#3a110f", "maxRatio": 1.31},
+     {"kind": "focus-ring", "theme": "stationery-eink", "text": "Devices", "element": "il-desk > nav.il-nav > div.il-nav-group > a", "state": "focus", "fg": "#111111", "bg": "#222222", "maxRatio": 1.19},
+     {"kind": "focus-ring", "theme": "stationery-eink", "text": "Guides", "element": "il-drawer > nav.il-nav > div.il-nav-group > a", "state": "focus", "fg": "#111111", "bg": "#222222", "maxRatio": 1.19},
+     {"kind": "focus-ring", "theme": "stationery-eink", "text": "Material for MkDocs", "element": "footer.il-footer > span > a", "state": "focus", "maxRatio": 1}
+    ] },
+  { "fixture": "known/focus-pen-on-cream.css", "name": "focus rings on cream",
+    "components": ["Header"], "themes": ["stationery-paper", "stationery-eink"],
+    "expect": [
+     {"kind": "focus-ring", "theme": "stationery-paper", "text": "Search", "element": "header.il-header > label.il-search > input", "state": "focus", "fg": "#23315a", "bg": "#3a110f", "maxRatio": 1.31},
+     {"kind": "focus-ring", "theme": "stationery-paper", "text": "Voice", "element": "header.il-header > div > button.il-btn", "state": "focus", "fg": "#23315a", "bg": "#3a110f", "maxRatio": 1.31},
+     {"kind": "focus-ring", "theme": "stationery-eink", "text": "Search", "element": "header.il-header > label.il-search > input", "state": "focus", "maxRatio": 1.31},
+     {"kind": "focus-ring", "theme": "stationery-eink", "text": "Voice", "element": "header.il-header > div > button.il-btn", "state": "focus", "maxRatio": 1}
+    ] },
+  { "fixture": "known/footer-credit-ink-soft.css", "name": "the footer credit",
+    "components": ["Footer"], "themes": ["stationery-paper", "stationery-eink"],
+    "expect": [
+     {"kind": "text", "theme": "stationery-paper", "text": "Made with", "element": "footer.il-footer > span", "state": "default", "fg": "#5e5346", "bg": "#3a110f", "maxRatio": 2.21},
+     {"kind": "text", "theme": "stationery-paper", "text": "Material for MkDocs", "element": "footer.il-footer > span > a", "state": "default", "fg": "#5e5346", "bg": "#3a110f", "maxRatio": 2.21},
+     {"kind": "text", "theme": "stationery-eink", "text": "Made with", "element": "footer.il-footer > span", "state": "default", "fg": "#444444", "bg": "#111111", "maxRatio": 1.94},
+     {"kind": "text", "theme": "stationery-eink", "text": "Material for MkDocs", "element": "footer.il-footer > span > a", "state": "default", "fg": "#444444", "bg": "#111111", "maxRatio": 1.94}
+    ] },
+  { "fixture": "known/night-code-comments.css", "name": "Night code comments",
+    "components": ["CodeBlock"], "themes": ["stationery-night"],
+    "expect": [
+     {"kind": "text", "theme": "stationery-night", "text": "# expect v5", "element": "pre > span.hl > span.c", "state": "default", "fg": "#b8a98d", "bg": "#5a4a1e", "maxRatio": 3.74}
+    ] }
+ ]
+}

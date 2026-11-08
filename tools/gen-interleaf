@@ -269,6 +269,27 @@ THEME_SEL = re.compile(r'\[data-theme(\^?=)"([^"]+)"\]\s*')
 CSS_RULE = re.compile(r"([^{}]+)\{([^{}]*)\}")
 
 
+def split_decls(body):
+    """body cut at the semicolons outside parentheses and quotes (url(data:image/png;base64,...)
+    stays whole)"""
+    parts, depth, quote, start = [], 0, None, 0
+    for i, ch in enumerate(body):
+        if quote:
+            if ch == quote:
+                quote = None
+        elif ch in "\"'":
+            quote = ch
+        elif ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth = max(depth - 1, 0)
+        elif ch == ";" and depth == 0:
+            parts.append(body[start:i])
+            start = i + 1
+    parts.append(body[start:])
+    return parts
+
+
 def css_rules(css):
     """(selector, [(property, value)]) in file order"""
     css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
@@ -277,7 +298,7 @@ def css_rules(css):
     out = []
     for sel, body in CSS_RULE.findall(css):
         decls = []
-        for d in body.split(";"):
+        for d in split_decls(body):
             if ":" in d:
                 k, v = d.split(":", 1)
                 decls.append((k.strip(), v.strip()))

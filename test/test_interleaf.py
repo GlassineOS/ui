@@ -59,7 +59,7 @@ ok(tok.raw("keycap", "stationery-eink") == tok.raw("keycap", "eink"),
    "fallback: stationery-eink takes eink's value where it has none")
 ok(tok.raw("passe-partout", "white-night") is None,
    "no fallback to the first theme: white-night has no passe-partout (the White styles do not read it)")
-ok(tok.resolve("dim", "stationery-night") == tok.resolve("rule", "stationery-night") and tok.resolve("dim", "eink") == "#b4b4b4",
+ok(tok.resolve("dim", "stationery-night") == tok.resolve("rule", "stationery-night") and tok.resolve("dim", "eink") == "#bbbbbb",
    "dim: the rule in Paper and Night, its own grey on e-ink")
 bad = json.loads(json.dumps(tokens))
 for t in bad["color"]["tokens"]:

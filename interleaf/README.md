@@ -38,7 +38,7 @@ A theme is voice × scheme: `white-paper`, `white-night`, `editorial-paper`, `ed
 - **Never pair a fixed colour with a themed one.** A fixed text colour over a theme-aware background (or the reverse) breaks in the theme nobody checked. Background and text come from tokens that change together.
 - **Hover keeps the surface.** On leather, nav and footer links keep their own text colour on hover and only add the 2px underline, or go to `gilt`. Never to `pen` or `ink`: they belong to paper. The navy pen on leather measured 1.01–1.13:1 in every leather, and page ink on the footer leather 1.06–1.16:1.
 - **Text on leather needs leather on every layer.** Any panel that holds cream text (the drawer and each nested drawer level, the footer, the desk nav) paints `accent` or `leather-dark` itself. It never inherits the page's paper.
-- Keyboard focus: a 2px solid ring with a 2px offset on every interactive element. Its colour depends on the surface: `focus` on paper and sheet, `focus-on-leather` on leather, `focus-on-cream` on cream controls in the leather header.
+- Keyboard focus: a 2px solid ring with a 2px offset on every interactive element. Its colour depends on the surface: `focus` on paper and sheet, `focus-on-leather` on leather, `focus-on-cream` on cream controls in the leather header, where the offset is filled with the control's cream and a `focus-on-leather` halo lies outside the ring (see Header).
 
 ## Type
 

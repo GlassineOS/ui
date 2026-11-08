@@ -64,3 +64,22 @@ jobs:
           name: references
           path: out/references/
           if-no-files-found: ignore
+  contrast:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      # spec 002 FR-020: the contrast check, its self-test and the known failures it must catch;
+      # the report (out/contrast.json) is kept as an artifact
+      - name: contrast check in headless Chromium on Alpine
+        run: |
+          docker run --rm -v "$PWD":/src -w /src -e CHROMIUM=/usr/bin/chromium-browser alpine:3.24 sh -euc '
+            apk add -q chromium nodejs npm font-dejavu make
+            npm ci --ignore-scripts --no-audit --no-fund
+            make contrast-check contrast-test CONTRAST_JOBS=4'
+      - name: keep the report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: contrast-report
+          path: out/contrast.json
+          if-no-files-found: ignore

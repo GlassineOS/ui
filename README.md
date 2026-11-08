@@ -31,7 +31,11 @@ make check               # generated forms current, the library, the tests
 make check-forms         # the tokens, the voice data and their generated forms only (python3, seconds)
 make check-lib           # the library build and its tests (the sample sheet takes most of the time)
 make check-boards        # the design-board tools under node (no browser)
+make contrast-check      # the contrast check of every component (Chromium; see "Contrast check")
+make contrast-test       # its self-test and the known failures it must catch (Chromium)
 make generate            # write the generated forms (tools/gen-interleaf, then tools/gen-voices)
+make reference           # the Interleaf reference in out/reference/ (see "Reference")
+make serve-reference     # build it and serve it on http://127.0.0.1:8000/
 make references          # rendered images against their references (Chromium; see "References")
 make references-update   # write them after an intended change: tools/in-alpine make references-update
 ```
@@ -45,7 +49,8 @@ tests), it runs `make check-forms` alone. A token change that reaches the librar
 `voices/voices.json`, so it always gets the full run. The boards job runs `make check-boards`,
 `make boards-check` and `make references` on every change, in Alpine with the pinned Chromium and
 without network; when it fails, the reports and the images of the differences are uploaded as the
-`references` artifact.
+`references` artifact. The contrast job runs `make contrast-check contrast-test` (its report,
+`out/contrast.json`, is kept as the run's artifact).
 
 `make check` runs:
 
@@ -53,15 +58,24 @@ without network; when it fails, the reports and the images of the differences ar
   the tokens.
 - `tools/gen-voices --check`: the generated C table, `glassine-ui-scheme.h` and the Python module
   match the data, and the C icon map matches `glassine_ui.paint.ICONS`.
+- `tools/ladder --check`: spec 002 FR-021: every E-ink colour is one of the 16 ladder greys and no
+  style that applies on e-ink has a gradient or a blur (see "Interleaf", "The ladder").
+- `test/test_ladder.py`: the ladder's mapping rule, and a known failure of each kind (a token, a
+  shadow, a shared or voice style, the voice data, a GTK rule, a keyboard colour) refused.
 - `test/test_voices.py`: sections, the fallback to White, a changed value (and a changed scheme token)
   reaching every form, `tools/gen-apps` (into a temporary tree).
 - `test/test_interleaf.py`: aliases and theme fallbacks, the voices' scheme from the E-ink themes, a
   changed token reaching the voices' scheme and the web form, the stale-form check, the 27
   combinations and the variables the component styles read, the coverage check.
+- `test/test_reference.py`: the reference builds (twice, the same), every token, type style,
+  family and component appears, every preview loads the web form, the picker offers all 27
+  combinations, every link and source resolves. No browser.
 - `test/ci-scope.sh`: which changed paths `tools/ci-scope` sends to the library checks.
 - `test/test_paint.py`: the Python drawing API call by call.
 - `test/c-api.sh`: a separate program built with `pkg-config glassine-ui` against an installed copy.
 - `test/pc-prefix.sh`: the installed `.pc` names the prefix it was installed with.
+- `test/contrast/*.test.js` (node): the contrast check's arithmetic (WCAG ratios and targets, the
+  PNG decoder, the worst colour beneath, the focus-ring measure). See "Contrast check".
 - `test/boards/*.test.js` (node): the board reader (holes, attributes, props, the subset checks, the
   renderer without a DOM), the preview server and the import tool (see "Boards"), and the
   reference checks without a browser: PNG, the comparison, the store and the report (see
@@ -109,6 +123,25 @@ only in the themes whose component styles read it: White reads `keycap`, Editori
 `passe-partout`, Stationery `card-stack` and `sheet-stack`. `tools/gen-interleaf` works this out from
 `bundle.css` (a rule under `[data-theme^="VOICE"]` or `[data-theme="THEME"]` replaces the same
 property of the same selector without it) and fails on a value that is missing.
+
+### The ladder
+
+On e-ink every colour is exactly one of the 16 ladder greys (`#000000`, `#111111` … `#ffffff`) and no
+style uses a gradient or a blur (spec 002 FR-021). `tools/ladder --check` (in `make check`) holds the
+E-ink themes' tokens, the declarations of `bundle.css` that apply in an E-ink theme (the same cascade
+as above: a rule under `[data-theme="stationery-eink"]` replaces the same property of the same
+selector without it; the E-ink rules sit at the end of the file) and the voice data to it. A value
+that waits for a design decision can be listed in its `PENDING` with its reason (none is now); it
+prints them on every run and fails when one is no longer there.
+
+The panel shows a grey at the level of its top nibble after the desktop's grey curve (gamma 1.8 by
+default), so a grey off the ladder goes to the ladder grey on the same panel level (the voice's ink
+where the ink is on it), or the nearest level (of two equally near, the higher) where no ladder grey
+has it: `tools/ladder --map HEX`, `tools/ladder --map-apps` (the `apps` section; a translucent
+keyboard colour first over the key face it is drawn on). The curve is `epd_grey_luma_lut`'s; the
+desktop's default grey mode is luminance (`epd_grey_lum_lut`, `grey_lum = 1`), which gives the same
+level for all 256 neutral greys. The gamma can be changed at runtime (`gamma=`, `eink.conf`) and the
+ladder holds only at 1.8; `test/test_ladder.py` pins it.
 
 ## Web form
 
@@ -158,6 +191,102 @@ Changing the fonts: edit the list in `tools/fetch-fonts`, run `tools/in-alpine t
 (fontTools and brotli are in that image) and `make generate`, then regenerate the references
 (README "References").
 
+### Reference
+
+`tools/gen-reference` builds a browsable reference of Interleaf from this repository (spec 002
+FR-030, FR-031): the guidelines, every token (usage, the value in each theme, a swatch or sample),
+every component with its guidelines and a live preview, and a voice, scheme and pen picker that
+offers the combinations of `web/combinations.json` and sets them on the page and in every preview.
+It is styled with the web form itself and needs python3 alone.
+
+```
+make reference           # write out/reference/ (open out/reference/index.html, or:)
+make serve-reference     # serve it on 127.0.0.1:8000 (REFERENCE_HOST=, REFERENCE_PORT=)
+```
+
+The picker remembers the choice in the browser; `?voice=editorial&scheme=eink&pen=2` on any page
+picks one. Every link is relative, so the same files work from disk, the local server and a
+sub-path. `.github/workflows/reference.yml` builds it on every push to main and publishes it to
+GitHub Pages (https://glassineos.github.io/ui/ once Pages uses GitHub Actions as its source).
+
+## Contrast check
+
+Spec 002 FR-020. `tools/contrast` (or `make contrast-check`, in Alpine: `tools/in-alpine make
+contrast-check`) renders every component preview of `interleaf/components/` with the web form, in
+all 27 combinations of `web/combinations.json`, at desktop (1280px) and phone (390px) width, in
+headless Chromium, and measures it against the guidelines' targets (WCAG 2.2 AA):
+
+- **Text**, 4.5:1 (3:1 at 24px, or 18.66px at weight 700): every visible text node, and the text the
+  styles generate (`::before` and `::after` content such as the section numerals, list markers,
+  `::first-letter`, placeholders). The text's colour is its computed colour (alpha and opacity
+  included). The colour beneath is read from a render with all text and text decorations made
+  transparent, over the box of the text's glyphs; of its darkest and lightest pixel the one with
+  the lower ratio counts. So patterns, highlighter bands, tabs and images count with their worst
+  colour. Text is read 2px inside the edges of every ancestor whose `overflow` is not `visible`,
+  scrolling or not, so a frame's keyline does not count as beneath the letters cut off at it; what
+  is left of a text under 2px wide or high there is not measured.
+- **Focus rings**, 3:1: every link, button, field and summary is rendered with `:focus` and
+  `:focus-visible` forced (CDP), and `:focus-within` on its ancestors, and without. Each pixel that
+  changes has the ratio of its focused to its unfocused colour; the ring's ratio is the best one
+  that as many pixels reach as a 1px line around the element has. A ring in the colour of what it
+  covers measures 1:1, and a neighbour lying under part of a 2px ring does not hide it. The changed
+  pixels are pooled: every pixel within 40px of the element that focus changes counts, the ring,
+  its offset, a halo, a fill or a text colour alike. So a passing ring means that focus changes
+  enough pixels by 3:1, not that a drawn ring does.
+- **States**: default; hover (forced) and focus on every interactive element, in every pen; text
+  inside an `aria-current` element is reported as `current`; every closed `<details>` is opened
+  (`open`).
+- **Disabled controls** (`:disabled`, `aria-disabled="true"`, the `dim` token) are exempt from WCAG:
+  their cases are `info`, never failures.
+- **E-ink** is measured on the token values as rendered; how the display engine turns them into
+  panel levels is not part of the check.
+- Requests that leave the local server are blocked; the web form's fonts are local.
+
+The report (`--json FILE`) has one case per measurement: `result` (`pass`, `fail`, `open`, `info`),
+`ratio`, `target`, `fg` and `bg` (the worst pair), `kind` (`text`, `generated`, `focus-ring`),
+`pseudo`, `element`, `text`, `control` (the hovered or focused element), `state`, `component`,
+`voice`, `scheme`, `pen`, `theme`, `width`. A short summary groups the failures. Options narrow the
+run: `--component NAME`, `--theme ID|VOICE|SCHEME`, `--width desktop|phone`, `--jobs N`.
+
+Known open failures on main are listed in `test/contrast/open.json`, each with its measurement and a
+proposed fix: they are reported as `open` and do not fail the check. An entry that no longer fails is
+stale and fails the check, so it goes with its fix.
+
+Coverage: a page that measures nothing cannot fail, so the check also fails when a page measures
+too little. Every page must measure at least one text case, and `test/contrast/coverage.json`
+(`--coverage FILE`) gives each component the least number of text cases and focus rings each of its
+pages must measure (the lowest counts on main). A preview whose stylesheets did not load, or loaded
+empty, is an error. When a preview loses text or controls on purpose, its floor goes down with it.
+
+`make contrast-test` runs `test/contrast/selftest.js` (a page of known answers: patterns, bands,
+generated text, large text, the disabled exemption, rings, hover, current, open) and
+`test/contrast/known-failures.js`: the acceptance set of known failures (spec 002 SC-002), one fixture
+each in `test/contrast/known/` (listed in `known.json`, how each was built in its comment). Each is
+injected on its own (`--inject`). A case is caught when it fails with the fixture and passes without
+it, and every case the fixture's `expect` lists must be caught: its kind, theme, text, element and
+state, its colours, and a ratio at most the one measured. The test prints the case that matched
+each expectation.
+
+Known limits of the measure (follow-ups):
+
+- **The worst colour is the darker or the lighter extreme** of the backdrop under the glyphs. When
+  the text's luminance lies between the two, a mid-tone between them (a mid-grey stripe, a
+  gradient step) can be nearer to it than either, and is not found. At 4.5:1 that needs both
+  extremes to pass with the text between them; at the 3:1 of large text the window is wider.
+- **Generated text is found at the default state only.** `::before`, `::after` and `::marker` are
+  read from the document tree once per page, so generated text that exists only on hover or focus,
+  or only inside a `<details>` once it is opened, is probably not measured.
+- **Text is read where it lies at scroll position 0.** Text scrolled out of a scroller's clip (the
+  code block's long lines at phone width, and what lies under them on the highlighted line) is not
+  measured.
+- **`currentColor` drawings leave the backdrop with the text.** The backdrop makes all text
+  transparent, so a border, outline, shadow or background drawn in `currentColor` disappears from
+  it too, and a dark shape beneath text can drop out of the extremes. For focus rings that makes a
+  false failure, not a false pass. Today the bundle's one use is the summary's chevron
+  (`.il-details > summary::before`), which lies beside the text.
+- **The colour is the computed `color`.** A style with `-webkit-text-fill-color` or a blend mode
+  would paint another colour than the one measured; the bundle has none.
+
 ## Voices
 
 Contract: voice data, version 1 (`"contract": 1` in the file).
@@ -185,10 +314,9 @@ The same key can mean different things in `shell`, `card` and `setup`: each is i
 design (`headH`, `cardR`, `sep`, ...), so they are kept apart, not merged. `shell` also has the C
 table's own keys (`gripGap`, `gripLip` for glassine-swayd's drag handles).
 
-The `apps` values are the GTK and keyboard themes as they were, not the scheme's greys: several are
-not on the 16-grey ladder (`#1b1b1b`, `#141414`, `#a0a0a0`, `#d0d0d0`, `#c4c4c4`, `#4a4a4a`, `#b5b5b5`,
-`#bdbdbd`), and Stationery's GTK ink is `#1b1b1b` where the voice's is `#111111`. Bringing them onto
-the scheme changes pixels, so it is a separate change.
+The `apps` values are the GTK and keyboard themes' own greys, not the scheme's roles: each is on the
+ladder (`tools/ladder --map-apps` put them on the ladder grey of their panel level). The keyboard's
+swipe trail is opaque: the grey the translucent trail showed over the key face.
 
 Changing a voice: a scheme token is changed in `interleaf/tokens.json`; every other section is
 edited in `voices/voices.json`. Then run `make generate` and commit the data and the generated files

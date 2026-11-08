@@ -1,0 +1,12 @@
+/* Known failure: Night code comments.
+ *
+ * Built from the guidelines' accessibility section ("Stationery Night ink-soft raised to
+ * #ccbfa4") and the CodeBlock guideline (comments in ink-soft, highlighted lines on highlight).
+ * This repository's history starts with the fixed system, so the value before the raise is taken
+ * from the audited site's own tokens: GlassineOS/docs theme/tokens.json, Stationery Night
+ * ink-soft #B8A98D before b042a3f ("the design-system audit fixes", 2026-10-31), which raised it
+ * to #CCBFA4. There, too, comments were ink-soft and highlighted lines hl #5A4A1E, the value of
+ * highlight here. The audit's own ratio is not recorded; 3.74:1 is this check's.
+ * Expected (known.json): the CodeBlock comment "# expect v5" on the highlighted line, #b8a98d on
+ * #5a4a1e, 3.74:1, in Stationery Night (6.65:1 on Night paper elsewhere, which passes). */
+[data-theme="stationery-night"] { --ink-soft: #b8a98d; }

@@ -1,0 +1,40 @@
+<!-- the contrast check's own test page (test/contrast/selftest.js): each text names what it tests -->
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>contrast self-test</title>
+<style>
+  body { margin: 0; background: #ffffff; color: #111111; font: 16px/1.5 sans-serif; }
+  .row { padding: 8px 16px; }
+  .stripes { background: repeating-linear-gradient(90deg, #ffffff 0 6px, #8a8a8a 6px 12px); color: #555555; }
+  .band { color: #767676; background: linear-gradient(transparent 60%, #9a9a9a 60%); }
+  .same { color: #595959; background: linear-gradient(90deg, #595959 50%, #ffffff 50%); }
+  .gen::after { content: " gen-after-low"; color: #c8c8c8; }
+  .big { font-size: 24px; color: #8a8a8a; }
+  .small { font-size: 16px; color: #8a8a8a; }
+  button { font: inherit; color: #111111; background: #ffffff; border: 1px solid #111111; }
+  button:disabled { color: #c8c8c8; }
+  .noring:focus-visible { outline: none; }
+  .ring:focus-visible { outline: 2px solid #111111; outline-offset: 2px; }
+  .faintring:focus-visible { outline: 2px solid #eeeeee; outline-offset: 2px; }
+  a.hov { color: #111111; } a.hov:hover { color: #d0d0d0; }
+  .cur { color: #111111; } .cur[aria-current] { color: #bdbdbd; }
+  .shut p { color: #cccccc; }
+  .num { counter-reset: n; } .num h3 { counter-increment: n; font-size: 16px; font-weight: 400; } .num h3::before { content: counter(n) ". "; color: #b0b0b0; }
+  .drop::first-letter { color: #dddddd; font-size: 3em; float: left; }
+</style></head>
+<body>
+<div class="row stripes">stripes-fail</div>
+<div class="row"><span class="band">band-fail</span></div>
+<div class="row"><span class="same">same-colour-band-fail</span></div>
+<div class="row gen">gen-host-pass</div>
+<div class="row big">large-pass</div>
+<div class="row small">small-fail</div>
+<div class="row"><button type="button" disabled>disabled-info</button></div>
+<div class="row"><button type="button" class="noring">no-ring</button> <button type="button" class="ring">ink-ring</button> <button type="button" class="faintring">faint-ring</button></div>
+<div class="row"><a class="hov" href="#">hover-link</a></div>
+<div class="row"><a class="cur" href="#" aria-current="page">current-fail</a></div>
+<details class="row shut"><summary>closed-summary-pass</summary><p>opened-fail</p></details>
+<div class="row num"><h3>numbered-pass</h3></div>
+<p class="row drop">Dropcap-rest-pass</p>
+</body>
+</html>

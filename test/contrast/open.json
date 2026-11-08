@@ -1,0 +1,4 @@
+{
+ "about": "Known open contrast failures on main (tools/contrast --open). Each is reported as \"open\" and does not fail the check until it is fixed; an entry that no longer fails is stale and fails the check, so remove it with the fix. Every entry has its measurement and a proposed fix.",
+ "open": []
+}

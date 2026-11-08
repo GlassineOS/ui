@@ -7,6 +7,8 @@
 #                        (tools/ladder), the library builds, the tests pass:
 #                        check-forms (python3 alone, seconds), check-lib, check-boards (node)
 #   make boards-check    the design-board samples in headless Chromium (in Alpine: tools/in-alpine)
+#   make contrast-check  the contrast check of every component (Chromium; tools/in-alpine)
+#   make contrast-test   the contrast check's self-test and the known failures it must catch
 #   make reference       the browsable Interleaf reference (tools/gen-reference) in out/reference/
 #   make serve-reference build it and serve it on http://127.0.0.1:8000/ (REFERENCE_HOST, REFERENCE_PORT)
 VERSION = 1.0.1
@@ -87,7 +89,7 @@ check-lib: all
 
 # the design-board tools under node (reader, renderer, server, import); no browser
 check-boards:
-	$(NODE) --test test/boards/*.test.js
+	$(NODE) --test test/boards/*.test.js test/contrast/*.test.js
 
 # the sample boards rendered and clicked through (needs Chromium; tools/in-alpine provides one)
 # the samples read the real Interleaf (default); BOARDS_INTERLEAF=DIR serves another copy as is
@@ -95,6 +97,18 @@ BOARDS_INTERLEAF ?=
 boards-check:
 	tools/boards check boards/samples $(if $(BOARDS_INTERLEAF),--interleaf $(BOARDS_INTERLEAF)) --json $(O)/boards-check.json
 	$(NODE) test/boards/samples-e2e.js
+
+# the contrast check (spec 002 FR-020): every component in all 27 combinations, desktop and phone
+# width, hover, focus, current and open states, against WCAG 2.2 AA (needs Chromium: tools/in-alpine).
+# Known open failures are listed in test/contrast/open.json, the least cases per page in
+# test/contrast/coverage.json. contrast-test: the check's self-test, and the known failures of the
+# acceptance set, each of which it must catch.
+CONTRAST_JOBS ?= 8
+contrast-check:
+	$(NODE) tools/contrast --jobs $(CONTRAST_JOBS) --open test/contrast/open.json --coverage test/contrast/coverage.json --json $(O)/contrast.json
+contrast-test:
+	$(NODE) test/contrast/selftest.js
+	CONTRAST_JOBS=$(CONTRAST_JOBS) $(NODE) test/contrast/known-failures.js
 
 # the Interleaf reference (spec 002 FR-030, FR-031): static, every link relative; CI publishes it
 # from main (.github/workflows/reference.yml)
@@ -111,5 +125,5 @@ clean:
 	rm -f $(O)/libglassine-ui.so* $(O)/glassine-ui.pc $(O)/pc.vars
 	rm -rf $(O)/test $(O)/reference
 
-.PHONY: all generate install check check-forms check-lib check-boards boards-check reference serve-reference clean FORCE
+.PHONY: all generate install check check-forms check-lib check-boards boards-check contrast-check contrast-test reference serve-reference clean FORCE
 FORCE:

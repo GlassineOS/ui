@@ -1,0 +1,10 @@
+/* Known failure: the footer credit.
+ *
+ * Built from the Footer guideline: in MkDocs the generator link must carry the voice colour on its
+ * own selector, or "Material's .md-typeset .md-copyright a otherwise wins", and "Never ink-soft on
+ * leather: the audit measured 2.17-2.37:1 for it, and 1.94:1 on e-ink". This lets the credit line
+ * and its link take ink-soft, Material's copyright colour as the docs map it, on the Stationery
+ * footer's leather-dark.
+ * Expected (known.json): #5e5346 on #3a110f, 2.21:1 (Stationery Paper); #444444 on #111111, 1.94:1 (E-ink). */
+[data-theme^="stationery"] .il-footer > span:last-child,
+[data-theme^="stationery"] .il-footer > span:last-child a { color: var(--ink-soft); }

@@ -9,7 +9,22 @@
 set -eu
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 PIN=$(cat "$ROOT/tools/chromium.pin")
-IMAGE=${BOARDS_IMAGE:-glassine-ui-boards:alpine-3.24-chromium-$PIN}
+# The image is named after the Chromium pin and what Alpine ships today of the packages text is
+# drawn with (they float within a release, see README "References"), so a cached image can't pass
+# for what CI installs. Without network: the newest local image of this pin, with a warning.
+REPO=glassine-ui-boards
+BASE=alpine-3.24-chromium-$PIN
+TEXT=$(docker run --rm alpine:3.24 sh -c 'apk update -q >/dev/null 2>&1 && apk list freetype harfbuzz fontconfig font-dejavu font-opensans 2>/dev/null' | awk '{print $1}' | sort || true)
+if [ -n "$TEXT" ]; then
+	TAG=$BASE-text-$(printf '%s\n' "$TEXT" | sha256sum | cut -c1-12)
+elif LOCAL=$(docker image ls --format '{{.Tag}}' "$REPO" | grep "^$BASE-text-" | head -n 1) && [ -n "$LOCAL" ]; then
+	TAG=$LOCAL
+	echo "in-alpine: no network: using $REPO:$TAG, whose text packages may differ from CI's" >&2
+else
+	echo "in-alpine: no image for chromium $PIN and no network to build one" >&2
+	exit 1
+fi
+IMAGE=${BOARDS_IMAGE:-$REPO:$TAG}
 if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
 	docker build -q --build-arg "CHROMIUM=$PIN" -t "$IMAGE" - >/dev/null <<'DOCKERFILE' || {
 FROM alpine:3.24

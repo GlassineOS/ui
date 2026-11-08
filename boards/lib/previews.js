@@ -118,7 +118,7 @@ async function checkPreviews(opts) {
     browsers = await openBrowsers(jobs, { chromium: opts.chromium });
     const version = await R.chromiumVersion(browsers[0]);
     const only = comps.length !== names.length || widths.length !== Object.keys(WIDTHS).length || chosen.length !== ids.length;
-    const rep = await R.runCases({ cases: cases, refs: refs, out: out, update: opts.update, kind: 'components', chromium: version,
+    const rep = await R.runCases({ cases: cases, refs: refs, out: out, update: opts.update, kind: 'components', chromium: version, libraries: R.textPackages(),
       jobs: jobs, pool: pool, only: only, render: function (c, worker) { return shoot(browsers[worker], srv.url, c, opts.timeout); } });
     for (const r of rep.cases) delete r.attributes;
     rep.check = 'component references';

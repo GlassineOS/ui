@@ -99,11 +99,167 @@ test('runCases: update, pass, differs, stale, no reference, errors, Chromium', a
   await assert.rejects(run(refs, { 'A/1': grey }, { chromium: '9.9.9', update: true, only: true }), /update them all/);
 
   // a full update drops the stale and the unused images, keeps a failed render's old reference out
-  rep = await run(refs, { 'A/1': grey, 'B/1': changed, 'D/1': null }, { update: true, chromium: '9.9.9' });
+  rep = await run(refs, { 'A/1': grey, 'B/1': changed, 'D/1': null }, { update: true });
   const after = JSON.parse(fs.readFileSync(path.join(refs, 'index.json'), 'utf8'));
   assert.deepStrictEqual(Object.keys(after.cases), ['A/1', 'B/1']);
-  assert.deepStrictEqual([after.chromium, fs.readdirSync(refs).length, rep.summary.errors, rep.summary.ok], ['9.9.9', 3, 1, false]);
+  assert.deepStrictEqual([after.chromium, fs.readdirSync(refs).length, rep.summary.errors, rep.summary.written, rep.summary.ok], ['1.2.3', 3, 1, true, false]);
   assert.match(R.textSummary(rep, 't'), /ERROR D\/1[\s\S]*boom/);
+});
+
+function snapshot(refs) {
+  return Object.fromEntries(fs.readdirSync(refs).sort().map((f) => [f, fs.readFileSync(path.join(refs, f)).toString('base64')]));
+}
+const full = { 'A/1': grey, 'B/1': many };
+const LIBS = { freetype: '2-r0', harfbuzz: '13-r0' };
+async function store(name, extra) {
+  const refs = path.join(TMP, name, 'refs');
+  fs.rmSync(path.join(TMP, name), { recursive: true, force: true });
+  await run(refs, full, Object.assign({ update: true }, extra));
+  return refs;
+}
+
+test('text packages: read from the Alpine database, kept in the store, named when a run fails', async () => {
+  const db = path.join(TMP, 'installed');
+  fs.mkdirSync(TMP, { recursive: true });
+  fs.writeFileSync(db, 'C:Q1\nP:freetype\nV:2.14.3-r0\nA:x86_64\n\nP:zlib\nV:1-r0\n\nP:font-dejavu\nV:2.37-r6\n\nP:harfbuzz\nV:13.2.1-r0\n');
+  assert.deepStrictEqual(R.textPackages(db), { freetype: '2.14.3-r0', 'font-dejavu': '2.37-r6', harfbuzz: '13.2.1-r0' });
+  assert.deepStrictEqual(R.textPackages(path.join(TMP, 'none')), {});
+
+  const refs = await store('libs', { libraries: LIBS });
+  assert.deepStrictEqual(JSON.parse(fs.readFileSync(path.join(refs, 'index.json'), 'utf8')).libraries, LIBS);
+  const other = { freetype: '3-r0', harfbuzz: '13-r0' };
+
+  // the pixels decide: other versions alone are no failure and say nothing
+  let rep = await run(refs, full, { libraries: other });
+  assert.deepStrictEqual([rep.summary.ok, rep.summary.librariesDiffer], [true, true]);
+  assert.deepStrictEqual(rep.libraries.differ, [{ name: 'freetype', references: '2-r0', running: '3-r0' }]);
+  assert.doesNotMatch(R.textSummary(rep, 't'), /text packages/);
+
+  rep = await run(refs, { 'A/1': few, 'B/1': many }, { libraries: other });
+  assert.strictEqual(rep.summary.ok, false);
+  assert.match(R.textSummary(rep, 't'), /text packages differ[\s\S]*freetype: references 2-r0, this run 3-r0/);
+
+  rep = await run(refs, { 'A/1': few, 'B/1': many }, { libraries: LIBS });
+  assert.doesNotMatch(R.textSummary(rep, 't'), /text packages/, 'the same versions are not blamed');
+
+  // a partial update would mix them, a full one records the new ones
+  await assert.rejects(run(refs, { 'A/1': grey }, { update: true, only: true, libraries: other }), /other text packages/);
+  rep = await run(refs, full, { update: true, libraries: other });
+  assert.deepStrictEqual(rep.libraries.references, other);
+  assert.deepStrictEqual(JSON.parse(fs.readFileSync(path.join(refs, 'index.json'), 'utf8')).libraries, other);
+});
+
+test('no cases: not ok, the store untouched, unless asked for', async () => {
+  const refs = await store('empty');
+  const before = snapshot(refs);
+  for (const update of [false, true]) {
+    const rep = await run(refs, {}, { update: update, chromium: null });
+    assert.deepStrictEqual([rep.summary.ok, rep.summary.empty, rep.summary.written, rep.summary.chromiumMismatch], [false, true, false, false]);
+    assert.match(R.textSummary(rep, 't'), /NOTHING WAS COMPARED/);
+    assert.deepStrictEqual(snapshot(refs), before);
+  }
+  const rep = await run(refs, {}, { allowEmpty: true, chromium: null });
+  assert.strictEqual(rep.summary.ok, true);
+  assert.deepStrictEqual(snapshot(refs), before);
+});
+
+test('an unknown board is an error, a design with nothing to shoot is a failure', async () => {
+  const { spawnSync } = require('child_process');
+  const cli = (args) => spawnSync(process.execPath, [path.join(ROOT, 'tools', 'boards')].concat(args), { cwd: ROOT, encoding: 'utf8', timeout: 30000 });
+  const samples = path.join(ROOT, 'boards', 'samples');
+  for (const cmd of ['references', 'check']) {
+    const r = cli([cmd, samples, '--board', 'Typo.dc.html', '--chromium', '/nonexistent']);
+    assert.strictEqual(r.status, 2, cmd + ': ' + r.stderr);
+    assert.match(r.stderr, /no board Typo\.dc\.html/);
+  }
+  const design = path.join(TMP, 'skipped');
+  fs.rmSync(design, { recursive: true, force: true });
+  fs.cpSync(samples, design, { recursive: true });
+  fs.rmSync(path.join(design, 'references'), { recursive: true, force: true });
+  const { describe } = require('../../boards/lib/server.js');
+  const boards = {};
+  for (const b of describe(design).boards) boards[b.file] = { skip: true };
+  fs.writeFileSync(path.join(design, 'references.json'), JSON.stringify({ boards: boards }));
+  const out = path.join(TMP, 'skipped-out');
+  let r = cli(['references', design, '--out', out, '--chromium', '/nonexistent']);
+  assert.strictEqual(r.status, 1, r.stderr);
+  assert.match(r.stdout, /NOTHING WAS COMPARED/);
+  r = cli(['references', design, '--out', out, '--chromium', '/nonexistent', '--allow-empty']);
+  assert.strictEqual(r.status, 0, r.stderr);
+});
+
+test('a damaged reference fails its case only, the report is written, --update repairs it', async () => {
+  const refs = await store('bad');
+  const idx = JSON.parse(fs.readFileSync(path.join(refs, 'index.json'), 'utf8'));
+  const file = path.join(refs, idx.cases['A/1'].file);
+  const good = fs.readFileSync(file);
+  for (const damaged of [good.subarray(0, 20), Buffer.from('not a png')]) {
+    fs.writeFileSync(file, damaged);
+    const rep = await run(refs, full);
+    const by = Object.fromEntries(rep.cases.map((c) => [c.case, c]));
+    assert.deepStrictEqual([by['A/1'].status, by['B/1'].status, rep.summary.badReference, rep.summary.ok], ['bad reference', 'pass', 1, false]);
+    assert.strictEqual(by['A/1'].errors[0].kind, 'reference');
+    assert.ok(fs.existsSync(by['A/1'].actual), 'the render is kept to compare by hand');
+    assert.match(R.textSummary(rep, 't'), /damaged reference/);
+    const fixed = await run(refs, full, { update: true });
+    assert.deepStrictEqual([fixed.summary.ok, fixed.summary.updated, fixed.cases.find((c) => c.case === 'A/1').errors], [true, 1, []]);
+    assert.ok(fs.readFileSync(file).equals(good), 'the image is written again');
+    assert.strictEqual((await run(refs, full)).summary.ok, true);
+  }
+});
+
+test('a damaged index is reported, --update writes a new one, a partial update is refused', async () => {
+  const refs = await store('index');
+  const p = path.join(refs, 'index.json');
+  const good = fs.readFileSync(p);
+  for (const bad of ['{"contract": 1, "ca', 'null', '{"contract":1,"cases":3}']) {
+    fs.writeFileSync(p, bad);
+    let rep = await run(refs, full);
+    assert.deepStrictEqual([rep.summary.storeUnreadable, rep.summary.ok, rep.summary.orphans], [true, false, 0]);
+    assert.ok(rep.storeError);
+    assert.match(R.textSummary(rep, 't'), /index can not be read/);
+    const files = snapshot(refs);
+    await assert.rejects(run(refs, { 'A/1': grey }, { update: true, only: true }), /update them all/);
+    assert.deepStrictEqual(snapshot(refs), files);
+    rep = await run(refs, full, { update: true });
+    assert.deepStrictEqual([rep.summary.storeUnreadable, rep.summary.written, rep.summary.ok, rep.storeError], [false, true, true, null]);
+    assert.strictEqual((await run(refs, full)).summary.ok, true);
+  }
+  assert.ok(fs.readFileSync(p).equals(good), 'the new index is the old one');
+  fs.writeFileSync(p, JSON.stringify({ contract: 99, cases: {} }));
+  await assert.rejects(run(refs, full), /contract 99/);
+});
+
+test('a failed update with another Chromium or other packages writes nothing', async () => {
+  const refs = await store('refused', { libraries: LIBS });
+  const before = snapshot(refs);
+  const broken = { 'A/1': few, 'B/1': null };
+  for (const extra of [{ chromium: '9.9.9', libraries: LIBS }, { libraries: { freetype: '3-r0', harfbuzz: '13-r0' } }]) {
+    const rep = await run(refs, broken, Object.assign({ update: true }, extra));
+    assert.deepStrictEqual(snapshot(refs), before);
+    assert.deepStrictEqual([rep.summary.written, rep.summary.refused, rep.summary.ok, rep.summary.updated], [false, true, false, 0]);
+    const a = rep.cases.find((c) => c.case === 'A/1');
+    assert.strictEqual(a.status, 'differs', 'the report does not claim an update that was not written');
+    assert.ok(fs.existsSync(a.actual));
+    assert.deepStrictEqual(rep.libraries.references, LIBS);
+    assert.match(R.textSummary(rep, 't'), /references were not changed/);
+  }
+  // a clean one does
+  const rep = await run(refs, full, { update: true, chromium: '9.9.9', libraries: LIBS });
+  assert.deepStrictEqual([rep.summary.written, rep.summary.ok], [true, true]);
+  assert.strictEqual(JSON.parse(fs.readFileSync(path.join(refs, 'index.json'), 'utf8')).chromium, '9.9.9');
+});
+
+test('a PNG no case names fails a plain check, --update removes it', async () => {
+  const refs = await store('orphans');
+  const stray = 'abcdef0123456789.png';
+  fs.writeFileSync(path.join(refs, stray), 'x');
+  fs.writeFileSync(path.join(refs, 'README.png'), 'not one of ours');
+  let rep = await run(refs, full);
+  assert.deepStrictEqual([rep.orphans, rep.summary.orphans, rep.summary.pass, rep.summary.ok], [[stray], 1, 2, false]);
+  assert.match(R.textSummary(rep, 't'), new RegExp('ORPHAN ' + stray));
+  rep = await run(refs, full, { update: true });
+  assert.deepStrictEqual([rep.orphans, rep.summary.ok, fs.existsSync(path.join(refs, stray)), fs.existsSync(path.join(refs, 'README.png'))], [[], true, false, true]);
 });
 
 test('combinations: own, all, by name, with props; mistakes are named', () => {

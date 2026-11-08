@@ -444,7 +444,7 @@ the line and the feature, and the check reports it as `unsupported`.
 ```
 tools/boards preview DESIGN_DIR [--port 4790] [--host 127.0.0.1] [--allow-host NAME]... [--interleaf DIR]
 tools/boards check   DESIGN_DIR [--interleaf DIR] [--json out/boards-check.json|-] [--board FILE]...
-tools/boards references DESIGN_DIR [--update] [--refs DIR] [--out DIR] [--json FILE|-] [--board FILE]...
+tools/boards references DESIGN_DIR [--update] [--refs DIR] [--out DIR] [--json FILE|-] [--board FILE]... [--allow-empty]
 tools/boards import  CANVAS_EXPORT_DIR DEST_DIR [--force]
 tools/in-alpine CMD...      # CMD in alpine:3.24 with the pinned Chromium and node, as the calling user
 ```
@@ -582,7 +582,7 @@ tools/previews [--update] [--component NAME]... [--width desktop|phone]... [--co
   waiting at most 10 s. Each worker has its own browser with one tab: a tab that is not in front may
   get no frames, and its screenshot then never returns.
 - **The report** (`out/references/components/report.json`, `out/references/boards/report.json`, or
-  `--json`): per case its `status` (`pass`, `differs`, `no reference`, `error`, or `updated` with
+  `--json`): per case its `status` (`pass`, `differs`, `no reference`, `bad reference`, `error`, or `updated` with
   `--update`), `differing` (pixels), `maxDelta` (the largest channel difference), `box` (where the
   differences are), the `reference`, the `actual` render and the `diff` image (paths, the last two
   below `out/references/` for failing cases), and `errors` (load and script errors, refused requests,
@@ -612,7 +612,25 @@ tools/previews [--update] [--component NAME]... [--width desktop|phone]... [--co
   then `tools/in-alpine` and CI fail to install the pin. Bumping it: set the new version in
   `tools/chromium.pin`, run `tools/in-alpine make references-update` (and the same in each
   repository with board references when it moves to this ui version), look at what changed, and
-  commit the pin and the references together. A local image already built keeps working.
+  commit the pin and the references together.
+- **The text packages are recorded, not pinned.** Alpine's Chromium draws text with the system's
+  freetype, harfbuzz and fontconfig, and falls back to font-dejavu and font-opensans. These float
+  within 3.24, and old versions disappear from the mirrors, so a pin would break CI on its own. The
+  store records their versions (`libraries` in `index.json`) and the report gives both (`libraries`:
+  `references`, `running`, `differ`). A difference alone is no failure: pixels decide. When a run
+  fails and the versions differ, the report sets `summary.librariesDiffer` and the summary names each
+  package, so a failure in many cases explains itself; regenerate with the command below after
+  looking at the differences. `tools/in-alpine` names its image after the pin and a hash of what
+  Alpine ships today, so a cached image can't stand in for what CI installs; without network it
+  uses the newest local image of the pin and says so.
+- **A check that compares nothing fails:** an unknown `--board` or `--component` is an error, and no
+  cases at all (a design folder with no boards, or every board `skip`) is a failure unless
+  `--allow-empty` says it is intended.
+- **Damaged stores:** a reference that can't be read is that case's failure (`bad reference`), and
+  `--update` writes it again; an `index.json` that can't be read is reported (`storeError`), and
+  `--update` writes a new one. PNGs that no case names are reported as `orphans` and fail the check.
+  An update where a render fails while the Chromium or the text packages changed writes nothing
+  (`summary.written` is false), so a store never mixes two sets.
 - **Regenerating after an intended change** (a token, a component style, a font, a preview): one
   command, `tools/in-alpine make references-update`, then review the changed images
   (`git status test/references boards/samples/references`) and commit them with the change.

@@ -14,8 +14,13 @@ async function checkDesign(opts) {
   const design = path.resolve(opts.design);
   const desc = describe(design);
   let boards = desc.boards.filter(function (b) { return b.exists; });
-  if (opts.boards && opts.boards.length) boards = boards.filter(function (b) { return opts.boards.indexOf(b.file) >= 0; });
+  if (opts.boards && opts.boards.length) {
+    const unknown = opts.boards.filter(function (f) { return !boards.some(function (b) { return b.file === f; }); });
+    if (unknown.length) throw new Error('no board ' + unknown.join(', ') + ' in ' + design);
+    boards = boards.filter(function (b) { return opts.boards.indexOf(b.file) >= 0; });
+  }
   const missing = desc.boards.filter(function (b) { return !b.exists; }).map(function (b) { return b.file; });
+  if (!boards.length && !opts.allowEmpty) throw new Error('no boards to check in ' + design + ' (--allow-empty if that is intended)');
   const srv = await startServer({ design: design, interleaf: opts.interleaf, live: false });
   let browser;
   try {

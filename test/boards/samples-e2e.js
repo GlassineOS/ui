@@ -52,6 +52,44 @@ async function main() {
     assert.strictEqual(thrown.line, 15);
   });
 
+  await test('no network: requests elsewhere fail the board, Google Fonts come from the vendored fonts', async () => {
+    const rep = await checkDesign({ design: path.join(__dirname, 'offline'), interleaf: INTERLEAF });
+    const b = rep.boards[0];
+    assert.strictEqual(b.ok, false);
+    assert.deepStrictEqual(b.external.map((e) => e.error).sort(), ['blocked: no network in renders', 'font family not vendored: Nope Sans']);
+    assert.ok(b.external.some((e) => e.url === 'https://example.org/site.css'));
+    const srv2 = await startServer({ design: path.join(__dirname, 'offline'), interleaf: INTERLEAF, live: false });
+    const br = await openBrowser({});
+    try {
+      const { vendoredFaces } = require(path.join(ROOT, 'boards/lib/references.js'));
+      const r = await renderBoard(br, srv2.url, 'Net.dc.html', { width: 200, height: 60, keepPage: true, faces: vendoredFaces(srv2.url, srv2.interleaf, srv2.design, null) });
+      const loaded = await r.page.evaluate(async () => { await document.fonts.ready; return document.fonts.check('16px Kalam') && Array.from(document.fonts).some((f) => f.family === 'Kalam' && f.status === 'loaded'); });
+      await r.page.close();
+      assert.ok(loaded, 'Kalam loaded from the vendored fonts');
+    } finally { await br.close(); await srv2.close(); }
+  });
+
+  await test('references: the sample boards match, a change is a difference with an image', async () => {
+    const fs = require('fs');
+    const R = require(path.join(ROOT, 'boards/lib/references.js'));
+    const out = path.join(ROOT, 'out', 'test', 'boards-references');
+    fs.rmSync(out, { recursive: true, force: true });
+    let rep = await R.shootDesign({ design: path.join(ROOT, 'boards/samples'), interleaf: INTERLEAF, out: out, boards: ['sub/Badge.dc.html'] });
+    assert.deepStrictEqual([rep.summary.cases, rep.summary.pass, rep.summary.ok], [1, 1, true], JSON.stringify(rep.cases));
+    // another board's references as this one's: every pixel compared, the difference drawn
+    const refs = path.join(out, 'refs');
+    fs.mkdirSync(refs, { recursive: true });
+    const src = path.join(ROOT, 'boards/samples/references');
+    const idx = JSON.parse(fs.readFileSync(path.join(src, 'index.json'), 'utf8'));
+    const card = idx.cases['Card.dc.html/280x120/own'];
+    fs.copyFileSync(path.join(src, card.file), path.join(refs, card.file));
+    fs.writeFileSync(path.join(refs, 'index.json'), JSON.stringify(Object.assign({}, idx, { cases: { 'sub/Badge.dc.html/160x40/own': card } })));
+    rep = await R.shootDesign({ design: path.join(ROOT, 'boards/samples'), interleaf: INTERLEAF, out: out, refs: refs, boards: ['sub/Badge.dc.html'] });
+    const c = rep.cases[0];
+    assert.deepStrictEqual([c.status, rep.summary.ok, c.referenceSize], ['differs', false, { width: 280, height: 120 }]);
+    assert.ok(c.differing > 0 && fs.existsSync(path.resolve(c.diff)), JSON.stringify(c));
+  });
+
   const srv = await startServer({ design: path.join(ROOT, 'boards/samples'), interleaf: INTERLEAF, live: true });
   const browser = await openBrowser({});
   try {

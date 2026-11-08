@@ -36,6 +36,8 @@ make contrast-test       # its self-test and the known failures it must catch (C
 make generate            # write the generated forms (tools/gen-interleaf, then tools/gen-voices)
 make reference           # the Interleaf reference in out/reference/ (see "Reference")
 make serve-reference     # build it and serve it on http://127.0.0.1:8000/
+make references          # rendered images against their references (Chromium; see "References")
+make references-update   # write them after an intended change: tools/in-alpine make references-update
 ```
 
 Needs cairo, pango, librsvg, glib (dev), python3, PyGObject (Gtk 3, Pango), pycairo, and node 24 or later
@@ -44,9 +46,11 @@ Needs cairo, pango, librsvg, glib (dev), python3, PyGObject (Gtk 3, Pango), pyca
 CI runs `make check` on main. On a pull request, `tools/ci-scope` reads the changed paths: when
 none of them can reach the library (`src/`, `python/`, `voices/`, the build files, the library
 tests), it runs `make check-forms` alone. A token change that reaches the library rewrites
-`voices/voices.json`, so it always gets the full run. The boards job runs `make check-boards` and
-`make boards-check` on every change, the contrast job `make contrast-check contrast-test` (its
-report, `out/contrast.json`, is kept as the run's artifact).
+`voices/voices.json`, so it always gets the full run. The boards job runs `make check-boards`,
+`make boards-check` and `make references` on every change, in Alpine with the pinned Chromium and
+without network; when it fails, the reports and the images of the differences are uploaded as the
+`references` artifact. The contrast job runs `make contrast-check contrast-test` (its report,
+`out/contrast.json`, is kept as the run's artifact).
 
 `make check` runs:
 
@@ -73,7 +77,9 @@ report, `out/contrast.json`, is kept as the run's artifact).
 - `test/contrast/*.test.js` (node): the contrast check's arithmetic (WCAG ratios and targets, the
   PNG decoder, the worst colour beneath, the focus-ring measure). See "Contrast check".
 - `test/boards/*.test.js` (node): the board reader (holes, attributes, props, the subset checks, the
-  renderer without a DOM), the preview server and the import tool. See "Boards".
+  renderer without a DOM), the preview server and the import tool (see "Boards"), and the
+  reference checks without a browser: PNG, the comparison, the store and the report (see
+  "References").
 - `test/sheet.sh`: the sample sheet (every box, rule, text style and an icon in the three voices) drawn
   by the C library and by the Python module, compared cell by cell in every colour channel (one grey
   step = 255/15). The known differences are listed in `test/compare.py` with their cause (see "Where C
@@ -94,6 +100,7 @@ three schemes (Paper, Night, E-ink), with three pens. `interleaf/` holds it:
 | `interleaf/tokens.json` | the tokens: `color` (the themes and a value per theme), `type` (families, type styles per voice), `spacing`, `radius`, `shadow` (a value per theme), `layout`, `stroke`; each with its `usage` |
 | `interleaf/README.md` | the guidelines: the three layers, themes, colour rules, accessibility targets, type, edges |
 | `interleaf/components/bundle.css` | the component styles (`.il-*`); they read the tokens' variables and the voice from the theme id's prefix |
+| `interleaf/fonts/` | the text fonts, vendored (woff2, `fonts.css`, each licence; see "Fonts") |
 | `interleaf/components/NAME/` | a component's guidelines (`README.md`; `Cover` has none yet) and live preview (`preview.html`, its first line the card marker `@dsCard`: group, height, subtitle) |
 
 A theme is a voice and a scheme: `white-paper`, `white-night`, `editorial-paper`, `editorial-night`,
@@ -148,6 +155,7 @@ the hub, the design boards):
 | `web/tokens.css` | the tokens as CSS custom properties: colours and shadows per theme, the pen selection, then spacing, radius, layout, stroke, the greys and the font families (`--font-plex`, ...) on `:root`, and a class per type style (`.il-type-display`, `.il-type-ed-body`, ...) |
 | `web/bundle.css` | the component styles, as `interleaf/components/bundle.css` |
 | `web/combinations.json` | the 27 combinations: `voice`, `scheme`, `pen` and the `attributes` that select each |
+| `web/fonts/` | the fonts, as `interleaf/fonts/` (`fonts.css`, the woff2 files, their licences) |
 
 Load `tokens.css`, then `bundle.css`. Two attributes choose the look:
 
@@ -163,8 +171,33 @@ Load `tokens.css`, then `bundle.css`. Two attributes choose the look:
   ancestors have. A `data-pen` on an element with no `data-theme` does nothing. On e-ink the three
   pens are the same greys.
 
-Without either attribute a page gets `white-paper` and pen 1. The fonts are loaded as the component
-styles do it (an `@import` of Google Fonts at the top of `bundle.css`).
+Without either attribute a page gets `white-paper` and pen 1. The fonts come with it: `bundle.css`
+imports `web/fonts/fonts.css` (one `@font-face` per file), so a page that loads the web form loads
+nothing from another site. Serve `web/` as a whole.
+
+### Fonts
+
+`interleaf/fonts/` holds the text fonts the component styles use, as woff2, each family with its
+licence (`OFL.txt`, SIL Open Font License 1.1): IBM Plex Sans and IBM Plex Mono (White), Source Serif
+4 (Editorial), EB Garamond (Stationery), Kalam (White's hand). `tools/fetch-fonts` writes them.
+
+- **IBM Plex** reserves the font name "Plex", and the OFL forbids that name on a modified version, so
+  these files are IBM's web builds, byte for byte: `fonts/complete/woff2/` of the npm releases
+  `@ibm/plex-sans` 1.1.0 and `@ibm/plex-mono` 2.5.0, with the licence from the same release, each
+  checked by sha256. They are never cut or converted; `make check-forms` compares them with the
+  release's checksums.
+- **The other three** have no reserved name. They come from a pinned google/fonts commit (checked by
+  sha256), cut to what the styles use: the weights and styles (variable fonts to that weight range),
+  the Latin letters with their extensions, punctuation, arrows and symbols, and every OpenType feature
+  (small caps). `tools/fetch-fonts` refuses to cut a family whose licence reserves a name.
+
+The output is the same on every run. Characters a font lacks come from the system's fallback fonts.
+`tools/gen-interleaf` copies the folder to `web/fonts/`, and `make check-forms` fails when the copy
+differs.
+
+Changing the fonts: edit the list in `tools/fetch-fonts`, run `tools/in-alpine tools/fetch-fonts`
+(fontTools and brotli are in that image) and `make generate`, then regenerate the references
+(README "References").
 
 ### Reference
 
@@ -215,8 +248,7 @@ headless Chromium, and measures it against the guidelines' targets (WCAG 2.2 AA)
   their cases are `info`, never failures.
 - **E-ink** is measured on the token values as rendered; how the display engine turns them into
   panel levels is not part of the check.
-- Requests that leave the local server are blocked, so web fonts fall back; contrast does not depend
-  on the font family.
+- Requests that leave the local server are blocked; the web form's fonts are local.
 
 The report (`--json FILE`) has one case per measurement: `result` (`pass`, `fail`, `open`, `info`),
 `ratio`, `target`, `fg` and `bg` (the worst pair), `kind` (`text`, `generated`, `focus-ring`),
@@ -412,8 +444,9 @@ the line and the feature, and the check reports it as `unsupported`.
 ```
 tools/boards preview DESIGN_DIR [--port 4790] [--host 127.0.0.1] [--allow-host NAME]... [--interleaf DIR]
 tools/boards check   DESIGN_DIR [--interleaf DIR] [--json out/boards-check.json|-] [--board FILE]...
+tools/boards references DESIGN_DIR [--update] [--refs DIR] [--out DIR] [--json FILE|-] [--board FILE]... [--allow-empty]
 tools/boards import  CANVAS_EXPORT_DIR DEST_DIR [--force]
-tools/in-alpine CMD...      # CMD in alpine:3.24 with Chromium and node, as the calling user
+tools/in-alpine CMD...      # CMD in alpine:3.24 with the pinned Chromium and node, as the calling user
 ```
 
 - `preview` serves the design folder at `/` and the canvas at `/_boards/`: the pages of `canvas.json`
@@ -435,9 +468,10 @@ tools/in-alpine CMD...      # CMD in alpine:3.24 with Chromium and node, as the 
 - `check` renders every board of the folder in headless Chromium at its canvas size (else its
   `$preview` size) and writes a JSON report (`--json -` for stdout) and a summary: per board the render,
   script and load errors (`errors`), the features outside the subset (`unsupported`), console errors
-  and uncaught exceptions (`console`), failed requests to the preview (`requests`) and to other sites
-  (`external`, such as fonts: listed, not failures). It exits 1 when a board fails or a board on the
-  canvas is missing. It needs Chromium and `puppeteer-core` (`npm ci`; the version is pinned in
+  and uncaught exceptions (`console`), failed requests to the preview (`requests`) and requests to
+  other sites (`external`). Boards render without network (see "References"), so every request to
+  another site is refused and fails the board, except a Google Fonts stylesheet for a vendored family.
+  It exits 1 when a board fails or a board on the canvas is missing. It needs Chromium and `puppeteer-core` (`npm ci`; the version is pinned in
   `package.json` and `package-lock.json`); `tools/in-alpine tools/boards check …` provides both.
   Chromium runs with its sandbox, except as root or in a container, where it can't start
   (`BOARDS_NO_SANDBOX=1` turns it off elsewhere).
@@ -461,7 +495,13 @@ in `test/boards/unsupported/` failing with the right features); CI runs it in Al
 Code: `boards/runtime/` (the reader `template.js`, shared with node; the browser runtime
 `runtime.js`; Preact 10.29.8 under `vendor/`, MIT), `boards/lib/` (`server.js`, `import.js`,
 `browser.js`: open Chromium, render one board and collect its errors, keeping the page open for
-callers that take screenshots; `check.js`), `boards/preview/` (the canvas and the board view).
+callers that take screenshots, `isolate()` (no network, Google Fonts from the vendored fonts) and
+`steady()` (no motion, fonts loaded) for any page; `check.js`; `png.js`: PNG and the pixel
+comparison; `references.js`: the reference store, the runner and the board references;
+`previews.js`: the component previews), `boards/preview/` (the canvas and the board view).
+
+- `references` renders every board at its declared sizes in the combinations the design folder lists
+  and compares each with its reference image (see "References"); `--update` writes the references.
 
 ### From another repository
 
@@ -477,7 +517,125 @@ boards-preview: | $(UI)
 	$(UI)/tools/boards preview design
 boards-check: | $(UI)
 	$(UI)/tools/in-alpine $(UI)/tools/boards check design
+boards-references: | $(UI)
+	$(UI)/tools/in-alpine $(UI)/tools/boards references design
+boards-references-update: | $(UI)
+	$(UI)/tools/in-alpine $(UI)/tools/boards references design --update
 ```
+
+The references live in that repository (`design/references/`, set by `design/references.json`), not
+here; a new ui version that changes pixels (Interleaf, the runtime, the pinned Chromium) shows up as
+differences there, and the repository updates its references when it moves its pin.
+
+## References
+
+Contract: references, version 1 (the store's `index.json` `"contract"`, and the report's).
+
+Rendered images compared with stored ones, for Interleaf's components (002 FR-022, FR-023) and for
+design boards (003 FR-011, FR-012):
+
+```
+make references              # both, below; tools/in-alpine make references for the pinned Chromium
+make previews-check          # tools/previews: every component, 27 combinations, desktop and phone
+make boards-references       # tools/boards references boards/samples
+make references-update       # write all of them (previews-update, boards-references-update)
+tools/previews [--update] [--component NAME]... [--width desktop|phone]... [--combination THEME-PEN]...
+               [--refs DIR] [--out DIR] [--json FILE|-] [--jobs N]
+```
+
+- **Components:** each `interleaf/components/NAME/preview.html`, with the web form loaded as a page
+  that uses it does (`web/tokens.css`, `web/bundle.css`, and through it `web/fonts/`) and the
+  combination's `data-theme` and `data-pen` on `<html>`, in all 27 combinations
+  (`web/combinations.json`), at desktop width (1280px) and phone width (390px): 702 cases. A
+  render is as tall as its content. References: `test/references/components/`.
+- **Boards:** every board of a design folder at its declared size (the canvas size, else its
+  `$preview` size), in the combinations the folder lists in `references.json` (default: one per board,
+  the board's own props). References: `references/` in the design folder. In this repository the
+  samples (`boards/samples/`) are the test corpus.
+
+  ```json
+  {
+   "references": "references",
+   "combinations": ["own"],
+   "fonts": "fonts/fonts.css",
+   "boards": {
+    "Main.dc.html": { "combinations": ["own", "stationery-eink-1", "all"], "sizes": [{ "width": 390, "height": 760 }] },
+    "Wip.dc.html": { "skip": true }
+   }
+  }
+  ```
+
+  A combination is `"own"` (the board's own props), `"all"` (the 27), a name from the web form
+  (`VOICE-SCHEME-PEN`: `white-paper-1` … `stationery-eink-3`; it sets the board's `voice` or `theme`,
+  `scheme` and `pen` props as the preview's picker does) or `{"name", "voice", "scheme", "pen",
+  "props"}`. `fonts` names more vendored fonts (`@font-face` rules, URLs relative to that file), for
+  families Interleaf does not ship (an icon font, for one).
+- **No network.** A render may load only from the local server (and `data:`, `blob:`); every other
+  request is refused and is an error of that case. A Google Fonts stylesheet is answered from the
+  vendored fonts (Interleaf's, and the design's `fonts`), since boards from claude.ai link them; a
+  family that is not vendored is an error naming it. A web font that fails to load is an error. CI
+  runs these checks in a container without network.
+- **Steady renders.** Reduced motion, animations and transitions at their end, no caret, focus
+  dropped, device scale 1, Chromium's font hinting off, one raster thread and no CPU-specific Skia
+  paths. Before the screenshot: every font and image loaded, none of the page's timers of up to 10 s
+  pending (a board that fills itself in after a delay), and no change to the document for 250 ms,
+  waiting at most 10 s. Each worker has its own browser with one tab: a tab that is not in front may
+  get no frames, and its screenshot then never returns.
+- **The report** (`out/references/components/report.json`, `out/references/boards/report.json`, or
+  `--json`): per case its `status` (`pass`, `differs`, `no reference`, `bad reference`, `error`, or `updated` with
+  `--update`), `differing` (pixels), `maxDelta` (the largest channel difference), `box` (where the
+  differences are), the `reference`, the `actual` render and the `diff` image (paths, the last two
+  below `out/references/` for failing cases), and `errors` (load and script errors, refused requests,
+  fonts); a `summary` with `ok`; `stale`: references of cases that no longer exist (a full run only;
+  `--update` removes them); `chromium`: the version of the references and the running one. The diff
+  image shows the reference faded, the differing pixels red, and an area only one image has blue.
+  The command exits 1 unless every case passes.
+- **The store:** `index.json` (`contract`, `kind`, `chromium`, `tolerance`, and per case the file and
+  its size) and the PNGs, each named by a hash of its pixels, so identical renders are stored once
+  (the three pens of an E-ink scheme, for one). The PNGs are lossless and written small (greyscale or
+  a palette where the colours allow, the best filter per row); `boards/lib/png.js` reads and writes
+  them, no npm package. The components' 702 cases are 412 images, 7.5 MB.
+- **Tolerance: none.** A pixel differs when any colour channel differs at all (threshold 0), and a
+  case fails at one differing pixel. With the fonts vendored, the Chromium version pinned, the
+  same fonts for fallback (DejaVu in Alpine), software rendering and device scale 1, renders are
+  pixel-identical run to run. Measured on Chromium 156.0.8078.79 with six renders in parallel: all
+  702 component cases, the 11 sample boards, and a second run against the first over the 65 boards
+  of the hub's canvas and the 123 of the shell's matched exactly (the shell's with Material Symbols
+  supplied through `fonts`). A tolerance would hide what these checks are
+  for: a one-step grey change of an E-ink token moves a channel by 17, a token's hex typo by 1. If a
+  case ever turns out unstable, fix the cause (an animation, a timer, a font) rather than widening
+  the threshold.
+- **Chromium is part of the contract.** References are valid for one Chromium build: the version in
+  `tools/chromium.pin`, Alpine 3.24's package (`chromium=156.0.8078.79-r0`), installed by
+  `tools/in-alpine` and by CI. A run with another version reports `chromiumMismatch` and fails, even
+  when the pixels agree. Alpine updates Chromium in 3.24 every few weeks and drops the old package;
+  then `tools/in-alpine` and CI fail to install the pin. Bumping it: set the new version in
+  `tools/chromium.pin`, run `tools/in-alpine make references-update` (and the same in each
+  repository with board references when it moves to this ui version), look at what changed, and
+  commit the pin and the references together.
+- **The text packages are recorded, not pinned.** Alpine's Chromium draws text with the system's
+  freetype, harfbuzz and fontconfig, and falls back to font-dejavu and font-opensans. These float
+  within 3.24, and old versions disappear from the mirrors, so a pin would break CI on its own. The
+  store records their versions (`libraries` in `index.json`) and the report gives both (`libraries`:
+  `references`, `running`, `differ`). A difference alone is no failure: pixels decide. When a run
+  fails and the versions differ, the report sets `summary.librariesDiffer` and the summary names each
+  package, so a failure in many cases explains itself; regenerate with the command below after
+  looking at the differences. `tools/in-alpine` names its image after the pin and a hash of what
+  Alpine ships today, so a cached image can't stand in for what CI installs; without network it
+  uses the newest local image of the pin and says so.
+- **A check that compares nothing fails:** an unknown `--board` or `--component` is an error, and no
+  cases at all (a design folder with no boards, or every board `skip`) is a failure unless
+  `--allow-empty` says it is intended.
+- **Damaged stores:** a reference that can't be read is that case's failure (`bad reference`), and
+  `--update` writes it again; an `index.json` that can't be read is reported (`storeError`), and
+  `--update` writes a new one. PNGs that no case names are reported as `orphans` and fail the check.
+  An update where a render fails while the Chromium or the text packages changed writes nothing
+  (`summary.written` is false), so a store never mixes two sets.
+- **Regenerating after an intended change** (a token, a component style, a font, a preview): one
+  command, `tools/in-alpine make references-update`, then review the changed images
+  (`git status test/references boards/samples/references`) and commit them with the change.
+  `--component`, `--width`, `--combination` and `--board` narrow a run; a narrowed update keeps the
+  other references. A full component run takes two to three minutes.
 
 ## Licence
 

@@ -43,12 +43,27 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
-      - name: design boards in headless Chromium on Alpine
+      # Chromium as pinned in tools/chromium.pin (the references' contract), and the npm dev
+      # dependencies; the checks themselves run without network
+      - name: Alpine with the pinned Chromium
         run: |
-          docker run --rm -v "$PWD":/src -w /src -e CHROMIUM=/usr/bin/chromium-browser alpine:3.24 sh -euc '
-            apk add -q chromium nodejs npm font-dejavu make
-            npm ci --ignore-scripts --no-audit --no-fund
-            make check-boards boards-check'
+          docker build -t boards --build-arg CHROMIUM="$(cat tools/chromium.pin)" - <<'EOF'
+          FROM alpine:3.24
+          ARG CHROMIUM
+          RUN apk add --no-cache "chromium=$CHROMIUM" nodejs npm font-dejavu make
+          EOF
+          docker run --rm -v "$PWD":/src -w /src boards npm ci --ignore-scripts --no-audit --no-fund
+      - name: design boards and references in headless Chromium, no network
+        run: |
+          docker run --rm --network none -v "$PWD":/src -w /src -e CHROMIUM=/usr/bin/chromium-browser boards \
+            make -k check-boards boards-check references
+      - name: the differences
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: references
+          path: out/references/
+          if-no-files-found: ignore
   contrast:
     runs-on: ubuntu-24.04
     steps:

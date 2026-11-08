@@ -3,7 +3,9 @@
 // tools/boards: design boards (spec 003).
 //   boards preview DESIGN_DIR [--port N] [--host H] [--allow-host NAME]... [--interleaf DIR]
 //   boards check   DESIGN_DIR [--interleaf DIR] [--json FILE|-] [--board FILE]... [--jobs N]
-//                  [--timeout MS] [--chromium PATH]
+//                  [--timeout MS] [--chromium PATH] [--allow-empty]
+//   boards references DESIGN_DIR [--update] [--refs DIR] [--out DIR] [--json FILE|-] [--board FILE]...
+//                  [--interleaf DIR] [--jobs N] [--timeout MS] [--chromium PATH] [--allow-empty]
 //   boards import  CANVAS_EXPORT_DIR DEST_DIR [--force]
 //   boards version
 'use strict';
@@ -14,7 +16,9 @@ const LIB = path.join(__dirname, '..', 'boards', 'lib');
 function usage(code) {
   process.stderr.write([
     'usage: boards preview DESIGN_DIR [--port N] [--host H] [--allow-host NAME]... [--interleaf DIR]',
-    '       boards check DESIGN_DIR [--interleaf DIR] [--json FILE|-] [--board FILE]... [--jobs N] [--timeout MS] [--chromium PATH]',
+    '       boards check DESIGN_DIR [--interleaf DIR] [--json FILE|-] [--board FILE]... [--jobs N] [--timeout MS] [--chromium PATH] [--allow-empty]',
+    '       boards references DESIGN_DIR [--update] [--refs DIR] [--out DIR] [--json FILE|-] [--board FILE]... [--interleaf DIR]',
+    '                 [--jobs N] [--timeout MS] [--chromium PATH] [--allow-empty]',
     '       boards import CANVAS_EXPORT_DIR DEST_DIR [--force]',
     '       boards version',
     '',
@@ -39,6 +43,15 @@ function parse(argv, spec) {
   return { pos: pos, opt: opt };
 }
 
+// the JSON report to FILE (or stdout for "-") and the summary; exit 1 unless every case passed
+function writeReport(rep, out, text) {
+  const json = JSON.stringify(rep, null, 1) + '\n';
+  if (out === '-') process.stdout.write(json);
+  else { fs.mkdirSync(path.dirname(path.resolve(out)), { recursive: true }); fs.writeFileSync(out, json); }
+  process[out === '-' ? 'stderr' : 'stdout'].write(text + '\n' + (out === '-' ? '' : '  report: ' + out + '\n'));
+  return rep.summary.ok ? 0 : 1;
+}
+
 async function main() {
   const cmd = process.argv[2];
   const rest = process.argv.slice(3);
@@ -57,17 +70,26 @@ async function main() {
     await new Promise(function () {});
   }
   if (cmd === 'check') {
-    const { pos, opt } = parse(rest, { interleaf: 'value', json: 'value', board: 'list', jobs: 'value', timeout: 'value', chromium: 'value' });
+    const { pos, opt } = parse(rest, { interleaf: 'value', json: 'value', board: 'list', jobs: 'value', timeout: 'value', chromium: 'value', 'allow-empty': 'flag' });
     if (pos.length !== 1) usage(2);
     const { checkDesign, textSummary } = require(path.join(LIB, 'check.js'));
     const rep = await checkDesign({ design: pos[0], interleaf: opt.interleaf, boards: opt.board, jobs: opt.jobs ? Number(opt.jobs) : 4,
-      timeout: opt.timeout ? Number(opt.timeout) : 30000, chromium: opt.chromium });
+      timeout: opt.timeout ? Number(opt.timeout) : 30000, chromium: opt.chromium, allowEmpty: opt['allow-empty'] });
     const json = JSON.stringify(rep, null, 1) + '\n';
     const out = opt.json || path.join('out', 'boards-check.json');
     if (out === '-') process.stdout.write(json);
     else { fs.mkdirSync(path.dirname(path.resolve(out)), { recursive: true }); fs.writeFileSync(out, json); }
     process[out === '-' ? 'stderr' : 'stdout'].write(textSummary(rep) + '\n' + (out === '-' ? '' : '  report: ' + out + '\n'));
     return rep.summary.failing || rep.summary.missing ? 1 : 0;
+  }
+  if (cmd === 'references') {
+    const { pos, opt } = parse(rest, { update: 'flag', refs: 'value', out: 'value', json: 'value', board: 'list', interleaf: 'value', jobs: 'value',
+      timeout: 'value', chromium: 'value', 'allow-empty': 'flag' });
+    if (pos.length !== 1) usage(2);
+    const R = require(path.join(LIB, 'references.js'));
+    const rep = await R.shootDesign({ design: pos[0], interleaf: opt.interleaf, refs: opt.refs, out: opt.out, update: opt.update, boards: opt.board,
+      jobs: opt.jobs ? Number(opt.jobs) : 4, timeout: opt.timeout ? Number(opt.timeout) : 30000, chromium: opt.chromium, allowEmpty: opt['allow-empty'] });
+    return writeReport(rep, opt.json || path.join(rep.out, 'report.json'), R.textSummary(rep, 'boards references (' + rep.design + ')'));
   }
   if (cmd === 'import') {
     const { pos, opt } = parse(rest, { force: 'flag' });

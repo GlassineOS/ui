@@ -5,7 +5,8 @@
 //   **/support.js          the runtime (vendored Preact + template.js + runtime.js), in place of the
 //                          file claude.ai serves there
 //   **/ds/interleaf/**     Interleaf from this checkout (or --interleaf), never a copy in the design
-//   /_boards/              the canvas index, the board view, the canvas API, live-reload events
+//   /_boards/              the canvas index, the board view, the canvas API, live-reload events,
+//                          Interleaf's fonts (/_boards/fonts/)
 'use strict';
 const fs = require('fs');
 const http = require('http');
@@ -178,6 +179,8 @@ function startServer(opts) {
       return;
     }
     if (p === '/_boards/' || p === '/_boards/index.html') return sendFile(res, path.join(PREVIEW_DIR, 'index.html'));
+    // Interleaf's vendored fonts, for the Google Fonts stylesheets the checks answer locally
+    if (p.startsWith('/_boards/fonts/')) return sendFile(res, within(path.join(interleaf, 'fonts'), p.slice('/_boards/fonts/'.length)));
     if (p.startsWith('/_boards/')) return sendFile(res, within(PREVIEW_DIR, p.slice('/_boards/'.length)));
     if (/(^|\/)support\.js$/.test(p)) {
       res.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8', 'cache-control': 'no-cache' });
@@ -235,4 +238,4 @@ function startServer(opts) {
   });
 }
 
-module.exports = { startServer: startServer, describe: describe, listBoards: listBoards, runtimeSource: runtimeSource, UI_ROOT: UI_ROOT };
+module.exports = { startServer: startServer, describe: describe, listBoards: listBoards, runtimeSource: runtimeSource, within: within, sendFile: sendFile, MIME: MIME, UI_ROOT: UI_ROOT };

@@ -1,0 +1,6 @@
+{
+ "combinations": ["own"],
+ "boards": {
+  "Main.dc.html": { "combinations": ["own", "editorial-night-2", "stationery-eink-1"], "sizes": [{ "width": 900, "height": 760 }, { "width": 390, "height": 760 }] }
+ }
+}

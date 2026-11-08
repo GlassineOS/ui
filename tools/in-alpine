@@ -1,26 +1,48 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-2.0-or-later
-# tools/in-alpine CMD [ARG]...: run CMD in alpine:3.24 with Chromium and node (the boards checks need
-# a browser; CI runs the same). This checkout and the current directory are mounted at their own
-# paths, the command runs as the calling user, and the npm dev dependencies are installed into this
-# checkout's node_modules/ (npm ci) when missing.
+# tools/in-alpine CMD [ARG]...: run CMD in alpine:3.24 with Chromium and node (the boards checks and
+# the references need a browser; CI runs the same). Chromium is the version in tools/chromium.pin,
+# part of the references' contract (README "References"). This checkout and the current directory
+# are mounted at their own paths, the command runs as the calling user (files it writes are
+# theirs), and the npm dev dependencies are installed into this checkout's node_modules/ (npm ci)
+# when missing.
 set -eu
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
-IMAGE=${BOARDS_IMAGE:-glassine-ui-boards:alpine-3.24}
+PIN=$(cat "$ROOT/tools/chromium.pin")
+# The image is named after the Chromium pin and what Alpine ships today of the packages text is
+# drawn with (they float within a release, see README "References"), so a cached image can't pass
+# for what CI installs. Without network: the newest local image of this pin, with a warning.
+REPO=glassine-ui-boards
+BASE=alpine-3.24-chromium-$PIN
+TEXT=$(docker run --rm alpine:3.24 sh -c 'apk update -q >/dev/null 2>&1 && apk list freetype harfbuzz fontconfig font-dejavu font-opensans 2>/dev/null' | awk '{print $1}' | sort || true)
+if [ -n "$TEXT" ]; then
+	TAG=$BASE-text-$(printf '%s\n' "$TEXT" | sha256sum | cut -c1-12)
+elif LOCAL=$(docker image ls --format '{{.Tag}}' "$REPO" | grep "^$BASE-text-" | head -n 1) && [ -n "$LOCAL" ]; then
+	TAG=$LOCAL
+	echo "in-alpine: no network: using $REPO:$TAG, whose text packages may differ from CI's" >&2
+else
+	echo "in-alpine: no image for chromium $PIN and no network to build one" >&2
+	exit 1
+fi
+IMAGE=${BOARDS_IMAGE:-$REPO:$TAG}
 if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
-	docker build -q -t "$IMAGE" - >/dev/null <<'DOCKERFILE'
+	docker build -q --build-arg "CHROMIUM=$PIN" -t "$IMAGE" - >/dev/null <<'DOCKERFILE' || {
 FROM alpine:3.24
-RUN apk add --no-cache chromium nodejs npm su-exec font-dejavu make python3
+ARG CHROMIUM
+RUN apk add --no-cache "chromium=$CHROMIUM" nodejs npm font-dejavu make python3 py3-fonttools py3-brotli
 DOCKERFILE
+		echo "in-alpine: could not build $IMAGE; if Alpine 3.24 no longer has chromium $PIN, see README \"References\" (bumping the pin)" >&2
+		exit 1
+	}
 fi
 mounts="-v $ROOT:$ROOT"
 case "$PWD/" in "$ROOT"/*) ;; *) mounts="$mounts -v $PWD:$PWD" ;; esac
 tty=; [ -t 0 ] && [ -t 1 ] && tty=-t
 # shellcheck disable=SC2086
-exec docker run --rm -i $tty $mounts -w "$PWD" -e HOME=/tmp/home -e CHROMIUM=/usr/bin/chromium-browser -e BOARDS_NO_SANDBOX=1 \
-	-e BOARDS_UID="$(id -u)" -e BOARDS_GID="$(id -g)" -e BOARDS_ROOT="$ROOT" "$IMAGE" sh -euc '
-	mkdir -p /tmp/home && chown "$BOARDS_UID:$BOARDS_GID" /tmp/home
-	[ -x /usr/bin/chromium-browser ] || export CHROMIUM=/usr/bin/chromium
-	exec su-exec "$BOARDS_UID:$BOARDS_GID" sh -euc "export HOME=/tmp/home npm_config_cache=/tmp/home/.npm
-		[ -d \"\$BOARDS_ROOT/node_modules/puppeteer-core\" ] || (cd \"\$BOARDS_ROOT\" && npm ci --ignore-scripts --no-audit --no-fund >&2)
-		exec \"\$@\"" sh "$@"' sh "$@"
+exec docker run --rm -i $tty $mounts -w "$PWD" --user "$(id -u):$(id -g)" \
+	-e HOME=/tmp/home -e npm_config_cache=/tmp/home/.npm -e CHROMIUM=/usr/bin/chromium-browser -e BOARDS_NO_SANDBOX=1 \
+	-e BOARDS_ROOT="$ROOT" "$IMAGE" sh -euc '
+	mkdir -p "$HOME"
+	[ -x "$CHROMIUM" ] || export CHROMIUM=/usr/bin/chromium
+	[ "$BOARDS_ROOT/node_modules/.package-lock.json" -nt "$BOARDS_ROOT/package-lock.json" ] || (cd "$BOARDS_ROOT" && npm ci --ignore-scripts --no-audit --no-fund >&2)
+	exec "$@"' sh "$@"

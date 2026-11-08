@@ -7,6 +7,9 @@
 #                        (tools/ladder), the library builds, the tests pass:
 #                        check-forms (python3 alone, seconds), check-lib, check-boards (node)
 #   make boards-check    the design-board samples in headless Chromium (in Alpine: tools/in-alpine)
+#   make references      the component previews and the sample boards against their references
+#                        (Chromium as pinned in tools/chromium.pin: tools/in-alpine make references)
+#   make references-update   write those references (after a change that is meant to change pixels)
 #   make contrast-check  the contrast check of every component (Chromium; tools/in-alpine)
 #   make contrast-test   the contrast check's self-test and the known failures it must catch
 #   make reference       the browsable Interleaf reference (tools/gen-reference) in out/reference/
@@ -98,6 +101,19 @@ boards-check:
 	tools/boards check boards/samples $(if $(BOARDS_INTERLEAF),--interleaf $(BOARDS_INTERLEAF)) --json $(O)/boards-check.json
 	$(NODE) test/boards/samples-e2e.js
 
+# reference images (README "References"): the component previews (002 FR-022) and the sample
+# boards (003 FR-011); reports and the images of differences in out/references/
+references: previews-check boards-references
+references-update: previews-update boards-references-update
+previews-check:
+	tools/previews
+previews-update:
+	tools/previews --update
+boards-references:
+	tools/boards references boards/samples $(if $(BOARDS_INTERLEAF),--interleaf $(BOARDS_INTERLEAF))
+boards-references-update:
+	tools/boards references boards/samples --update $(if $(BOARDS_INTERLEAF),--interleaf $(BOARDS_INTERLEAF))
+
 # the contrast check (spec 002 FR-020): every component in all 27 combinations, desktop and phone
 # width, hover, focus, current and open states, against WCAG 2.2 AA (needs Chromium: tools/in-alpine).
 # Known open failures are listed in test/contrast/open.json, the least cases per page in
@@ -125,5 +141,7 @@ clean:
 	rm -f $(O)/libglassine-ui.so* $(O)/glassine-ui.pc $(O)/pc.vars
 	rm -rf $(O)/test $(O)/reference
 
-.PHONY: all generate install check check-forms check-lib check-boards boards-check contrast-check contrast-test reference serve-reference clean FORCE
+.PHONY: all generate install check check-forms check-lib check-boards boards-check references references-update \
+	previews-check previews-update boards-references boards-references-update contrast-check contrast-test reference \
+	serve-reference clean FORCE
 FORCE:

@@ -1,7 +1,8 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-2.0-or-later
 # tools/fetch-design-prs OUT: the files under designs/ of every open pull request of this repository
-# (none from a fork: their boards would run on the published site) that changes designs/, at its
+# (none from a fork: their boards' JavaScript would run on the organization's github.io origin,
+# which only people with write access to this repository may put there) that changes designs/, at its
 # head: OUT/N/designs/ and OUT/N/pr.json ({number, title, url, head}). Only files are written; nothing
 # of the pull request runs. Needs gh (GH_TOKEN), jq, git with this repository as origin, and
 # GITHUB_REPOSITORY (OWNER/NAME). Prints the numbers fetched, one per line.

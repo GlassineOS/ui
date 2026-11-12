@@ -4,9 +4,14 @@ name: reference
 # The boards of each open pull request of this repository that changes designs/ are part of the same
 # build: design-pr.yml starts this workflow on main whenever such a pull request opens, changes or
 # closes. This run reads the pull requests' designs/ files as data (tools/fetch-design-prs) and
-# exports them with main's tools; nothing of a pull request runs here. Pull requests from forks are
-# left out (their boards would run on the site). After the deployment, each published pull request
-# gets one comment with its link, edited in place on every publish.
+# exports them with main's tools; nothing of a pull request runs here. After the deployment, each
+# published pull request gets one comment with its link, edited in place on every publish.
+# The origin: a published pull request's boards run their JavaScript in the visitor's browser on the
+# organization's github.io origin, beside the reference and every other page there. That is
+# acceptable only because a pull request from this repository comes from someone who already has
+# write access to it (and so to this site). Pull requests from forks are therefore never published
+# (tools/fetch-design-prs); do not relax that rule. The site loads nothing from another site: the
+# boards' Google Fonts links name the vendored faces (tools/boards export).
 # Pull requests build the reference in make check-forms (test/test_reference.py).
 # Pages must use "GitHub Actions" as its source (Settings > Pages > Build and deployment).
 # A deployment that hangs does not recover when re-run from the same commit; a new commit on

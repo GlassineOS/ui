@@ -13,6 +13,39 @@ const { describe, listBoards, runtimeSource, UI_ROOT } = require('./server.js');
 
 const PREVIEW_DIR = path.join(UI_ROOT, 'boards', 'preview');
 const MARKER = '.boards-export';
+// what a Google Fonts stylesheet link of a board loads in an export (the runtime points it here)
+const GOOGLE_CSS = '_boards/fonts/google.css';
+
+// The stylesheet that stands in for Google Fonts, as the checks answer those links (spec 003
+// FR-020): Interleaf's vendored faces (copied beside it) and the design's own (references.json
+// "fonts"), every url() relative to it. A family in neither is not loaded: the page asks no other site.
+// src with every href to fonts.googleapis.com (a stylesheet) or fonts.gstatic.com (the files, a
+// preconnect) pointing at the stand-in, relative to dir (the board's folder in the design)
+function fontLinks(src, dir) {
+  const css = path.posix.relative(dir, GOOGLE_CSS), files = path.posix.dirname(css) + '/';
+  return src.replace(/(\bhref\s*=\s*)(["'])https?:\/\/fonts\.(googleapis|gstatic)\.com(?:\/[^"']*)?\2/gi, function (m, a, q, host) {
+    return a + q + (host.toLowerCase() === 'googleapis' ? css : files) + q;
+  });
+}
+
+function googleCss(design, interleaf) {
+  let css = '/* written by tools/boards export: the vendored faces in place of Google Fonts */\n';
+  const il = path.join(interleaf, 'fonts', 'fonts.css');
+  if (fs.existsSync(il)) css += fs.readFileSync(il, 'utf8') + '\n';
+  const { readConfig } = require('./references.js');
+  const cfg = readConfig(design);
+  if (cfg.fonts) {
+    const rel = path.posix.normalize(String(cfg.fonts).split(path.sep).join('/'));
+    const file = path.join(design, rel);
+    if (rel.startsWith('..') || !fs.existsSync(file)) throw new Error('references.json: no fonts at ' + rel);
+    const from = path.posix.dirname(GOOGLE_CSS), dir = path.posix.dirname(rel);
+    css += fs.readFileSync(file, 'utf8').replace(/url\(\s*(["']?)([^)"']+)\1\s*\)/g, function (m, q, u) {
+      if (/^[a-z][a-z0-9+.-]*:|^\/|^#/i.test(u)) return m;
+      return 'url("' + path.posix.relative(from, path.posix.join(dir, u)) + '")';
+    }) + '\n';
+  }
+  return css;
+}
 
 function inside(root, p) {
   const r = path.relative(root, p);
@@ -67,18 +100,27 @@ function exportDesign(opts) {
   }, skipped);
   const desc = describe(design);
   desc.live = false;
+  // a board's links to Google Fonts name the stand-in instead, in the file itself: the browser reads
+  // a page's links ahead of the runtime (and of any change it could make), so only the source counts
+  for (const b of listBoards(design)) {
+    const f = path.join(out, b);
+    if (!fs.existsSync(f)) continue;
+    const src = fs.readFileSync(f, 'utf8'), to = fontLinks(src, path.posix.dirname(b));
+    if (to !== src) fs.writeFileSync(f, to);
+  }
   const boards = listBoards(design);
   const dirs = Array.from(new Set(boards.map(function (f) { return path.posix.dirname(f); }))).sort();
   for (const d of dirs) {
     const depth = d === '.' ? 0 : d.split('/').length;
     const at = path.join(out, d);
-    fs.writeFileSync(path.join(at, 'support.js'), runtimeSource({ live: false, root: '../'.repeat(depth) }));
+    fs.writeFileSync(path.join(at, 'support.js'), runtimeSource({ live: false, root: '../'.repeat(depth), googleFonts: GOOGLE_CSS }));
     copyTree(interleaf, path.join(at, 'ds', 'interleaf'));
   }
   copyTree(PREVIEW_DIR, path.join(out, '_boards'));
   fs.mkdirSync(path.join(out, '_boards', 'api'), { recursive: true });
   fs.writeFileSync(path.join(out, '_boards', 'api', 'canvas.json'), JSON.stringify(desc) + '\n');
   if (fs.existsSync(path.join(interleaf, 'fonts'))) copyTree(path.join(interleaf, 'fonts'), path.join(out, '_boards', 'fonts'));
+  fs.writeFileSync(path.join(out, GOOGLE_CSS), googleCss(design, interleaf));
   // the folder itself opens the canvas, as / does on the server
   if (!fs.existsSync(path.join(out, 'index.html'))) {
     fs.writeFileSync(path.join(out, 'index.html'), '<!doctype html>\n<meta charset="utf-8">\n<title>' +
@@ -89,4 +131,4 @@ function exportDesign(opts) {
   return { design: design, interleaf: interleaf, out: out, title: desc.title, boards: boards, dirs: dirs, skipped: skipped };
 }
 
-module.exports = { exportDesign: exportDesign, MARKER: MARKER };
+module.exports = { exportDesign: exportDesign, googleCss: googleCss, fontLinks: fontLinks, MARKER: MARKER, GOOGLE_CSS: GOOGLE_CSS };

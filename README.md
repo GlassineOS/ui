@@ -507,7 +507,9 @@ tools/in-alpine CMD...      # CMD in alpine:3.24 with the pinned Chromium and no
   its file, no `ds/` or `support.js` of its own), the preview's pages at `_boards/` with the canvas
   data as `_boards/api/canvas.json` (no live reload) and Interleaf's fonts at `_boards/fonts/`, and in
   every folder that holds a board its `support.js` (the runtime, told where the design folder is) and
-  `ds/interleaf/`. Every URL is relative, so `OUT_DIR` works from any sub-path; its `index.html` opens
+  `ds/interleaf/`. A board's links to `fonts.googleapis.com` and
+  `fonts.gstatic.com` are rewritten to `_boards/fonts/google.css` (Interleaf's faces and the design's
+  `references.json` `fonts`) and `_boards/fonts/`; the design folder itself is not changed. Every URL is relative, so `OUT_DIR` works from any sub-path; its `index.html` opens
   the canvas. It replaces `OUT_DIR` only if it is empty or an earlier export (`.boards-export`).
 - `import` copies a canvas exported from claude.ai into a design folder: boards, `canvas.json` and the
   sample data. It leaves out claude.ai's own files (`artifact-type/`, `SKILL.md`, `index.html`, any
@@ -521,7 +523,9 @@ deployment) holds every design folder as `tools/boards export` writes it, at
 `designs/PROJECT/` (the canvas at `designs/PROJECT/_boards/`, a board's view at
 `designs/PROJECT/_boards/view.html?board=FILE&voice=V&scheme=S&pen=P`), listed on `designs.html`,
 which every reference page links (spec 003 FR-016). Boards render in the viewer's browser; nothing
-rendered is stored. On the site, boards load Google Fonts from Google, as on claude.ai.
+rendered is stored, and a visitor's browser asks no other site: a board's Google Fonts links name
+`_boards/fonts/google.css` in the export (Interleaf's vendored faces and the design's own, from
+`references.json` `fonts`, as the checks answer them; a family in neither is not loaded).
 
 Each open pull request of this repository that changes `designs/` is on the site too, at
 `designs/pr-N/` (`designs/pr-N/PROJECT/_boards/`), with the boards of its latest commit (FR-017):
@@ -534,6 +538,10 @@ Each open pull request of this repository that changes `designs/` is on the site
   its head with `git archive` (files only), and exports them with main's tools and main's Interleaf
   (`tools/site-designs`; one that fails to export is left out with a warning). A closed pull request
   is no longer listed, so its copy is gone from that publication.
+- A published pull request's boards run their JavaScript on the organization's github.io origin,
+  next to the reference. That is acceptable only because a pull request from this repository comes
+  from someone with write access to it already; this is why pull requests from forks are never
+  published. Do not relax that rule.
 - After the deployment, each published pull request gets one comment (marked `<!-- boards-pages -->`)
   with the links, edited in place on every publish; on close it says the copy is gone.
 

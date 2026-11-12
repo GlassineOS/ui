@@ -366,6 +366,41 @@ async function main() {
         assert.deepStrictEqual(errs, []);
       } finally { await p.close(); await new Promise((r) => st.close(r)); }
     });
+
+    // spec 003 FR-018: the exported boards' Google Fonts links load the vendored faces; no other site
+    await test('export: Google Fonts links answered by the vendored faces, no request elsewhere', async () => {
+      const fs = require('fs'), http = require('http');
+      const { exportDesign } = require(path.join(ROOT, 'boards/lib/export.js'));
+      const { sendFile, within } = require(path.join(ROOT, 'boards/lib/server.js'));
+      const out = path.join(ROOT, 'out', 'test', 'boards-export-fonts');
+      exportDesign({ design: path.join(__dirname, 'fonts'), out: out });
+      const PREFIX = '/ui/designs/fonts/';
+      const st = http.createServer((req, res) => {
+        const p = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+        if (p === '/favicon.ico') { res.writeHead(204); res.end(); return; }
+        if (!p.startsWith(PREFIX)) { res.writeHead(404); res.end(); return; }
+        sendFile(res, within(out, p.slice(PREFIX.length)));
+      });
+      await new Promise((r) => st.listen(0, '127.0.0.1', r));
+      const base = 'http://127.0.0.1:' + st.address().port + PREFIX;
+      try {
+        for (const [file, fams] of [['Gf.dc.html', ['Kalam', 'IBM Plex Sans', 'Project Face', 'IBM Plex Mono']], ['sub/Part.dc.html', ['IBM Plex Mono']]]) {
+          // no faces given: any request to Google (or elsewhere) is reported as external
+          const r = await renderBoard(browser, base, file, { width: 300, height: 160, keepPage: true });
+          try {
+            assert.ok(r.ok, file + ': ' + JSON.stringify(r, null, 1));
+            assert.deepStrictEqual(r.external, []);
+            const got = await r.page.evaluate(async (fams) => {
+              await document.fonts.ready;
+              const links = Array.from(document.querySelectorAll('link[data-dc-helmet][rel=stylesheet]')).map((l) => l.href);
+              return { links: links, loaded: fams.filter((f) => Array.from(document.fonts).some((x) => x.family.replace(/"/g, '') === f && x.status === 'loaded')) };
+            }, fams);
+            assert.ok(got.links.length && got.links.every((h) => h === base + '_boards/fonts/google.css'), JSON.stringify(got.links));
+            assert.deepStrictEqual(got.loaded.sort(), fams.slice().sort());
+          } finally { await r.page.close(); }
+        }
+      } finally { await new Promise((r) => st.close(r)); }
+    });
   } finally {
     await browser.close();
     await srv.close();

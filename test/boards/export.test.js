@@ -59,8 +59,8 @@ test('export: the samples as files, every board resolves its runtime and Interle
   assert.ok(interleafReads > 0, 'a sample reads ds/interleaf');
   // the runtime is the one the server serves, rooted at the design folder from each depth
   const top = fs.readFileSync(path.join(out, 'support.js'), 'utf8'), sub = fs.readFileSync(path.join(out, 'sub/support.js'), 'utf8');
-  assert.match(top, /^window\.__BOARDS_CONFIG = \{"live":false,"root":""\};/);
-  assert.match(sub, /^window\.__BOARDS_CONFIG = \{"live":false,"root":"\.\.\/"\};/);
+  assert.match(top, /^window\.__BOARDS_CONFIG = \{"live":false,"root":"",/);
+  assert.match(sub, /^window\.__BOARDS_CONFIG = \{"live":false,"root":"\.\.\/",/);
   assert.ok(top.includes('SUBSET_VERSION') && top.includes('BoardsTemplate'));
   // the Interleaf copy is the checkout's
   assert.strictEqual(fs.readFileSync(path.join(out, 'sub/ds/interleaf/tokens.json'), 'utf8'), fs.readFileSync(path.join(ROOT, 'interleaf/tokens.json'), 'utf8'));
@@ -159,4 +159,31 @@ test('tools/site-designs: main and pull requests; a bad name or a broken folder 
   fs.writeFileSync(path.join(other, 'keep'), '');
   assert.notStrictEqual(spawnSync('sh', [path.join(ROOT, 'tools', 'site-designs'), other], { encoding: 'utf8' }).status, 0);
   assert.ok(fs.existsSync(path.join(other, 'keep')));
+});
+
+// spec 003 FR-018: an exported board asks no other site; Google Fonts links get the vendored faces
+test('export: a Google Fonts link loads the vendored faces (Interleaf and the design own), no other site', () => {
+  const out = fresh('fonts');
+  exportDesign({ design: path.join(__dirname, 'fonts'), out: out });
+  const css = fs.readFileSync(path.join(out, '_boards', 'fonts', 'google.css'), 'utf8');
+  for (const fam of ['IBM Plex Sans', 'IBM Plex Mono', 'Kalam', 'Project Face']) assert.ok(css.includes('"' + fam + '"'), fam);
+  const urls = Array.from(css.matchAll(/url\(\s*["']?([^)"']+)/g)).map((m) => m[1]);
+  assert.ok(urls.length > 4);
+  for (const u of urls) {
+    assert.doesNotMatch(u, /^[a-z]+:|^\//i, u);
+    assert.ok(fs.existsSync(path.join(out, '_boards', 'fonts', u)), u + ' missing');
+  }
+  assert.ok(urls.includes('../../fonts/project-face.woff2'));
+  // the boards' own links, which the browser reads before the runtime runs, name the stand-in
+  assert.match(fs.readFileSync(path.join(out, 'Gf.dc.html'), 'utf8'), /href="_boards\/fonts\/google\.css"/);
+  assert.match(fs.readFileSync(path.join(out, 'sub/Part.dc.html'), 'utf8'), /href="\.\.\/_boards\/fonts\/google\.css"/);
+  for (const b of ['Gf.dc.html', 'sub/Part.dc.html']) assert.doesNotMatch(fs.readFileSync(path.join(out, b), 'utf8'), /fonts\.(googleapis|gstatic)\.com/, b);
+  // the design's own folder is untouched
+  assert.match(fs.readFileSync(path.join(__dirname, 'fonts', 'Gf.dc.html'), 'utf8'), /fonts\.googleapis\.com/);
+  for (const s of ['support.js', 'sub/support.js']) {
+    assert.match(fs.readFileSync(path.join(out, s), 'utf8'), /"googleFonts":"_boards\/fonts\/google\.css"/, s);
+  }
+  // nothing in the export's own files names another site, except the boards' links the runtime replaces
+  const css2 = fs.readdirSync(path.join(out, '_boards'), { recursive: true }).filter((f) => /\.(css|html|js)$/.test(f));
+  for (const f of css2) assert.doesNotMatch(fs.readFileSync(path.join(out, '_boards', f), 'utf8'), /https?:\/\/(?!127\.)/, f);
 });

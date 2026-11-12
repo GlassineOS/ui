@@ -12,9 +12,10 @@
   <nav id="pages" aria-label="Pages"></nav>
   <span class="grow"></span>
   <label><input type="checkbox" id="live"> Live boards</label>
+  <label title="Live boards take clicks and keys here; a board's title opens it in the board view"><input type="checkbox" id="use"> Use boards</label>
   <label>Zoom <input type="range" id="zoom" min="5" max="100" value="20"></label>
 </header>
-<main id="canvas" aria-label="Canvas"><div id="plane"></div></main>
+<main id="canvas" aria-label="Canvas"><div id="sizer"><div id="plane"></div></div></main>
 <section id="extra" class="extra" hidden></section>
 <script src="preview-common.js"></script>
 <script src="canvas.js"></script>

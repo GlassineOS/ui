@@ -351,7 +351,9 @@ async function main() {
         await p.waitForSelector('.board');
         assert.strictEqual(new URL(p.url()).pathname, PREFIX + '_boards/');
         assert.strictEqual(await p.$$eval('.board', (b) => b.length), 3);
-        assert.ok((await p.$$eval('.board', (b) => b.map((a) => a.href))).every((h) => h.startsWith(base + '_boards/view.html?board=')));
+        const links = await p.$$eval('.board .hit, .board .label .open', (b) => b.map((a) => a.href));
+        assert.strictEqual(links.length, 6);
+        assert.ok(links.every((h) => h.startsWith(base + '_boards/view.html?board=')), JSON.stringify(links));
         await p.goto(base + '_boards/view.html?board=Main.dc.html&voice=stationery', { waitUntil: 'load' });
         await p.waitForSelector('#controls select');
         const f = await (await p.$('#frame')).contentFrame();
@@ -401,6 +403,77 @@ async function main() {
         }
       } finally { await new Promise((r) => st.close(r)); }
     });
+
+    // the same canvas from the preview server and from a static export under a sub-path
+    const fs = require('fs'), http = require('http');
+    const { exportDesign } = require(path.join(ROOT, 'boards/lib/export.js'));
+    const exported = path.join(ROOT, 'out', 'test', 'boards-export-canvas');
+    exportDesign({ design: path.join(ROOT, 'boards/samples'), out: exported });
+    const { sendFile: sendStatic, within: withinStatic } = require(path.join(ROOT, 'boards/lib/server.js'));
+    const stat = http.createServer((req, res) => {
+      const u = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+      if (u === '/favicon.ico') { res.writeHead(204); res.end(); return; }
+      if (!u.startsWith('/ui/samples/')) { res.writeHead(404); res.end(); return; }
+      let f = withinStatic(exported, u.slice('/ui/samples/'.length));
+      if (f && fs.existsSync(f) && fs.statSync(f).isDirectory()) f = path.join(f, 'index.html');
+      sendStatic(res, f);
+    });
+    await new Promise((r) => stat.listen(0, '127.0.0.1', r));
+    for (const [what, at] of [['preview', srv.url], ['export', 'http://127.0.0.1:' + stat.address().port + '/ui/samples/']]) await test(what + ': canvas boards in use, middle-button pan, zoom around the pointer', async () => {
+      const p = await browser.newPage();
+      const errs = [];
+      p.on('pageerror', (e) => errs.push(String(e)));
+      p.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); });
+      try {
+        await p.setViewport({ width: 600, height: 400 });
+        await p.goto(at + '_boards/', { waitUntil: 'load' });
+        await p.waitForSelector('.board');
+        await p.evaluate(() => { localStorage.setItem('boards.live', '1'); localStorage.setItem('boards.use', '0'); localStorage.setItem('boards.zoom', '50'); });
+        await p.reload({ waitUntil: 'load' });
+        await p.waitForSelector('.board iframe');
+        // not in use: the tile is a link to the board view, the board takes no pointer
+        assert.strictEqual(await p.$eval('.board iframe', (f) => getComputedStyle(f).pointerEvents), 'none');
+        assert.strictEqual(await p.$eval('.board .hit', (a) => getComputedStyle(a).display), 'block');
+        await p.click('#use');
+        assert.strictEqual(await p.$eval('.board iframe', (f) => getComputedStyle(f).pointerEvents), 'auto');
+        assert.strictEqual(await p.$eval('.board .hit', (a) => getComputedStyle(a).display), 'none');
+        assert.match(await p.$eval('.board .label .open', (a) => a.getAttribute('href')), /view\.html\?board=/);
+        // ctrl+wheel (in, from 50 %): the slider follows, the canvas point under the pointer stays put
+        const z = await p.evaluate(() => {
+          const box = document.getElementById('canvas'), r = box.getBoundingClientRect();
+          box.scrollLeft = 100; box.scrollTop = 50;
+          const cx = 200, cy = 150, before = [(box.scrollLeft + cx) / 0.5, (box.scrollTop + cy) / 0.5];
+          box.dispatchEvent(new WheelEvent('wheel', { deltaY: -50, ctrlKey: true, clientX: r.left + cx, clientY: r.top + cy, bubbles: true, cancelable: true }));
+          const s = Number(localStorage.getItem('boards.zoom')) / 100;
+          return { s: s, x: (box.scrollLeft + cx) / s, y: (box.scrollTop + cy) / s, before: before, slider: Number(document.getElementById('zoom').value) };
+        });
+        assert.ok(z.s > 0.5 && z.s < 1 && z.slider === Math.round(z.s * 100), JSON.stringify(z));
+        assert.ok(Math.abs(z.x - z.before[0]) < 2 / z.s && Math.abs(z.y - z.before[1]) < 2 / z.s, JSON.stringify(z));
+        // a wheel without ctrl is not a zoom
+        const s2 = await p.evaluate(() => { document.getElementById('canvas').dispatchEvent(new WheelEvent('wheel', { deltaY: 50, bubbles: true, cancelable: true })); return Number(document.getElementById('zoom').value); });
+        assert.strictEqual(s2, z.slider);
+        // middle-button drag pans
+        const pan = await p.evaluate(() => {
+          const box = document.getElementById('canvas');
+          box.scrollLeft = 0; box.scrollTop = 0;
+          const max = [box.scrollWidth - box.clientWidth, box.scrollHeight - box.clientHeight];
+          box.dispatchEvent(new MouseEvent('mousedown', { button: 1, clientX: 300, clientY: 300, bubbles: true, cancelable: true }));
+          window.dispatchEvent(new MouseEvent('mousemove', { button: 1, clientX: 280, clientY: 290, bubbles: true }));
+          window.dispatchEvent(new MouseEvent('mouseup', { button: 1, clientX: 280, clientY: 290, bubbles: true, cancelable: true }));
+          return { left: box.scrollLeft, top: box.scrollTop, max: max };
+        });
+        assert.ok(pan.max[0] > 20 && pan.left === 20, JSON.stringify(pan));
+        assert.ok(pan.max[1] < 10 || pan.top === 10, JSON.stringify(pan));
+        // a board in use hands ctrl+wheel to the canvas
+        const f = await (await p.$('.board iframe')).contentFrame();
+        await f.waitForFunction('window.__boards && window.__boards.settled', { polling: 100 });
+        const before = await p.$eval('#zoom', (e) => Number(e.value));
+        await f.evaluate(() => document.dispatchEvent(new WheelEvent('wheel', { deltaY: -50, ctrlKey: true, clientX: 10, clientY: 10, bubbles: true, cancelable: true })));
+        assert.ok(await p.$eval('#zoom', (e) => Number(e.value)) > before);
+        assert.deepStrictEqual(errs, []);
+      } finally { await p.close(); }
+    });
+    await new Promise((r) => stat.close(r));
   } finally {
     await browser.close();
     await srv.close();

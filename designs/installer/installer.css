@@ -1,6 +1,6 @@
 /* The installer's screens: layout and the parts Interleaf doesn't have yet (stepper, primary
    button, progress, step list, choice rows, field). Colours, type and edges come only from
-   Interleaf's tokens and the voice variables of bundle.css (--v-*), so every part follows the
+   the web form (ds/web/tokens.css) and the voice variables of bundle.css (--v-*), so every part follows the
    voice, scheme and pen. State is carried by shape and words, never colour alone; no motion. */
 
 html, body { margin: 0; }

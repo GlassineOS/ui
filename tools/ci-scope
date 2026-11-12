@@ -5,6 +5,6 @@
 #
 # The library reads src/, python/ and voices/. A token change that reaches it rewrites
 # voices/voices.json (gen-interleaf --check fails otherwise), so tokens, component styles,
-# web/, boards and docs alone are "forms".
+# web/, boards, designs and docs alone are "forms".
 lib='^(src/|python/|voices/|Makefile$|glassine-ui\.pc\.in$|tools/ci-scope$|\.github/workflows/build\.yml$|test/(sheet|compare|c-api|pc-prefix|build-flags|test_paint)[^/]*$)'
 if grep -qE "$lib"; then echo lib; else echo forms; fi

@@ -49,7 +49,8 @@ scheme and pen, locally with one command and on a published page.
 
 **Forms**
 - **FR-010**: A web form of the system (variables for every theme, and the component styles) lets a page choose
-  voice, scheme and pen. The documentation site, the hub and the design boards use it by a pinned version.
+  voice, scheme and pen. The documentation site and the hub use it by a pinned version; the design boards, kept
+  here, use it directly.
 - **FR-011**: Every form is generated from the tokens; a form that is out of date with them fails the checks.
 
 **Checks**

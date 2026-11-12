@@ -9,6 +9,10 @@ through ordinary work in that program's repository, not by anything here changin
 images are stored: `make designs-check` renders every board, and a pull request that changes a design has
 images of the changed boards with its checks.
 
+Every design is on the published site, rendered in the browser: https://glassineos.github.io/ui/designs.html
+(each folder at `designs/<project>/`). A pull request of this repository that changes a design is there too,
+at `designs/pr-<number>/`, linked from a comment on the pull request (README.md, "Published boards").
+
 From a checkout of this repository (`tools/in-alpine` provides Chromium and node; see `README.md`,
 "Boards"):
 

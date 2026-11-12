@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 """gen-reference: the browsable Interleaf reference (spec 002 FR-030, FR-031).
 
-    gen-reference [--out DIR]    write the site (default out/reference); DIR is replaced if it
+    gen-reference [--out DIR] [--designs STAGE]
+                                 write the site (default out/reference); DIR is replaced if it
                                  is new, empty or an earlier build of this tool, else refused
 
 The site is static and every link is relative, so it opens from a file, from a local
@@ -13,6 +14,10 @@ Interleaf itself (web/tokens.css, web/bundle.css, copied into DIR/web/) and show
     tokens.html         every token: usage, a value per theme, a sample
     components.html     every component: its guidelines and a live preview
     previews/NAME.html  each component's preview.html with the web form loaded
+    designs.html        with --designs: the design boards (spec 003 FR-016, FR-017), each
+                        folder of STAGE copied to designs/ (tools/site-designs writes STAGE:
+                        PROJECT/ for each design on main, pr-N/PROJECT/ and pr-N/pr.json for each
+                        open pull request that changes a design), and designs/pr-N/index.html
 
 The picker (voice, scheme, pen) offers the combinations of web/combinations.json and sets
 their attributes on the page and, by postMessage, inside every preview. Python stdlib only;
@@ -253,6 +258,8 @@ def preview_page(c):
 # ---- the page frame ---------------------------------------------------------------------
 
 PAGES = (("index.html", "Guidelines"), ("tokens.html", "Tokens"), ("components.html", "Components"))
+DESIGNS_PAGE = ("designs.html", "Designs")
+NAV = list(PAGES)  # with --designs, the designs page too
 
 MARK = ('<svg width="32" height="32" viewBox="0 0 48 48" aria-hidden="true"><rect x="2" y="4" width="30" height="34" rx="5" '
         'style="fill:none;stroke:currentColor;stroke-width:2.5"></rect><rect x="14" y="10" width="30" height="34" rx="5" '
@@ -390,7 +397,7 @@ body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
 
 
 def frame(page, title, body, side, combos, desc):
-    pages = "".join('<a href="%s"%s>%s</a>' % (f, ' aria-current="page"' if f == page else "", esc(t)) for f, t in PAGES)
+    pages = "".join('<a href="%s"%s>%s</a>' % (f, ' aria-current="page"' if f == page else "", esc(t)) for f, t in NAV)
     voices = sorted({c["voice"] for c in combos}, key=lambda v: [c["voice"] for c in combos].index(v))
     schemes = sorted({c["scheme"] for c in combos}, key=lambda v: [c["scheme"] for c in combos].index(v))
     pens = sorted({c["pen"] for c in combos})
@@ -585,12 +592,115 @@ def components_page(comps, combos):
                  "Every Interleaf component with its guidelines and a live preview.")
 
 
+# ---- the design boards ------------------------------------------------------------------
+
+PROJECT_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+PR_DIR = re.compile(r"^pr-([1-9][0-9]*)$")
+
+
+def design_projects(folder):
+    """[{name, title, boards, pages}] of the exported design folders in folder (tools/boards export)"""
+    out = []
+    for name in sorted(os.listdir(folder)):
+        d = os.path.join(folder, name)
+        if name == "pr.json" or PR_DIR.match(name) or not os.path.isdir(d):
+            continue
+        if not PROJECT_NAME.match(name) or name.startswith("pr-"):
+            raise ValueError("%s: not a design folder name (letters, digits, . _ -; not pr-*)" % d)
+        api = os.path.join(d, "_boards", "api", "canvas.json")
+        if not os.path.isfile(api):
+            raise ValueError("%s: not an export of a design (no _boards/api/canvas.json)" % d)
+        c = json.load(open(api, encoding="utf-8"))
+        out.append({"name": name, "title": str(c.get("title") or name),
+                    "boards": sum(1 for b in c.get("boards", []) if b.get("exists")), "pages": len(c.get("pages") or [])})
+    return out
+
+
+def read_designs(stage):
+    """{main: [project], prs: [{number, title, url, head, projects}]} from a stage (tools/site-designs)"""
+    prs = []
+    for name in sorted(os.listdir(stage)):
+        m = PR_DIR.match(name)
+        if not m:
+            continue
+        meta = json.load(open(os.path.join(stage, name, "pr.json"), encoding="utf-8"))
+        if meta.get("number") != int(m.group(1)):
+            raise ValueError("%s/pr.json: number %r is not %s" % (name, meta.get("number"), m.group(1)))
+        url = str(meta.get("url") or "")
+        if not url.startswith("https://"):
+            raise ValueError("%s/pr.json: url must be https" % name)
+        prs.append({"number": meta["number"], "title": str(meta.get("title") or ""), "url": url,
+                    "head": re.sub(r"[^0-9a-f]", "", str(meta.get("head") or ""))[:40],
+                    "projects": design_projects(os.path.join(stage, name))})
+    prs.sort(key=lambda p: p["number"])
+    return {"main": design_projects(stage), "prs": prs}
+
+
+def project_items(projects, at):
+    if not projects:
+        return '<p class="ref-none">None.</p>'
+    return "<ul>%s</ul>" % "".join(
+        '<li><a class="il-link" href="%s%s/_boards/">%s</a> <span class="ref-value">%s/ · %d boards</span></li>'
+        % (at, esc(p["name"]), esc(p["title"]), esc(p["name"]), p["boards"]) for p in projects)
+
+
+def designs_page(designs, combos):
+    out = [title_block("Designs", "Design boards",
+                       "The boards of each design folder of the <code class=\"il-code-inline\">ui</code> repository, rendered in "
+                       "your browser: the canvas, and each board with its voice, scheme and pen picker. A board is a proposal; "
+                       "it can differ from the program it describes.")]
+    toc = [("on-main", "On main"), ("pulls", "Open pull requests")]
+    out.append('<section class="ref-section" aria-labelledby="on-main"><h2 class="il-h2" id="on-main">On main</h2>%s</section>'
+               % project_items(designs["main"], "designs/"))
+    items = []
+    for pr in designs["prs"]:
+        at = "designs/pr-%d/" % pr["number"]
+        items.append('<section class="ref-component" id="pr-%d" aria-labelledby="pr-%d-title"><h3 id="pr-%d-title">'
+                     '<a class="il-link" href="%s">#%d</a> %s</h3><p>Boards of <code class="il-code-inline">%s</code> '
+                     '(<a class="il-link" href="%s">the pull request</a>):</p>%s</section>'
+                     % (pr["number"], pr["number"], pr["number"], at, pr["number"], esc(pr["title"]), esc(pr["head"][:12]),
+                        esc(pr["url"]), project_items(pr["projects"], at)))
+    out.append('<section class="ref-section" aria-labelledby="pulls"><h2 class="il-h2" id="pulls">Open pull requests</h2>'
+               '<p>Each open pull request of this repository that changes a design has its boards at '
+               '<code class="il-code-inline">designs/pr-NUMBER/</code>, as of its latest commit, until it is closed.</p>%s</section>'
+               % ("".join(items) or '<p class="ref-none">No open pull request changes a design.</p>'))
+    return frame("designs.html", "Design boards", "\n".join(out), toc, combos,
+                 "The design boards of GlassineOS, on main and in open pull requests.")
+
+
+def pr_index(pr):
+    return """<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>#%d · design boards</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="../../web/tokens.css">
+<link rel="stylesheet" href="../../web/bundle.css">
+<link rel="stylesheet" href="../../reference.css">
+</head>
+<body class="il-page il-desk">
+<main class="ref-main il-sheet il-sections" id="main">
+<div class="il-title-block"><span class="il-label">Pull request</span><h1 class="il-h1">#%d %s</h1>
+<p class="il-lead">The boards of <a class="il-link" href="%s">this pull request</a> at <code class="il-code-inline">%s</code>.
+A board is a proposal; it can differ from the program it describes.</p></div>
+%s
+<p><a class="il-link" href="../../designs.html">Every design</a></p>
+</main>
+</body>
+</html>
+""" % (pr["number"], pr["number"], esc(pr["title"]), esc(pr["url"]), esc(pr["head"][:12]), project_items(pr["projects"], ""))
+
+
 # written into every site; a rebuild replaces a directory only if it holds this. Not .nojekyll:
 # any Pages site has that one.
 MARKER = ".gen-reference"
 
 
-def build(dest):
+def build(dest, designs_stage=None):
+    designs = read_designs(designs_stage) if designs_stage else None
+    NAV[:] = list(PAGES) + ([DESIGNS_PAGE] if designs is not None else [])
     tok = GEN.Tokens(json.load(open(GEN.TOKENS, encoding="utf-8")))
     combos = json.load(open(os.path.join(WEB, "combinations.json"), encoding="utf-8"))["combinations"]
     comps = components()
@@ -613,6 +723,14 @@ def build(dest):
     }
     for c in comps:
         files["previews/%s.html" % c["name"]] = preview_page(c)
+    if designs is not None:
+        shutil.copytree(designs_stage, os.path.join(dest, "designs"), symlinks=False)
+        files["designs.html"] = designs_page(designs, combos)
+        files["designs/index.html"] = ('<!doctype html>\n<meta charset="utf-8">\n<title>Design boards</title>\n'
+                                       '<meta http-equiv="refresh" content="0; url=../designs.html">\n'
+                                       '<a href="../designs.html">Design boards</a>\n')
+        for pr in designs["prs"]:
+            files["designs/pr-%d/index.html" % pr["number"]] = pr_index(pr)
     for rel, text in files.items():
         with open(os.path.join(dest, rel), "w", encoding="utf-8") as fh:
             fh.write(text)
@@ -621,11 +739,14 @@ def build(dest):
 
 def main(argv):
     dest = os.path.join(ROOT, "out", "reference")
+    designs = None
     args = list(argv)
     while args:
         a = args.pop(0)
         if a == "--out" and args:
             dest = os.path.abspath(args.pop(0))
+        elif a == "--designs" and args:
+            designs = os.path.abspath(args.pop(0))
         elif a in ("-h", "--help"):
             print(__doc__.strip())
             return 0
@@ -633,7 +754,7 @@ def main(argv):
             print("gen-reference: unknown argument %r (see --help)" % a, file=sys.stderr)
             return 2
     try:
-        build(dest)
+        build(dest, designs)
     except (ValueError, KeyError, OSError) as e:
         print("gen-reference: %s" % e, file=sys.stderr)
         return 1

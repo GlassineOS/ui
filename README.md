@@ -468,7 +468,10 @@ tools/in-alpine CMD...      # CMD in alpine:3.24 with the pinned Chromium and no
 
 - `preview` serves the design folder at `/` and the canvas at `/_boards/`: the pages of `canvas.json`
   with every board at its place and size, the notes, interactive boards marked, boards not on the
-  canvas listed below it, and live thumbnails on request. A board opens in a view with its own size
+  canvas listed below it, and live thumbnails on request. With "Use boards" the live boards take
+  clicks and keys on the canvas and a board's title opens it in the board view; otherwise the whole
+  tile does. The middle button drags the canvas, and ctrl+wheel or a pinch zooms it around the pointer
+  (over a board in use too), with the zoom slider following. A board opens in a view with its own size
   (shrunk to fit, or filling the window for `"expand": "fill"`), a voice, scheme and pen picker (it
   sets the board's `voice` or `theme`, `scheme` and `pen` props when the board has them), and the
   board's own enum and boolean props. Every file a board loads as `support.js` is the runtime;

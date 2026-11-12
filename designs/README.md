@@ -20,5 +20,9 @@ tools/in-alpine tools/boards check designs/<project>               # every board
 tools/in-alpine make designs-check                                 # every folder
 ```
 
+The shell's boards use an icon font, cut down to the icons they name (`designs/shell/fonts/`). After naming
+a new icon: `tools/in-alpine make designs-icons` writes the font, `designs-icons-check` fails when a board names
+an icon it lacks.
+
 A session that has changed a board runs `shot` and looks at the image; the `errors` list holds what the
 board raised, including features outside the supported subset and requests to other sites.

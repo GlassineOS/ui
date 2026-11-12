@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Start</title>
+<script src="./support.js"></script>
+<script src="data/theme.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="installer.css">
+</helmet>
+<div class="ins il-page" data-theme="{{ theme }}" data-pen="{{ pen }}">
+  <dc-import name="Header" step="start" machine="none" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,70px"></dc-import>
+  <main class="ins-desk il-desk">
+    <div class="il-sheet ins-sheet">
+      <div class="il-title-block">
+        <span class="il-label">GlassineOS installer</span>
+        <h1 class="il-h1">Install GlassineOS</h1>
+        <p class="il-lead">The installer finds out what your machine is, shows you everything it would do, and does it only after you confirm. If anything goes wrong, it says how to get back.</p>
+      </div>
+      <sc-if value="{{ noUsb }}" hint-placeholder-val="{{ false }}">
+        <aside class="il-admonition il-admonition--warning">
+          <span class="il-admonition__label"><span class="il-admonition__seal" aria-hidden="true">G</span>This browser can’t reach devices</span>
+          <p class="il-admonition__title">Open this page in a Chromium-based browser</p>
+          <p>This browser can’t talk to devices over USB. These can: {{ browsers }}, on a computer with Linux, Windows or macOS.</p>
+          <p><strong>Way out:</strong> nothing has happened. Close this page.</p>
+        </aside>
+      </sc-if>
+      <sc-if value="{{ withUsb }}" hint-placeholder-val="{{ true }}">
+        <div class="ins-grid">
+          <section class="ins-card ins-card--strong">
+            <span class="ins-tagline">An e-ink device</span>
+            <h2 class="ins-h2">Connect a device</h2>
+            <p>For an e-ink device, connected to this computer.</p>
+            <p class="il-label" style="margin-top:8px">You need</p>
+            <ul class="ins-stack ins-small">
+              <li>This computer, with a Chromium-based browser. {{ browserOk }}</li>
+              <li>A USB cable that carries data, not only charge.</li>
+            </ul>
+            <div class="ins-buttons" style="margin-top:12px"><a id="go-device" class="{{ deviceCls }}" href="reach.guide.dc.html">Connect a device</a></div>
+          </section>
+          <section class="ins-card ins-card--strong">
+            <span class="ins-tagline">A PC</span>
+            <h2 class="ins-h2">Install on this PC</h2>
+            <sc-if value="{{ live }}" hint-placeholder-val="{{ false }}">
+              <p>You started this PC from the GlassineOS USB stick. You need nothing more.</p>
+              <div class="ins-buttons" style="margin-top:12px"><a id="go-pc" class="il-btn ins-primary" href="reach.pc.dc.html">Install on this PC</a></div>
+            </sc-if>
+            <sc-if value="{{ notLive }}" hint-placeholder-val="{{ true }}">
+              <p>To install on a PC, start that PC from a GlassineOS USB stick. The installer opens there by itself, with these same screens.</p>
+              <div class="ins-buttons" style="margin-top:12px"><a class="il-btn" href="#">How to make the USB stick</a></div>
+            </sc-if>
+          </section>
+        </div>
+        <p class="ins-soft ins-small">Only want to know? The check and the plan change nothing. You can stop after either and keep the report.</p>
+      </sc-if>
+      <dc-import name="Actions" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" next="{{ next }}" out="Close this page. Nothing has happened." buttons="{{ buttons }}" hint-size="100%,120px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"state":{"editor":"enum","options":["browser","live","nowebusb"],"default":"browser"},"$preview":{"width":1280,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props, I = window.INSTALLER, st = p.state ?? 'browser';
+    const live = st === 'live', noUsb = st === 'nowebusb';
+    return { theme: window.INSTALLER_THEME(p.voice, p.scheme), voice: p.voice ?? 'white', scheme: p.scheme ?? 'paper', pen: p.pen ?? '1',
+      noUsb, withUsb: !noUsb, live, notLive: !live, browsers: I.browsers,
+      browserOk: live ? 'The browser of the GlassineOS USB stick is one.' : 'This one is.',
+      deviceCls: live ? 'il-btn' : 'il-btn ins-primary',
+      next: noUsb ? 'Nothing more is possible from this browser.' : 'The installer finds out what your machine is. Nothing is written.',
+      buttons: noUsb ? [{ label: 'Copy this page’s address', href: '#' }] : [] };
+  }
+}
+</script>
+</body>
+</html>

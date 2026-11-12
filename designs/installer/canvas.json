@@ -253,7 +253,7 @@
    "y": 0,
    "w": 1280,
    "h": 1250,
-   "title": "2 Reach · restart by hand",
+   "title": "2 Reach · USB debugging isn’t on",
    "page": "states",
    "expand": "fill",
    "is_interactive": true
@@ -283,7 +283,7 @@
    "y": 1490,
    "w": 1280,
    "h": 1250,
-   "title": "2 Reach · answered, not freshly started",
+   "title": "2 Reach · answered, not freshly started: restart again",
    "page": "states",
    "expand": "fill",
    "is_interactive": true

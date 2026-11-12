@@ -180,6 +180,7 @@ test('export: a Google Fonts link loads the vendored faces (Interleaf and the de
   // the boards' own links, which the browser reads before the runtime runs, name the stand-in
   assert.match(fs.readFileSync(path.join(out, 'Gf.dc.html'), 'utf8'), /href="_boards\/fonts\/google\.css"/);
   assert.match(fs.readFileSync(path.join(out, 'sub/Part.dc.html'), 'utf8'), /href="\.\.\/_boards\/fonts\/google\.css"/);
+  assert.match(fs.readFileSync(path.join(out, 'Gf.dc.html'), 'utf8'), /<link rel="preconnect" href="data:," crossorigin>/);
   for (const b of ['Gf.dc.html', 'sub/Part.dc.html']) assert.doesNotMatch(fs.readFileSync(path.join(out, b), 'utf8'), /fonts\.(googleapis|gstatic)\.com/, b);
   // the design's own folder is untouched
   assert.match(fs.readFileSync(path.join(__dirname, 'fonts', 'Gf.dc.html'), 'utf8'), /fonts\.googleapis\.com/);

@@ -14,9 +14,9 @@
 <link rel="stylesheet" href="ds/web/bundle.css">
 <link rel="stylesheet" href="installer.css">
 </helmet>
-<dc-import name="Confirm" machine="pc" state="replace" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,2000px"></dc-import>
+<dc-import name="Confirm" machine="pc" state="replace" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,2100px"></dc-import>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "scheme": {"editor": "enum", "options": ["paper", "night", "eink"], "default": "paper"}, "pen": {"editor": "enum", "options": ["1", "2", "3"], "default": "1"}, "$preview": {"width": 1280, "height": 2000}}'>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "scheme": {"editor": "enum", "options": ["paper", "night", "eink"], "default": "paper"}, "pen": {"editor": "enum", "options": ["1", "2", "3"], "default": "1"}, "$preview": {"width": 1280, "height": 2100}}'>
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;

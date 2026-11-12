@@ -18,7 +18,7 @@
 #   make reference       the browsable Interleaf reference (tools/gen-reference) in out/reference/
 #   make site            the reference and the design boards (tools/boards export) in out/reference/
 #   make serve-reference build it and serve it on http://127.0.0.1:8000/ (REFERENCE_HOST, REFERENCE_PORT)
-VERSION = 1.1.0
+VERSION = 1.2.0
 SOMAJOR = 1
 PREFIX ?= /usr/local
 LIBDIR ?= $(PREFIX)/lib
@@ -104,6 +104,7 @@ BOARDS_INTERLEAF ?=
 boards-check:
 	tools/boards check boards/samples $(if $(BOARDS_INTERLEAF),--interleaf $(BOARDS_INTERLEAF)) --json $(O)/boards-check.json
 	$(NODE) test/boards/samples-e2e.js
+	$(NODE) test/boards/stream-e2e.js
 
 # Every design, one report per folder (out/designs-check/PROJECT.json); every folder is checked even
 # when one fails. No folders is success.

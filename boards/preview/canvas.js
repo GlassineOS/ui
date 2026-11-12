@@ -50,7 +50,7 @@
       plane.append(d);
     }
     for (const b of items) {
-      const a = el('a', { class: 'board', href: '/_boards/view.html?board=' + encodeURIComponent(b.file), title: b.title + (b.interactive ? ' (interactive)' : '') });
+      const a = el('a', { class: 'board', href: 'view.html?board=' + encodeURIComponent(b.file), title: b.title + (b.interactive ? ' (interactive)' : '') });
       a.style.left = (b.x + ox) + 'px';
       a.style.top = (b.y + oy) + 'px';
       a.style.width = b.w + 'px';
@@ -76,7 +76,7 @@
     extra.textContent = '';
     if (off.length) {
       extra.append(el('strong', { text: 'Not on the canvas: ' }));
-      for (const b of off) extra.append(el('a', { href: '/_boards/view.html?board=' + encodeURIComponent(b.file), text: b.file }), ' ');
+      for (const b of off) extra.append(el('a', { href: 'view.html?board=' + encodeURIComponent(b.file), text: b.file }), ' ');
     }
   }
 

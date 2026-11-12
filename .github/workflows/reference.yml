@@ -1,6 +1,13 @@
 name: reference
-# The Interleaf reference (spec 002 FR-031): built from main and published to GitHub Pages.
-# Pull requests build it in make check-forms (test/test_reference.py); this workflow only publishes.
+# The published site (spec 002 FR-031, spec 003 FR-016, FR-017): the Interleaf reference and the
+# design boards (make site), built from main and published to GitHub Pages in one deployment.
+# The boards of each open pull request of this repository that changes designs/ are part of the same
+# build: design-pr.yml starts this workflow on main whenever such a pull request opens, changes or
+# closes. This run reads the pull requests' designs/ files as data (tools/fetch-design-prs) and
+# exports them with main's tools; nothing of a pull request runs here. Pull requests from forks are
+# left out (their boards would run on the site). After the deployment, each published pull request
+# gets one comment with its link, edited in place on every publish.
+# Pull requests build the reference in make check-forms (test/test_reference.py).
 # Pages must use "GitHub Actions" as its source (Settings > Pages > Build and deployment).
 # A deployment that hangs does not recover when re-run from the same commit; a new commit on
 # main (or a manual run after one) does.
@@ -17,10 +24,37 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      prs: ${{ steps.published.outputs.prs }}
     steps:
       - uses: actions/checkout@v7
-      # python3 (stdlib only) and make, both on the runner
-      - run: make reference
+      - name: the designs/ files of the open pull requests that change a design
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: sh tools/fetch-design-prs out/prs
+      # python3 (stdlib only), make and node, as in the checks
+      - name: make site on Alpine
+        run: |
+          docker run --rm -v "$PWD":/src -w /src alpine:3.24 sh -euc '
+            apk add -q python3 make nodejs
+            make site SITE_PRS=out/prs'
+      # the pull requests that made it into the site, as "N:HEAD:PROJECT,PROJECT" (names checked by
+      # tools/site-designs and gen-reference: digits, hex, letters . _ -)
+      - name: the published pull requests
+        id: published
+        run: |
+          prs=
+          for d in out/reference/designs/pr-*/; do
+            [ -f "$d/pr.json" ] || continue
+            n=$(jq -r .number "$d/pr.json"); head=$(jq -r .head "$d/pr.json")
+            projects=$(cd "$d" && for p in */; do printf '%s,' "${p%/}"; done)
+            prs="$prs $n:$head:${projects%,}"
+          done
+          echo "prs=${prs# }" >> "$GITHUB_OUTPUT"
+          echo "pull requests on the site: ${prs:- none}"
       - uses: actions/upload-pages-artifact@v5
         with:
           path: out/reference
@@ -33,6 +67,45 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
         uses: actions/deploy-pages@v5
+  # one comment per published pull request, with the link, written once the site holds it
+  link:
+    needs: [build, deploy]
+    if: needs.build.outputs.prs != ''
+    runs-on: ubuntu-24.04
+    permissions:
+      pull-requests: write
+    steps:
+      - name: the link on each pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PRS: ${{ needs.build.outputs.prs }}
+          SITE: ${{ needs.deploy.outputs.url }}
+        run: |
+          # a failed lookup must fail the step, not post a second comment
+          set -o pipefail
+          mark='<!-- boards-pages -->'
+          for pr in $PRS; do
+            n=${pr%%:*}; rest=${pr#*:}; head=${rest%%:*}; projects=${rest#*:}
+            at="${SITE%/}/designs/pr-$n/"
+            body="$mark
+          **Boards of this pull request**, rendered in your browser: $at
+          "
+            for p in $(echo "$projects" | tr ',' ' '); do body="$body
+          - [$p](${at}$p/_boards/)"; done
+            body="$body
+
+          As of $head. Updated with every push to this pull request; the copy leaves the site when it closes. Every design on main: ${SITE%/}/designs.html"
+            id=$(gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$n/comments" \
+              --jq ".[] | select(.user.login == \"github-actions[bot]\" and (.body | startswith(\"$mark\"))) | .id" | head -n 1)
+            if [ -n "$id" ]; then
+              gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$id" -f body="$body" >/dev/null
+            else
+              gh api "repos/$GITHUB_REPOSITORY/issues/$n/comments" -f body="$body" >/dev/null
+            fi
+            echo "#$n: $at"
+          done

@@ -289,6 +289,83 @@ async function main() {
         assert.deepStrictEqual(errs, []);
       } finally { await p.close(); }
     });
+
+    // live reload: saving a board reloads the board view's frame and the canvas's data
+    await test('preview: live reload of the canvas and the board view', async () => {
+      const fs = require('fs');
+      const dir = path.join(ROOT, 'out', 'test', 'boards-live');
+      fs.rmSync(dir, { recursive: true, force: true });
+      fs.cpSync(path.join(ROOT, 'boards/samples'), dir, { recursive: true });
+      const live = await startServer({ design: dir, interleaf: INTERLEAF, live: true });
+      const p = await browser.newPage();
+      try {
+        let fetches = 0;
+        p.on('request', (r) => { if (/_boards\/api\/canvas\.json/.test(r.url())) fetches++; });
+        await p.goto(live.url + '_boards/', { waitUntil: 'load' });
+        await p.waitForSelector('.board');
+        await sleep(500);
+        const before = fetches;
+        fs.appendFileSync(path.join(dir, 'Card.dc.html'), '\n');
+        await until(() => fetches > before, 'the canvas fetches its data again');
+        await p.goto(live.url + '_boards/view.html?board=Counter.dc.html', { waitUntil: 'load' });
+        let f = await (await p.$('#frame')).contentFrame();
+        await f.waitForFunction('window.__boards && window.__boards.settled', { polling: 100 });
+        await f.evaluate(() => { window.__mark = 1; });
+        await sleep(500);
+        fs.appendFileSync(path.join(dir, 'Counter.dc.html'), '\n');
+        await until(async () => { f = await (await p.$('#frame')).contentFrame(); try { return await f.evaluate(() => !window.__mark && !!window.__boards); } catch (e) { return false; } }, 'the frame reloads');
+      } finally { await p.close(); await live.close(); }
+    });
+
+    // tools/boards export, served by a plain static server under a sub-path (as GitHub Pages does)
+    await test('export: every board and the preview pages work from a static folder under a sub-path', async () => {
+      const fs = require('fs'), http = require('http');
+      const { exportDesign } = require(path.join(ROOT, 'boards/lib/export.js'));
+      const { sendFile, within, describe } = require(path.join(ROOT, 'boards/lib/server.js'));
+      const R = require(path.join(ROOT, 'boards/lib/references.js'));
+      const out = path.join(ROOT, 'out', 'test', 'boards-export-e2e');
+      exportDesign({ design: path.join(ROOT, 'boards/samples'), out: out });
+      const PREFIX = '/ui/designs/samples/';
+      const st = http.createServer((req, res) => {
+        const p = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+        if (p === '/favicon.ico') { res.writeHead(204); res.end(); return; } // the host's, not the export's
+        if (!p.startsWith(PREFIX)) { res.writeHead(404); res.end(); return; }
+        let f = within(out, p.slice(PREFIX.length));
+        if (f && fs.existsSync(f) && fs.statSync(f).isDirectory()) f = path.join(f, 'index.html');
+        sendFile(res, f);
+      });
+      await new Promise((r) => st.listen(0, '127.0.0.1', r));
+      const base = 'http://127.0.0.1:' + st.address().port + PREFIX;
+      const p = await browser.newPage();
+      const errs = [];
+      p.on('pageerror', (e) => errs.push(String(e)));
+      p.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); });
+      try {
+        const faces = R.vendoredFaces(base, path.join(ROOT, 'interleaf'), path.join(ROOT, 'boards/samples'), null);
+        for (const b of describe(path.join(ROOT, 'boards/samples')).boards) {
+          const r = await renderBoard(browser, base, b.file, { width: b.size.width, height: b.size.height, faces: faces });
+          assert.ok(r.ok, b.file + ': ' + JSON.stringify(r, null, 1));
+        }
+        // the folder opens the canvas; the board view picks, links move the view, the board names itself from the folder
+        await p.goto(base, { waitUntil: 'load' });
+        await p.waitForSelector('.board');
+        assert.strictEqual(new URL(p.url()).pathname, PREFIX + '_boards/');
+        assert.strictEqual(await p.$$eval('.board', (b) => b.length), 3);
+        assert.ok((await p.$$eval('.board', (b) => b.map((a) => a.href))).every((h) => h.startsWith(base + '_boards/view.html?board=')));
+        await p.goto(base + '_boards/view.html?board=Main.dc.html&voice=stationery', { waitUntil: 'load' });
+        await p.waitForSelector('#controls select');
+        const f = await (await p.$('#frame')).contentFrame();
+        await f.waitForFunction('window.__boards && window.__boards.settled', { polling: 100 });
+        assert.strictEqual(await f.evaluate(() => window.__boards.board), 'Main.dc.html');
+        assert.match(await f.$eval('#settings', (e) => e.textContent), /voice=stationery/);
+        await Promise.all([p.waitForFunction(() => /board=Counter/.test(location.search), { polling: 100 }), f.$eval('#to-counter', (a) => a.click())]);
+        await p.goto(base + 'sub/Badge.dc.html', { waitUntil: 'load' });
+        await p.waitForFunction('window.__boards && window.__boards.settled', { polling: 100 });
+        assert.strictEqual(await p.evaluate(() => window.__boards.board), 'sub/Badge.dc.html');
+        assert.deepStrictEqual(await p.evaluate(() => window.__boards.errors), []);
+        assert.deepStrictEqual(errs, []);
+      } finally { await p.close(); await new Promise((r) => st.close(r)); }
+    });
   } finally {
     await browser.close();
     await srv.close();

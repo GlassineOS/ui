@@ -75,7 +75,9 @@ in review.
   which guards the renderer; differences produce images.
 - **FR-012**: The checks report, per board, render errors and unsupported features (FR-003), in a form an agent
   can read.
-- **FR-013**: The preview can be served to the hub, so a session's boards can be shown to the user there.
+- **FR-013**: The preview can be shown in another program, such as the hub, as a live picture with the board's
+  pixels unchanged, that takes that program's pointer, touch and keys and can be told which board to show in
+  which voice, scheme, pen and size; it reaches no network but the preview.
 - **FR-014**: One command renders a single board, without a display, in a chosen voice, scheme, pen and size,
   optionally after a series of clicks, and gives an image file and the errors the board raised, in a form an agent
   can read. A click that finds no target is an error.
@@ -95,6 +97,7 @@ in review.
 |---|---|---|---|
 | Design-component format (boards, canvas description) | consumed (claude.ai, unversioned there); the supported subset is owned | 1 (the subset) | this spec, FR-005 |
 | Preview, check and single-board commands, their output | owned | 1 | this spec |
+| Live picture: its commands and events | owned | 1 | this spec |
 | Interleaf web form | consumed (spec 002) | 1 | spec 002 |
 
 ## Device scope and risk

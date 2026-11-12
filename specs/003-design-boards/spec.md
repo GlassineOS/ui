@@ -68,7 +68,8 @@ in review.
 
 **Preview and checks**
 - **FR-010**: One command starts a local preview of a project's boards, with live reload and a voice,
-  scheme and pen picker.
+  scheme and pen picker. On its canvas the live boards can be used in place, and the canvas pans and
+  zooms with the pointer as other canvases do.
 - **FR-011**: One command renders every board, without a display, at its declared sizes. The designs store
   no rendered images. This repository's sample boards are compared with stored references,
   which guards the renderer; differences produce images.

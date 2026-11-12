@@ -524,7 +524,7 @@ tools/in-alpine CMD...      # CMD in alpine:3.24 with the pinned Chromium and no
   every folder that holds a board its `support.js` (the runtime, told where the design folder is),
   `ds/interleaf/` and `ds/web/` (the web form). A board's links to `fonts.googleapis.com` and
   `fonts.gstatic.com` are rewritten to `_boards/fonts/google.css` (Interleaf's faces and the design's
-  `references.json` `fonts`) and `_boards/fonts/`; the design folder itself is not changed. Every URL is relative, so `OUT_DIR` works from any sub-path; its `index.html` opens
+  `references.json` `fonts`) and `data:,` (no connection); the design folder itself is not changed. Every URL is relative, so `OUT_DIR` works from any sub-path; its `index.html` opens
   the canvas. It replaces `OUT_DIR` only if it is empty or an earlier export (`.boards-export`).
 - `import` copies a canvas exported from claude.ai into a design folder: boards, `canvas.json` and the
   sample data. It leaves out claude.ai's own files (`artifact-type/`, `SKILL.md`, `index.html`, any

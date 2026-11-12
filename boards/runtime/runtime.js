@@ -78,10 +78,8 @@
       for (const k of Object.keys(n.attrs)) el.setAttribute(k, n.attrs[k]);
       // in an export the board's file names the vendored faces in place of Google Fonts, relative to
       // the board (tools/boards export); a board imported from another folder still finds them
-      if (CFG.googleFonts && n.tag === 'link' && n.attrs.href) {
-        const base = CFG.googleFonts.replace(/[^/]*$/, '');
-        const h = n.attrs.href.replace(/^(\.\.\/)+/, '');
-        if (h === CFG.googleFonts || h === base) el.setAttribute('href', new URL(h, ROOT).href);
+      if (CFG.googleFonts && n.tag === 'link' && n.attrs.href && n.attrs.href.replace(/^(\.\.\/)+/, '') === CFG.googleFonts) {
+        el.setAttribute('href', new URL(CFG.googleFonts, ROOT).href);
       }
       if (n.text) el.textContent = n.text;
       el.setAttribute('data-dc-helmet', doc.file);

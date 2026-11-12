@@ -20,12 +20,14 @@ const GOOGLE_CSS = '_boards/fonts/google.css';
 // The stylesheet that stands in for Google Fonts, as the checks answer those links (spec 003
 // FR-020): Interleaf's vendored faces (copied beside it) and the design's own (references.json
 // "fonts"), every url() relative to it. A family in neither is not loaded: the page asks no other site.
-// src with every href to fonts.googleapis.com (a stylesheet) or fonts.gstatic.com (the files, a
-// preconnect) pointing at the stand-in, relative to dir (the board's folder in the design)
+// src with every href to fonts.googleapis.com (a stylesheet) pointing at the stand-in, relative to
+// dir (the board's folder in the design), and every href to fonts.gstatic.com (the font files, a
+// preconnect) emptied to data:, so the browser opens no connection for it (a preconnect to the site
+// itself would hold an idle socket open)
 function fontLinks(src, dir) {
-  const css = path.posix.relative(dir, GOOGLE_CSS), files = path.posix.dirname(css) + '/';
+  const css = path.posix.relative(dir, GOOGLE_CSS);
   return src.replace(/(\bhref\s*=\s*)(["'])https?:\/\/fonts\.(googleapis|gstatic)\.com(?:\/[^"']*)?\2/gi, function (m, a, q, host) {
-    return a + q + (host.toLowerCase() === 'googleapis' ? css : files) + q;
+    return a + q + (host.toLowerCase() === 'googleapis' ? css : 'data:,') + q;
   });
 }
 

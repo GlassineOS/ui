@@ -21,8 +21,13 @@ async function until(fn, what) {
 
 async function main() {
   let failures = 0;
+  // each test has its own deadline (E2E_TEST_TIMEOUT ms, default 180000), so a hang fails with its name
+  const LIMIT = Number(process.env.E2E_TEST_TIMEOUT) || 180000;
   const test = async (name, fn) => {
-    try { await fn(); process.stdout.write('ok - ' + name + '\n'); } catch (e) { failures++; process.stdout.write('not ok - ' + name + '\n  ' + String(e && e.stack || e).split('\n').join('\n  ') + '\n'); }
+    if (process.env.E2E_SKIP && new RegExp(process.env.E2E_SKIP).test(name)) { process.stdout.write('skip - ' + name + '\n'); return; }
+    let timer;
+    const deadline = new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('timed out after ' + LIMIT + ' ms')), LIMIT); });
+    try { await Promise.race([fn(), deadline]); process.stdout.write('ok - ' + name + '\n'); } catch (e) { failures++; process.stdout.write('not ok - ' + name + '\n  ' + String(e && e.stack || e).split('\n').join('\n  ') + '\n'); } finally { clearTimeout(timer); }
   };
 
   await test('every sample renders clean', async () => {
@@ -366,7 +371,7 @@ async function main() {
         assert.strictEqual(await p.evaluate(() => window.__boards.board), 'sub/Badge.dc.html');
         assert.deepStrictEqual(await p.evaluate(() => window.__boards.errors), []);
         assert.deepStrictEqual(errs, []);
-      } finally { await p.close(); await new Promise((r) => st.close(r)); }
+      } finally { await p.close(); st.closeAllConnections(); await new Promise((r) => st.close(r)); }
     });
 
     // spec 003 FR-018: the exported boards' Google Fonts links load the vendored faces; no other site
@@ -401,7 +406,7 @@ async function main() {
             assert.deepStrictEqual(got.loaded.sort(), fams.slice().sort());
           } finally { await r.page.close(); }
         }
-      } finally { await new Promise((r) => st.close(r)); }
+      } finally { st.closeAllConnections(); await new Promise((r) => st.close(r)); }
     });
 
     // the same canvas from the preview server and from a static export under a sub-path
@@ -473,7 +478,7 @@ async function main() {
         assert.deepStrictEqual(errs, []);
       } finally { await p.close(); }
     });
-    await new Promise((r) => stat.close(r));
+    stat.closeAllConnections(); await new Promise((r) => stat.close(r));
   } finally {
     await browser.close();
     await srv.close();

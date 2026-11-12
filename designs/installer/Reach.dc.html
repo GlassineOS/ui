@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Reach the device</title>
+<script src="./support.js"></script>
+<script src="data/theme.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="installer.css">
+</helmet>
+<div class="ins il-page" data-theme="{{ theme }}" data-pen="{{ pen }}">
+  <dc-import name="Header" step="check" machine="{{ chipMachine }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,130px"></dc-import>
+  <main class="ins-desk il-desk">
+    <div class="il-sheet ins-sheet">
+      <div class="il-title-block">
+        <span class="il-label">{{ eyebrow }}</span>
+        <h1 class="il-h1">{{ title }}</h1>
+        <p class="il-lead">{{ lead }}</p>
+      </div>
+
+      <sc-if value="{{ isGuide }}" hint-placeholder-val="{{ true }}">
+        <div class="ins-card ins-card--strong">
+          <span class="ins-card__title">{{ r.auto }}</span>
+          <p class="ins-small">{{ r.autoBody }}</p>
+          <p class="ins-small ins-soft">{{ r.only }} <a class="il-link" href="reach.hand.dc.html">USB debugging isn’t on?</a></p>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isDebugging }}" hint-placeholder-val="{{ false }}">
+        <sc-if value="{{ isHand }}" hint-placeholder-val="{{ false }}">
+          <aside class="il-admonition il-admonition--note">
+            <span class="il-admonition__label">Only through USB debugging</span>
+            <p>{{ r.only }}</p>
+          </aside>
+        </sc-if>
+        <ol class="ins-plan">
+          <sc-for list="{{ r.debugSteps }}" as="d" hint-placeholder-count="4">
+            <li><span class="ins-plan__mark" aria-hidden="true"></span><p>{{ d }}</p></li>
+          </sc-for>
+        </ol>
+        <p class="ins-small"><span class="ins-placeholder">{{ r.debugOwed }}</span></p>
+        <aside class="il-admonition il-admonition--note">
+          <span class="il-admonition__label">Note</span>
+          <p>USB debugging lets a computer you allowed control Android. You can turn it off again after the installation; the installer doesn’t need it later.</p>
+        </aside>
+      </sc-if>
+
+      <sc-if value="{{ isChooser }}" hint-placeholder-val="{{ false }}">
+        <div class="ins-grid" style="align-items:start">
+          <div class="ins-stack">
+            <h2 class="ins-h2">What you’ll see</h2>
+            <p>Your browser opens a small window of its own, listing the USB devices it can see. Choose the {{ m.short }} and click <strong>Connect</strong>.</p>
+            <p class="ins-soft ins-small">{{ r.chooserNote }} The installer can only reach a device you choose there, and only from this page.</p>
+            <p class="ins-soft ins-small">The list is empty? Click Cancel; the installer helps you find out why.</p>
+          </div>
+          <div class="ins-stack">
+            <span class="il-label">The browser’s window (it looks different in each browser)</span>
+            <div class="ins-chooser" aria-hidden="true">
+              <span>This page wants to connect</span>
+              <span class="ins-chooser__row">{{ r.chooserName }}</span>
+              <span class="ins-chooser__buttons"><span>Cancel</span><span>Connect</span></span>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isWaiting }}" hint-placeholder-val="{{ false }}">
+        <div class="ins-card ins-card--strong">
+          <div class="ins-row"><span class="ins-yn ins-yn--wait" aria-hidden="true"></span><span class="ins-card__title">Waiting for the {{ m.short }}</span></div>
+          <p class="ins-small ins-soft">Nothing found yet. This page keeps looking.</p>
+        </div>
+        <section class="ins-stack">
+          <h2 class="ins-h2">If nothing happens</h2>
+          <ul class="ins-caps">
+            <sc-for list="{{ r.waitHints }}" as="w" hint-placeholder-count="3"><li><span class="ins-yn ins-yn--no" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" style="fill:none;stroke-width:3;stroke-linecap:round"><path d="M12 6v8M12 18v.5"></path></svg></span><span class="ins-caps__text">{{ w }}</span></li></sc-for>
+          </ul>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ isFound }}" hint-placeholder-val="{{ false }}">
+        <div class="ins-card ins-card--strong">
+          <div class="ins-row"><span class="ins-yn ins-yn--yes" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" style="fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span><span class="ins-card__title">{{ foundTitle }}</span></div>
+          <p>{{ r.found }}</p>
+          <p class="ins-small ins-soft">The check starts by itself. It only reads.</p>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isNotFresh }}" hint-placeholder-val="{{ false }}">
+        <aside class="il-admonition il-admonition--warning">
+          <span class="il-admonition__label"><span class="il-admonition__seal" aria-hidden="true">G</span>Start it again</span>
+          <p class="il-admonition__title">Not freshly started</p>
+          <p>{{ r.notFresh }} Nothing was changed.</p>
+          <p><strong>Way out:</strong> let the installer restart it again: start Android on it, keep it connected, and click Restart it for me. Or stop here: it starts Android when you turn it off and on.</p>
+        </aside>
+      </sc-if>
+
+      <dc-import name="Actions" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" next="{{ next }}" out="{{ out }}" buttons="{{ buttons }}" hint-size="100%,140px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"machine":{"editor":"enum","options":["device","pc"],"default":"device"},"state":{"editor":"enum","options":["guide","hand","debugging","chooser","waiting","found","notfresh"],"default":"guide"},"$preview":{"width":1280,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props, I = window.INSTALLER, mk = p.machine ?? 'device', m = I.machines[mk], r = m.reach;
+    const st = mk === 'pc' ? 'found' : (p.state ?? 'guide');
+    const guide = st === 'guide', hand = st === 'hand';
+    const T = {
+      guide: ['Check · reach the device', 'Get the ' + m.short + ' ready', r.intro],
+      hand: ['Check · reach the device', 'USB debugging needs to be on', 'The installer reaches the ' + m.short + ' through Android’s USB debugging. Turn it on once, on the device.'],
+      debugging: ['Check · reach the device', 'Turn on USB debugging', 'Then the installer can restart the ' + m.short + ' into its start-up mode for you. You do this once, on the device.'],
+      chooser: ['Check · reach the device', 'Your browser asks which device', 'Before the installer can talk to the ' + m.short + ', your browser asks you to choose it. That window comes next.'],
+      waiting: ['Check · reach the device', 'Looking for the ' + m.short, 'Connect it in its start-up mode. This page notices it by itself.'],
+      found: ['Check · reach the machine', mk === 'pc' ? 'Nothing to connect' : 'Found it', mk === 'pc' ? r.found : 'The ' + m.short + ' is connected and ready to be checked.'],
+      notfresh: ['Check · reach the device', 'The ' + m.short + ' needs a fresh restart', 'Almost: the installer needs it freshly started into its start-up mode.']
+    }[st];
+    const next = {
+      guide: 'The installer restarts the ' + m.short + '; your browser asks you to choose it, twice.',
+      hand: 'Once USB debugging is on, the installer restarts the ' + m.short + ' for you.',
+      debugging: 'Back to getting the ' + m.short + ' ready; the installer restarts it for you.',
+      chooser: 'The browser’s window opens. After you choose, the check starts. It only reads.',
+      waiting: 'Once it’s found, the check starts by itself.',
+      found: 'The check: what the machine is and what an installation would do. It only reads.',
+      notfresh: 'The installer restarts it again; your browser asks you to choose it, twice.'
+    }[st];
+    const out = mk === 'pc' ? 'Stop here and restart the PC without the USB stick. Nothing has changed.'
+      : 'Stop here and unplug the ' + m.short + '. Nothing has changed; it starts Android when you turn it off and on.';
+    const B = {
+      guide: [{ label: 'Restart it for me', href: 'reach.chooser.dc.html', primary: true }, { label: 'Back', href: 'start.browser.dc.html' }, { label: 'Stop here', href: 'start.browser.dc.html', push: true }],
+      hand: [{ label: 'It’s on: restart it for me', href: 'reach.chooser.dc.html', primary: true }, { label: 'Back', href: 'reach.guide.dc.html' }, { label: 'Stop here', href: 'start.browser.dc.html', push: true }],
+      debugging: [{ label: 'Done, back', href: 'reach.guide.dc.html', primary: true }, { label: 'Stop here', href: 'start.browser.dc.html', push: true }],
+      chooser: [{ label: 'Choose the device', href: 'reach.waiting.dc.html', primary: true }, { label: 'Back', href: 'reach.guide.dc.html' }, { label: 'Stop here', href: 'start.browser.dc.html', push: true }],
+      waiting: [{ label: 'Choose the device again', href: 'reach.found.dc.html', primary: true }, { label: 'Back', href: 'reach.guide.dc.html' }, { label: 'Stop here', href: 'start.browser.dc.html', push: true }],
+      found: [{ label: 'Check it', href: mk === 'pc' ? 'check.pc.dc.html' : 'check.device.dc.html', primary: true }, { label: 'Stop here', href: 'start.browser.dc.html', push: true }],
+      notfresh: [{ label: 'Restart it for me', href: 'reach.chooser.dc.html', primary: true }, { label: 'Stop here', href: 'start.browser.dc.html', push: true }]
+    }[st];
+    return { theme: window.INSTALLER_THEME(p.voice, p.scheme), voice: p.voice ?? 'white', scheme: p.scheme ?? 'paper', pen: p.pen ?? '1',
+      m, r, eyebrow: T[0], title: T[1], lead: T[2], next, out, buttons: B,
+      chipMachine: st === 'found' || st === 'notfresh' || mk === 'pc' ? mk : 'none',
+      foundTitle: mk === 'pc' ? m.name + ', started from the USB stick' : m.name,
+      isGuide: guide, isDebugging: st === 'debugging' || hand, isHand: hand, isChooser: st === 'chooser', isWaiting: st === 'waiting', isFound: st === 'found', isNotFresh: st === 'notfresh',
+    };
+  }
+}
+</script>
+</body>
+</html>

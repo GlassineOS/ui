@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Verify</title>
+<script src="./support.js"></script>
+<script src="data/theme.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="installer.css">
+</helmet>
+<div class="ins il-page" data-theme="{{ theme }}" data-pen="{{ pen }}">
+  <dc-import name="Header" step="verify" machine="{{ mk }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,130px"></dc-import>
+  <main class="ins-desk il-desk">
+    <div class="il-sheet ins-sheet">
+      <div class="il-title-block">
+        <span class="il-label">{{ eyebrow }}</span>
+        <h1 class="il-h1">{{ title }}</h1>
+        <p class="il-lead">{{ lead }}</p>
+      </div>
+      <div class="ins-row"><span class="ins-tag ins-tag--dashed">Not finished yet</span><span class="ins-small ins-soft">{{ where }}</span></div>
+
+      <sc-if value="{{ failed }}" hint-placeholder-val="{{ false }}">
+        <aside class="il-admonition il-admonition--warning" id="notaccepted">
+          <span class="il-admonition__label"><span class="il-admonition__seal" aria-hidden="true">G</span>Not accepted</span>
+          <p class="il-admonition__title">GlassineOS didn’t start properly</p>
+          <p>It was tried twice, so {{ the }} went back by itself: {{ cutNow }} Nothing is lost: the backup and the written GlassineOS are still there.</p>
+          <p><strong>Way out:</strong> try again, or undo the installation. A report of what failed can be saved; it holds no personal data.</p>
+        </aside>
+      </sc-if>
+
+      <ol class="ins-plan" aria-label="The first start">
+        <sc-for list="{{ phases }}" as="ph" hint-placeholder-count="3">
+          <li data-state="{{ ph.state }}"><span class="ins-plan__mark" aria-hidden="true"><sc-if value="{{ ph.done }}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 24 24" style="fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></sc-if></span>
+            <div class="ins-plan__head"><span class="ins-plan__title">{{ ph.title }}</span><span class="{{ ph.tagCls }}">{{ ph.status }}</span></div>
+            <p class="ins-plan__body ins-small">{{ ph.body }}</p></li>
+        </sc-for>
+      </ol>
+
+      <dc-import name="Actions" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" next="{{ next }}" out="{{ out }}" buttons="{{ buttons }}" hint-size="100%,140px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"machine":{"editor":"enum","options":["device","pc"],"default":"device"},"state":{"editor":"enum","options":["waiting","notaccepted"],"default":"waiting"},"$preview":{"width":1280,"height":1200}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props, I = window.INSTALLER, mk = p.machine ?? 'device', m = I.machines[mk], st = p.state ?? 'waiting';
+    const failed = st === 'notaccepted';
+    const P = [
+      { title: 'Restart', body: m.restart + '.' },
+      { title: 'GlassineOS starts', body: 'Its first version starts on trial.' },
+      { title: 'The start is accepted', body: 'GlassineOS has run for about two minutes without a problem and marks this start as good. Only then is the installation done.' }
+    ];
+    const at = failed ? 1 : 2;
+    const phases = P.map((ph, i) => {
+      const state = i < at ? 'done' : i === at ? 'current' : 'todo';
+      return { ...ph, state, done: state === 'done',
+        status: state === 'done' ? 'Done' : state === 'current' ? (failed ? 'Failed twice' : 'Waiting, about two minutes') : 'Waiting',
+        tagCls: 'ins-tag' + (state === 'current' ? ' ins-tag--heavy' : state === 'todo' ? ' ins-tag--soft' : '') };
+    });
+    return { theme: window.INSTALLER_THEME(p.voice, p.scheme), voice: p.voice ?? 'white', scheme: p.scheme ?? 'paper', pen: p.pen ?? '1',
+      mk, the: m.the, cutNow: m.cutNow.replace('GlassineOS doesn’t start yet.', ''), failed, phases, where: m.verifyWhere,
+      eyebrow: 'Verify · step 6 of the plan',
+      title: failed ? 'The first start didn’t work' : 'Waiting for GlassineOS to be accepted',
+      lead: failed ? 'The installation isn’t done: GlassineOS is written, but its first start wasn’t accepted.' : 'GlassineOS is written. The installation counts as done only once its first start has been accepted.',
+      next: failed ? 'Try again restarts into GlassineOS once more.' : 'Once the start is accepted: done.',
+      out: failed ? m.undoBody : 'If the start isn’t accepted, ' + m.the + ' goes back by itself; this page then offers to try again or undo.',
+      buttons: failed ? [{ label: 'Try again', href: mk === 'pc' ? 'verify.pc.dc.html' : 'verify.device.dc.html', primary: true }, { label: 'Undo the installation', href: 'done.device.stock.dc.html' }, { label: 'Save a report', href: '#' }]
+        : [] };
+  }
+}
+</script>
+</body>
+</html>

@@ -7,6 +7,7 @@
 - a changed token reaches the voices' scheme and the web form; --check notices stale forms (002 FR-011)
 - the web form: 27 combinations, every variable the component styles read is declared (002 FR-010)
 - coverage: every colour in every theme, every shadow where a theme's component styles read it
+- the README's web form contract names every per-voice variable (--v-*) bundle.css sets
 """
 import importlib.machinery
 import hashlib
@@ -383,6 +384,12 @@ try:
     open(tp, "w").write(good)
 finally:
     shutil.rmtree(tmp)
+
+# the per-voice variables are part of the web form contract: the README names each one bundle.css sets
+readme = open(os.path.join(ROOT, "README.md")).read()
+vvars = sorted(set(re.findall(r"--v-[a-z0-9-]+", open(os.path.join(ROOT, "web", "bundle.css")).read())))
+unnamed = [v for v in vvars if "`%s`" % v not in readme]
+ok(vvars and not unnamed, "README names every --v-* variable of bundle.css (%d)%s" % (len(vvars), ": missing " + " ".join(unnamed) if unnamed else ""))
 
 print("interleaf: %s" % ("all passed" if not fails else "%d FAILED" % fails))
 sys.exit(1 if fails else 0)

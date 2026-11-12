@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Already installed</title>
+<script src="./support.js"></script>
+<script src="data/interleaf.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/interleaf/components/bundle.css">
+<link rel="stylesheet" href="installer.css">
+</helmet>
+<div class="ins il-page" data-theme="{{ theme }}" data-pen="{{ pen }}">
+  <dc-import name="Header" step="check" machine="{{ mk }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,130px"></dc-import>
+  <main class="ins-desk il-desk">
+    <div class="il-sheet ins-sheet">
+      <div class="il-title-block">
+        <span class="il-label">Check · done, nothing was changed</span>
+        <h1 class="il-h1">GlassineOS is already installed</h1>
+        <p class="il-lead">{{ version }} · {{ since }}.</p>
+      </div>
+      <div class="ins-card"><span class="il-label">The backup</span><p>{{ backup }}</p><p class="ins-small ins-soft">{{ backupNote }}</p></div>
+
+      <section class="ins-stack">
+        <h2 class="ins-h2">What do you want to do?</h2>
+        <sc-for list="{{ options }}" as="o" hint-placeholder-count="3">
+          <label class="ins-choice"><input type="radio" name="what" checked="{{ o.on }}" onChange="{{ o.pick }}"><span class="ins-choice__body">
+            <span class="ins-choice__title">{{ o.title }}</span>
+            <span class="ins-small">{{ o.body }}</span>
+            <span class="ins-row ins-small" style="gap:6px;margin-top:4px"><span class="ins-tag">Kept</span>{{ o.kept }}</span>
+            <span class="ins-row ins-small" style="gap:6px"><span class="{{ o.goneCls }}">{{ o.goneTag }}</span>{{ o.gone }}</span>
+          </span></label>
+        </sc-for>
+      </section>
+
+      <dc-import name="Actions" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" next="{{ next }}" out="{{ out }}" buttons="{{ buttons }}" hint-size="100%,140px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"machine":{"editor":"enum","options":["device","pc"],"default":"device"},"$preview":{"width":1280,"height":1300}}'>
+class Component extends DCLogic {
+  state = { what: 'repair' };
+  renderVals() {
+    const p = this.props, I = window.INSTALLER, mk = p.machine ?? 'device', m = I.machines[mk], w = this.state.what;
+    const other = mk === 'pc' ? m.oses[0].os : m.keepChoice.os;
+    const O = [
+      { id: 'repair', title: 'Repair', body: m.repair, kept: 'GlassineOS’s versions, your storage, ' + other + '.', goneTag: 'Put back', gone: 'Start-up and recovery, from GlassineOS’s own copies.', goneCls: 'ins-tag ins-tag--soft' },
+      { id: 'reinstall', title: 'Reinstall', body: m.reinstall, kept: 'Your storage, ' + other + '.', goneTag: 'Starts fresh', gone: 'GlassineOS’s settings and the software you added to it.', goneCls: 'ins-tag ins-tag--heavy' },
+      { id: 'stock', title: 'Back to stock', body: m.stock, kept: other + '.', goneTag: 'Erased', gone: 'GlassineOS and your GlassineOS storage.', goneCls: 'ins-tag ins-tag--fill' }
+    ].map(o => ({ ...o, on: w === o.id, pick: () => this.setState({ what: o.id }) }));
+    const sel = O.find(o => o.id === w);
+    return { theme: window.INSTALLER_THEME(p.voice, p.scheme), voice: p.voice ?? 'white', scheme: p.scheme ?? 'paper', pen: p.pen ?? '1',
+      mk, version: m.installed.version, since: m.installed.since, backup: m.installed.backup, backupNote: m.installed.backupNote, options: O,
+      next: 'The plan for “' + sel.title + '”: every step and its escape, as for an installation. Nothing is written before you confirm.',
+      out: 'Close the installer. Nothing was changed.',
+      buttons: [{ label: 'Make the plan', href: w === 'stock' ? 'plan.device.stock.dc.html' : '#', primary: true }, { label: 'Close', href: 'start.browser.dc.html', push: true }] };
+  }
+}
+</script>
+</body>
+</html>

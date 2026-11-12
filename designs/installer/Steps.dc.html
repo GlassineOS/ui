@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Steps</title>
+<script src="./support.js"></script>
+<script src="data/interleaf.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/interleaf/components/bundle.css">
+<link rel="stylesheet" href="installer.css">
+</helmet>
+<ol class="ins-plan" data-theme="{{ theme }}" data-pen="{{ pen }}" style="background: var(--paper); color: var(--ink)" aria-label="{{ label }}">
+  <sc-for list="{{ steps }}" as="s" hint-placeholder-count="6">
+    <li data-state="{{ s.state }}">
+      <span class="ins-plan__mark" aria-hidden="true"><sc-if value="{{ s.done }}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 24 24" style="fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></sc-if></span>
+      <div class="ins-plan__head">
+        <span class="ins-plan__title">{{ s.title }}</span>
+        <sc-if value="{{ s.ponr }}" hint-placeholder-val="{{ false }}"><span class="ins-tag ins-tag--heavy">Point of no return</span></sc-if>
+        <sc-if value="{{ s.erase }}" hint-placeholder-val="{{ false }}"><span class="ins-tag ins-tag--fill">Erases your files</span></sc-if>
+        <sc-if value="{{ s.notyet }}" hint-placeholder-val="{{ false }}"><span class="ins-tag ins-tag--dashed">Not yet</span></sc-if>
+        <sc-if value="{{ s.status }}" hint-placeholder-val="{{ false }}"><span class="ins-tag ins-tag--soft">{{ s.status }}</span></sc-if>
+      </div>
+      <sc-if value="{{ s.full }}" hint-placeholder-val="{{ true }}">
+        <p class="ins-plan__body">{{ s.body }}</p>
+      </sc-if>
+      <sc-if value="{{ s.bar }}" hint-placeholder-val="{{ false }}">
+        <div><div class="ins-bar" role="progressbar" aria-valuenow="{{ s.pct }}" aria-valuemin="0" aria-valuemax="100"><span style="width: {{ s.pct }}%"></span></div><p class="ins-small ins-soft" style="margin-top:4px">{{ s.pct }} % · {{ s.barNote }}</p></div>
+      </sc-if>
+      <sc-if value="{{ s.ponrNow }}" hint-placeholder-val="{{ false }}">
+        <p class="ins-escape ins-escape--cable" style="margin-top:12px"><b>From here on</b> a stop leaves the installation for the installer to finish or undo. It can’t be left half-way on its own.</p>
+      </sc-if>
+      <sc-if value="{{ s.showEscape }}" hint-placeholder-val="{{ true }}">
+        <p class="{{ s.escCls }}"><b>{{ s.escLabel }}</b> {{ s.escape }}</p>
+      </sc-if>
+      <sc-if value="{{ s.full }}" hint-placeholder-val="{{ true }}">
+        <details class="il-details"><summary>Details</summary><p class="ins-small ins-soft" style="font-family: var(--font-mono); font-size: 13.5px">{{ s.tech }}</p></details>
+      </sc-if>
+    </li>
+  </sc-for>
+</ol>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"machine":{"editor":"enum","options":["device","pc"],"default":"device"},"mode":{"editor":"enum","options":["plan","summary","progress"],"default":"plan"},"$preview":{"width":820,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props, I = window.INSTALLER, m = I.machines[p.machine ?? 'device'];
+    const mode = p.mode ?? 'plan';
+    const at = p.at === undefined ? -1 : Number(p.at), pct = p.pct ?? 0, stopped = !!p.stopped;
+    const list = p.variant === 'replace' && m.stepsReplace ? m.stepsReplace : p.variant === 'stock' && m.stockSteps ? m.stockSteps : m.steps;
+    const steps = list.map((s, i) => {
+      const prog = mode === 'progress';
+      const state = !prog ? 'todo-plain' : i < at ? 'done' : i === at && !stopped ? 'current' : 'todo';
+      const cur = state === 'current';
+      return { ...s, state, done: state === 'done', full: mode === 'plan' || cur,
+        ponr: !!s.ponr, erase: !!s.erase, notyet: !!s.notyet,
+        status: !prog ? null : state === 'done' ? (stopped && i === at - 1 ? 'Done · stopped here' : 'Done') : cur ? 'Now' : s.notyet ? null : stopped && i === at ? 'Next' : 'Waiting',
+        bar: cur && !stopped && !s.notyet, pct, barNote: p.barNote || 'about 3 minutes left',
+        ponrNow: cur && !!s.ponr,
+        showEscape: mode !== 'summary' && (!prog || cur),
+        escCls: 'ins-escape' + (s.cable ? ' ins-escape--cable' : ''),
+        escLabel: cur ? 'If this step fails now:' : 'If this step fails:',
+        escape: s.escape + (s.cable && mode === 'plan' ? ' Only that cable can do it.' : '') };
+    });
+    return { theme: window.INSTALLER_THEME(p.voice, p.scheme), pen: p.pen ?? '1', steps,
+      label: mode === 'progress' ? 'Progress' : 'The steps of the plan' };
+  }
+}
+</script>
+</body>
+</html>

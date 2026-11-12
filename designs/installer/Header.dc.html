@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Header</title>
+<script src="./support.js"></script>
+<script src="data/interleaf.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/interleaf/components/bundle.css">
+<link rel="stylesheet" href="installer.css">
+</helmet>
+<div class="ins-headwrap" data-theme="{{ theme }}" data-pen="{{ pen }}">
+<header class="il-header ins-head">
+  <span class="il-brand"><svg width="30" height="30" viewBox="0 0 48 48" aria-hidden="true"><rect x="2" y="4" width="30" height="34" rx="5" style="fill:none;stroke:currentColor;stroke-width:2.5"></rect><rect x="14" y="10" width="30" height="34" rx="5" transform="rotate(6 29 27)" style="fill:var(--highlight)"></rect><path d="M20 30 C 26 24, 30 34, 38 26" transform="rotate(6 29 27)" style="fill:none;stroke:var(--pen);stroke-width:3;stroke-linecap:round"></path></svg>GlassineOS <span class="ins-head__sub">installer</span></span>
+  <sc-if value="{{ hasChip }}" hint-placeholder-val="{{ true }}">
+    <span class="ins-head__machine" title="The machine this installation is for">{{ chip }}</span>
+  </sc-if>
+</header>
+<sc-if value="{{ hasSteps }}" hint-placeholder-val="{{ true }}">
+  <ol class="ins-steps" aria-label="Steps of the installation">
+    <sc-for list="{{ steps }}" as="s" hint-placeholder-count="6">
+      <li data-state="{{ s.state }}" aria-current="{{ s.current }}">
+        <span class="ins-steps__mark" aria-hidden="true">{{ s.num }}<sc-if value="{{ s.done }}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" style="fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></sc-if></span>
+        <span class="ins-steps__name">{{ s.name }}</span>
+        <span class="ins-steps__now">{{ s.now }}</span>
+      </li>
+    </sc-for>
+  </ol>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"step":{"editor":"enum","options":["start","check","plan","confirm","backup","install","verify","done"],"default":"plan"},"machine":{"editor":"enum","options":["none","device","pc","unsupported","conflict"],"default":"device"},"$preview":{"width":1280,"height":130}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props, I = window.INSTALLER;
+    const step = p.step ?? 'plan', mk = p.machine ?? 'device';
+    const m = I.machines[mk];
+    const at = I.flow.findIndex(f => f.id === step);
+    const all = step === 'done';
+    const steps = I.flow.map((f, i) => {
+      const state = all || (at >= 0 && i < at) ? 'done' : i === at ? 'current' : 'todo';
+      return { name: f.name, state, done: state === 'done', num: state === 'done' ? null : i + 1,
+        current: state === 'current' ? 'step' : undefined, now: '· step ' + (i + 1) + ' of ' + I.flow.length };
+    });
+    return { theme: window.INSTALLER_THEME(p.voice, p.scheme), pen: p.pen ?? '1',
+      hasChip: !!m, chip: m ? m.chip : '', hasSteps: step !== 'start', steps };
+  }
+}
+</script>
+</body>
+</html>

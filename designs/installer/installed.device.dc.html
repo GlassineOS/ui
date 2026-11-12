@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Note Air</title>
+<script src="./support.js"></script>
+<script src="data/interleaf.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/interleaf/components/bundle.css">
+<link rel="stylesheet" href="installer.css">
+</helmet>
+<dc-import name="Installed" machine="device" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,1350px"></dc-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "scheme": {"editor": "enum", "options": ["paper", "night", "eink"], "default": "paper"}, "pen": {"editor": "enum", "options": ["1", "2", "3"], "default": "1"}, "$preview": {"width": 1280, "height": 1350}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    return { voice: p.voice ?? 'white', scheme: p.scheme ?? 'paper', pen: p.pen ?? '1' };
+  }
+}
+</script>
+</body>
+</html>

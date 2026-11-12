@@ -1,0 +1,599 @@
+{
+ "v": 3,
+ "title": "GlassineOS installer",
+ "launch": {
+  "view": "canvas",
+  "page": "flow"
+ },
+ "pages": [
+  {
+   "id": "flow",
+   "name": "Flow · Note Air"
+  },
+  {
+   "id": "pc",
+   "name": "Flow · PC"
+  },
+  {
+   "id": "states",
+   "name": "Variants and failures"
+  },
+  {
+   "id": "again",
+   "name": "Cut off, installed, stock"
+  },
+  {
+   "id": "parts",
+   "name": "Parts"
+  }
+ ],
+ "boards": {
+  "start.browser.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 1000,
+   "title": "1 Start · in a browser on a computer",
+   "page": "flow",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "reach.guide.dc.html": {
+   "x": 1360,
+   "y": 0,
+   "w": 1280,
+   "h": 1250,
+   "title": "2 Reach the device · get it ready",
+   "page": "flow",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "reach.chooser.dc.html": {
+   "x": 2720,
+   "y": 0,
+   "w": 1280,
+   "h": 1250,
+   "title": "2 Reach the device · before the browser’s chooser",
+   "page": "flow",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "reach.found.dc.html": {
+   "x": 4080,
+   "y": 0,
+   "w": 1280,
+   "h": 1250,
+   "title": "2 Reach the device · found",
+   "page": "flow",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "check.device.dc.html": {
+   "x": 5440,
+   "y": 0,
+   "w": 1280,
+   "h": 2350,
+   "title": "3 Check · supported (Note Air)",
+   "page": "flow",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "plan.device.dc.html": {
+   "x": 6800,
+   "y": 0,
+   "w": 1280,
+   "h": 3000,
+   "title": "4 Plan · Note Air, Android kept",
+   "page": "flow",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "confirm.device.dc.html": {
+   "x": 0,
+   "y": 3240,
+   "w": 1280,
+   "h": 2000,
+   "title": "5 Confirm · Note Air",
+   "page": "flow",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "backup.device.dc.html": {
+   "x": 1360,
+   "y": 3240,
+   "w": 1280,
+   "h": 1500,
+   "title": "6 Back up · saving",
+   "page": "flow",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "install.device.ponr.dc.html": {
+   "x": 2720,
+   "y": 3240,
+   "w": 1280,
+   "h": 1900,
+   "title": "7 Install · the point of no return",
+   "page": "flow",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "install.device.dc.html": {
+   "x": 4080,
+   "y": 3240,
+   "w": 1280,
+   "h": 1900,
+   "title": "7 Install · mid-way",
+   "page": "flow",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "verify.device.dc.html": {
+   "x": 5440,
+   "y": 3240,
+   "w": 1280,
+   "h": 1200,
+   "title": "8 Verify · waiting to be accepted",
+   "page": "flow",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "done.device.dc.html": {
+   "x": 6800,
+   "y": 3240,
+   "w": 1280,
+   "h": 1150,
+   "title": "11 Done · installed",
+   "page": "flow",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "start.live.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 1000,
+   "title": "1 Start · in the live session on the PC",
+   "page": "pc",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "reach.pc.dc.html": {
+   "x": 1360,
+   "y": 0,
+   "w": 1280,
+   "h": 1250,
+   "title": "2 Reach · the PC, nothing to connect",
+   "page": "pc",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "check.pc.dc.html": {
+   "x": 2720,
+   "y": 0,
+   "w": 1280,
+   "h": 2350,
+   "title": "3 Check · supported (UEFI PC)",
+   "page": "pc",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "plan.pc.dc.html": {
+   "x": 4080,
+   "y": 0,
+   "w": 1280,
+   "h": 3000,
+   "title": "4 Plan · PC, Windows kept",
+   "page": "pc",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "confirm.pc.dc.html": {
+   "x": 5440,
+   "y": 0,
+   "w": 1280,
+   "h": 2000,
+   "title": "5 Confirm · PC, Windows kept",
+   "page": "pc",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "backup.pc.dc.html": {
+   "x": 0,
+   "y": 3240,
+   "w": 1280,
+   "h": 1500,
+   "title": "6 Back up · PC",
+   "page": "pc",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "install.pc.dc.html": {
+   "x": 1360,
+   "y": 3240,
+   "w": 1280,
+   "h": 1900,
+   "title": "7 Install · PC mid-way",
+   "page": "pc",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "verify.pc.dc.html": {
+   "x": 2720,
+   "y": 3240,
+   "w": 1280,
+   "h": 1200,
+   "title": "8 Verify · on GlassineOS’s first start",
+   "page": "pc",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "done.pc.dc.html": {
+   "x": 4080,
+   "y": 3240,
+   "w": 1280,
+   "h": 1150,
+   "title": "11 Done · PC installed",
+   "page": "pc",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "start.nowebusb.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 1000,
+   "title": "1 Start · browser without WebUSB",
+   "page": "states",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "reach.hand.dc.html": {
+   "x": 1360,
+   "y": 0,
+   "w": 1280,
+   "h": 1250,
+   "title": "2 Reach · restart by hand",
+   "page": "states",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "reach.debugging.dc.html": {
+   "x": 2720,
+   "y": 0,
+   "w": 1280,
+   "h": 1250,
+   "title": "2 Reach · turn on USB debugging",
+   "page": "states",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "reach.waiting.dc.html": {
+   "x": 4080,
+   "y": 0,
+   "w": 1280,
+   "h": 1250,
+   "title": "2 Reach · waiting for the device",
+   "page": "states",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "reach.notfresh.dc.html": {
+   "x": 0,
+   "y": 1490,
+   "w": 1280,
+   "h": 1250,
+   "title": "2 Reach · answered, not freshly started",
+   "page": "states",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "check.unsupported.dc.html": {
+   "x": 1360,
+   "y": 1490,
+   "w": 1280,
+   "h": 1650,
+   "title": "3 Check · unsupported, share the report",
+   "page": "states",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "check.conflict.dc.html": {
+   "x": 2720,
+   "y": 1490,
+   "w": 1280,
+   "h": 1650,
+   "title": "3 Check · conflicting signals",
+   "page": "states",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "plan.device.nocable.dc.html": {
+   "x": 4080,
+   "y": 1490,
+   "w": 1280,
+   "h": 1500,
+   "title": "4 Plan · no emergency cable: refused",
+   "page": "states",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "plan.pc.replace.dc.html": {
+   "x": 0,
+   "y": 3380,
+   "w": 1280,
+   "h": 3900,
+   "title": "4 Plan · PC, Windows replaced",
+   "page": "states",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "confirm.pc.replace.dc.html": {
+   "x": 1360,
+   "y": 3380,
+   "w": 1280,
+   "h": 2000,
+   "title": "5 Confirm · Windows replaced, confirm by name",
+   "page": "states",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "backup.device.verifying.dc.html": {
+   "x": 2720,
+   "y": 3380,
+   "w": 1280,
+   "h": 1500,
+   "title": "6 Back up · reading it back",
+   "page": "states",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "backup.device.verified.dc.html": {
+   "x": 4080,
+   "y": 3380,
+   "w": 1280,
+   "h": 1500,
+   "title": "6 Back up · verified",
+   "page": "states",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "backup.device.failed.dc.html": {
+   "x": 0,
+   "y": 7520,
+   "w": 1280,
+   "h": 1500,
+   "title": "6 Back up · the backup was lost",
+   "page": "states",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "install.device.stopping.dc.html": {
+   "x": 1360,
+   "y": 7520,
+   "w": 1280,
+   "h": 1900,
+   "title": "7 Install · stopping at the next safe point",
+   "page": "states",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "install.device.stopped.dc.html": {
+   "x": 2720,
+   "y": 7520,
+   "w": 1280,
+   "h": 1900,
+   "title": "7 Install · stopped: resume or undo",
+   "page": "states",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "verify.device.notaccepted.dc.html": {
+   "x": 4080,
+   "y": 7520,
+   "w": 1280,
+   "h": 1200,
+   "title": "8 Verify · the start wasn’t accepted",
+   "page": "states",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "resume.device.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 1650,
+   "title": "9 Cut off · Note Air: resume or restore",
+   "page": "again",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "resume.pc.dc.html": {
+   "x": 1360,
+   "y": 0,
+   "w": 1280,
+   "h": 1650,
+   "title": "9 Cut off · PC",
+   "page": "again",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "installed.device.dc.html": {
+   "x": 2720,
+   "y": 0,
+   "w": 1280,
+   "h": 1350,
+   "title": "10 Already installed · Note Air",
+   "page": "again",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "installed.pc.dc.html": {
+   "x": 4080,
+   "y": 0,
+   "w": 1280,
+   "h": 1350,
+   "title": "10 Already installed · PC",
+   "page": "again",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "plan.device.stock.dc.html": {
+   "x": 0,
+   "y": 1890,
+   "w": 1280,
+   "h": 2700,
+   "title": "10 → 4 Plan · back to stock",
+   "page": "again",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "done.device.stock.dc.html": {
+   "x": 1360,
+   "y": 1890,
+   "w": 1280,
+   "h": 1150,
+   "title": "11 Done · Note Air back to stock",
+   "page": "again",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "done.pc.stock.dc.html": {
+   "x": 2720,
+   "y": 1890,
+   "w": 1280,
+   "h": 1150,
+   "title": "11 Done · PC back to stock",
+   "page": "again",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "Header.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 130,
+   "title": "Part · Header (brand, machine, the six steps)",
+   "page": "parts",
+   "is_interactive": true
+  },
+  "Steps.dc.html": {
+   "x": 0,
+   "y": 300,
+   "w": 820,
+   "h": 1150,
+   "title": "Part · Steps (plan, summary, progress)",
+   "page": "parts",
+   "is_interactive": true
+  },
+  "Actions.dc.html": {
+   "x": 900,
+   "y": 300,
+   "w": 880,
+   "h": 220,
+   "title": "Part · Actions (next, way out, buttons)",
+   "page": "parts",
+   "is_interactive": true
+  }
+ },
+ "order": [
+  "start.browser.dc.html",
+  "reach.guide.dc.html",
+  "reach.chooser.dc.html",
+  "reach.found.dc.html",
+  "check.device.dc.html",
+  "plan.device.dc.html",
+  "confirm.device.dc.html",
+  "backup.device.dc.html",
+  "install.device.ponr.dc.html",
+  "install.device.dc.html",
+  "verify.device.dc.html",
+  "done.device.dc.html",
+  "start.live.dc.html",
+  "reach.pc.dc.html",
+  "check.pc.dc.html",
+  "plan.pc.dc.html",
+  "confirm.pc.dc.html",
+  "backup.pc.dc.html",
+  "install.pc.dc.html",
+  "verify.pc.dc.html",
+  "done.pc.dc.html",
+  "start.nowebusb.dc.html",
+  "reach.hand.dc.html",
+  "reach.debugging.dc.html",
+  "reach.waiting.dc.html",
+  "reach.notfresh.dc.html",
+  "check.unsupported.dc.html",
+  "check.conflict.dc.html",
+  "plan.device.nocable.dc.html",
+  "plan.pc.replace.dc.html",
+  "confirm.pc.replace.dc.html",
+  "backup.device.verifying.dc.html",
+  "backup.device.verified.dc.html",
+  "backup.device.failed.dc.html",
+  "install.device.stopping.dc.html",
+  "install.device.stopped.dc.html",
+  "verify.device.notaccepted.dc.html",
+  "resume.device.dc.html",
+  "resume.pc.dc.html",
+  "installed.device.dc.html",
+  "installed.pc.dc.html",
+  "plan.device.stock.dc.html",
+  "done.device.stock.dc.html",
+  "done.pc.stock.dc.html",
+  "Header.dc.html",
+  "Steps.dc.html",
+  "Actions.dc.html"
+ ],
+ "notes": {
+  "n-flow": {
+   "x": 0,
+   "y": -420,
+   "w": 1800,
+   "page": "flow",
+   "text": "The installer’s screens, a proposal (spec installer 001, decision 0014). This page: the Note Air from a Chromium browser, start to installed, in order. The PC page has the same screens with the PC’s texts (SC-005); every device or system name comes from data/fixtures.js, as from a device description. Buttons link to the next board. White first; every board takes the voice, scheme and pen pickers. Parts Interleaf lacks (stepper, primary button, progress, step list, choice row, field) are drawn in installer.css on Interleaf tokens."
+  },
+  "t-flow": {
+   "x": 0,
+   "y": -200,
+   "page": "flow",
+   "kind": "title1",
+   "text": "Flow · Note Air"
+  },
+  "t-pc": {
+   "x": 0,
+   "y": -200,
+   "page": "pc",
+   "kind": "title1",
+   "text": "Flow · UEFI PC"
+  },
+  "n-pc": {
+   "x": 0,
+   "y": -420,
+   "w": 1800,
+   "page": "pc",
+   "text": "The same screens for a PC started from the GlassineOS USB stick. Reaching the machine is one screen with nothing to connect. Verify runs on GlassineOS’s first start, because the live session ends with the restart (a design question)."
+  },
+  "t-states": {
+   "x": 0,
+   "y": -200,
+   "page": "states",
+   "kind": "title1",
+   "text": "Variants and failures"
+  },
+  "t-again": {
+   "x": 0,
+   "y": -200,
+   "page": "again",
+   "kind": "title1",
+   "text": "Cut off · already installed · back to stock"
+  },
+  "t-parts": {
+   "x": 0,
+   "y": -200,
+   "page": "parts",
+   "kind": "title1",
+   "text": "Parts"
+  }
+ }
+}

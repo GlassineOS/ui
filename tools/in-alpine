@@ -5,7 +5,8 @@
 # part of the references' contract (README "References"). This checkout and the current directory
 # are mounted at their own paths, the command runs as the calling user (files it writes are
 # theirs), and the npm dev dependencies are installed into this checkout's node_modules/ (npm ci)
-# when missing.
+# when missing. BOARDS_NETWORK=none runs CMD without network (the npm install, when needed, runs
+# before it in a container of its own).
 set -eu
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 PIN=$(cat "$ROOT/tools/chromium.pin")
@@ -38,8 +39,16 @@ fi
 mounts="-v $ROOT:$ROOT"
 case "$PWD/" in "$ROOT"/*) ;; *) mounts="$mounts -v $PWD:$PWD" ;; esac
 tty=; [ -t 0 ] && [ -t 1 ] && tty=-t
+net=
+if [ "${BOARDS_NETWORK:-}" = none ]; then
+	net="--network none"
+	# shellcheck disable=SC2086
+	docker run --rm $mounts --user "$(id -u):$(id -g)" -e HOME=/tmp/home -e npm_config_cache=/tmp/home/.npm -e BOARDS_ROOT="$ROOT" "$IMAGE" sh -euc '
+		mkdir -p "$HOME"
+		[ "$BOARDS_ROOT/node_modules/.package-lock.json" -nt "$BOARDS_ROOT/package-lock.json" ] || (cd "$BOARDS_ROOT" && npm ci --ignore-scripts --no-audit --no-fund >&2)'
+fi
 # shellcheck disable=SC2086
-exec docker run --rm -i $tty $mounts -w "$PWD" --user "$(id -u):$(id -g)" \
+exec docker run --rm -i $tty $net $mounts -w "$PWD" --user "$(id -u):$(id -g)" \
 	-e HOME=/tmp/home -e npm_config_cache=/tmp/home/.npm -e CHROMIUM=/usr/bin/chromium-browser -e BOARDS_NO_SANDBOX=1 \
 	-e BOARDS_ROOT="$ROOT" "$IMAGE" sh -euc '
 	mkdir -p "$HOME"

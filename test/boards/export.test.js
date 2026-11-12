@@ -26,7 +26,7 @@ function loads(out, file) {
   const dir = path.posix.dirname(file);
   const refs = [];
   for (const m of src.matchAll(/<script\b[^>]*\bsrc="([^"]+)"/g)) refs.push(m[1]);
-  for (const m of src.matchAll(/['"`]((?:\.\.?\/)*ds\/interleaf\/[^'"`?#]+)/g)) refs.push(m[1]);
+  for (const m of src.matchAll(/['"`]((?:\.\.?\/)*ds\/(?:interleaf|web)\/[^'"`?#]+)/g)) refs.push(m[1]);
   return refs.map(function (r) { return path.posix.normalize(path.posix.join(dir, r)); });
 }
 
@@ -38,7 +38,8 @@ test('export: the samples as files, every board resolves its runtime and Interle
   assert.deepStrictEqual(r.dirs, ['.', 'sub']);
   for (const f of ['index.html', MARKER, 'canvas.json', 'data/sample.js', '_boards/index.html', '_boards/view.html', '_boards/view.js',
     '_boards/canvas.js', '_boards/preview-common.js', '_boards/preview.css', '_boards/fonts/fonts.css', 'support.js', 'sub/support.js',
-    'ds/interleaf/tokens.json', 'sub/ds/interleaf/tokens.json', 'ds/interleaf/components/bundle.css']) {
+    'ds/interleaf/tokens.json', 'sub/ds/interleaf/tokens.json', 'ds/interleaf/components/bundle.css', 'ds/web/tokens.css',
+    'sub/ds/web/bundle.css', 'ds/web/fonts/fonts.css']) {
     assert.ok(fs.statSync(path.join(out, f)).isFile(), f);
   }
   // the canvas data is the server's, without live reload
@@ -62,6 +63,8 @@ test('export: the samples as files, every board resolves its runtime and Interle
   assert.match(top, /^window\.__BOARDS_CONFIG = \{"live":false,"root":"",/);
   assert.match(sub, /^window\.__BOARDS_CONFIG = \{"live":false,"root":"\.\.\/",/);
   assert.ok(top.includes('SUBSET_VERSION') && top.includes('BoardsTemplate'));
+  // the web form is the checkout's, as the preview serves it at ds/web/
+  assert.strictEqual(fs.readFileSync(path.join(out, 'sub/ds/web/tokens.css'), 'utf8'), fs.readFileSync(path.join(ROOT, 'web/tokens.css'), 'utf8'));
   // the Interleaf copy is the checkout's
   assert.strictEqual(fs.readFileSync(path.join(out, 'sub/ds/interleaf/tokens.json'), 'utf8'), fs.readFileSync(path.join(ROOT, 'interleaf/tokens.json'), 'utf8'));
   assert.strictEqual(T.SUBSET_VERSION, desc.subset);

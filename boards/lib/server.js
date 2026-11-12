@@ -5,6 +5,7 @@
 //   **/support.js          the runtime (vendored Preact + template.js + runtime.js), in place of the
 //                          file claude.ai serves there
 //   **/ds/interleaf/**     Interleaf from this checkout (or --interleaf), never a copy in the design
+//   **/ds/web/**           the web form (spec 002) from this checkout's web/, never a copy in the design
 //   /_boards/              the canvas index, the board view, the canvas data (api/canvas.json), live-reload events,
 //                          Interleaf's fonts (/_boards/fonts/)
 'use strict';
@@ -144,12 +145,13 @@ function hostName(v) {
   try { return new URL('http://' + v).hostname; } catch (e) { return null; }
 }
 
-// startServer({design, interleaf, host = '127.0.0.1', port = 0, live = true, allowHosts}) → {url, port, close()}
+// startServer({design, interleaf, web, host = '127.0.0.1', port = 0, live = true, allowHosts}) → {url, port, close()}
 function startServer(opts) {
   const design = path.resolve(opts.design);
   if (!fs.existsSync(design)) throw new Error('no design folder at ' + design);
   const interleaf = path.resolve(opts.interleaf || path.join(UI_ROOT, 'interleaf'));
   if (!fs.existsSync(path.join(interleaf, 'tokens.json'))) throw new Error('no Interleaf at ' + interleaf + ' (tokens.json missing); pass --interleaf DIR');
+  const web = path.resolve(opts.web || path.join(UI_ROOT, 'web'));
   const host = opts.host || '127.0.0.1';
   const live = opts.live !== false;
   const clients = new Set();
@@ -192,6 +194,8 @@ function startServer(opts) {
     }
     const ds = /(?:^|\/)ds\/interleaf\/(.*)$/.exec(p);
     if (ds) return sendFile(res, within(interleaf, ds[1]));
+    const wf = /(?:^|\/)ds\/web\/(.*)$/.exec(p);
+    if (wf) return sendFile(res, within(web, wf[1]));
     const f = within(design, p.slice(1));
     if (f && fs.existsSync(f) && fs.statSync(f).isDirectory()) { res.writeHead(302, { location: '/_boards/' }); res.end(); return; }
     sendFile(res, f);
@@ -217,7 +221,7 @@ function startServer(opts) {
         }, 120);
       };
     };
-    for (const root of [design, interleaf, RUNTIME_DIR]) {
+    for (const root of [design, interleaf, web, RUNTIME_DIR]) {
       try { watchers.push(fs.watch(root, { recursive: true }, fire(root))); } catch (e) { /* no recursive watch here */ }
     }
   }
@@ -229,7 +233,7 @@ function startServer(opts) {
       const port = server.address().port;
       const shown = host.indexOf(':') >= 0 ? '[' + host + ']' : host === '0.0.0.0' ? '127.0.0.1' : host;
       resolve({
-        url: 'http://' + shown + ':' + port + '/', port: port, design: design, interleaf: interleaf,
+        url: 'http://' + shown + ':' + port + '/', port: port, design: design, interleaf: interleaf, web: web,
         close: function () {
           for (const w of watchers) w.close();
           if (keepalive) clearInterval(keepalive);

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Actions</title>
+<script src="./support.js"></script>
+<script src="data/theme.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="installer.css">
+</helmet>
+<div class="ins-actions" data-theme="{{ theme }}" data-pen="{{ pen }}" style="background: var(--paper); color: var(--ink)">
+  <dl class="ins-next">
+    <dt class="il-label">Next</dt><dd>{{ next }}</dd>
+    <dt class="il-label">Way out</dt><dd>{{ out }}</dd>
+  </dl>
+  <div class="ins-buttons">
+    <sc-for list="{{ buttons }}" as="b" hint-placeholder-count="2">
+      <a class="{{ b.cls }}" href="{{ b.href }}" aria-disabled="{{ b.disabled }}" id="{{ b.id }}">{{ b.label }}</a>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":880,"height":200}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const buttons = (p.buttons || [
+      { label: 'Continue', href: '#', primary: true },
+      { label: 'Stop here', href: '#', push: true }
+    ]).map((b, i) => ({ ...b, id: b.id || 'act-' + i, href: b.disabled ? undefined : b.href,
+      disabled: b.disabled ? 'true' : undefined,
+      cls: 'il-btn' + (b.primary ? ' ins-primary' : '') + (b.push ? ' ins-push' : '') }));
+    return { theme: window.INSTALLER_THEME(p.voice, p.scheme), pen: p.pen ?? '1',
+      next: p.next ?? 'What happens when you continue.', out: p.out ?? 'How to leave without changing anything.', buttons };
+  }
+}
+</script>
+</body>
+</html>

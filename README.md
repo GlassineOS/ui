@@ -174,6 +174,16 @@ Load `tokens.css`, then `bundle.css`. Two attributes choose the look:
   ancestors have. A `data-pen` on an element with no `data-theme` does nothing. On e-ink the three
   pens are the same greys.
 
+`bundle.css` also sets, per voice, the variables its components are built from, and a page can use
+them for its own parts so that they follow the voice: type (`--v-text`, `--v-body`, `--v-head`,
+`--v-lh`, `--v-h1`, `--v-h1-w`, `--v-h1-ls`, `--v-h1-style`, `--v-h2`, `--v-h2-w`, `--v-h2-ls`,
+`--v-h2-variant`, `--v-h2-pad`, `--v-h2-rule`, `--v-label`, `--v-label-size`, `--v-label-w`,
+`--v-label-ls`, `--v-label-case`, `--v-label-variant`, `--v-label-color`, `--v-note`, `--v-note-size`,
+`--v-note-style`, `--v-note-tilt`), surfaces and edges (`--v-desk`, `--v-bar-bg`, `--v-bar-fg`,
+`--v-bar-rule`, `--v-card-edge`, `--v-card-radius`, `--v-ui-edge`, `--v-ui-radius`, `--v-title-rule`,
+`--v-row-rule`, `--v-table-head`, `--v-num-color`) and links (`--v-link-bg`, `--v-link-deco`,
+`--v-link-deco-color`). They are part of this contract: renaming or removing one is a new version.
+
 Without either attribute a page gets `white-paper` and pen 1. The fonts come with it: `bundle.css`
 imports `web/fonts/fonts.css` (one `@font-face` per file), so a page that loads the web form loads
 nothing from another site. Serve `web/` as a whole.

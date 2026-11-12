@@ -261,6 +261,18 @@ test('server: the default Interleaf is interleaf/ of this checkout', async () =>
   } finally { await srv.close(); }
 });
 
+test('server: ds/web/ at any depth is the web form of this checkout', async () => {
+  const srv = await startServer({ design: SAMPLES, live: false });
+  try {
+    assert.strictEqual(srv.web, path.join(ROOT, 'web'));
+    assert.strictEqual((await req(srv.url, '/ds/web/tokens.css')).body, fs.readFileSync(path.join(ROOT, 'web', 'tokens.css'), 'utf8'));
+    for (const p of ['/sub/ds/web/bundle.css', '/ds/web/combinations.json', '/ds/web/fonts/fonts.css']) {
+      assert.strictEqual((await req(srv.url, p)).status, 200, p);
+    }
+    assert.strictEqual((await req(srv.url, '/ds/web/..%2f..%2fLICENSE')).status, 404);
+  } finally { await srv.close(); }
+});
+
 test('import: an embedded ds/ is left out at any depth', () => {
   const root = path.join(TMP, 'nested-ds'), src = path.join(root, 'export'), dest = path.join(root, 'design');
   fs.rmSync(root, { recursive: true, force: true });

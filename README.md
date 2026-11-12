@@ -440,7 +440,8 @@ the line and the feature, and the check reports it as `unsupported`.
 - Links `<a href="Other.dc.html">` move to that board (relative to the board that holds the link; a
   leading `/` is the design folder); the preview's voice, scheme and pen go along. `#id` scrolls; `http`
   and `https` links to other sites open a new tab, other schemes (`javascript:`, `data:`) do nothing.
-- `fetch('ds/interleaf/…')` reads Interleaf from this repository (see below).
+- `fetch('ds/interleaf/…')` reads Interleaf from this repository, and `ds/web/tokens.css` and
+  `ds/web/bundle.css` load its web form (see below), so a board and a real page use the same names.
 
 ### Commands
 
@@ -465,8 +466,9 @@ tools/in-alpine CMD...      # CMD in alpine:3.24 with the pinned Chromium and no
   `--interleaf DIR` serves another copy as it is), never from a copy in the design folder. The tokens
   are served as `interleaf/tokens.json` has them: a board that reads a theme's value applies the
   theme fallback itself (`stationery-eink` takes `eink`'s value where it has none). Saving a board,
-  the canvas or Interleaf reloads the page. Node only, no npm packages.
-- The preview serves only files below the design folder (and Interleaf, and its own pages): no names
+  the canvas or Interleaf reloads the page. `ds/web/*` at any depth is this checkout's web form
+  (`web/`, see "Web form"), also never a copy in the design folder. Node only, no npm packages.
+- The preview serves only files below the design folder (and Interleaf, the web form, and its own pages): no names
   starting with `.`, no symbolic link that leads outside, no NUL in a path. It listens on 127.0.0.1;
   `--host 0.0.0.0` lets the hub reach it. It answers only requests whose `Host` (and `Origin`, when
   sent) is localhost, the bound address (every local address when bound to all), or a name given

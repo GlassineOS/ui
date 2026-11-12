@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Plan</title>
+<script src="./support.js"></script>
+<script src="data/interleaf.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/interleaf/components/bundle.css">
+<link rel="stylesheet" href="installer.css">
+</helmet>
+<div class="ins il-page" data-theme="{{ theme }}" data-pen="{{ pen }}">
+  <dc-import name="Header" step="plan" machine="{{ mk }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,130px"></dc-import>
+  <main class="ins-desk il-desk">
+    <div class="il-sheet ins-sheet">
+      <div class="il-title-block">
+        <span class="il-label">{{ eyebrow }}</span>
+        <h1 class="il-h1">{{ title }}</h1>
+        <p class="il-lead">{{ lead }}</p>
+      </div>
+
+      <sc-if value="{{ hasErase }}" hint-placeholder-val="{{ true }}">
+        <aside class="il-admonition il-admonition--danger" id="erase">
+          <span class="il-admonition__label"><span class="il-admonition__seal" aria-hidden="true">!</span>Erases your files</span>
+          <p class="il-admonition__title">{{ er.title }}</p>
+          <p>{{ er.body }}</p>
+          <p><strong>Way out:</strong> {{ er.exit }}</p>
+        </aside>
+      </sc-if>
+
+      <section class="ins-stack ins-stack--wide">
+        <h2 class="ins-h2">Your choices</h2>
+        <sc-if value="{{ hasDisks }}" hint-placeholder-val="{{ false }}">
+          <fieldset class="ins-stack" style="border:0;margin:0;padding:0">
+            <legend class="il-label" style="margin-bottom:8px">Install on</legend>
+            <sc-for list="{{ disks }}" as="d" hint-placeholder-count="1">
+              <label class="ins-choice"><input type="radio" name="disk" checked="{{ d.checked }}"><span class="ins-choice__body"><span class="ins-choice__title">{{ d.name }}</span><span class="ins-small ins-soft">{{ d.body }}</span></span></label>
+            </sc-for>
+            <p class="ins-small ins-soft">No other disk was found. A disk connected later shows here.</p>
+          </fieldset>
+        </sc-if>
+        <sc-for list="{{ oses }}" as="o" hint-placeholder-count="1">
+          <fieldset class="ins-stack" style="border:0;margin:0;padding:0">
+            <legend class="il-label" style="margin-bottom:8px">{{ o.heading }}</legend>
+            <label class="ins-choice"><input type="radio" name="{{ o.group }}" checked="{{ o.isKeep }}" onChange="{{ o.pickKeep }}"><span class="ins-choice__body"><span class="ins-choice__title">{{ o.keep }}</span><span class="ins-small">{{ o.keepBody }}</span><span class="ins-small ins-soft">{{ o.pick }}</span></span></label>
+            <label class="ins-choice"><input type="radio" name="{{ o.group }}" checked="{{ o.isReplace }}" onChange="{{ o.pickReplace }}"><span class="ins-choice__body"><span class="ins-choice__title">{{ o.replace }}</span><span class="ins-small">{{ o.replaceBody }}</span></span></label>
+          </fieldset>
+        </sc-for>
+        <sc-if value="{{ replacing }}" hint-placeholder-val="{{ false }}">
+          <aside class="il-admonition il-admonition--danger">
+            <span class="il-admonition__label"><span class="il-admonition__seal" aria-hidden="true">!</span>Replaces a system</span>
+            <p class="il-admonition__title">{{ replaceTitle }}</p>
+            <p>{{ replaceNeeds }}</p>
+            <p><strong>Way out:</strong> choose “{{ keepLabel }}” above. Until you confirm, nothing changes.</p>
+          </aside>
+        </sc-if>
+        <sc-if value="{{ hasCable }}" hint-placeholder-val="{{ true }}">
+          <fieldset class="ins-stack" style="border:0;margin:0;padding:0">
+            <legend class="il-label" style="margin-bottom:8px">{{ cableFor }}</legend>
+            <p class="ins-card__title">{{ cb.question }}</p>
+            <p class="ins-small">{{ cb.what }} <a class="il-link" href="#">{{ cb.get }}</a></p>
+            <div class="ins-grid">
+              <label class="ins-choice"><input type="radio" name="cable" checked="{{ cableYes }}" onChange="{{ pickCableYes }}"><span class="ins-choice__body"><span class="ins-choice__title">{{ cb.yes }}</span></span></label>
+              <label class="ins-choice"><input type="radio" name="cable" checked="{{ cableNo }}" onChange="{{ pickCableNo }}"><span class="ins-choice__body"><span class="ins-choice__title">{{ cb.no }}</span></span></label>
+            </div>
+          </fieldset>
+        </sc-if>
+      </section>
+
+      <sc-if value="{{ refused }}" hint-placeholder-val="{{ false }}">
+        <aside class="il-admonition il-admonition--warning" id="refused">
+          <span class="il-admonition__label"><span class="il-admonition__seal" aria-hidden="true">G</span>Can’t be installed</span>
+          <p class="il-admonition__title">The plan stops here</p>
+          <p>{{ cb.refused }}</p>
+          <p><strong>Way out:</strong> stop here, or get an emergency cable and make the plan again.</p>
+        </aside>
+      </sc-if>
+
+      <sc-if value="{{ notRefused }}" hint-placeholder-val="{{ true }}">
+        <section class="ins-stack">
+          <h2 class="ins-h2">The steps, in order</h2>
+          <p class="ins-small ins-soft">Each step says where {{ the }} is if that step fails. Technical names are under Details.</p>
+          <dc-import name="Steps" machine="{{ mk }}" mode="plan" variant="{{ variant }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,1100px"></dc-import>
+        </section>
+        <section class="ins-stack">
+          <div class="il-table-wrap"><table class="il-table"><thead><tr><th>Space it needs</th><th></th></tr></thead><tbody>
+            <sc-for list="{{ m.space }}" as="s" hint-placeholder-count="2"><tr><td style="width:34%">{{ s.0 }}</td><td>{{ s.1 }}</td></tr></sc-for>
+          </tbody></table></div>
+        </section>
+      </sc-if>
+
+      <dc-import name="Actions" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" next="{{ next }}" out="{{ out }}" buttons="{{ buttons }}" hint-size="100%,140px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"machine":{"editor":"enum","options":["device","pc"],"default":"device"},"state":{"editor":"enum","options":["ready","nocable","replace","stock"],"default":"ready"},"$preview":{"width":1280,"height":2900}}'>
+class Component extends DCLogic {
+  state = {};
+  renderVals() {
+    const p = this.props, I = window.INSTALLER, mk = p.machine ?? 'device', m = I.machines[mk], st = p.state ?? 'ready';
+    const cable = this.state.cable ?? (st === 'nocable' ? 'no' : 'yes');
+    const replace = this.state.replace ?? (st === 'replace');
+    const stock = st === 'stock';
+    const list = mk === 'pc' ? m.oses : [m.keepChoice];
+    const oses = stock ? [] : list.map((o, i) => ({ ...o, group: 'os' + i, isKeep: !replace, isReplace: replace,
+      pickKeep: () => this.setState({ replace: false }), pickReplace: () => this.setState({ replace: true }) }));
+    const hasCable = !!m.cable, refused = hasCable && cable === 'no';
+    const replacing = replace;
+    const confirmHref = stock ? '#' : mk === 'pc' ? (replacing ? 'confirm.pc.replace.dc.html' : 'confirm.pc.dc.html') : 'confirm.device.dc.html';
+    return { theme: window.INSTALLER_THEME(p.voice, p.scheme), voice: p.voice ?? 'white', scheme: p.scheme ?? 'paper', pen: p.pen ?? '1',
+      mk, m, er: (stock ? m.stockErase : m.erase) || {}, cb: m.cable || {}, the: m.the, oses, hasDisks: !!m.disks && !stock, disks: m.disks || [], hasCable, hasErase: !!(stock ? m.stockErase : m.erase),
+      cableYes: cable === 'yes', cableNo: cable === 'no',
+      pickCableYes: () => this.setState({ cable: 'yes' }), pickCableNo: () => this.setState({ cable: 'no' }),
+      refused, notRefused: !refused, cableFor: stock ? 'Needed for step 4' : 'Needed for step 2', replacing, variant: stock ? 'stock' : replacing && mk === 'pc' ? 'replace' : 'normal',
+      replaceTitle: list[0].os + ' will be erased', keepLabel: list[0].keep,
+      replaceNeeds: mk === 'pc' ? m.replaceNeeds : list[0].replaceBody + ' On the next screen you confirm it by its name.',
+      eyebrow: refused ? 'Plan · refused, nothing was changed' : 'Plan · nothing is written yet',
+      title: stock ? 'The plan to go back to stock' : mk === 'pc' ? 'The plan for this PC' : 'The plan for your ' + m.short,
+      lead: refused ? 'One question decides whether ' + m.the + ' can be installed.' : 'What the installer will do, in this order. Choose what to keep, then confirm on the next screen. Until then nothing is written.',
+      next: refused ? 'Nothing more: the plan can’t go ahead without that step.' : 'Confirm: you see the whole plan once more and choose where the backup goes. Nothing is written before you confirm.',
+      out: 'Stop here: a dry run can end with this plan. Nothing was changed; ' + (mk === 'pc' ? 'the PC starts Windows as before.' : 'the device starts Android as before.'),
+      buttons: [
+        { label: 'Continue to confirm', href: confirmHref, primary: true, disabled: refused },
+        { label: 'Back to the check', href: mk === 'pc' ? 'check.pc.dc.html' : 'check.device.dc.html' },
+        { label: refused ? 'Save the report' : 'Save the plan', href: '#' },
+        { label: 'Stop here', href: 'start.browser.dc.html', push: true }] };
+  }
+}
+</script>
+</body>
+</html>

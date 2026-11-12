@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Confirm</title>
+<script src="./support.js"></script>
+<script src="data/interleaf.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/interleaf/components/bundle.css">
+<link rel="stylesheet" href="installer.css">
+</helmet>
+<div class="ins il-page" data-theme="{{ theme }}" data-pen="{{ pen }}">
+  <dc-import name="Header" step="confirm" machine="{{ mk }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,130px"></dc-import>
+  <main class="ins-desk il-desk">
+    <div class="il-sheet ins-sheet">
+      <div class="il-title-block">
+        <span class="il-label">Confirm · one confirmation for the whole plan</span>
+        <h1 class="il-h1">Confirm the plan</h1>
+        <p class="il-lead">{{ lead }}</p>
+      </div>
+
+      <section class="ins-stack">
+        <h2 class="ins-h2">What happens, in order</h2>
+        <dc-import name="Steps" machine="{{ mk }}" mode="summary" variant="{{ variant }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,420px"></dc-import>
+      </section>
+
+      <div class="ins-grid">
+        <section class="ins-card"><span class="il-label">Kept</span><ul class="ins-stack ins-small"><sc-for list="{{ kept }}" as="k" hint-placeholder-count="2"><li>{{ k }}</li></sc-for></ul></section>
+        <section class="ins-card"><span class="il-label">Systems replaced</span><p class="ins-small">{{ replacedText }}</p></section>
+      </div>
+
+      <sc-if value="{{ hasErase }}" hint-placeholder-val="{{ true }}">
+        <aside class="il-admonition il-admonition--danger">
+          <span class="il-admonition__label"><span class="il-admonition__seal" aria-hidden="true">!</span>Erases your files</span>
+          <p class="il-admonition__title">{{ er.title }}</p>
+          <p>{{ er.body }}</p>
+          <p><strong>Way out:</strong> go back to the plan or stop here. Nothing has changed yet.</p>
+        </aside>
+      </sc-if>
+
+      <section class="ins-stack">
+        <h2 class="ins-h2">Where the backup goes</h2>
+        <div class="ins-card ins-card--strong">
+          <span class="il-label">{{ where.label }}</span>
+          <div class="ins-row"><span class="ins-card__title">{{ where.chosen }}</span><a class="il-btn" href="#">{{ where.choose }}</a></div>
+          <p class="ins-small ins-soft">{{ where.note }}</p>
+        </div>
+      </section>
+
+      <sc-if value="{{ replacing }}" hint-placeholder-val="{{ false }}">
+        <section class="ins-stack">
+          <h2 class="ins-h2">Confirm what is erased</h2>
+          <label class="ins-field" for="osname">
+            <span>{{ replacedName }} and every file in it will be erased. To confirm, type its name: <strong>{{ replacedName }}</strong></span>
+            <input id="osname" type="text" value="{{ typed }}" onChange="{{ type }}" autocomplete="off" aria-describedby="osname-state">
+            <span id="osname-state" class="ins-small ins-soft">{{ typedState }}</span>
+          </label>
+        </section>
+      </sc-if>
+
+      <p class="ins-small ins-soft">You can stop at any time: the installer stops at the next safe point and offers to resume or undo.</p>
+
+      <dc-import name="Actions" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" next="{{ next }}" out="{{ out }}" buttons="{{ buttons }}" hint-size="100%,140px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"machine":{"editor":"enum","options":["device","pc"],"default":"device"},"state":{"editor":"enum","options":["keep","replace","typed"],"default":"keep"},"$preview":{"width":1280,"height":1900}}'>
+class Component extends DCLogic {
+  state = {};
+  renderVals() {
+    const p = this.props, I = window.INSTALLER, mk = p.machine ?? 'device', m = I.machines[mk], st = p.state ?? 'keep';
+    const replacing = mk === 'pc' && st !== 'keep';
+    const os = mk === 'pc' ? m.oses[0].os : m.keepChoice.os;
+    const typed = this.state.typed ?? (st === 'typed' ? os : '');
+    const ok = !replacing || typed.trim() === os;
+    const where = replacing ? m.backupWhereReplace : m.backupWhere;
+    return { theme: window.INSTALLER_THEME(p.voice, p.scheme), voice: p.voice ?? 'white', scheme: p.scheme ?? 'paper', pen: p.pen ?? '1',
+      mk, er: m.erase || {}, hasErase: !!m.erase, where, replacing, replacedName: os, typed,
+      variant: replacing ? 'replace' : 'normal',
+      kept: replacing ? ['Nothing on this disk'] : m.fate.keep,
+      replacedText: replacing ? os + ': erased, after a backup of it.' : 'None. ' + os + ' is kept and still starts.',
+      typedState: typed === '' ? 'Not typed yet.' : ok ? 'Matches.' : 'Doesn’t match yet.',
+      type: e => this.setState({ typed: e.target.value }),
+      lead: 'This is everything the installer will do on ' + m.the + '. When you confirm, it starts: first the backup, then the steps below, and nothing else.',
+      next: 'The backup starts. It is checked by reading it back before anything on ' + m.the + ' is written.',
+      out: 'Go back to the plan, or stop here. Nothing has changed.',
+      buttons: [
+        { label: 'Install as planned', href: mk === 'pc' ? 'backup.pc.dc.html' : 'backup.device.dc.html', primary: true, disabled: !ok, id: 'install' },
+        { label: 'Back to the plan', href: mk === 'pc' ? (replacing ? 'plan.pc.replace.dc.html' : 'plan.pc.dc.html') : 'plan.device.dc.html' },
+        { label: 'Stop here', href: 'start.browser.dc.html', push: true }] };
+  }
+}
+</script>
+</body>
+</html>

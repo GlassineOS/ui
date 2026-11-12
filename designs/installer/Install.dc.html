@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Install</title>
+<script src="./support.js"></script>
+<script src="data/interleaf.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/interleaf/components/bundle.css">
+<link rel="stylesheet" href="installer.css">
+</helmet>
+<div class="ins il-page" data-theme="{{ theme }}" data-pen="{{ pen }}">
+  <dc-import name="Header" step="install" machine="{{ mk }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,130px"></dc-import>
+  <main class="ins-desk il-desk">
+    <div class="il-sheet ins-sheet">
+      <div class="il-title-block">
+        <span class="il-label">{{ eyebrow }}</span>
+        <h1 class="il-h1">{{ title }}</h1>
+        <p class="il-lead">{{ lead }}</p>
+      </div>
+
+      <sc-if value="{{ running }}" hint-placeholder-val="{{ true }}">
+        <aside class="il-admonition il-admonition--note">
+          <span class="il-admonition__label">While it runs</span>
+          <p>{{ keepConnected }} If the connection is lost anyway, start the installer again: it finds the installation and resumes or undoes it.</p>
+        </aside>
+      </sc-if>
+
+      <sc-if value="{{ stopped }}" hint-placeholder-val="{{ false }}">
+        <div class="ins-card ins-card--strong" id="stopped">
+          <span class="il-label">Stopped at a safe point</span>
+          <span class="ins-card__title">{{ stoppedTitle }}</span>
+          <p>{{ cutNow }}</p>
+          <p class="ins-small ins-soft">Resume carries on with the next step. Undo puts the backup back. Close leaves it as it is: the next time you start the installer, it offers both again.</p>
+        </div>
+      </sc-if>
+
+      <dc-import name="Steps" machine="{{ mk }}" mode="progress" at="{{ at }}" pct="{{ pct }}" stopped="{{ stopped }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,900px"></dc-import>
+
+      <dc-import name="Actions" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" next="{{ next }}" out="{{ out }}" buttons="{{ buttons }}" hint-size="100%,140px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"machine":{"editor":"enum","options":["device","pc"],"default":"device"},"state":{"editor":"enum","options":["midway","ponr","stopping","stopped"],"default":"midway"},"$preview":{"width":1280,"height":1700}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props, I = window.INSTALLER, mk = p.machine ?? 'device', m = I.machines[mk], st = p.state ?? 'midway';
+    const ponrAt = m.steps.findIndex(s => s.ponr);
+    let at = st === 'ponr' && ponrAt >= 0 ? ponrAt : m.installAt;
+    const stopped = st === 'stopped', cur = m.steps[stopped ? at - 1 : at], nxt = m.steps[stopped ? at : at + 1];
+    const n = m.steps.length;
+    const stopLabel = st === 'stopping' ? 'Stopping after this step…' : 'Stop at the next safe point';
+    return { theme: window.INSTALLER_THEME(p.voice, p.scheme), voice: p.voice ?? 'white', scheme: p.scheme ?? 'paper', pen: p.pen ?? '1',
+      mk, at, pct: st === 'ponr' ? 70 : m.installPct, stopped, running: !stopped, keepConnected: m.keepConnected,
+      stoppedTitle: 'Stopped after step ' + at + ', ' + cur.title, cutNow: m.cutNow,
+      eyebrow: stopped ? 'Install · stopped' : st === 'stopping' ? 'Install · stopping after this step' : 'Install · step ' + (at + 1) + ' of ' + n,
+      title: stopped ? 'The installation is stopped' : cur.title,
+      lead: stopped ? 'It stopped where you asked, at a point the plan names as safe.' : cur.ponr ? 'This is the point of no return. After this step, the installation can only be finished or undone by the installer.' : 'The installer follows the plan you confirmed, one step after another.',
+      next: stopped ? 'Your choice: resume with step ' + (at + 1) + ', ' + nxt.title + ', or undo.' : nxt ? 'Step ' + (at + 2) + ': ' + nxt.title + '.' : 'The restart into GlassineOS.',
+      out: stopped ? m.undoBody : st === 'stopping' ? 'The installer stops after this step, then offers to resume or undo.' : 'Stop at the next safe point: after this step. Then resume or undo.',
+      buttons: stopped
+        ? [{ label: 'Resume', href: mk === 'pc' ? 'install.pc.dc.html' : 'install.device.dc.html', primary: true }, { label: 'Undo: put the backup back', href: 'done.device.stock.dc.html' }, { label: 'Close', href: 'resume.device.dc.html', push: true }]
+        : [{ label: stopLabel, href: st === 'stopping' ? undefined : 'install.device.stopping.dc.html', disabled: st === 'stopping', id: 'stop' }] };
+  }
+}
+</script>
+</body>
+</html>

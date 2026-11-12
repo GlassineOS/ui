@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Back up</title>
+<script src="./support.js"></script>
+<script src="data/interleaf.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/interleaf/components/bundle.css">
+<link rel="stylesheet" href="installer.css">
+</helmet>
+<div class="ins il-page" data-theme="{{ theme }}" data-pen="{{ pen }}">
+  <dc-import name="Header" step="backup" machine="{{ mk }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,130px"></dc-import>
+  <main class="ins-desk il-desk">
+    <div class="il-sheet ins-sheet">
+      <div class="il-title-block">
+        <span class="il-label">{{ eyebrow }}</span>
+        <h1 class="il-h1">{{ title }}</h1>
+        <p class="il-lead">{{ lead }}</p>
+      </div>
+
+      <sc-if value="{{ failed }}" hint-placeholder-val="{{ false }}">
+        <aside class="il-admonition il-admonition--warning" id="failed">
+          <span class="il-admonition__label"><span class="il-admonition__seal" aria-hidden="true">G</span>The installation didn’t start</span>
+          <p class="il-admonition__title">The backup can’t be read back</p>
+          <p>The folder can’t be read any more: its disk was removed, or it is full. Without a backup that reads back, the installer writes nothing.</p>
+          <p><strong>Way out:</strong> {{ unchanged }} Choose a folder with enough room and back up again, or stop here.</p>
+        </aside>
+      </sc-if>
+
+      <div class="ins-card">
+        <span class="il-label">The backup goes to</span>
+        <span class="ins-card__title">{{ where.chosen }}</span>
+        <p class="ins-small ins-soft">{{ whereNote }}</p>
+      </div>
+
+      <sc-if value="{{ verified }}" hint-placeholder-val="{{ false }}">
+        <div class="ins-card ins-card--strong">
+          <div class="ins-row"><span class="ins-yn ins-yn--yes" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" style="fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span><span class="ins-card__title">Verified by reading it back</span></div>
+          <p>Every part reads back the same as on {{ the }}. The installation starts now.</p>
+        </div>
+      </sc-if>
+
+      <section class="ins-stack">
+        <h2 class="ins-h2">{{ listTitle }}</h2>
+        <ul class="ins-items">
+          <sc-for list="{{ items }}" as="it" hint-placeholder-count="8">
+            <li>
+              <span class="{{ it.cls }}" aria-hidden="true"><sc-if value="{{ it.tick }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 24 24" style="fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></sc-if></span>
+              <span><span style="font-weight:600">{{ it.name }}</span> <span class="ins-items__size">{{ it.size }}</span></span>
+              <span class="{{ it.tagCls }}">{{ it.status }}</span>
+              <sc-if value="{{ it.bar }}" hint-placeholder-val="{{ false }}"><div class="ins-bar" role="progressbar" aria-valuenow="{{ pct }}" aria-valuemin="0" aria-valuemax="100"><span style="width: {{ pct }}%"></span></div></sc-if>
+            </li>
+          </sc-for>
+        </ul>
+        <details class="il-details"><summary>Technical names</summary>
+          <ul class="ins-stack ins-small" style="font-family: var(--font-mono); font-size: 13.5px"><sc-for list="{{ items }}" as="it" hint-placeholder-count="8"><li>{{ it.name }}: {{ it.tech }}</li></sc-for></ul>
+        </details>
+      </section>
+
+      <dc-import name="Actions" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" next="{{ next }}" out="{{ out }}" buttons="{{ buttons }}" hint-size="100%,140px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"machine":{"editor":"enum","options":["device","pc"],"default":"device"},"state":{"editor":"enum","options":["saving","verifying","verified","failed"],"default":"saving"},"$preview":{"width":1280,"height":1500}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props, I = window.INSTALLER, mk = p.machine ?? 'device', m = I.machines[mk], st = p.state ?? 'saving';
+    const n = m.backupItems.length, at = st === 'saving' ? m.backupAt : st === 'verifying' ? 2 : st === 'failed' ? 3 : n;
+    const reading = st !== 'saving';
+    const items = m.backupItems.map((it, i) => {
+      let status, cls, tick = false, bar = false, tagCls = 'ins-tag';
+      if (st === 'failed' && i === at) { status = 'Can’t be read'; cls = 'ins-yn ins-yn--no'; tagCls = 'ins-tag ins-tag--heavy'; }
+      else if (i < at) { status = reading ? 'Read back · matches' : 'Saved'; cls = 'ins-yn ins-yn--yes'; tick = true; }
+      else if (i === at && st !== 'verified') { status = reading ? 'Reading back' : 'Saving'; cls = 'ins-yn ins-yn--wait'; bar = st !== 'failed'; tagCls = 'ins-tag ins-tag--heavy'; }
+      else { status = st === 'failed' ? 'Not checked' : reading ? 'Saved, to read back' : 'Waiting'; cls = 'ins-yn ins-yn--no'; tagCls = 'ins-tag ins-tag--soft'; }
+      return { ...it, status, cls: cls + ' ins-yn--small', tick, bar, tagCls };
+    });
+    const unchanged = mk === 'pc' ? 'Nothing on the PC has changed; it starts Windows as before.' : 'Nothing on the device has changed; it starts Android as before.';
+    const T = {
+      saving: ['Back up · step 1 of the plan', 'Backing up ' + m.the, 'The installer copies every part it will replace or change. Nothing on ' + m.the + ' is written yet.'],
+      verifying: ['Back up · checking the copy', 'Reading the backup back', 'Each part is read back from the backup and compared with ' + m.the + ', before anything is written.'],
+      verified: ['Back up · done', 'The backup is complete', 'It reads back the same as ' + m.the + '.'],
+      failed: ['Back up · stopped, nothing was written', 'The backup was lost', 'The installation didn’t start.']
+    }[st];
+    return { theme: window.INSTALLER_THEME(p.voice, p.scheme), voice: p.voice ?? 'white', scheme: p.scheme ?? 'paper', pen: p.pen ?? '1',
+      mk, the: m.the, where: m.backupWhere, items, pct: st === 'saving' ? m.backupPct : 30,
+      whereNote: 'Keep it: ' + m.the + ' goes back to stock from it. ' + m.keepConnected,
+      failed: st === 'failed', verified: st === 'verified', unchanged,
+      listTitle: reading ? 'Read back, part by part' : 'Saved, part by part',
+      eyebrow: T[0], title: T[1], lead: T[2],
+      next: st === 'failed' ? 'Nothing, until there is a backup that reads back.' : st === 'verified' ? 'The installation starts with step 2.' : 'When every part reads back, the installation starts by itself.',
+      out: st === 'failed' ? 'Stop here. ' + unchanged : 'Stop now. ' + unchanged + ' The backup stays where it is.',
+      buttons: st === 'failed'
+        ? [{ label: 'Choose another folder', href: 'backup.device.dc.html', primary: true }, { label: 'Stop here', href: 'start.browser.dc.html', push: true }]
+        : st === 'verified' ? [{ label: 'Continue', href: mk === 'pc' ? 'install.pc.dc.html' : 'install.device.ponr.dc.html', primary: true }]
+        : [{ label: 'Stop', href: 'start.browser.dc.html' }] };
+  }
+}
+</script>
+</body>
+</html>

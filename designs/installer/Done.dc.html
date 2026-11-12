@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Done</title>
+<script src="./support.js"></script>
+<script src="data/interleaf.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/interleaf/components/bundle.css">
+<link rel="stylesheet" href="installer.css">
+</helmet>
+<div class="ins il-page" data-theme="{{ theme }}" data-pen="{{ pen }}">
+  <dc-import name="Header" step="done" machine="{{ mk }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,130px"></dc-import>
+  <main class="ins-desk il-desk">
+    <div class="il-sheet ins-sheet">
+      <div class="il-title-block">
+        <span class="il-label">{{ eyebrow }}</span>
+        <h1 class="il-h1">{{ title }}</h1>
+        <p class="il-lead">{{ lead }}</p>
+      </div>
+      <div class="ins-row"><span class="ins-tag ins-tag--fill">{{ tag }}</span></div>
+      <ul class="ins-caps">
+        <sc-for list="{{ rows }}" as="r" hint-placeholder-count="4">
+          <li><span class="ins-yn ins-yn--yes" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" style="fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span><span class="ins-caps__text"><span class="ins-caps__name">{{ r.0 }}</span><span>{{ r.1 }}</span></span></li>
+        </sc-for>
+      </ul>
+      <sc-if value="{{ hasLost }}" hint-placeholder-val="{{ false }}">
+        <aside class="il-admonition il-admonition--note"><span class="il-admonition__label">Note</span><p>{{ lost }}</p></aside>
+      </sc-if>
+      <dc-import name="Actions" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" next="{{ next }}" out="{{ out }}" buttons="{{ buttons }}" hint-size="100%,140px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"machine":{"editor":"enum","options":["device","pc"],"default":"device"},"state":{"editor":"enum","options":["installed","stock"],"default":"installed"},"$preview":{"width":1280,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props, I = window.INSTALLER, mk = p.machine ?? 'device', m = I.machines[mk], d = m.done, stock = (p.state ?? 'installed') === 'stock';
+    const rows = stock
+      ? [['Checked', d.stockBody], ['The backup', d.stockBackup]]
+      : [['Next, on ' + m.the, d.next], ['Still there', d.kept], ['The backup', d.backup], ['The record', d.record], ['Nothing left behind', d.vendor]];
+    return { theme: window.INSTALLER_THEME(p.voice, p.scheme), voice: p.voice ?? 'white', scheme: p.scheme ?? 'paper', pen: p.pen ?? '1',
+      mk, rows, hasLost: stock, lost: d.stockLost,
+      eyebrow: stock ? 'Back to stock · done' : 'Verify · accepted',
+      title: stock ? d.stockTitle : d.title,
+      lead: stock ? 'The backup is back on ' + m.the + '.' : 'Its first start was accepted. The installation is complete.',
+      tag: stock ? 'Back to stock' : 'Installed',
+      next: stock ? 'Nothing. ' + (mk === 'pc' ? 'The PC starts Windows.' : m.the.charAt(0).toUpperCase() + m.the.slice(1) + ' starts Android.') : 'First-time setup on ' + m.the + '. The installer’s work is done.',
+      out: mk === 'pc' ? 'Close the installer.' : 'Close the installer and unplug ' + m.the + '.',
+      buttons: [{ label: 'Close the installer', href: 'start.browser.dc.html', primary: true }, { label: stock ? 'Save the report' : 'Save the installation record', href: '#' }] };
+  }
+}
+</script>
+</body>
+</html>

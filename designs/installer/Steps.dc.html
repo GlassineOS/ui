@@ -51,7 +51,8 @@ class Component extends DCLogic {
     const mode = p.mode ?? 'plan';
     const at = p.at === undefined ? -1 : Number(p.at), pct = p.pct ?? 0, stopped = !!p.stopped;
     const list = p.variant === 'replace' && m.stepsReplace ? m.stepsReplace : p.variant === 'stock' && m.stockSteps ? m.stockSteps : m.steps;
-    const steps = list.map((s, i) => {
+    const steps = list.map((s0, i) => {
+      const s = p.backup === 'off' && s0.noBackup ? { ...s0, ...s0.noBackup } : s0;
       const prog = mode === 'progress';
       const state = !prog ? 'todo-plain' : i < at ? 'done' : i === at && !stopped ? 'current' : 'todo';
       const cur = state === 'current';

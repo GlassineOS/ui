@@ -26,7 +26,7 @@
 
       <section class="ins-stack">
         <h2 class="ins-h2">What happens, in order</h2>
-        <dc-import name="Steps" machine="{{ mk }}" mode="summary" variant="{{ variant }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,420px"></dc-import>
+        <dc-import name="Steps" machine="{{ mk }}" mode="summary" variant="{{ variant }}" backup="{{ backupState }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,420px"></dc-import>
       </section>
 
       <div class="ins-grid">
@@ -39,16 +39,30 @@
           <span class="il-admonition__label"><span class="il-admonition__seal" aria-hidden="true">!</span>Erases your files</span>
           <p class="il-admonition__title">{{ er.title }}</p>
           <p>{{ er.body }}</p>
+          <p>{{ erBackupLine }}</p>
+          <label class="ins-check"><input type="checkbox" id="erase-ack" checked="{{ acked }}" onChange="{{ toggleAck }}"><span>{{ er.ack }}</span></label>
           <p><strong>Way out:</strong> go back to the plan or stop here. Nothing has changed yet.</p>
         </aside>
       </sc-if>
 
+      <sc-if value="{{ off }}" hint-placeholder-val="{{ false }}">
+        <aside class="il-admonition il-admonition--danger" id="nobackup">
+          <span class="il-admonition__label"><span class="il-admonition__seal" aria-hidden="true">!</span>No backup</span>
+          <p class="il-admonition__title">You chose to install without a backup</p>
+          <p>{{ bk.offWhat }}</p>
+          <p><strong>Way out:</strong> go back to the plan and choose “{{ bk.on }}”.</p>
+        </aside>
+      </sc-if>
+
       <section class="ins-stack">
-        <h2 class="ins-h2">Where the backup goes</h2>
-        <div class="ins-card ins-card--strong">
+        <h2 class="ins-h2">{{ whereTitle }}</h2>
+        <div class="{{ whereCls }}">
           <span class="il-label">{{ where.label }}</span>
           <div class="ins-row"><span class="ins-card__title">{{ where.chosen }}</span><a class="il-btn" href="#">{{ where.choose }}</a></div>
           <p class="ins-small ins-soft">{{ where.note }}</p>
+          <sc-if value="{{ noRoom }}" hint-placeholder-val="{{ false }}">
+            <p class="ins-small"><strong>The backup doesn’t fit there.</strong> Choose a disk with room for it, or go back to the plan and choose to install without a backup.</p>
+          </sc-if>
         </div>
       </section>
 
@@ -70,29 +84,36 @@
   </main>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"machine":{"editor":"enum","options":["device","pc"],"default":"device"},"state":{"editor":"enum","options":["keep","replace","typed"],"default":"keep"},"$preview":{"width":1280,"height":1900}}'>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"machine":{"editor":"enum","options":["device","pc"],"default":"device"},"state":{"editor":"enum","options":["keep","ack","nobackup","replace","typed","replace-nobackup","noroom"],"default":"keep"},"$preview":{"width":1280,"height":1900}}'>
 class Component extends DCLogic {
   state = {};
   renderVals() {
     const p = this.props, I = window.INSTALLER, mk = p.machine ?? 'device', m = I.machines[mk], st = p.state ?? 'keep';
-    const replacing = mk === 'pc' && st !== 'keep';
+    const replacing = mk === 'pc' && ['replace', 'typed', 'replace-nobackup', 'noroom'].includes(st);
+    const off = st === 'nobackup' || st === 'replace-nobackup', noRoom = st === 'noroom';
+    const bk = (replacing && m.backupReplace) || m.backup || {};
+    const acked = !m.erase || (this.state.ack ?? (st === 'ack'));
     const os = mk === 'pc' ? m.oses[0].os : m.keepChoice.os;
     const typed = this.state.typed ?? (st === 'typed' ? os : '');
-    const ok = !replacing || typed.trim() === os;
-    const where = replacing ? m.backupWhereReplace : m.backupWhere;
+    const ok = (!replacing || typed.trim() === os) && acked && !noRoom;
+    const where = off ? m.backupWhereNone : noRoom ? m.backupWhereNoRoom : replacing ? m.backupWhereReplace : m.backupWhere;
     return { theme: window.INSTALLER_THEME(p.voice, p.scheme), voice: p.voice ?? 'white', scheme: p.scheme ?? 'paper', pen: p.pen ?? '1',
       mk, er: m.erase || {}, hasErase: !!m.erase, where, replacing, replacedName: os, typed,
+      off, noRoom, bk, backupState: off ? 'off' : 'on', acked, toggleAck: e => this.setState({ ack: e.target.checked }),
+      erBackupLine: m.erase ? (off ? m.erase.withoutBackup : m.erase.withBackup) : '',
+      whereTitle: off ? 'What is saved anyway' : 'Where the backup goes',
+      whereCls: noRoom ? 'ins-card ins-card--warn' : 'ins-card ins-card--strong',
       variant: replacing ? 'replace' : 'normal',
       kept: replacing ? ['Nothing on this disk'] : m.fate.keep,
-      replacedText: replacing ? os + ': erased, after a backup of it.' : 'None. ' + os + ' is kept and still starts.',
+      replacedText: replacing ? (off ? os + ': erased, without a backup.' : os + ': erased, after a backup of it.') : 'None. ' + os + ' is kept and still starts.',
       typedState: typed === '' ? 'Not typed yet.' : ok ? 'Matches.' : 'Doesn’t match yet.',
       type: e => this.setState({ typed: e.target.value }),
-      lead: 'This is everything the installer will do on ' + m.the + '. When you confirm, it starts: first the backup, then the steps below, and nothing else.',
-      next: 'The backup starts. It is checked by reading it back before anything on ' + m.the + ' is written.',
+      lead: 'This is everything the installer will do on ' + m.the + '. When you confirm, it starts: ' + (off ? 'the steps below, without a backup' : 'first the backup, then the steps below') + ', and nothing else.',
+      next: !acked ? 'Tick the box under “Erases your files” to install.' : noRoom ? 'Nothing, until there is a disk with room for the backup.' : off ? 'The installation starts with step 1. There is no backup.' : 'The backup starts. It is checked by reading it back before anything on ' + m.the + ' is written.',
       out: 'Go back to the plan, or stop here. Nothing has changed.',
       buttons: [
-        { label: 'Install as planned', href: mk === 'pc' ? 'backup.pc.dc.html' : 'backup.device.dc.html', primary: true, disabled: !ok, id: 'install' },
-        { label: 'Back to the plan', href: mk === 'pc' ? (replacing ? 'plan.pc.replace.dc.html' : 'plan.pc.dc.html') : 'plan.device.dc.html' },
+        { label: 'Install as planned', href: off ? (mk === 'pc' ? 'install.pc.dc.html' : 'install.device.ponr.dc.html') : mk === 'pc' ? 'backup.pc.dc.html' : 'backup.device.dc.html', primary: true, disabled: !ok, id: 'install' },
+        { label: 'Back to the plan', href: mk === 'pc' ? (off ? 'plan.pc.replace.nobackup.dc.html' : replacing ? 'plan.pc.replace.dc.html' : 'plan.pc.dc.html') : off ? 'plan.device.nobackup.dc.html' : 'plan.device.dc.html' },
         { label: 'Stop here', href: 'start.browser.dc.html', push: true }] };
   }
 }

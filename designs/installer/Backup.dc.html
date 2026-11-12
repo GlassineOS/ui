@@ -27,15 +27,16 @@
       <sc-if value="{{ failed }}" hint-placeholder-val="{{ false }}">
         <aside class="il-admonition il-admonition--warning" id="failed">
           <span class="il-admonition__label"><span class="il-admonition__seal" aria-hidden="true">G</span>The installation didn’t start</span>
-          <p class="il-admonition__title">The backup can’t be read back</p>
-          <p>The folder can’t be read any more: its disk was removed, or it is full. Without a backup that reads back, the installer writes nothing.</p>
-          <p><strong>Way out:</strong> {{ unchanged }} Choose a folder with enough room and back up again, or stop here.</p>
+          <p class="il-admonition__title">There isn’t room for the backup there</p>
+          <p>The folder is full, or its disk was removed. Without a backup that reads back, the installer writes nothing.</p>
+          <p><strong>Way out:</strong> {{ unchanged }} Choose another place with {{ total }} free, such as an external disk, and back up again. Or go back to the plan and choose to install without a backup; the plan states what that means before you confirm it.</p>
         </aside>
       </sc-if>
 
       <div class="ins-card">
         <span class="il-label">The backup goes to</span>
         <span class="ins-card__title">{{ where.chosen }}</span>
+        <sc-if value="{{ totalLine }}" hint-placeholder-val="{{ true }}"><p class="ins-small">{{ totalLine }}</p></sc-if>
         <p class="ins-small ins-soft">{{ whereNote }}</p>
       </div>
 
@@ -76,7 +77,7 @@ class Component extends DCLogic {
     const reading = st !== 'saving';
     const items = m.backupItems.map((it, i) => {
       let status, cls, tick = false, bar = false, tagCls = 'ins-tag';
-      if (st === 'failed' && i === at) { status = 'Can’t be read'; cls = 'ins-yn ins-yn--no'; tagCls = 'ins-tag ins-tag--heavy'; }
+      if (st === 'failed' && i === at) { status = 'Didn’t fit'; cls = 'ins-yn ins-yn--no'; tagCls = 'ins-tag ins-tag--heavy'; }
       else if (i < at) { status = reading ? 'Read back · matches' : 'Saved'; cls = 'ins-yn ins-yn--yes'; tick = true; }
       else if (i === at && st !== 'verified') { status = reading ? 'Reading back' : 'Saving'; cls = 'ins-yn ins-yn--wait'; bar = st !== 'failed'; tagCls = 'ins-tag ins-tag--heavy'; }
       else { status = st === 'failed' ? 'Not checked' : reading ? 'Saved, to read back' : 'Waiting'; cls = 'ins-yn ins-yn--no'; tagCls = 'ins-tag ins-tag--soft'; }
@@ -84,21 +85,22 @@ class Component extends DCLogic {
     });
     const unchanged = mk === 'pc' ? 'Nothing on the PC has changed; it starts Windows as before.' : 'Nothing on the device has changed; it starts Android as before.';
     const T = {
-      saving: ['Back up · step 1 of the plan', 'Backing up ' + m.the, 'The installer copies every part it will replace or change. Nothing on ' + m.the + ' is written yet.'],
+      saving: ['Back up · step 1 of the plan', 'Backing up ' + m.the, (m.backupTotal ? 'A full copy of the whole device, compressed.' : 'The installer copies every part it will replace or change.') + ' Nothing on ' + m.the + ' is written yet.'],
       verifying: ['Back up · checking the copy', 'Reading the backup back', 'Each part is read back from the backup and compared with ' + m.the + ', before anything is written.'],
       verified: ['Back up · done', 'The backup is complete', 'It reads back the same as ' + m.the + '.'],
-      failed: ['Back up · stopped, nothing was written', 'The backup was lost', 'The installation didn’t start.']
+      failed: ['Back up · stopped, nothing was written', 'The backup doesn’t fit', 'The installation didn’t start.']
     }[st];
     return { theme: window.INSTALLER_THEME(p.voice, p.scheme), voice: p.voice ?? 'white', scheme: p.scheme ?? 'paper', pen: p.pen ?? '1',
       mk, the: m.the, where: m.backupWhere, items, pct: st === 'saving' ? m.backupPct : 30,
-      whereNote: 'Keep it: ' + m.the + ' goes back to stock from it. ' + m.keepConnected,
+      whereNote: 'Keep it: with it ' + m.the + ' can be repaired, or go back to stock. ' + m.keepConnected,
+      total: m.backupTotal ? 'about 8.6 GB' : 'enough room', totalLine: m.backupTotal || '',
       failed: st === 'failed', verified: st === 'verified', unchanged,
       listTitle: reading ? 'Read back, part by part' : 'Saved, part by part',
       eyebrow: T[0], title: T[1], lead: T[2],
       next: st === 'failed' ? 'Nothing, until there is a backup that reads back.' : st === 'verified' ? 'The installation starts with step 2.' : 'When every part reads back, the installation starts by itself.',
       out: st === 'failed' ? 'Stop here. ' + unchanged : 'Stop now. ' + unchanged + ' The backup stays where it is.',
       buttons: st === 'failed'
-        ? [{ label: 'Choose another folder', href: 'backup.device.dc.html', primary: true }, { label: 'Stop here', href: 'start.browser.dc.html', push: true }]
+        ? [{ label: 'Choose another place', href: 'backup.device.dc.html', primary: true }, { label: 'Back to the plan', href: 'plan.device.dc.html' }, { label: 'Stop here', href: 'start.browser.dc.html', push: true }]
         : st === 'verified' ? [{ label: 'Continue', href: mk === 'pc' ? 'install.pc.dc.html' : 'install.device.ponr.dc.html', primary: true }]
         : [{ label: 'Stop', href: 'start.browser.dc.html' }] };
   }

@@ -50,24 +50,42 @@ window.INSTALLER = {
       ],
       fate: {
         keep: ['Android 10 and its apps', 'The device’s own data that must never change (only read)'],
-        backup: ['The parts the installation replaces or changes: 4.3 GB, to this computer', 'The values unique to this device that GlassineOS needs'],
+        backup: ['A full copy of the device, about 8.6 GB, to a folder on this computer or an external disk', 'The values unique to this device, in any case'],
         replace: ['The boot loader, the program that starts the device', 'The storage layout: two start-up options instead of one'],
         create: ['GlassineOS, on the second start-up option', 'GlassineOS recovery', 'Your GlassineOS storage, about 20 GB']
       },
       erase: {
         title: 'Your files in Android will be erased',
         body: 'Step 3 shrinks the storage Android keeps your files on from about 24 GB to about 20 GB and empties it: books, notes, downloads and app data. Android then starts like a new device.',
-        exit: 'Copy what you want to keep to this computer first. Until you confirm, nothing changes.'
+        withBackup: 'They are in the full copy of the device: going back to the maker’s system puts them back as they were.',
+        withoutBackup: 'Without a backup, they are gone for good.',
+        exit: 'Copy what you want to keep to this computer first. Until you confirm, nothing changes.',
+        ack: 'I know that my files in Android will be erased: books, notes, downloads and app data.'
       },
-      space: [['On this computer', '4.3 GB for the backup'], ['On the device', 'About 4 GB of Android’s storage, for GlassineOS']],
+      space: [['For the backup', 'About 8.6 GB, in a folder on this computer or an external disk'], ['On the device', 'About 4 GB of Android’s storage, for GlassineOS']],
+      backup: {
+        on: 'Back up the whole Note Air',
+        onTag: 'Recommended',
+        onBody: 'A full copy of the device: every part of it and its partition table. With it, the installer can repair any damage and put the Note Air back exactly as it was, your files in Android too.',
+        size: 'About 8.6 GB',
+        sizeNote: 'Estimated from what is on this Note Air now: 29 GB before it is compressed. Storage that is mostly empty compresses to little.',
+        where: 'It goes to a folder on this computer or on an external disk; you choose it on the next screen.',
+        off: 'Install without a backup',
+        offBody: 'For when there isn’t room for one anywhere.',
+        offWhat: 'Without a backup, going back to the maker’s system and repairing damage are not possible.',
+        always: 'The values unique to this Note Air, such as its calibration, are saved in any case, with or without a backup. They are small.'
+      },
+      /* How a person picks a system at start-up is the device's own (its description holds it):
+         today a power-menu item and the cover; later a start-up chooser on the device. */
       keepChoice: {
         os: 'Android 10',
         heading: 'Android 10, the maker’s system',
         keep: 'Keep Android 10',
         keepBody: 'It stays on the first start-up option, and both systems start. GlassineOS starts by default.',
-        pick: 'To start Android: choose “Start Android” in GlassineOS’s power menu. To come back: start the device with its cover closed; GlassineOS recovery opens and starts GlassineOS.',
+        pick: 'To start Android: choose “Restart into Android” in GlassineOS’s power menu. To come back: start the device with its cover closed; GlassineOS recovery opens and starts GlassineOS.',
         replace: 'Replace Android 10',
-        replaceBody: 'Android and its apps are removed. It can come back only from the backup.'
+        replaceBody: 'Android and its apps are removed. It can come back only from the backup.',
+        replaceBodyNoBackup: 'Android and its apps are removed. Without a backup it can’t come back.'
       },
       cable: {
         question: 'Do you have an emergency cable for the Note Air?',
@@ -78,32 +96,39 @@ window.INSTALLER = {
         get: 'What an emergency cable is'
       },
       steps: [
-        { id: 'backup', title: 'Back up to this computer', body: 'The installer reads every part it will replace or change, and the values unique to this device, saves them in the folder you choose, and reads the copy back to check it.',
-          escape: 'Nothing on the device has changed yet. It starts Android as before.', tech: 'abl, boot, recovery, system, vendor, vbmeta, misc and the partition table (GPT), about 4.3 GB' },
+        { id: 'backup', title: 'Back up the whole device', body: 'The installer copies the whole device, every part and its partition table, compressed, to the place you choose, and reads the copy back to check it.',
+          escape: 'Nothing on the device has changed yet. It starts Android as before.', tech: 'every partition and the partition table (GPT): 29.5 GB raw, about 8.6 GB compressed (estimate)',
+          noBackup: { title: 'Save the values unique to this device', body: 'Its calibration and the like, to the folder you choose. There is no backup: you chose to install without one.', tech: 'persist, onyxconfig, modemst1, modemst2, fsg, devinfo' } },
         { id: 'loader', title: 'Replace the boot loader', ponr: true, body: 'The device gets GlassineOS’s boot loader. It starts both systems; Android keeps working with it.',
-          escape: 'The device starts only in its emergency mode. With the emergency cable, the installer puts the old boot loader back from the backup.', cable: true, tech: 'abl: GlassineOS boot loader, signed with the test keys the device accepts' },
+          escape: 'The device starts only in its emergency mode. With the emergency cable, the installer puts the old boot loader back from the backup.', cable: true, tech: 'abl: GlassineOS boot loader, signed with the test keys the device accepts',
+          noBackup: { escape: 'The device starts only in its emergency mode. With the emergency cable, the installer writes GlassineOS’s boot loader again; without a backup, the old one can’t come back.' } },
         { id: 'layout', title: 'Make room for a second start-up option', erase: true, body: 'The storage is divided anew. Android’s storage shrinks from about 24 GB to about 20 GB and is emptied.',
-          escape: 'Android still starts. The installer can write the old layout back from the backup.', tech: 'GPT rewritten for A/B: boot_b, system_b, vendor_b created; userdata 24 → 20 GB, reformatted' },
+          escape: 'Android still starts. The installer can write the old layout back from the backup.', tech: 'GPT rewritten for A/B: boot_b, system_b, vendor_b created; userdata 24 → 20 GB, reformatted',
+          noBackup: { escape: 'Android still starts. The installer can finish the installation; without a backup, the old layout can’t come back.' } },
         { id: 'write', title: 'Write GlassineOS', body: 'Its base and first version go onto the second start-up option. Files GlassineOS needs from Android are read from the device, used, and deleted from this computer afterwards; they are never uploaded.',
-          escape: 'Android still starts. The installer can write GlassineOS again, or undo.', tech: 'slot B: base (send stream) and first deployment; vendor files from the device' },
+          escape: 'Android still starts. The installer can write GlassineOS again, or undo.', tech: 'slot B: base (send stream) and first deployment; vendor files from the device',
+          noBackup: { escape: 'Android still starts. The installer can write GlassineOS again.' } },
         { id: 'recovery', title: 'Add GlassineOS recovery', body: 'A repair tool on the device, for when GlassineOS doesn’t start.',
           escape: 'Both systems still start. The installer can write it again.', tech: 'recovery partition; TWRP stays reachable from it for Android' },
         { id: 'start', title: 'Start GlassineOS and wait until it’s accepted', body: 'The device restarts into GlassineOS. The installation is done once that start has been accepted, about two minutes later.',
-          escape: 'If GlassineOS doesn’t start properly, the device starts Android again by itself. The installer can try again, or undo.', tech: 'one-shot trial boot of slot B; accepted per boot 001' }
+          escape: 'If GlassineOS doesn’t start properly, the device starts Android again by itself. The installer can try again, or undo.', tech: 'one-shot trial boot of slot B; accepted per boot 001',
+          noBackup: { escape: 'If GlassineOS doesn’t start properly, the device starts Android again by itself. The installer can try again.' } }
       ],
-      backupWhere: { kind: 'folder', label: 'A folder on this computer', chosen: 'Glassine backup, in Downloads', choose: 'Choose a folder…', note: 'Your browser asks to let the installer save there. The backup needs 4.3 GB.' },
+      backupWhere: { kind: 'folder', label: 'A folder on this computer or on an external disk', chosen: 'Glassine backup, in Downloads', choose: 'Choose a folder…', note: 'Your browser asks to let the installer save there. The backup needs about 8.6 GB; if the folder is too small, the installer says so and you choose another.' },
+      backupWhereNone: { label: 'Only the values unique to this device', chosen: 'Glassine backup, in Downloads', choose: 'Choose a folder…', note: 'They are small. Your browser asks to let the installer save there.' },
+      backupTotal: 'About 8.6 GB compressed, from 29 GB',
       backupItems: [
-        { name: 'Storage layout', tech: 'partition table (GPT)', size: '0.1 MB' },
-        { name: 'Boot loader', tech: 'abl', size: '1 MB' },
-        { name: 'Start-up settings', tech: 'misc', size: '1 MB' },
-        { name: 'Start-up checks', tech: 'vbmeta', size: '0.1 MB' },
-        { name: 'Start-up files', tech: 'boot', size: '64 MB' },
-        { name: 'Recovery', tech: 'recovery', size: '64 MB' },
+        { name: 'The partition table', tech: 'GPT, primary and backup', size: '0.1 MB' },
+        { name: 'Start-up firmware and boot loader', tech: 'xbl, xblbak, tz, rpm, hyp, pmic, devcfg, keymaster, cmnlib, cmnlib64, mdtpsecapp, mdtp, abl, dip, apdp, msadp, dpo, limits, toolsfv, ddr, sec, storsec, sti', size: '60 MB' },
+        { name: 'Start-up files and recovery', tech: 'boot, recovery, vbmeta, misc, splash', size: '160 MB' },
+        { name: 'Radio and signal firmware', tech: 'modem, dsp, bluetooth, fsg, modemst1, modemst2, fsc, ssd', size: '130 MB' },
+        { name: 'The device’s own data, such as its calibration', tech: 'persist, onyxconfig, devinfo, keystore, frp', size: '65 MB' },
         { name: 'Android’s system', tech: 'system', size: '3.0 GB' },
-        { name: 'Android’s vendor part', tech: 'vendor', size: '1.1 GB' },
-        { name: 'Values unique to this device', tech: 'unit-specific values named by the description', size: '' }
+        { name: 'Android’s vendor part', tech: 'vendor', size: '0.8 GB' },
+        { name: 'Cache and log areas', tech: 'cache, logfs, logdump, rawdump', size: '0.5 GB' },
+        { name: 'Your files in Android', tech: 'userdata', size: '24 GB' }
       ],
-      backupAt: 6, backupPct: 62,
+      backupAt: 5, backupPct: 62,
       installAt: 3, installPct: 45,
       keepConnected: 'Keep the Note Air connected and this page open.',
       restart: 'The Note Air restarts into GlassineOS',
@@ -120,13 +145,13 @@ window.INSTALLER = {
       done: {
         title: 'GlassineOS is installed on your Note Air',
         next: 'Set up GlassineOS on the device: it asks for a language, Wi-Fi and a password.',
-        kept: 'Android 10 is still there. To start it, choose “Start Android” in GlassineOS’s power menu.',
-        backup: 'Keep the backup in Glassine backup, in Downloads: the Note Air goes back to stock from it.',
+        kept: 'Android 10 is still there. To start it, choose “Restart into Android” in GlassineOS’s power menu.',
+        backup: 'Keep the backup in Glassine backup, in Downloads: with it the Note Air can be repaired, or go back to how it came from the maker.',
         record: 'A record of this installation is on the device and next to the backup: the device, the versions, the layout, its capabilities and where the backup is.',
         vendor: 'The files GlassineOS needed from Android were deleted from this computer.',
         stockTitle: 'Your Note Air runs Android again, as it came from the maker',
-        stockBody: 'Every part the installer replaced is back, checked against the backup. GlassineOS, its recovery and your GlassineOS storage are gone.',
-        stockLost: 'Your files from Android before the installation aren’t back: they were erased in step 3 and weren’t part of the backup.',
+        stockBody: 'The whole device is back from the full copy, checked against it. GlassineOS, its recovery and your GlassineOS storage are gone.',
+        stockLost: 'Your files in Android are back as they were when the copy was made, at the installation. What changed in Android since then isn’t.',
         stockBackup: 'The backup in Glassine backup, in Downloads, isn’t needed any more. You can delete it.'
       },
       reach: {
@@ -155,26 +180,26 @@ window.INSTALLER = {
       },
       stockErase: {
         title: 'Your GlassineOS storage will be erased',
-        body: 'Going back puts the storage layout from the backup back: GlassineOS, its recovery and your GlassineOS storage are erased. Android starts like a new device.',
+        body: 'Going back puts the full copy of the device back: GlassineOS, its recovery and your GlassineOS storage are erased, and Android is as it was at the installation, your files in it too. What changed in Android since then is replaced.',
         exit: 'Copy what you want to keep from GlassineOS first. Until you confirm, nothing changes.'
       },
       stockSteps: [
         { id: 'check', title: 'Check the backup', body: 'The installer reads the backup and checks that every part is complete and unchanged.',
           escape: 'Nothing on the device has changed yet. GlassineOS starts as before.', tech: 'checksums of every backed-up partition against the installation record' },
-        { id: 'layout', title: 'Put the old storage layout back', erase: true, body: 'One start-up option again, and Android’s storage at its old size, emptied. GlassineOS and your GlassineOS storage are erased.',
-          escape: 'Android still starts. The installer can finish going back.', tech: 'partition table (GPT) from the backup; userdata reformatted' },
-        { id: 'android', title: 'Put Android’s parts back', body: 'Its start-up files, recovery, system and vendor part, from the backup.',
-          escape: 'The installer can write them again.', tech: 'boot, recovery, system, vendor, vbmeta, misc from the backup' },
+        { id: 'layout', title: 'Put the old storage layout back', erase: true, body: 'One start-up option again, and Android’s storage at its old size. GlassineOS and your GlassineOS storage are erased.',
+          escape: 'The installer can finish going back.', tech: 'partition table (GPT) from the full copy' },
+        { id: 'android', title: 'Put the rest of the device back', body: 'Every other part from the full copy: Android’s system and start-up files, its recovery, and your files in Android.',
+          escape: 'The installer can write them again.', tech: 'every partition from the full copy except abl' },
         { id: 'loader', title: 'Put the maker’s boot loader back', ponr: true, body: 'The last step: the device starts as it came from the maker.',
           escape: 'The device starts only in its emergency mode. With the emergency cable, the installer writes the boot loader again.', cable: true, tech: 'abl from the backup' },
         { id: 'start', title: 'Start Android and check it', body: 'The device restarts. Going back is done once Android has started.',
           escape: 'If Android doesn’t start, the installer can write the backup again.', tech: 'normal boot; checked over USB' }
       ],
       resumeStep: 'Resume from step 4, Write GlassineOS',
-      undoBody: 'The backup goes back: the old boot loader and storage layout. Android starts as before. Your files from before the installation stay erased: they were never in the backup.',
+      undoBody: 'The full copy goes back: the Note Air is as it was before the installation, your files in Android too.',
       repair: 'The boot loader, the start-up files and GlassineOS recovery are put back.',
       reinstall: 'A fresh first version of GlassineOS on the second start-up option.',
-      stock: 'The backup goes back. Android 10 is the only system again; GlassineOS and your GlassineOS storage are erased.'
+      stock: 'The full copy goes back. Android 10 is the only system again, with your files as they were at the installation; GlassineOS and your GlassineOS storage are erased.'
     },
 
     /* ---------------------------------------------------------------- the PC */
@@ -210,11 +235,37 @@ window.INSTALLER = {
       fate: {
         keep: ['Windows 11 and all its files', 'Windows recovery'],
         backup: ['The PC’s start-up files and its list of start-up entries: 0.2 GB, to the USB stick'],
+        backupReplace: ['All of Windows 11 and the start-up files: about 410 GB, to a disk you choose'],
         replace: ['Nothing'],
         create: ['GlassineOS’s system (20 GB) and your storage (80 GB), in the free space', 'A start-up entry for GlassineOS']
       },
       erase: null,
       space: [['On the disk', '100 GB, the free space'], ['For the backup', '0.2 GB on the USB stick']],
+      spaceReplace: [['On the disk', 'The whole 512 GB disk'], ['For the backup', 'About 410 GB on another disk: the USB stick has 12 GB free']],
+      backup: {
+        on: 'Back up the PC’s start-up files',
+        onTag: 'Recommended',
+        onBody: 'Its start-up files, the list of start-up entries and the partition table. With them, the installer can repair the PC’s start-up and take GlassineOS off again.',
+        size: '0.2 GB',
+        sizeNote: 'It fits on the GlassineOS USB stick (12 GB free).',
+        where: 'It goes to the USB stick, or to another disk you choose on the next screen.',
+        off: 'Install without a backup',
+        offBody: 'For when there isn’t room for one anywhere.',
+        offWhat: 'Without a backup, going back to how this PC was and repairing damage are not possible.',
+        always: ''
+      },
+      backupReplace: {
+        on: 'Back up Windows 11 and the start-up files',
+        onTag: 'Recommended',
+        onBody: 'All of Windows 11, its files, the start-up entries and the partition table. With it, the installer can repair damage and put Windows back as it was.',
+        size: 'About 410 GB',
+        sizeNote: 'That doesn’t fit on the USB stick (12 GB free): on the next screen you choose another disk, such as an external one.',
+        where: '',
+        off: 'Install without a backup',
+        offBody: 'For when there isn’t a disk with room for it.',
+        offWhat: 'Without a backup, Windows 11 and its files are gone for good: going back to it and repairing damage are not possible.',
+        always: ''
+      },
       disks: [{ name: '512 GB disk', body: 'Windows 11 · 100 GB free', checked: true }],
       oses: [{
         os: 'Windows 11',
@@ -225,30 +276,36 @@ window.INSTALLER = {
         replace: 'Replace Windows 11',
         replaceBody: 'Windows and every file in it are erased. GlassineOS uses the whole disk.'
       }],
-      replaceNeeds: 'Replacing Windows 11 means backing all of it up first: about 410 GB. That doesn’t fit on the USB stick; on the next screen you choose another disk with at least 420 GB free.',
+      replaceNeeds: 'Windows 11 and every file in it are erased. Below you choose whether the installer backs it up first.',
       stepsReplace: [
         { id: 'backup', title: 'Back up Windows 11 and the start-up files', body: 'The installer saves all of Windows 11, its files and the start-up entries on the disk you choose, and reads the copy back to check it.',
-          escape: 'Nothing on the PC has changed yet. It starts Windows as before.', tech: 'whole disk image of the Windows partitions, EFI system partition, UEFI boot entries, partition table; about 410 GB' },
+          escape: 'Nothing on the PC has changed yet. It starts Windows as before.', tech: 'whole disk image of the Windows partitions, EFI system partition, UEFI boot entries, partition table; about 410 GB',
+          noBackup: { title: 'Note the PC’s start-up entries', body: 'The list of start-up entries, on the USB stick. There is no backup: you chose to install without one.', tech: 'UEFI boot entries and BootOrder, a few KB' } },
         { id: 'room', title: 'Erase Windows 11 and divide the disk for GlassineOS', ponr: true, erase: true, body: 'Windows and every file in it are erased. The whole disk goes to GlassineOS’s system (20 GB) and your storage (the rest).',
-          escape: 'Windows no longer starts. The installer can put it back from the backup, or finish.', tech: 'new GPT: EFI system partition kept, Windows partitions removed, system and data partitions created' },
+          escape: 'Windows no longer starts. The installer can put it back from the backup, or finish.', tech: 'new GPT: EFI system partition kept, Windows partitions removed, system and data partitions created',
+          noBackup: { escape: 'Windows no longer starts, and without a backup it can’t come back. The installer can finish.' } },
         { id: 'write', title: 'Write GlassineOS', body: 'Its base and first version go into the new system area.',
-          escape: 'No system starts from the disk. Start from the USB stick again: the installer can write GlassineOS again, or put Windows back.', tech: 'system partition: base (send stream) and first deployment' },
+          escape: 'No system starts from the disk. Start from the USB stick again: the installer can write GlassineOS again, or put Windows back.', tech: 'system partition: base (send stream) and first deployment',
+          noBackup: { escape: 'No system starts from the disk. Start from the USB stick again: the installer can write GlassineOS again.' } },
         { id: 'entry', title: 'Add GlassineOS to the PC’s start-up', body: 'GlassineOS’s start-up files and an entry that starts first.',
           escape: 'Start from the USB stick again: the installer can write the entry again.', tech: 'EFI system partition: GlassineOS boot files; Windows Boot Manager entry removed; new UEFI boot entry' },
         { id: 'recovery', title: 'GlassineOS recovery: not yet on PCs', notyet: true, body: 'This step is left out: GlassineOS recovery isn’t built for PCs yet. Keep the USB stick: repair and going back start from it.',
           escape: 'Nothing is written in this step.', tech: 'no recovery entry yet' },
         { id: 'start', title: 'Start GlassineOS and wait until it’s accepted', body: 'Remove the USB stick when asked; the PC restarts into GlassineOS. The installation is done once that start has been accepted, about two minutes later.',
-          escape: 'If GlassineOS doesn’t start properly, start from the USB stick again to try again, or put Windows back.', tech: 'one-shot trial boot (BootNext); accepted per boot 001' }
+          escape: 'If GlassineOS doesn’t start properly, start from the USB stick again to try again, or put Windows back.', tech: 'one-shot trial boot (BootNext); accepted per boot 001',
+          noBackup: { escape: 'If GlassineOS doesn’t start properly, start from the USB stick again to try again.' } }
       ],
       steps: [
         { id: 'backup', title: 'Back up the PC’s start-up files', body: 'The installer saves the start-up files and the list of start-up entries on the USB stick and reads the copy back to check it.',
-          escape: 'Nothing on the PC has changed yet. It starts Windows as before.', tech: 'EFI system partition (files), UEFI boot entries and BootOrder, partition table' },
+          escape: 'Nothing on the PC has changed yet. It starts Windows as before.', tech: 'EFI system partition (files), UEFI boot entries and BootOrder, partition table',
+          noBackup: { title: 'Note the PC’s start-up entries', body: 'The list of start-up entries, on the USB stick. There is no backup: you chose to install without one.', tech: 'UEFI boot entries and BootOrder, a few KB' } },
         { id: 'room', title: 'Make room for GlassineOS', body: 'Two new areas in the 100 GB no system uses: GlassineOS’s system (20 GB) and your storage (80 GB). Windows isn’t touched.',
           escape: 'Windows still starts. The installer can remove what it made.', tech: 'two GPT partitions in unallocated space; Windows partitions untouched' },
         { id: 'write', title: 'Write GlassineOS', body: 'Its base and first version go into the new system area.',
           escape: 'Windows still starts. The installer can write GlassineOS again, or undo.', tech: 'system partition: base (send stream) and first deployment' },
         { id: 'entry', title: 'Add GlassineOS to the PC’s start-up', body: 'GlassineOS’s start-up files and an entry that starts first. GlassineOS’s start menu lists Windows too.',
-          escape: 'Windows still starts from the PC’s own start-up menu. The installer can put the old entries back.', tech: 'EFI system partition: GlassineOS boot files; new UEFI boot entry, first in BootOrder' },
+          escape: 'Windows still starts from the PC’s own start-up menu. The installer can put the old entries back.', tech: 'EFI system partition: GlassineOS boot files; new UEFI boot entry, first in BootOrder',
+          noBackup: { escape: 'Windows still starts from the PC’s own start-up menu. The installer can write the entry again.' } },
         { id: 'recovery', title: 'GlassineOS recovery: not yet on PCs', notyet: true, body: 'This step is left out: GlassineOS recovery isn’t built for PCs yet. Keep the USB stick: repair and going back start from it.',
           escape: 'Nothing is written in this step.', tech: 'no recovery entry yet' },
         { id: 'start', title: 'Start GlassineOS and wait until it’s accepted', body: 'Remove the USB stick when asked; the PC restarts into GlassineOS. The installation is done once that start has been accepted, about two minutes later.',
@@ -256,6 +313,8 @@ window.INSTALLER = {
       ],
       backupWhere: { kind: 'disk', label: 'The GlassineOS USB stick', chosen: 'GlassineOS USB stick, 12 GB free', choose: 'Choose another disk…', note: 'The backup needs 0.2 GB.' },
       backupWhereReplace: { kind: 'disk', label: 'Another disk', chosen: 'External disk, 1 TB, 870 GB free', choose: 'Choose another disk…', note: 'The backup needs about 410 GB.' },
+      backupWhereNoRoom: { kind: 'disk', label: 'No disk with room for it', chosen: 'GlassineOS USB stick, 12 GB free', choose: 'Choose another disk…', note: 'The backup needs about 410 GB. No connected disk has that much free. Connect one, such as an external disk, and choose it.' },
+      backupWhereNone: { label: 'Only the start-up entries', chosen: 'GlassineOS USB stick, 12 GB free', choose: 'Choose another disk…', note: 'A few KB.' },
       backupItems: [
         { name: 'Storage layout', tech: 'partition table (GPT)', size: '0.1 MB' },
         { name: 'Start-up entries', tech: 'UEFI boot entries, BootOrder', size: '0.1 MB' },

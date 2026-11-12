@@ -29,6 +29,7 @@
           <span class="il-admonition__label"><span class="il-admonition__seal" aria-hidden="true">!</span>Erases your files</span>
           <p class="il-admonition__title">{{ er.title }}</p>
           <p>{{ er.body }}</p>
+          <sc-if value="{{ erBackupLine }}" hint-placeholder-val="{{ true }}"><p>{{ erBackupLine }}</p></sc-if>
           <p><strong>Way out:</strong> {{ er.exit }}</p>
         </aside>
       </sc-if>
@@ -70,6 +71,22 @@
             </div>
           </fieldset>
         </sc-if>
+        <sc-if value="{{ hasBackup }}" hint-placeholder-val="{{ true }}">
+          <fieldset class="ins-stack" style="border:0;margin:0;padding:0" id="backup">
+            <legend class="il-label" style="margin-bottom:8px">The backup</legend>
+            <label class="ins-choice"><input type="radio" name="backup" checked="{{ backupOn }}" onChange="{{ pickBackupOn }}"><span class="ins-choice__body"><span class="ins-choice__title">{{ bk.on }} <span class="ins-tag ins-tag--soft">{{ bk.onTag }}</span></span><span class="ins-small">{{ bk.onBody }}</span><span class="ins-small"><strong>{{ bk.size }}.</strong> {{ bk.sizeNote }}</span><sc-if value="{{ bk.where }}" hint-placeholder-val="{{ true }}"><span class="ins-small ins-soft">{{ bk.where }}</span></sc-if></span></label>
+            <label class="ins-choice"><input type="radio" name="backup" checked="{{ backupOff }}" onChange="{{ pickBackupOff }}"><span class="ins-choice__body"><span class="ins-choice__title">{{ bk.off }}</span><span class="ins-small">{{ bk.offBody }}</span><span class="ins-small"><strong>{{ bk.offWhat }}</strong></span></span></label>
+            <sc-if value="{{ bk.always }}" hint-placeholder-val="{{ true }}"><p class="ins-small ins-soft">{{ bk.always }}</p></sc-if>
+          </fieldset>
+        </sc-if>
+        <sc-if value="{{ backupOff }}" hint-placeholder-val="{{ false }}">
+          <aside class="il-admonition il-admonition--danger" id="nobackup">
+            <span class="il-admonition__label"><span class="il-admonition__seal" aria-hidden="true">!</span>No backup</span>
+            <p class="il-admonition__title">You chose to install without a backup</p>
+            <p>{{ bk.offWhat }}</p>
+            <p><strong>Way out:</strong> choose “{{ bk.on }}” above. Until you confirm, nothing changes.</p>
+          </aside>
+        </sc-if>
       </section>
 
       <sc-if value="{{ refused }}" hint-placeholder-val="{{ false }}">
@@ -85,11 +102,11 @@
         <section class="ins-stack">
           <h2 class="ins-h2">The steps, in order</h2>
           <p class="ins-small ins-soft">Each step says where {{ the }} is if that step fails. Technical names are under Details.</p>
-          <dc-import name="Steps" machine="{{ mk }}" mode="plan" variant="{{ variant }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,1100px"></dc-import>
+          <dc-import name="Steps" machine="{{ mk }}" mode="plan" variant="{{ variant }}" backup="{{ backupState }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,1100px"></dc-import>
         </section>
         <section class="ins-stack">
           <div class="il-table-wrap"><table class="il-table"><thead><tr><th>Space it needs</th><th></th></tr></thead><tbody>
-            <sc-for list="{{ m.space }}" as="s" hint-placeholder-count="2"><tr><td style="width:34%">{{ s.0 }}</td><td>{{ s.1 }}</td></tr></sc-for>
+            <sc-for list="{{ space }}" as="s" hint-placeholder-count="2"><tr><td style="width:34%">{{ s.0 }}</td><td>{{ s.1 }}</td></tr></sc-for>
           </tbody></table></div>
         </section>
       </sc-if>
@@ -99,31 +116,36 @@
   </main>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"machine":{"editor":"enum","options":["device","pc"],"default":"device"},"state":{"editor":"enum","options":["ready","nocable","replace","stock"],"default":"ready"},"$preview":{"width":1280,"height":2900}}'>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"machine":{"editor":"enum","options":["device","pc"],"default":"device"},"state":{"editor":"enum","options":["ready","nocable","replace","nobackup","replace-nobackup","stock"],"default":"ready"},"$preview":{"width":1280,"height":2900}}'>
 class Component extends DCLogic {
   state = {};
   renderVals() {
     const p = this.props, I = window.INSTALLER, mk = p.machine ?? 'device', m = I.machines[mk], st = p.state ?? 'ready';
     const cable = this.state.cable ?? (st === 'nocable' ? 'no' : 'yes');
-    const replace = this.state.replace ?? (st === 'replace');
+    const replace = this.state.replace ?? (st === 'replace' || st === 'replace-nobackup');
+    const backupState = this.state.backup ?? (st === 'nobackup' || st === 'replace-nobackup' ? 'off' : 'on');
     const stock = st === 'stock';
     const list = mk === 'pc' ? m.oses : [m.keepChoice];
     const oses = stock ? [] : list.map((o, i) => ({ ...o, group: 'os' + i, isKeep: !replace, isReplace: replace,
       pickKeep: () => this.setState({ replace: false }), pickReplace: () => this.setState({ replace: true }) }));
     const hasCable = !!m.cable, refused = hasCable && cable === 'no';
     const replacing = replace;
-    const confirmHref = stock ? '#' : mk === 'pc' ? (replacing ? 'confirm.pc.replace.dc.html' : 'confirm.pc.dc.html') : 'confirm.device.dc.html';
+    const off = backupState === 'off', bk = (replacing && m.backupReplace) || m.backup || {};
+    const confirmHref = stock ? '#' : mk === 'pc' ? (replacing ? (off ? 'confirm.pc.replace.nobackup.dc.html' : 'confirm.pc.replace.dc.html') : 'confirm.pc.dc.html') : (off ? 'confirm.device.nobackup.dc.html' : 'confirm.device.dc.html');
     return { theme: window.INSTALLER_THEME(p.voice, p.scheme), voice: p.voice ?? 'white', scheme: p.scheme ?? 'paper', pen: p.pen ?? '1',
       mk, m, er: (stock ? m.stockErase : m.erase) || {}, cb: m.cable || {}, the: m.the, oses, hasDisks: !!m.disks && !stock, disks: m.disks || [], hasCable, hasErase: !!(stock ? m.stockErase : m.erase),
       cableYes: cable === 'yes', cableNo: cable === 'no',
       pickCableYes: () => this.setState({ cable: 'yes' }), pickCableNo: () => this.setState({ cable: 'no' }),
-      refused, notRefused: !refused, cableFor: stock ? 'Needed for step 4' : 'Needed for step 2', replacing, variant: stock ? 'stock' : replacing && mk === 'pc' ? 'replace' : 'normal',
+      refused, notRefused: !refused, bk, hasBackup: !stock && !!m.backup, backupOn: !off, backupOff: !stock && off, backupState,
+      pickBackupOn: () => this.setState({ backup: 'on' }), pickBackupOff: () => this.setState({ backup: 'off' }),
+      erBackupLine: stock || !m.erase ? '' : off ? m.erase.withoutBackup : m.erase.withBackup,
+      space: replacing && m.spaceReplace ? (off ? [m.spaceReplace[0]] : m.spaceReplace) : off ? m.space.filter(x => x[0] !== 'For the backup') : m.space, cableFor: stock ? 'Needed for step 4' : 'Needed for step 2', replacing, variant: stock ? 'stock' : replacing && mk === 'pc' ? 'replace' : 'normal',
       replaceTitle: list[0].os + ' will be erased', keepLabel: list[0].keep,
-      replaceNeeds: mk === 'pc' ? m.replaceNeeds : list[0].replaceBody + ' On the next screen you confirm it by its name.',
+      replaceNeeds: mk === 'pc' ? m.replaceNeeds : (off ? list[0].replaceBodyNoBackup : list[0].replaceBody) + ' On the next screen you confirm it by its name.',
       eyebrow: refused ? 'Plan · refused, nothing was changed' : 'Plan · nothing is written yet',
       title: stock ? 'The plan to go back to stock' : mk === 'pc' ? 'The plan for this PC' : 'The plan for your ' + m.short,
       lead: refused ? 'One question decides whether ' + m.the + ' can be installed.' : 'What the installer will do, in this order. Choose what to keep, then confirm on the next screen. Until then nothing is written.',
-      next: refused ? 'Nothing more: the plan can’t go ahead without that step.' : 'Confirm: you see the whole plan once more and choose where the backup goes. Nothing is written before you confirm.',
+      next: refused ? 'Nothing more: the plan can’t go ahead without that step.' : (off ? 'Confirm: you see the whole plan once more, without a backup. Nothing is written before you confirm.' : 'Confirm: you see the whole plan once more and choose where the backup goes. Nothing is written before you confirm.'),
       out: 'Stop here: a dry run can end with this plan. Nothing was changed; ' + (mk === 'pc' ? 'the PC starts Windows as before.' : 'the device starts Android as before.'),
       buttons: [
         { label: 'Continue to confirm', href: confirmHref, primary: true, disabled: refused },

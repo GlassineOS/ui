@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // SPDX-License-Identifier: GPL-2.0-or-later
 // tools/boards: design boards (spec 003).
-//   boards preview DESIGN_DIR [--port N] [--host H] [--allow-host NAME]... [--interleaf DIR]
+//   boards preview DESIGN_DIR [--port N] [--host H] [--allow-host NAME]... [--interleaf DIR] [--web DIR]
 //   boards check   DESIGN_DIR [--interleaf DIR] [--json FILE|-] [--board FILE]... [--jobs N]
 //                  [--timeout MS] [--chromium PATH] [--allow-empty]
 //   boards references DESIGN_DIR [--update] [--refs DIR] [--out DIR] [--json FILE|-] [--board FILE]...
@@ -9,7 +9,8 @@
 //   boards shot    BOARD_FILE [--voice V] [--scheme S] [--pen P] [--size WxH] [--click SELECTOR]... [--out FILE]
 //                  [--interleaf DIR] [--timeout MS] [--chromium PATH]
 //   boards shots   [--out DIR] [--root DIR] [--jobs N] [--interleaf DIR] [--timeout MS] [--chromium PATH] < CHANGED_PATHS
-//   boards export  DESIGN_DIR OUT_DIR [--interleaf DIR]
+//   boards export  DESIGN_DIR OUT_DIR [--interleaf DIR] [--web DIR]
+//   boards stream  DESIGN_DIR [--interleaf DIR] [--web DIR] [--size WxH] [--chromium PATH]   (JSON lines on stdin/stdout)
 //   boards import  CANVAS_EXPORT_DIR DEST_DIR [--force]
 //   boards version
 'use strict';
@@ -19,14 +20,15 @@ const LIB = path.join(__dirname, '..', 'boards', 'lib');
 
 function usage(code) {
   process.stderr.write([
-    'usage: boards preview DESIGN_DIR [--port N] [--host H] [--allow-host NAME]... [--interleaf DIR]',
+    'usage: boards preview DESIGN_DIR [--port N] [--host H] [--allow-host NAME]... [--interleaf DIR] [--web DIR]',
     '       boards check DESIGN_DIR [--interleaf DIR] [--json FILE|-] [--board FILE]... [--jobs N] [--timeout MS] [--chromium PATH] [--allow-empty]',
     '       boards references DESIGN_DIR [--update] [--refs DIR] [--out DIR] [--json FILE|-] [--board FILE]... [--interleaf DIR]',
     '                 [--jobs N] [--timeout MS] [--chromium PATH] [--allow-empty]',
     '       boards shot BOARD_FILE [--voice V] [--scheme S] [--pen P] [--size WxH] [--click SELECTOR]... [--out FILE]',
     '                 [--interleaf DIR] [--timeout MS] [--chromium PATH]',
     '       boards shots [--out DIR] [--root DIR] [--jobs N] [--interleaf DIR] [--timeout MS] [--chromium PATH] < CHANGED_PATHS',
-    '       boards export DESIGN_DIR OUT_DIR [--interleaf DIR]',
+    '       boards export DESIGN_DIR OUT_DIR [--interleaf DIR] [--web DIR]',
+    '       boards stream DESIGN_DIR [--interleaf DIR] [--web DIR] [--size WxH] [--chromium PATH]',
     '       boards import CANVAS_EXPORT_DIR DEST_DIR [--force]',
     '       boards version',
     '',
@@ -69,10 +71,10 @@ async function main() {
     return 0;
   }
   if (cmd === 'preview') {
-    const { pos, opt } = parse(rest, { port: 'value', host: 'value', 'allow-host': 'list', interleaf: 'value' });
+    const { pos, opt } = parse(rest, { port: 'value', host: 'value', 'allow-host': 'list', interleaf: 'value', web: 'value' });
     if (pos.length !== 1) usage(2);
     const { startServer } = require(path.join(LIB, 'server.js'));
-    const srv = await startServer({ design: pos[0], interleaf: opt.interleaf, host: opt.host, allowHosts: opt['allow-host'], port: opt.port ? Number(opt.port) : 4790, live: true });
+    const srv = await startServer({ design: pos[0], interleaf: opt.interleaf, web: opt.web, host: opt.host, allowHosts: opt['allow-host'], port: opt.port ? Number(opt.port) : 4790, live: true });
     process.stdout.write('boards preview: ' + srv.design + '\n  Interleaf: ' + srv.interleaf + '\n  ' + srv.url + '_boards/\n');
     for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, function () { srv.close().then(function () { process.exit(0); }); });
     await new Promise(function () {});
@@ -111,6 +113,33 @@ async function main() {
     process.stdout.write(JSON.stringify(rep, null, 1) + '\n');
     return rep.ok ? 0 : 1;
   }
+  if (cmd === 'stream') {
+    const { pos, opt } = parse(rest, { interleaf: 'value', web: 'value', size: 'value', chromium: 'value' });
+    if (pos.length !== 1) usage(2);
+    const size = opt.size === undefined ? {} : require(path.join(LIB, 'shot.js')).parseSize(opt.size);
+    if (size === null) { process.stderr.write('boards: --size is WIDTHxHEIGHT, not "' + opt.size + '"\n'); usage(2); }
+    const { startStream } = require(path.join(LIB, 'stream.js'));
+    const out = function (e) { process.stdout.write(JSON.stringify(e) + '\n'); };
+    const st = await startStream({ design: pos[0], interleaf: opt.interleaf, web: opt.web, chromium: opt.chromium, width: size.width, height: size.height, onEvent: out });
+    // one command per line; the end of stdin ends the stream
+    let buf = '';
+    process.stdin.setEncoding('utf8');
+    process.stdin.on('data', function (d) {
+      buf += d;
+      let i;
+      while ((i = buf.indexOf('\n')) >= 0) {
+        const line = buf.slice(0, i).trim();
+        buf = buf.slice(i + 1);
+        if (!line) continue;
+        let c;
+        try { c = JSON.parse(line); } catch (e) { out({ ev: 'error', message: 'not JSON: ' + line.slice(0, 80) }); continue; }
+        st.send(c);
+      }
+    });
+    await new Promise(function (res) { process.stdin.on('end', res); for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, res); });
+    await st.close();
+    return 0;
+  }
   if (cmd === 'shots') {
     const { pos, opt } = parse(rest, { out: 'value', root: 'value', jobs: 'value', interleaf: 'value', timeout: 'value', chromium: 'value' });
     if (pos.length) usage(2);
@@ -127,10 +156,10 @@ async function main() {
     return rep.summary.ok ? 0 : 1;
   }
   if (cmd === 'export') {
-    const { pos, opt } = parse(rest, { interleaf: 'value' });
+    const { pos, opt } = parse(rest, { interleaf: 'value', web: 'value' });
     if (pos.length !== 2) usage(2);
     const { exportDesign } = require(path.join(LIB, 'export.js'));
-    const r = exportDesign({ design: pos[0], out: pos[1], interleaf: opt.interleaf });
+    const r = exportDesign({ design: pos[0], out: pos[1], interleaf: opt.interleaf, web: opt.web });
     process.stdout.write('boards export: ' + r.boards.length + ' boards of ' + r.design + ' into ' + r.out + '\n');
     if (r.skipped.length) process.stdout.write('  left out: ' + r.skipped.join(', ') + '\n');
     return 0;

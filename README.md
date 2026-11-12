@@ -458,13 +458,14 @@ the line and the feature, and the check reports it as `unsupported`.
 ### Commands
 
 ```
-tools/boards preview DESIGN_DIR [--port 4790] [--host 127.0.0.1] [--allow-host NAME]... [--interleaf DIR]
+tools/boards preview DESIGN_DIR [--port 4790] [--host 127.0.0.1] [--allow-host NAME]... [--interleaf DIR] [--web DIR]
 tools/boards check   DESIGN_DIR [--interleaf DIR] [--json out/boards-check.json|-] [--board FILE]...
 tools/boards shot   BOARD_FILE [--voice V] [--scheme S] [--pen P] [--size WxH] [--click SELECTOR]... [--out FILE]
                     [--interleaf DIR] [--timeout MS] [--chromium PATH]
 tools/boards shots  [--out out/shots] [--root DIR] [--jobs N] [--interleaf DIR] [--timeout MS] [--chromium PATH] < CHANGED_PATHS
 tools/boards references DESIGN_DIR [--update] [--refs DIR] [--out DIR] [--json FILE|-] [--board FILE]... [--allow-empty]
-tools/boards export  DESIGN_DIR OUT_DIR [--interleaf DIR]
+tools/boards export  DESIGN_DIR OUT_DIR [--interleaf DIR] [--web DIR]
+tools/boards stream DESIGN_DIR [--interleaf DIR] [--web DIR] [--size WxH] [--chromium PATH]   # JSON lines on stdin/stdout
 tools/boards import  CANVAS_EXPORT_DIR DEST_DIR [--force]
 tools/in-alpine CMD...      # CMD in alpine:3.24 with the pinned Chromium and node, as the calling user
 ```
@@ -526,6 +527,25 @@ tools/in-alpine CMD...      # CMD in alpine:3.24 with the pinned Chromium and no
   `fonts.gstatic.com` are rewritten to `_boards/fonts/google.css` (Interleaf's faces and the design's
   `references.json` `fonts`) and `data:,` (no connection); the design folder itself is not changed. Every URL is relative, so `OUT_DIR` works from any sub-path; its `index.html` opens
   the canvas. It replaces `OUT_DIR` only if it is empty or an earlier export (`.boards-export`).
+- `stream` is the live picture for another program (FR-013; the hub's design view): one headless
+  Chromium on the preview of the folder, with live reload. Contract: live picture, version 1. It reads
+  one JSON command per line on stdin and writes one JSON event per line on stdout; the end of stdin
+  ends it. Commands (`op`): `open` (`board`, and `voice`, `scheme`, `pen`, `width`, `height` if wanted:
+  the board alone at that size, default its size on the canvas, rendered as `shot` renders it),
+  `canvas` (`page`), `viewport` (`width`, `height`), `mouse` (`type` `mousePressed`, `mouseReleased` or
+  `mouseMoved`, `x`, `y`, `button`, `buttons`, `clickCount`, `modifiers`), `wheel` (`x`, `y`, `deltaX`,
+  `deltaY`, `modifiers`), `touch` (`type` `touchStart`, `touchMove`, `touchEnd` or `touchCancel`,
+  `points` of `{x, y, id}`), `key` (`type` `keyDown`, `keyUp`, `rawKeyDown` or `char`, `key`, `code`,
+  `text`, `keyCode`, `modifiers`), `state` and `frame`. Events (`ev`): `ready` (`url`); `frame`
+  (`seq`, `width`, `height`, `png`: base64), a lossless PNG whenever the picture changes, the same
+  pixels as a `shot` of the same board; `state` (`view` `canvas`, `board`, `view` or `other`, `board`,
+  `voice`, `scheme`, `pen`, `page`, `width`, `height`, `url`) whenever what is shown changes; `blocked`
+  (`url`, `error`) for a request elsewhere; `error` (`message`, `op`) for a command it could not do,
+  after which it goes on; `crashed` (`message`). Coordinates are the frame's pixels. A board outside the
+  folder, an unknown voice, scheme or pen and a size over 4096 are errors. The page loads only from the
+  preview; with `BOARDS_NETWORK=none`, `tools/in-alpine` also runs it without network.
+  `--interleaf DIR` and `--web DIR` (also on `preview`) serve another checkout's Interleaf and web form
+  as they are, so the tools can come from one checkout and the design from another.
 - `import` copies a canvas exported from claude.ai into a design folder: boards, `canvas.json` and the
   sample data. It leaves out claude.ai's own files (`artifact-type/`, `SKILL.md`, `index.html`, any
   `support.js`), the embedded `ds/` copy (in any folder) and symbolic links (never followed), removes

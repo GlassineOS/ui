@@ -13,10 +13,18 @@ html, body { margin: 0; height: 100%; background: var(--sheet); color: var(--ink
 .controls .unused { opacity: .45; }
 .controls .sep { width: 1px; height: 22px; background: var(--rule); }
 .canvas-page main { position: relative; overflow: auto; height: calc(100% - 50px); }
-#plane { position: relative; transform-origin: 0 0; }
-.board { position: absolute; display: block; background: var(--paper); border: 1px solid var(--rule); color: var(--ink); text-decoration: none; overflow: hidden; }
-.board:hover, .board:focus-visible { outline: 3px solid var(--mark); }
+#sizer { position: relative; overflow: hidden; }
+#plane { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.panning, .panning * { cursor: grabbing !important; user-select: none; }
+.panning iframe { pointer-events: none !important; }
+.board { position: absolute; display: block; background: var(--paper); border: 1px solid var(--rule); color: var(--ink); overflow: visible; }
+.board:hover, .board:focus-within { outline: 3px solid var(--mark); }
 .board .label { position: absolute; left: 0; right: 0; bottom: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.board .label .open { color: inherit; text-decoration: none; }
+.board .label .open:hover, .board .label .open:focus-visible { text-decoration: underline; }
+.board .hit { position: absolute; inset: 0; }
+.using .board .hit { display: none; }
+.using .board iframe { pointer-events: auto; }
 .board .thumb { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 6px; color: var(--soft); text-align: center; padding: 10px; }
 .board iframe { border: 0; transform-origin: 0 0; pointer-events: none; background: var(--paper); }
 .badge { display: inline-block; padding: 1px 6px; border-radius: 999px; border: 1px solid var(--mark); color: var(--mark); background: var(--paper); font-size: .8em; }

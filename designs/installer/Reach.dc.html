@@ -25,23 +25,20 @@
       </div>
 
       <sc-if value="{{ isGuide }}" hint-placeholder-val="{{ true }}">
-        <div class="ins-stack">
-          <label class="ins-choice"><input type="radio" name="how" checked="{{ autoOn }}" onChange="{{ pickAuto }}"><span class="ins-choice__body"><span class="ins-choice__title">{{ r.auto }}</span><span class="ins-small">{{ r.autoBody }}</span><a class="il-link ins-small" href="reach.debugging.dc.html">How to turn on USB debugging</a></span></label>
-          <label class="ins-choice"><input type="radio" name="how" checked="{{ handOn }}" onChange="{{ pickHand }}"><span class="ins-choice__body"><span class="ins-choice__title">{{ r.hand }}</span><span class="ins-small">{{ r.handBody }}</span></span></label>
+        <div class="ins-card ins-card--strong">
+          <span class="ins-card__title">{{ r.auto }}</span>
+          <p class="ins-small">{{ r.autoBody }}</p>
+          <p class="ins-small ins-soft">{{ r.only }} <a class="il-link" href="reach.hand.dc.html">USB debugging isn’t on?</a></p>
         </div>
-        <sc-if value="{{ handOn }}" hint-placeholder-val="{{ false }}">
-          <section class="ins-stack">
-            <h2 class="ins-h2">Restart it into its start-up mode</h2>
-            <ol class="ins-plan">
-              <sc-for list="{{ handSteps }}" as="h" hint-placeholder-count="3">
-                <li><span class="ins-plan__mark" aria-hidden="true"></span><sc-if value="{{ h.text }}" hint-placeholder-val="{{ true }}"><p>{{ h.text }}</p></sc-if><sc-if value="{{ h.owed }}" hint-placeholder-val="{{ false }}"><p><span class="ins-placeholder">{{ h.owed }}</span></p></sc-if></li>
-              </sc-for>
-            </ol>
-          </section>
-        </sc-if>
       </sc-if>
 
       <sc-if value="{{ isDebugging }}" hint-placeholder-val="{{ false }}">
+        <sc-if value="{{ isHand }}" hint-placeholder-val="{{ false }}">
+          <aside class="il-admonition il-admonition--note">
+            <span class="il-admonition__label">Only through USB debugging</span>
+            <p>{{ r.only }}</p>
+          </aside>
+        </sc-if>
         <ol class="ins-plan">
           <sc-for list="{{ r.debugSteps }}" as="d" hint-placeholder-count="4">
             <li><span class="ins-plan__mark" aria-hidden="true"></span><p>{{ d }}</p></li>
@@ -99,13 +96,8 @@
           <span class="il-admonition__label"><span class="il-admonition__seal" aria-hidden="true">G</span>Start it again</span>
           <p class="il-admonition__title">Not freshly started</p>
           <p>{{ r.notFresh }} Nothing was changed.</p>
-          <p><strong>Way out:</strong> restart it into its start-up mode again, as below, then click Try again. Or stop here: it starts Android when you turn it off and on.</p>
+          <p><strong>Way out:</strong> let the installer restart it again: start Android on it, keep it connected, and click Restart it for me. Or stop here: it starts Android when you turn it off and on.</p>
         </aside>
-        <ol class="ins-plan">
-          <sc-for list="{{ handSteps }}" as="h" hint-placeholder-count="3">
-            <li><span class="ins-plan__mark" aria-hidden="true"></span><sc-if value="{{ h.text }}" hint-placeholder-val="{{ true }}"><p>{{ h.text }}</p></sc-if><sc-if value="{{ h.owed }}" hint-placeholder-val="{{ false }}"><p><span class="ins-placeholder">{{ h.owed }}</span></p></sc-if></li>
-          </sc-for>
-        </ol>
       </sc-if>
 
       <dc-import name="Actions" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" next="{{ next }}" out="{{ out }}" buttons="{{ buttons }}" hint-size="100%,140px"></dc-import>
@@ -115,45 +107,45 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"machine":{"editor":"enum","options":["device","pc"],"default":"device"},"state":{"editor":"enum","options":["guide","hand","debugging","chooser","waiting","found","notfresh"],"default":"guide"},"$preview":{"width":1280,"height":1100}}'>
 class Component extends DCLogic {
-  state = { how: null };
   renderVals() {
     const p = this.props, I = window.INSTALLER, mk = p.machine ?? 'device', m = I.machines[mk], r = m.reach;
     const st = mk === 'pc' ? 'found' : (p.state ?? 'guide');
-    const how = this.state.how ?? (st === 'hand' ? 'hand' : 'auto');
-    const guide = st === 'guide' || st === 'hand';
+    const guide = st === 'guide', hand = st === 'hand';
     const T = {
       guide: ['Check · reach the device', 'Get the ' + m.short + ' ready', r.intro],
+      hand: ['Check · reach the device', 'USB debugging needs to be on', 'The installer reaches the ' + m.short + ' through Android’s USB debugging. Turn it on once, on the device.'],
       debugging: ['Check · reach the device', 'Turn on USB debugging', 'Then the installer can restart the ' + m.short + ' into its start-up mode for you. You do this once, on the device.'],
       chooser: ['Check · reach the device', 'Your browser asks which device', 'Before the installer can talk to the ' + m.short + ', your browser asks you to choose it. That window comes next.'],
       waiting: ['Check · reach the device', 'Looking for the ' + m.short, 'Connect it in its start-up mode. This page notices it by itself.'],
       found: ['Check · reach the machine', mk === 'pc' ? 'Nothing to connect' : 'Found it', mk === 'pc' ? r.found : 'The ' + m.short + ' is connected and ready to be checked.'],
-      notfresh: ['Check · reach the device', 'Restart the ' + m.short + ' into its start-up mode', 'Almost: the installer needs it freshly started.']
-    }[guide ? 'guide' : st];
+      notfresh: ['Check · reach the device', 'The ' + m.short + ' needs a fresh restart', 'Almost: the installer needs it freshly started into its start-up mode.']
+    }[st];
     const next = {
-      guide: how === 'auto' ? 'The installer restarts the ' + m.short + '; your browser asks you to choose it, twice.' : 'Your browser asks you to choose the ' + m.short + '.',
+      guide: 'The installer restarts the ' + m.short + '; your browser asks you to choose it, twice.',
+      hand: 'Once USB debugging is on, the installer restarts the ' + m.short + ' for you.',
       debugging: 'Back to getting the ' + m.short + ' ready; the installer restarts it for you.',
       chooser: 'The browser’s window opens. After you choose, the check starts. It only reads.',
       waiting: 'Once it’s found, the check starts by itself.',
       found: 'The check: what the machine is and what an installation would do. It only reads.',
-      notfresh: 'The installer looks again once you click Try again.'
-    }[guide ? 'guide' : st];
+      notfresh: 'The installer restarts it again; your browser asks you to choose it, twice.'
+    }[st];
     const out = mk === 'pc' ? 'Stop here and restart the PC without the USB stick. Nothing has changed.'
       : 'Stop here and unplug the ' + m.short + '. Nothing has changed; it starts Android when you turn it off and on.';
     const B = {
-      guide: [{ label: how === 'auto' ? 'Restart it for me' : 'It’s in its start-up mode', href: how === 'auto' ? 'reach.chooser.dc.html' : 'reach.chooser.dc.html', primary: true }, { label: 'Back', href: 'start.browser.dc.html' }, { label: 'Stop here', href: 'start.browser.dc.html', push: true }],
+      guide: [{ label: 'Restart it for me', href: 'reach.chooser.dc.html', primary: true }, { label: 'Back', href: 'start.browser.dc.html' }, { label: 'Stop here', href: 'start.browser.dc.html', push: true }],
+      hand: [{ label: 'It’s on: restart it for me', href: 'reach.chooser.dc.html', primary: true }, { label: 'Back', href: 'reach.guide.dc.html' }, { label: 'Stop here', href: 'start.browser.dc.html', push: true }],
       debugging: [{ label: 'Done, back', href: 'reach.guide.dc.html', primary: true }, { label: 'Stop here', href: 'start.browser.dc.html', push: true }],
       chooser: [{ label: 'Choose the device', href: 'reach.waiting.dc.html', primary: true }, { label: 'Back', href: 'reach.guide.dc.html' }, { label: 'Stop here', href: 'start.browser.dc.html', push: true }],
       waiting: [{ label: 'Choose the device again', href: 'reach.found.dc.html', primary: true }, { label: 'Back', href: 'reach.guide.dc.html' }, { label: 'Stop here', href: 'start.browser.dc.html', push: true }],
       found: [{ label: 'Check it', href: mk === 'pc' ? 'check.pc.dc.html' : 'check.device.dc.html', primary: true }, { label: 'Stop here', href: 'start.browser.dc.html', push: true }],
-      notfresh: [{ label: 'Try again', href: 'reach.found.dc.html', primary: true }, { label: 'Stop here', href: 'start.browser.dc.html', push: true }]
-    }[guide ? 'guide' : st];
+      notfresh: [{ label: 'Restart it for me', href: 'reach.chooser.dc.html', primary: true }, { label: 'Stop here', href: 'start.browser.dc.html', push: true }]
+    }[st];
     return { theme: window.INSTALLER_THEME(p.voice, p.scheme), voice: p.voice ?? 'white', scheme: p.scheme ?? 'paper', pen: p.pen ?? '1',
       m, r, eyebrow: T[0], title: T[1], lead: T[2], next, out, buttons: B,
       chipMachine: st === 'found' || st === 'notfresh' || mk === 'pc' ? mk : 'none',
       foundTitle: mk === 'pc' ? m.name + ', started from the USB stick' : m.name,
-      isGuide: guide, isDebugging: st === 'debugging', isChooser: st === 'chooser', isWaiting: st === 'waiting', isFound: st === 'found', isNotFresh: st === 'notfresh',
-      autoOn: how === 'auto', handOn: how === 'hand', handSteps: r.handSteps || [],
-      pickAuto: () => this.setState({ how: 'auto' }), pickHand: () => this.setState({ how: 'hand' }) };
+      isGuide: guide, isDebugging: st === 'debugging' || hand, isHand: hand, isChooser: st === 'chooser', isWaiting: st === 'waiting', isFound: st === 'found', isNotFresh: st === 'notfresh',
+    };
   }
 }
 </script>

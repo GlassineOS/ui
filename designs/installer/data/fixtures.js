@@ -157,9 +157,8 @@ window.INSTALLER = {
       reach: {
         intro: 'The installer works with the Note Air in its start-up mode, a mode it starts in before Android. For this installation it must be started into that mode freshly.',
         auto: 'Restart it for me',
-        autoBody: 'If USB debugging is on in Android, the installer restarts the Note Air into its start-up mode. Your browser asks twice which device to use: once for Android, once for the start-up mode.',
-        hand: 'I’ll restart it myself',
-        handBody: 'Without USB debugging, you restart it into that mode by hand. The Note Air has no volume keys: only its power button and its cover.',
+        autoBody: 'With USB debugging on in Android, the installer restarts the Note Air into its start-up mode. Your browser asks twice which device to use: once for Android, once for the start-up mode.',
+        only: 'For now, the installer reaches a stock Note Air only this way: there is no way to start it into its start-up mode by hand yet.',
         debugSteps: [
           'On the Note Air, open Settings.',
           'Open “About tablet” and tap “Build number” seven times. Android says you are now a developer.',
@@ -167,11 +166,6 @@ window.INSTALLER = {
           'Connect the Note Air to this computer. When it asks “Allow USB debugging?”, tap Allow.'
         ],
         debugOwed: 'Menu names as in Android 10; the Note Air’s own names come from its description, to be checked on the device.',
-        handSteps: [
-          { text: 'Turn the Note Air off: hold the power button, then tap Power off.' },
-          { owed: 'How to start the Note Air into its start-up mode by hand, with the power button and the cover: the device description holds it; not written yet.' },
-          { text: 'Connect it to this computer with a USB cable that carries data.' }
-        ],
         chooserName: 'Android',
         chooserNote: 'The Note Air may be listed as “Android”.',
         waitHints: ['Is the cable in both the Note Air and this computer?', 'Some cables only charge. Try another cable.', 'Is the screen of the Note Air showing its start-up mode?'],

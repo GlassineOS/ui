@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Check result</title>
+<script src="./support.js"></script>
+<script src="data/theme.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="installer.css">
+</helmet>
+<div class="ins il-page" data-theme="{{ theme }}" data-pen="{{ pen }}">
+  <dc-import name="Header" step="check" machine="{{ mk }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,130px"></dc-import>
+  <main class="ins-desk il-desk">
+    <div class="il-sheet ins-sheet">
+      <div class="il-title-block">
+        <span class="il-label">Check · done, nothing was changed</span>
+        <h1 class="il-h1">{{ title }}</h1>
+        <p class="il-lead">{{ lead }}</p>
+      </div>
+
+      <section class="ins-stack">
+        <h2 class="ins-h2">What it is</h2>
+        <div class="il-table-wrap"><table class="il-table"><tbody>
+          <sc-for list="{{ m.facts }}" as="f" hint-placeholder-count="5"><tr><th scope="row" style="width:34%">{{ f.0 }}</th><td>{{ f.1 }}</td></tr></sc-for>
+        </tbody></table></div>
+        <sc-if value="{{ hasTech }}" hint-placeholder-val="{{ true }}">
+          <details class="il-details"><summary>Technical details</summary>
+            <div class="il-table-wrap"><table class="il-table ins-small"><tbody>
+              <sc-for list="{{ m.tech }}" as="t" hint-placeholder-count="4"><tr><th scope="row" style="width:34%">{{ t.0 }}</th><td style="font-family: var(--font-mono); font-size: 14px">{{ t.1 }}</td></tr></sc-for>
+            </tbody></table></div>
+          </details>
+        </sc-if>
+      </section>
+
+      <sc-if value="{{ supported }}" hint-placeholder-val="{{ true }}">
+        <section class="ins-stack">
+          <h2 class="ins-h2">Its state now</h2>
+          <div class="ins-card ins-card--strong"><span class="ins-card__title">{{ m.state.name }}</span><p>{{ m.state.body }}</p></div>
+          <details class="il-details"><summary>The states the installer tells apart</summary>
+            <ul class="ins-caps ins-small">
+              <li><span class="ins-caps__text"><span class="ins-caps__name">As it came from the maker</span>The installer offers to install.</span></li>
+              <li><span class="ins-caps__text"><span class="ins-caps__name">Prepared</span>Parts of GlassineOS’s start-up are in place, no GlassineOS yet. The installer continues from there.</span></li>
+              <li><span class="ins-caps__text"><span class="ins-caps__name">Half-installed</span>An installation was cut off. The installer offers to resume or undo it.</span></li>
+              <li><span class="ins-caps__text"><span class="ins-caps__name">GlassineOS installed</span>The installer offers repair, reinstall, or back to stock.</span></li>
+            </ul>
+          </details>
+        </section>
+
+        <section class="ins-stack">
+          <h2 class="ins-h2">What it can do with GlassineOS</h2>
+          <ul class="ins-caps">
+            <sc-for list="{{ caps }}" as="c" hint-placeholder-count="4">
+              <li><span class="{{ c.cls }}" aria-hidden="true"><sc-if value="{{ c.yes }}" hint-placeholder-val="{{ true }}"><svg width="14" height="14" viewBox="0 0 24 24" style="fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></sc-if><sc-if value="{{ c.no }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 24 24" style="fill:none;stroke-width:3;stroke-linecap:round"><path d="M6 12h12"></path></svg></sc-if></span>
+                <span class="ins-caps__text"><span class="ins-row" style="gap:8px"><span class="ins-caps__name">{{ c.name }}</span><span class="{{ c.tagCls }}">{{ c.has }}</span></span><span class="ins-small ins-soft">{{ c.body }}</span></span></li>
+            </sc-for>
+          </ul>
+        </section>
+
+        <section class="ins-stack">
+          <h2 class="ins-h2">What an installation would do</h2>
+          <div class="ins-fate">
+            <section data-kind="keep"><span class="il-label">Keep</span><ul class="ins-stack"><sc-for list="{{ m.fate.keep }}" as="x" hint-placeholder-count="2"><li>{{ x }}</li></sc-for></ul></section>
+            <section data-kind="backup"><span class="il-label">Back up</span><ul class="ins-stack"><sc-for list="{{ m.fate.backup }}" as="x" hint-placeholder-count="2"><li>{{ x }}</li></sc-for></ul></section>
+            <section data-kind="replace"><span class="il-label">Replace</span><ul class="ins-stack"><sc-for list="{{ m.fate.replace }}" as="x" hint-placeholder-count="2"><li>{{ x }}</li></sc-for></ul></section>
+            <section data-kind="create"><span class="il-label">Create</span><ul class="ins-stack"><sc-for list="{{ m.fate.create }}" as="x" hint-placeholder-count="2"><li>{{ x }}</li></sc-for></ul></section>
+          </div>
+          <sc-if value="{{ hasErase }}" hint-placeholder-val="{{ true }}">
+            <aside class="il-admonition il-admonition--danger">
+              <span class="il-admonition__label"><span class="il-admonition__seal" aria-hidden="true">!</span>Erases your files</span>
+              <p class="il-admonition__title">{{ eraseTitle }}</p>
+              <p>{{ eraseBody }}</p>
+              <p><strong>Way out:</strong> {{ eraseExit }}</p>
+            </aside>
+          </sc-if>
+          <div class="il-table-wrap"><table class="il-table"><thead><tr><th>Space it needs</th><th></th></tr></thead><tbody>
+            <sc-for list="{{ m.space }}" as="s" hint-placeholder-count="2"><tr><td style="width:34%">{{ s.0 }}</td><td>{{ s.1 }}</td></tr></sc-for>
+          </tbody></table></div>
+        </section>
+
+        <section class="ins-stack">
+          <h2 class="ins-h2">How the installer reaches it from here</h2>
+          <ul class="ins-caps">
+            <sc-for list="{{ m.connections }}" as="c" hint-placeholder-count="2"><li><span class="ins-yn ins-yn--yes" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" style="fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span><span class="ins-caps__text"><span class="ins-caps__name">{{ c.name }}</span><span class="ins-small ins-soft">{{ c.note }}</span></span></li></sc-for>
+          </ul>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ notSupported }}" hint-placeholder-val="{{ false }}">
+        <section class="ins-stack">
+          <h2 class="ins-h2">{{ missingTitle }}</h2>
+          <ul class="ins-caps">
+            <sc-for list="{{ missing }}" as="c" hint-placeholder-count="3">
+              <li><span class="{{ c.cls }}" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" style="fill:none;stroke-width:3;stroke-linecap:round"><path d="M7 7l10 10M17 7 7 17"></path></svg></span>
+                <span class="ins-caps__text"><span class="ins-row" style="gap:8px"><span class="ins-caps__name">{{ c.name }}</span><span class="{{ c.tagCls }}">{{ c.has }}</span></span><span class="ins-small ins-soft">{{ c.body }}</span></span></li>
+            </sc-for>
+          </ul>
+        </section>
+        <section class="ins-card ins-card--strong">
+          <span class="ins-card__title">Share this report</span>
+          <p class="ins-small">With it, the people who add devices to GlassineOS can see what this one would need. It holds no personal data and no value unique to this device: no serial number, no account, no files, no network address.</p>
+          <pre class="ins-small" style="margin:8px 0 0; padding: 12px 16px; background: var(--sheet); color: var(--ink); border-radius: var(--v-ui-radius); font-family: var(--font-mono); font-size: 13px; line-height: 1.6; white-space: pre-wrap">{{ report }}</pre>
+          <div class="ins-buttons" style="margin-top:8px"><a class="il-btn" href="#">Copy the report</a><a class="il-btn" href="#">Save it as a file</a><a class="il-btn" href="#">Ask for this device</a></div>
+        </section>
+      </sc-if>
+
+      <dc-import name="Actions" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" next="{{ next }}" out="{{ out }}" buttons="{{ buttons }}" hint-size="100%,140px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"machine":{"editor":"enum","options":["device","pc","unsupported","conflict"],"default":"device"},"$preview":{"width":1280,"height":2300}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props, I = window.INSTALLER, mk = p.machine ?? 'device', m = I.machines[mk];
+    const supported = mk === 'device' || mk === 'pc';
+    const cap = c => {
+      const yes = c.has === 'yes', no = c.has === 'no';
+      return { ...c, yes, no, cls: 'ins-yn ' + (yes ? 'ins-yn--yes' : c.has === 'not yet' || c.has === 'unknown' ? 'ins-yn--wait' : 'ins-yn--no'),
+        has: yes ? 'Yes' : c.has === 'not yet' ? 'Not yet' : c.has === 'unknown' ? 'Unknown' : 'No',
+        tagCls: 'ins-tag' + (yes ? '' : c.has === 'no' ? ' ins-tag--heavy' : ' ins-tag--dashed') };
+    };
+    const short = m.short;
+    return { theme: window.INSTALLER_THEME(p.voice, p.scheme), voice: p.voice ?? 'white', scheme: p.scheme ?? 'paper', pen: p.pen ?? '1',
+      mk, m, supported, notSupported: !supported, hasTech: !!m.tech,
+      title: supported ? (mk === 'pc' ? 'This PC can run GlassineOS' : 'This is an ' + m.name) : m.title,
+      lead: supported ? 'GlassineOS supports it. Here is what it is now, and what an installation would keep, back up, replace and create.' : m.lead,
+      caps: supported ? m.caps.map(cap) : [],
+      missingTitle: mk === 'conflict' ? 'What contradicts' : 'What is missing',
+      missing: !supported ? (m.missing || m.conflicts).map(cap) : [],
+      hasErase: !!m.erase, eraseTitle: m.erase ? m.erase.title : '', eraseBody: m.erase ? m.erase.body : '', eraseExit: m.erase ? m.erase.exit : '',
+      report: m.report ? m.report.join('\n') : '',
+      next: supported ? 'The plan: every step in order, with what you can choose. Still nothing is written.' : 'Nothing more to do here.',
+      out: supported ? 'Stop here: a dry run ends with this report. Nothing was changed; ' + (mk === 'pc' ? 'the PC starts Windows as before.' : 'the device starts Android as before.') : 'Close the installer and unplug the ' + short + '. Nothing was changed.',
+      buttons: supported ? [{ label: 'Make the plan', href: mk === 'pc' ? 'plan.pc.dc.html' : 'plan.device.dc.html', primary: true }, { label: 'Save this report', href: '#' }, { label: 'Stop here', href: 'start.browser.dc.html', push: true }]
+        : [{ label: 'Close the installer', href: 'start.browser.dc.html', primary: true }] };
+  }
+}
+</script>
+</body>
+</html>

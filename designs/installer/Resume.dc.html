@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cut off</title>
+<script src="./support.js"></script>
+<script src="data/theme.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="installer.css">
+</helmet>
+<div class="ins il-page" data-theme="{{ theme }}" data-pen="{{ pen }}">
+  <dc-import name="Header" step="check" machine="{{ mk }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,130px"></dc-import>
+  <main class="ins-desk il-desk">
+    <div class="il-sheet ins-sheet">
+      <div class="il-title-block">
+        <span class="il-label">Check · a half-finished installation</span>
+        <h1 class="il-h1">This installation was cut off</h1>
+        <p class="il-lead">{{ cut }}</p>
+      </div>
+      <div class="ins-card"><span class="il-label">Right now</span><p>{{ cutNow }}</p></div>
+
+      <section class="ins-stack">
+        <h2 class="ins-h2">How it ends</h2>
+        <p class="ins-small ins-soft">Whatever cut it off, {{ the }} ends in one of three states:</p>
+        <ul class="ins-caps">
+          <li><span class="ins-yn ins-yn--yes" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" style="fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span><span class="ins-caps__text"><span class="ins-caps__name">Its previous system starts</span><span class="ins-small ins-soft">After an undo, or when the cut came before anything was replaced.</span></span></li>
+          <li><span class="ins-yn ins-yn--yes" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" style="fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span><span class="ins-caps__text"><span class="ins-caps__name">GlassineOS starts</span><span class="ins-small ins-soft">After the installation is resumed and finished.</span></span></li>
+          <li><span class="ins-yn ins-yn--wait" aria-hidden="true"></span><span class="ins-caps__text"><span class="ins-caps__name">The installer can finish or undo it</span><span class="ins-small ins-soft">This is the state now. Choose below.</span></span></li>
+        </ul>
+      </section>
+
+      <section class="ins-stack">
+        <h2 class="ins-h2">What to do</h2>
+        <label class="ins-choice"><input type="radio" name="what" checked="{{ resumeOn }}" onChange="{{ pickResume }}"><span class="ins-choice__body"><span class="ins-choice__title">{{ resumeStep }}</span><span class="ins-small">The steps already done stay done. The rest follows the plan you confirmed.</span></span></label>
+        <label class="ins-choice"><input type="radio" name="what" checked="{{ undoOn }}" onChange="{{ pickUndo }}"><span class="ins-choice__body"><span class="ins-choice__title">Undo: put the backup back</span><span class="ins-small">{{ undoBody }}</span></span></label>
+        <div class="ins-card">
+          <span class="il-label">The backup</span>
+          <span class="ins-card__title">{{ where.chosen }}</span>
+          <p class="ins-small ins-soft">Both need it. {{ backupNote }}</p>
+          <div class="ins-buttons"><a class="il-btn" href="#">{{ where.choose }}</a></div>
+        </div>
+        <details class="il-details"><summary>The record of this installation</summary>
+          <p class="ins-small">The installer read it from {{ the }} and from the backup folder: each step’s outcome as it completed, the plan you confirmed, the versions it used.</p>
+        </details>
+      </section>
+
+      <dc-import name="Actions" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" next="{{ next }}" out="Close the installer. It stays as it is now, and the installer offers the same choice the next time." buttons="{{ buttons }}" hint-size="100%,140px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"machine":{"editor":"enum","options":["device","pc"],"default":"device"},"$preview":{"width":1280,"height":1600}}'>
+class Component extends DCLogic {
+  state = { what: 'resume' };
+  renderVals() {
+    const p = this.props, I = window.INSTALLER, mk = p.machine ?? 'device', m = I.machines[mk], res = this.state.what === 'resume';
+    return { theme: window.INSTALLER_THEME(p.voice, p.scheme), voice: p.voice ?? 'white', scheme: p.scheme ?? 'paper', pen: p.pen ?? '1',
+      mk, the: m.the, cut: m.cut, cutNow: m.cutNow, resumeStep: m.resumeStep, undoBody: m.undoBody,
+      where: m.backupWhere, backupNote: m.installed.backupNote,
+      resumeOn: res, undoOn: !res, pickResume: () => this.setState({ what: 'resume' }), pickUndo: () => this.setState({ what: 'undo' }),
+      next: res ? 'The installer checks the backup again, then carries on from the step that was cut off.' : 'The installer checks the backup again, then puts it back.',
+      buttons: [{ label: res ? 'Resume' : 'Undo', href: res ? (mk === 'pc' ? 'install.pc.dc.html' : 'install.device.dc.html') : 'done.device.stock.dc.html', primary: true },
+        { label: 'Close', href: 'start.browser.dc.html', push: true }] };
+  }
+}
+</script>
+</body>
+</html>

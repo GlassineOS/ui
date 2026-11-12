@@ -25,6 +25,8 @@ t lib   "Makefile"
 t lib   "test/sheet.py"
 t lib   ".github/workflows/build.yml"
 t lib   "tools/ci-scope"
+t forms "designs/shell/Main.dc.html
+designs/hub/canvas.json"
 t forms ""
 echo "ci-scope: $([ $fails = 0 ] && echo all passed || echo $fails FAILED)"
 [ $fails = 0 ]

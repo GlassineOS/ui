@@ -6,6 +6,9 @@
 //                  [--timeout MS] [--chromium PATH] [--allow-empty]
 //   boards references DESIGN_DIR [--update] [--refs DIR] [--out DIR] [--json FILE|-] [--board FILE]...
 //                  [--interleaf DIR] [--jobs N] [--timeout MS] [--chromium PATH] [--allow-empty]
+//   boards shot    BOARD_FILE [--voice V] [--scheme S] [--pen P] [--size WxH] [--click SELECTOR]... [--out FILE]
+//                  [--interleaf DIR] [--timeout MS] [--chromium PATH]
+//   boards shots   [--out DIR] [--root DIR] [--jobs N] [--interleaf DIR] [--timeout MS] [--chromium PATH] < CHANGED_PATHS
 //   boards import  CANVAS_EXPORT_DIR DEST_DIR [--force]
 //   boards version
 'use strict';
@@ -19,6 +22,9 @@ function usage(code) {
     '       boards check DESIGN_DIR [--interleaf DIR] [--json FILE|-] [--board FILE]... [--jobs N] [--timeout MS] [--chromium PATH] [--allow-empty]',
     '       boards references DESIGN_DIR [--update] [--refs DIR] [--out DIR] [--json FILE|-] [--board FILE]... [--interleaf DIR]',
     '                 [--jobs N] [--timeout MS] [--chromium PATH] [--allow-empty]',
+    '       boards shot BOARD_FILE [--voice V] [--scheme S] [--pen P] [--size WxH] [--click SELECTOR]... [--out FILE]',
+    '                 [--interleaf DIR] [--timeout MS] [--chromium PATH]',
+    '       boards shots [--out DIR] [--root DIR] [--jobs N] [--interleaf DIR] [--timeout MS] [--chromium PATH] < CHANGED_PATHS',
     '       boards import CANVAS_EXPORT_DIR DEST_DIR [--force]',
     '       boards version',
     '',
@@ -90,6 +96,33 @@ async function main() {
     const rep = await R.shootDesign({ design: pos[0], interleaf: opt.interleaf, refs: opt.refs, out: opt.out, update: opt.update, boards: opt.board,
       jobs: opt.jobs ? Number(opt.jobs) : 4, timeout: opt.timeout ? Number(opt.timeout) : 30000, chromium: opt.chromium, allowEmpty: opt['allow-empty'] });
     return writeReport(rep, opt.json || path.join(rep.out, 'report.json'), R.textSummary(rep, 'boards references (' + rep.design + ')'));
+  }
+  if (cmd === 'shot') {
+    const { pos, opt } = parse(rest, { voice: 'value', scheme: 'value', pen: 'value', size: 'value', click: 'list', out: 'value', interleaf: 'value',
+      timeout: 'value', chromium: 'value' });
+    if (pos.length !== 1) usage(2);
+    const S = require(path.join(LIB, 'shot.js'));
+    const size = opt.size === undefined ? undefined : S.parseSize(opt.size);
+    if (size === null) { process.stderr.write('boards: --size is WIDTHxHEIGHT, not "' + opt.size + '"\n'); usage(2); }
+    const rep = await S.shootBoard({ board: pos[0], voice: opt.voice, scheme: opt.scheme, pen: opt.pen, size: size, clicks: opt.click, out: opt.out,
+      interleaf: opt.interleaf, timeout: opt.timeout ? Number(opt.timeout) : 30000, chromium: opt.chromium });
+    process.stdout.write(JSON.stringify(rep, null, 1) + '\n');
+    return rep.ok ? 0 : 1;
+  }
+  if (cmd === 'shots') {
+    const { pos, opt } = parse(rest, { out: 'value', root: 'value', jobs: 'value', interleaf: 'value', timeout: 'value', chromium: 'value' });
+    if (pos.length) usage(2);
+    const S = require(path.join(LIB, 'shot.js'));
+    const out = opt.out || path.join('out', 'shots');
+    const root = path.resolve(opt.root || '.');
+    const boards = S.changedBoards(fs.readFileSync(0, 'utf8').split('\n').filter(Boolean), root);
+    const rep = await S.shootBoards({ boards: boards, root: root, out: out, jobs: opt.jobs ? Number(opt.jobs) : 4, interleaf: opt.interleaf,
+      timeout: opt.timeout ? Number(opt.timeout) : 30000, chromium: opt.chromium });
+    fs.mkdirSync(out, { recursive: true });
+    fs.writeFileSync(path.join(out, 'report.json'), JSON.stringify(rep, null, 1) + '\n');
+    process.stdout.write('boards shots: ' + rep.summary.boards + ' boards, ' + rep.summary.failing + ' failing, in ' + out + '\n');
+    for (const r of rep.boards) if (!r.ok) process.stdout.write('  FAIL ' + r.board + ': ' + (r.errors[0] ? r.errors[0].message : 'no image') + '\n');
+    return rep.summary.ok ? 0 : 1;
   }
   if (cmd === 'import') {
     const { pos, opt } = parse(rest, { force: 'flag' });

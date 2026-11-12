@@ -10,6 +10,8 @@ const ROOT = path.resolve(__dirname, '..', '..');
 const { startServer, describe, listBoards } = require('../../boards/lib/server.js');
 const { importCanvas } = require('../../boards/lib/import.js');
 const { needsNoSandbox } = require('../../boards/lib/browser.js');
+const S = require('../../boards/lib/shot.js');
+const { spawnSync } = require('child_process');
 const SAMPLES = path.join(ROOT, 'boards', 'samples');
 const INTERLEAF = path.join(__dirname, 'fixtures', 'interleaf');
 const TMP = path.join(ROOT, 'out', 'test', 'boards');
@@ -277,4 +279,82 @@ test('browser: Chromium keeps its sandbox unless root, in a container, or BOARDS
   assert.strictEqual(needsNoSandbox({}, false, true), true);
   assert.strictEqual(needsNoSandbox({ BOARDS_NO_SANDBOX: '1' }, false, false), true);
   assert.strictEqual(needsNoSandbox({ BOARDS_NO_SANDBOX: '0' }, false, false), false);
+});
+
+test('shot: the design folder is the nearest ancestor with a canvas, else the board\'s folder', () => {
+  assert.strictEqual(S.designDirOf(path.join(SAMPLES, 'sub', 'Badge.dc.html')), SAMPLES);
+  assert.strictEqual(S.designDirOf(path.join(__dirname, 'unsupported', 'Bad.dc.html')), path.join(__dirname, 'unsupported'));
+});
+
+test('shot: sizes', () => {
+  assert.deepStrictEqual(S.parseSize('390x760'), { width: 390, height: 760 });
+  for (const bad of ['390', '0x10', 'x', '-1x4', '12x']) assert.strictEqual(S.parseSize(bad), null, bad);
+});
+
+const CHOICES = S.validChoices(JSON.parse(fs.readFileSync(path.join(ROOT, 'web', 'combinations.json'), 'utf8')).combinations);
+
+test('shot: the choices come from the web form', () => {
+  assert.deepStrictEqual(CHOICES, { voice: ['white', 'editorial', 'stationery'], scheme: ['paper', 'night', 'eink'], pen: [1, 2, 3] });
+});
+
+test('shot: what the render uses, and what it names', () => {
+  const props = { theme: { default: 'editorial' }, pen: { default: '2' } };
+  // not asked for: stays out of the URL, named by the board's default, else the first combination
+  let r = S.resolveChoices({}, props, CHOICES);
+  assert.deepStrictEqual([r.voice, r.scheme, r.pen, r.asked, r.notApplied], ['editorial', 'paper', 2, {}, []]);
+  r = S.resolveChoices({ voice: 'stationery', scheme: 'eink', pen: '3' }, props, CHOICES);
+  assert.deepStrictEqual([r.voice, r.scheme, r.pen, r.asked], ['stationery', 'eink', 3, { voice: 'stationery', scheme: 'eink', pen: 3 }]);
+  // asked for on a board that has no such prop: named, not an error
+  assert.deepStrictEqual(r.notApplied, ['scheme']);
+  assert.throws(() => S.resolveChoices({ voice: 'comic' }, {}, CHOICES), /unknown voice "comic": the voices are white, editorial, stationery/);
+  assert.throws(() => S.resolveChoices({ pen: '9' }, {}, CHOICES), /unknown pen "9": the pens are 1, 2, 3/);
+  assert.throws(() => S.resolveChoices({ scheme: 'neon' }, {}, CHOICES), /unknown scheme "neon"/);
+});
+
+test('shot: every kind of problem in one list, in the check report\'s form', () => {
+  const r = { board: 'B.dc.html',
+    errors: [{ board: 'B.dc.html', kind: 'script', feature: 'f', detail: '', line: 3, message: 'm' }],
+    unsupported: [{ board: 'B.dc.html', kind: 'unsupported', feature: 'element', detail: 'x', line: 4, message: '' }],
+    console: [{ text: 'boom', url: 'u', line: 5 }], requests: [{ url: 'http://x/a', error: 'HTTP 404' }],
+    external: [{ url: 'https://elsewhere/', error: 'blocked: no network in renders' }] };
+  const all = S.flatErrors(r);
+  assert.deepStrictEqual(all.map((e) => e.kind), ['script', 'unsupported', 'console', 'request', 'external']);
+  for (const e of all) assert.deepStrictEqual(['board', 'detail', 'feature', 'kind', 'line', 'message'].filter((k) => !(k in e)), []);
+  assert.strictEqual(all[4].url, 'https://elsewhere/');
+});
+
+test('shots: from a change to the boards to render', () => {
+  const root = path.join(TMP, 'changed');
+  fs.rmSync(root, { recursive: true, force: true });
+  for (const f of ['designs/a/One.dc.html', 'designs/a/sub/Two.dc.html', 'designs/a/canvas.json', 'designs/b/Three.dc.html', 'designs/b/ds/X.dc.html']) {
+    fs.mkdirSync(path.dirname(path.join(root, f)), { recursive: true });
+    fs.writeFileSync(path.join(root, f), '<html></html>');
+  }
+  assert.deepStrictEqual(S.changedBoards(['designs/a/sub/Two.dc.html', 'README.md', 'designs/README.md', ''], root), ['designs/a/sub/Two.dc.html']);
+  // a deleted board is not rendered; the canvas (or fonts, data) means the whole folder
+  assert.deepStrictEqual(S.changedBoards(['designs/a/Gone.dc.html'], root), []);
+  assert.deepStrictEqual(S.changedBoards(['designs/a/canvas.json'], root), ['designs/a/One.dc.html', 'designs/a/sub/Two.dc.html']);
+  assert.deepStrictEqual(S.changedBoards(['designs/b/fonts/x.woff2', 'designs/a/One.dc.html'], root), ['designs/a/One.dc.html', 'designs/b/Three.dc.html']);
+  // a design folder that is gone, and ds/ (never a board)
+  assert.deepStrictEqual(S.changedBoards(['designs/c/canvas.json', 'designs/b/ds/X.dc.html'], root), []);
+});
+
+test('shot: usage errors exit 2 before any browser, naming the fault', () => {
+  const run = (...a) => spawnSync(process.execPath, [path.join(ROOT, 'tools/boards'), 'shot', ...a], { cwd: ROOT, encoding: 'utf8', env: Object.assign({}, process.env, { CHROMIUM: '/nonexistent' }) });
+  const main = path.join(SAMPLES, 'Main.dc.html');
+  let r = run(main, '--voice', 'comic');
+  assert.strictEqual(r.status, 2, r.stderr);
+  assert.match(r.stderr, /unknown voice "comic": the voices are white, editorial, stationery/);
+  assert.strictEqual(r.stdout, '');
+  r = run(main, '--size', 'big');
+  assert.strictEqual(r.status, 2);
+  assert.match(r.stderr, /--size is WIDTHxHEIGHT/);
+  r = run(path.join(SAMPLES, 'Nope.dc.html'));
+  assert.strictEqual(r.status, 2);
+  assert.match(r.stderr, /no board at/);
+  r = run(path.join(SAMPLES, 'canvas.json'));
+  assert.strictEqual(r.status, 2);
+  assert.match(r.stderr, /is not a board/);
+  r = run();
+  assert.strictEqual(r.status, 2);
 });

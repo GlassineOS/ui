@@ -90,6 +90,93 @@ async function main() {
     assert.ok(c.differing > 0 && fs.existsSync(path.resolve(c.diff)), JSON.stringify(c));
   });
 
+  await test('shot: an image and every error, two voices, clicks, a missing target, a failing board', async () => {
+    const fs = require('fs');
+    const { spawnSync } = require('child_process');
+    const { shootBoard } = require(path.join(ROOT, 'boards/lib/shot.js'));
+    const dir = path.join(ROOT, 'out', 'test', 'boards-shot');
+    fs.rmSync(dir, { recursive: true, force: true });
+    const main = path.join(ROOT, 'boards/samples/Main.dc.html');
+    const image = (r) => fs.readFileSync(path.resolve(r.image));
+    const shot = (name, o) => shootBoard(Object.assign({ board: main, out: path.join(dir, name + '.png') }, o));
+
+    const white = await shot('white', { voice: 'white' });
+    assert.ok(white.ok, JSON.stringify(white));
+    assert.deepStrictEqual([white.board, white.design, white.voice, white.scheme, white.pen, white.size], ['Main.dc.html', 'boards/samples', 'white', 'paper', 1, { width: 900, height: 760 }]);
+    assert.deepStrictEqual(white.errors, []);
+    const stationery = await shot('stationery', { voice: 'stationery', scheme: 'night', pen: '2' });
+    assert.ok(stationery.ok, JSON.stringify(stationery));
+    assert.deepStrictEqual([stationery.voice, stationery.scheme, stationery.pen], ['stationery', 'night', 2]);
+    assert.notDeepStrictEqual(image(white), image(stationery), 'two voices give two images');
+
+    const clicked = await shot('clicked', { voice: 'white', clicks: ['#toggle'] });
+    assert.ok(clicked.ok, JSON.stringify(clicked));
+    assert.deepStrictEqual(clicked.clicks, [{ selector: '#toggle', ok: true }]);
+    assert.notDeepStrictEqual(image(white), image(clicked), 'a click changes the image');
+
+    const phone = await shot('phone', { size: { width: 390, height: 760 } });
+    assert.ok(phone.ok, JSON.stringify(phone));
+    const PNG = require(path.join(ROOT, 'boards/lib/png.js'));
+    const im = PNG.decode(image(phone));
+    assert.deepStrictEqual([im.width, im.height], [390, 760]);
+
+    // a click on nothing: reported, the series ends, the image is what was reached
+    const missing = await shot('missing', { voice: 'white', clicks: ['#toggle', '#nope', '#inc'] });
+    assert.strictEqual(missing.ok, false);
+    assert.deepStrictEqual(missing.clicks.map((c) => [c.selector, c.ok, !!c.skipped]), [['#toggle', true, false], ['#nope', false, false], ['#inc', false, true]]);
+    assert.deepStrictEqual(missing.errors.map((e) => [e.kind, e.detail]), [['click', '#nope']]);
+    assert.match(missing.errors[0].message, /no element matches #nope/);
+    assert.deepStrictEqual(image(missing), image(clicked), 'the image holds what was reached');
+
+    // a link to another board: the new page settles, later clicks act on it, and its own errors count
+    const nav = await shot('nav', { voice: 'editorial', clicks: ['#to-counter', '#inc'] });
+    assert.ok(nav.ok, JSON.stringify(nav));
+    const counter = await shootBoard({ board: path.join(ROOT, 'boards/samples/Counter.dc.html'), out: path.join(dir, 'counter.png') });
+    assert.notDeepStrictEqual(image(nav), image(counter), 'the click after the link took effect');
+
+    // a link to another site opens nothing and is reported as a request elsewhere
+    const away = await shootBoard({ board: path.join(ROOT, 'boards/samples/sub/Nested.dc.html'), out: path.join(dir, 'away.png'), clicks: ['#external'] });
+    assert.strictEqual(away.ok, false);
+    assert.deepStrictEqual(away.errors.map((e) => [e.kind, e.url]), [['external', 'https://example.org/']]);
+
+    // a board that raises an error: reported in the check's form, with the image of what rendered
+    const bad = await shootBoard({ board: path.join(__dirname, 'unsupported/Throws.dc.html'), out: path.join(dir, 'throws.png') });
+    assert.strictEqual(bad.ok, false);
+    assert.ok(bad.errors.some((e) => e.board === 'Throws.dc.html' && /in text is object/.test(e.message)), JSON.stringify(bad.errors));
+    assert.ok(fs.existsSync(path.join(dir, 'throws.png')));
+    const un = await shootBoard({ board: path.join(__dirname, 'unsupported/Bad.dc.html'), out: path.join(dir, 'bad.png') });
+    assert.deepStrictEqual(un.errors.filter((e) => e.kind === 'unsupported').map((e) => e.feature).sort(), ['element', 'expression in a hole']);
+
+    // the command line: one JSON object on stdout, exit 1 when not ok
+    const run = (...a) => spawnSync(process.execPath, [path.join(ROOT, 'tools/boards'), 'shot', ...a], { cwd: ROOT, encoding: 'utf8' });
+    const out = 'out/test/boards-shot/cli.png';
+    let r = run('boards/samples/sub/Badge.dc.html', '--out', out);
+    assert.strictEqual(r.status, 0, r.stdout + r.stderr);
+    let j = JSON.parse(r.stdout);
+    assert.deepStrictEqual([j.ok, j.image, j.board, j.size], [true, out, 'sub/Badge.dc.html', { width: 160, height: 40 }]);
+    r = run('boards/samples/sub/Badge.dc.html', '--out', out, '--click', '#nope');
+    assert.strictEqual(r.status, 1, r.stdout + r.stderr);
+    j = JSON.parse(r.stdout);
+    assert.strictEqual(j.errors[0].kind, 'click');
+  });
+
+  await test('shots: the changed boards as images and one report', async () => {
+    const fs = require('fs');
+    const { spawnSync } = require('child_process');
+    const root = path.join(ROOT, 'out', 'test', 'boards-shots');
+    fs.rmSync(root, { recursive: true, force: true });
+    fs.mkdirSync(path.join(root, 'designs'), { recursive: true });
+    fs.cpSync(path.join(ROOT, 'boards/samples'), path.join(root, 'designs/x'), { recursive: true });
+    fs.rmSync(path.join(root, 'designs/x/references'), { recursive: true });
+    const out = path.join(root, 'out');
+    const r = spawnSync(process.execPath, [path.join(ROOT, 'tools/boards'), 'shots', '--root', root, '--out', out, '--jobs', '2'],
+      { cwd: root, encoding: 'utf8', input: 'designs/x/Card.dc.html\ndesigns/x/sub/Badge.dc.html\n' });
+    assert.strictEqual(r.status, 0, r.stdout + r.stderr);
+    assert.ok(fs.existsSync(path.join(out, 'x/Card.png')) && fs.existsSync(path.join(out, 'x/sub/Badge.png')));
+    const rep = JSON.parse(fs.readFileSync(path.join(out, 'report.json'), 'utf8'));
+    assert.deepStrictEqual(rep.summary, { boards: 2, ok: true, failing: 0 });
+  });
+
   const srv = await startServer({ design: path.join(ROOT, 'boards/samples'), interleaf: INTERLEAF, live: true });
   const browser = await openBrowser({});
   try {

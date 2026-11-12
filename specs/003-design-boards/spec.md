@@ -3,20 +3,22 @@
 **Feature Branch**: `spec-ui-interleaf`
 **Created**: 2026-11-07
 **Status**: Draft
-**Input**: The design boards of the shell and the hub, kept in their repositories and built on Interleaf.
+**Input**: The design boards of the shell and the hub, kept in this repository and built on Interleaf.
 
 ## Context
 
 The designs of the shell and the hub are canvases of boards: screens, states and small interactive prototypes,
-built on Interleaf (spec 002). The boards live in the repository whose program they describe and are written in
-claude.ai's design-component format. They are rendered, clicked through, screenshotted and compared by people
-and by agents, without claude.ai. This repository provides what renders and checks them.
+built on Interleaf (spec 002). The boards live in this repository, one folder per project, next to Interleaf and
+to what renders and checks them, so a design session works in one place. They are written in claude.ai's
+design-component format and are rendered, clicked through and screenshotted by people and by agents, without
+claude.ai. A board is a proposal: it can differ from the program it describes, and an accepted board reaches the
+program through ordinary work in that program's repository.
 
 ## User scenarios
 
 ### Scenario 1 – A board opens in a browser (Priority: P1)
 
-**Given** a repository with design boards,
+**Given** a project's design boards,
 **When** the designer starts the preview,
 **Then** each board renders in a browser, nested boards included, in the voice, scheme and pen chosen, and
 edits to a board show on save.
@@ -24,9 +26,12 @@ edits to a board show on save.
 ### Scenario 2 – An agent checks its own change (Priority: P1)
 
 **Given** an agent has changed a board,
+**When** it asks for that board in a voice, scheme, pen and size, after any clicks it names,
+**Then** it gets an image it can look at and every error the board raised, without a display, and can repeat this
+after each edit.
+
 **When** it runs the board checks,
-**Then** it gets a screenshot of every board at its sizes, an image of every difference from the stored
-references, and any error a board raised, all without a display.
+**Then** it gets every error any board of the design raised.
 
 ### Scenario 3 – Clicking through a prototype (Priority: P2)
 
@@ -39,6 +44,12 @@ references, and any error a board raised, all without a display.
 **When** a designer starts a new prototype next to existing boards,
 **Then** it appears in the preview's canvas next to them, can be compared side by side, and is kept or dropped
 in review.
+
+### Scenario 5 – Reviewing a design change (Priority: P2)
+
+**Given** a proposed change to a design,
+**When** the reviewer opens it,
+**Then** images of the boards it changes are available with its checks, and none of them enter the repository.
 
 ## Requirements
 
@@ -56,24 +67,33 @@ in review.
   canvas description kept with the boards, and the preview shows it as a canvas.
 
 **Preview and checks**
-- **FR-010**: One command starts a local preview of a repository's boards, with live reload and a voice,
+- **FR-010**: One command starts a local preview of a project's boards, with live reload and a voice,
   scheme and pen picker.
-- **FR-011**: One command renders every board, without a display, at its declared sizes and in the
-  combinations the repository lists, and compares each with a stored reference; differences produce images.
-- **FR-012**: The checks report, per board, render errors, unsupported features (FR-003) and differences, in a
-  form an agent can read.
+- **FR-011**: One command renders every board, without a display, at its declared sizes. The designs store
+  no rendered images. This repository's sample boards are compared with stored references,
+  which guards the renderer; differences produce images.
+- **FR-012**: The checks report, per board, render errors and unsupported features (FR-003), in a form an agent
+  can read.
 - **FR-013**: The preview can be served to the hub, so a session's boards can be shown to the user there.
+- **FR-014**: One command renders a single board, without a display, in a chosen voice, scheme, pen and size,
+  optionally after a series of clicks, and gives an image file and the errors the board raised, in a form an agent
+  can read. A click that finds no target is an error.
+- **FR-015**: The checks of a proposed change to a design render the boards it changes and keep the images with
+  the run, outside the repository.
 
-**Use from other repositories**
-- **FR-020**: Repositories with boards use this repository's renderer, preview, checks and Interleaf by a pinned
-  version, never by a copy.
+**Designs**
+- **FR-020**: Each project has one folder of boards with its canvas description and any fonts its boards load
+  beyond Interleaf's. The boards use this repository's Interleaf and renderer, never a copy.
+- **FR-021**: Every design is checked with every change to this repository; a board that raises an error fails
+  the change.
+- **FR-022**: The folder of designs states that boards are proposals and can differ from the programs.
 
 ## Contracts
 
 | Contract | Owned / consumed | Version | Spec location |
 |---|---|---|---|
 | Design-component format (boards, canvas description) | consumed (claude.ai, unversioned there); the supported subset is owned | 1 (the subset) | this spec, FR-005 |
-| Preview and check commands, their output | owned | 1 | this spec |
+| Preview, check and single-board commands, their output | owned | 1 | this spec |
 | Interleaf web form | consumed (spec 002) | 1 | spec 002 |
 
 ## Device scope and risk
@@ -84,7 +104,9 @@ Device-neutral. No device risk: nothing flashes or touches boot, recovery or use
 
 - Host: every board of the shell's and the hub's designs renders with no error and no unsupported feature.
 - Host: the interactive boards react to scripted clicks (state, branches, links) as their logic says.
-- Host: the checks run in CI for the sample boards here; a changed board produces a difference image.
+- Host: a single board rendered in two voices gives two different images; a click changes the image; a click on a
+  missing target and a board that raises an error are both reported.
+- Host: the checks run in CI for the sample boards here; a changed sample board produces a difference image.
 - By eye (the user): the boards of each design in the preview.
 
 ## Out of scope
@@ -98,6 +120,6 @@ Device-neutral. No device risk: nothing flashes or touches boot, recovery or use
 
 - **SC-001**: All boards of the shell's and the hub's designs render in the preview and the user accepts them
   by eye.
-- **SC-002**: A designer agent can change a board and see the result as images without a display and without
-  claude.ai.
+- **SC-002**: A designer agent can change a board and see the result, in any voice, scheme, pen and size and after
+  clicks, as an image without a display and without claude.ai.
 - **SC-003**: No file of claude.ai's runtime is in any organization repository.

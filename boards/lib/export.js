@@ -4,7 +4,7 @@
 // The folder it writes is what the preview server answers, as files: the design folder, the
 // preview's pages at _boards/ with the canvas data (_boards/api/canvas.json, no live reload) and
 // Interleaf's fonts (_boards/fonts/), and in every folder that holds a board its support.js (the
-// runtime) and ds/interleaf/ (Interleaf), since a board loads both relative to its own page. Every
+// runtime), ds/interleaf/ (Interleaf) and ds/web/ (the web form), since a board loads both relative to its own page. Every
 // URL is relative, so the folder works from any sub-path of a static host.
 'use strict';
 const fs = require('fs');
@@ -12,6 +12,7 @@ const path = require('path');
 const { describe, listBoards, runtimeSource, UI_ROOT } = require('./server.js');
 
 const PREVIEW_DIR = path.join(UI_ROOT, 'boards', 'preview');
+const WEB_DIR = path.join(UI_ROOT, 'web');
 const MARKER = '.boards-export';
 // what a Google Fonts stylesheet link of a board loads in an export (the runtime points it here)
 const GOOGLE_CSS = '_boards/fonts/google.css';
@@ -77,12 +78,14 @@ function copyTree(src, dest, skip, skipped) {
   })('');
 }
 
-// exportDesign({design, out, interleaf}) → {design, interleaf, out, boards: [file], dirs: [dir], skipped: [rel]}
+// exportDesign({design, out, interleaf, web}) → {design, interleaf, out, boards: [file], dirs: [dir], skipped: [rel]}
 function exportDesign(opts) {
   const design = path.resolve(opts.design);
   if (!fs.existsSync(path.join(design)) || !fs.statSync(design).isDirectory()) throw new Error('no design folder at ' + design);
   const interleaf = path.resolve(opts.interleaf || path.join(UI_ROOT, 'interleaf'));
   if (!fs.existsSync(path.join(interleaf, 'tokens.json'))) throw new Error('no Interleaf at ' + interleaf + ' (tokens.json missing); pass --interleaf DIR');
+  const web = path.resolve(opts.web || WEB_DIR);
+  if (!fs.existsSync(path.join(web, 'tokens.css'))) throw new Error('no web form at ' + web + ' (tokens.css missing)');
   const out = path.resolve(opts.out);
   if (inside(design, out) || inside(out, design)) throw new Error('the export cannot be inside the design folder or hold it: ' + out);
   if (fs.existsSync(out)) {
@@ -115,6 +118,8 @@ function exportDesign(opts) {
     const at = path.join(out, d);
     fs.writeFileSync(path.join(at, 'support.js'), runtimeSource({ live: false, root: '../'.repeat(depth), googleFonts: GOOGLE_CSS }));
     copyTree(interleaf, path.join(at, 'ds', 'interleaf'));
+    // the generated web form, as the preview serves it at ds/web/
+    copyTree(web, path.join(at, 'ds', 'web'));
   }
   copyTree(PREVIEW_DIR, path.join(out, '_boards'));
   fs.mkdirSync(path.join(out, '_boards', 'api'), { recursive: true });

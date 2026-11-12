@@ -508,8 +508,8 @@ tools/in-alpine CMD...      # CMD in alpine:3.24 with the pinned Chromium and no
   under the same rules as the preview (no dotfiles, no link leading outside, a link inside copied as
   its file, no `ds/` or `support.js` of its own), the preview's pages at `_boards/` with the canvas
   data as `_boards/api/canvas.json` (no live reload) and Interleaf's fonts at `_boards/fonts/`, and in
-  every folder that holds a board its `support.js` (the runtime, told where the design folder is) and
-  `ds/interleaf/`. A board's links to `fonts.googleapis.com` and
+  every folder that holds a board its `support.js` (the runtime, told where the design folder is),
+  `ds/interleaf/` and `ds/web/` (the web form). A board's links to `fonts.googleapis.com` and
   `fonts.gstatic.com` are rewritten to `_boards/fonts/google.css` (Interleaf's faces and the design's
   `references.json` `fonts`) and `_boards/fonts/`; the design folder itself is not changed. Every URL is relative, so `OUT_DIR` works from any sub-path; its `index.html` opens
   the canvas. It replaces `OUT_DIR` only if it is empty or an earlier export (`.boards-export`).

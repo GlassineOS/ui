@@ -8,6 +8,8 @@
 #                        check-forms (python3 alone, seconds), check-lib, check-boards (node)
 #   make boards-check    the design-board samples in headless Chromium (in Alpine: tools/in-alpine)
 #   make designs-check   every design under designs/, each folder (Chromium; tools/in-alpine)
+#   make designs-icons   rewrite the shell's icon font; designs-icons-check: fail when a board names an
+#                        icon the font lacks (tools/in-alpine; network for the source font)
 #   make references      the component previews and the sample boards against their references
 #                        (Chromium as pinned in tools/chromium.pin: tools/in-alpine make references)
 #   make references-update   write those references (after a change that is meant to change pixels)
@@ -117,6 +119,13 @@ CHANGED ?= $(O)/designs-changed.txt
 designs-shots:
 	tools/boards shots --out $(O)/shots $(if $(BOARDS_INTERLEAF),--interleaf $(BOARDS_INTERLEAF)) < $(CHANGED)
 
+# the shell's icon font (designs/shell/fonts/): rewrite it, or fail when a board names an icon it
+# lacks (tools/in-alpine provides fontTools; both need network for the source font)
+designs-icons:
+	$(PYTHON) tools/subset-icons
+designs-icons-check:
+	$(PYTHON) tools/subset-icons --check
+
 # reference images (README "References"): the component previews (002 FR-022) and the sample
 # boards (003 FR-011); reports and the images of differences in out/references/
 references: previews-check boards-references
@@ -157,7 +166,7 @@ clean:
 	rm -f $(O)/libglassine-ui.so* $(O)/glassine-ui.pc $(O)/pc.vars
 	rm -rf $(O)/test $(O)/reference
 
-.PHONY: all generate install check check-forms check-lib check-boards boards-check designs-check designs-shots references references-update \
+.PHONY: all generate install check check-forms check-lib check-boards boards-check designs-check designs-shots designs-icons designs-icons-check references references-update \
 	previews-check previews-update boards-references boards-references-update contrast-check contrast-test reference \
 	serve-reference clean FORCE
 FORCE:

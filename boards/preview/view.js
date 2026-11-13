@@ -92,8 +92,10 @@
     const st = document.getElementById('state');
     let w;
     try { w = frame.contentWindow; } catch (e) { return; }
-    const path = decodeURIComponent(w.location.pathname.slice(1));
-    if (data && path !== board.file && data.boards.some(function (b) { return b.file === path; })) {
+    // the board's file in the design folder (the parent of _boards/, at any sub-path)
+    const inside = w.location.pathname.indexOf(B.root.pathname) === 0;
+    const path = inside ? decodeURIComponent(w.location.pathname.slice(B.root.pathname.length)) : null;
+    if (data && path !== null && path !== board.file && data.boards.some(function (b) { return b.file === path; })) {
       const q = new URLSearchParams(w.location.search);
       q.set('board', path);
       history.pushState(null, '', '?' + q.toString());

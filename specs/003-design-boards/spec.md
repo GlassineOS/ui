@@ -51,6 +51,18 @@ in review.
 **When** the reviewer opens it,
 **Then** images of the boards it changes are available with its checks, and none of them enter the repository.
 
+### Scenario 6 – Looking at a design in the browser (Priority: P2)
+
+**Given** the published site of this repository,
+**When** anyone opens its designs page,
+**Then** every design on the main line opens there as its canvas, and each board in the same view as the
+preview's, with the voice, scheme and pen picker, without installing anything.
+
+**Given** an open proposed change to a design, made in this repository,
+**When** the reviewer follows the link the proposal carries,
+**Then** its boards open the same way at an address of their own, as of the proposal's latest revision, before
+it is accepted; once it is closed, that copy is gone.
+
 ## Requirements
 
 **Rendering**
@@ -83,6 +95,19 @@ in review.
   can read. A click that finds no target is an error.
 - **FR-015**: The checks of a proposed change to a design render the boards it changes and keep the images with
   the run, outside the repository.
+- **FR-016**: One command writes a design folder as static files that give the preview's pages and behaviour
+  without a server (canvas, board view, voice, scheme and pen picker, the board's own props, links between boards;
+  no live reload), from any sub-path of a static host. Every design on the main line is published on this
+  repository's site, in the same publication as the Interleaf reference, with a page that lists the designs.
+- **FR-017**: Each open proposed change from this repository that changes a design also has its designs published
+  on that site, at an address of its own that stays the same for the life of the proposal, with the boards of its
+  latest revision. The proposal carries a link to that address, kept current with each publication. The copy of a
+  closed proposal is gone from the next publication.
+- **FR-018**: The boards are rendered in the viewer's browser; publishing stores no rendered image in the
+  repository and ships nothing of claude.ai. A published board makes the viewer's browser contact no other site:
+  the fonts it asks for come from the vendored faces (FR-020), as in the checks. Publishing reads a proposal's design files as data and runs only
+  this repository's main-line tools; proposals from forks are not published, since their boards would run on the
+  site.
 
 **Designs**
 - **FR-020**: Each project has one folder of boards with its canvas description and any fonts its boards load
@@ -97,6 +122,7 @@ in review.
 |---|---|---|---|
 | Design-component format (boards, canvas description) | consumed (claude.ai, unversioned there); the supported subset is owned | 1 (the subset) | this spec, FR-005 |
 | Preview, check and single-board commands, their output | owned | 1 | this spec |
+| Static export and the published designs (addresses: `designs/PROJECT/`, `designs/pr-N/PROJECT/`) | owned | 1 | this spec, FR-016, FR-017 |
 | Live picture: its commands and events | owned | 1 | this spec |
 | Interleaf web form | consumed (spec 002) | 1 | spec 002 |
 
@@ -111,6 +137,11 @@ Device-neutral. No device risk: nothing flashes or touches boot, recovery or use
 - Host: a single board rendered in two voices gives two different images; a click changes the image; a click on a
   missing target and a board that raises an error are both reported.
 - Host: the checks run in CI for the sample boards here; a changed sample board produces a difference image.
+- Host: the static export of the sample boards, served by a plain static server under a sub-path, renders every
+  board without an error, and its canvas, board view, picker and links work; the shell's and the hub's exports
+  render the same way.
+- Site: the designs page lists every design on the main line and every open design proposal of this repository;
+  a proposal's link opens its boards; a closed proposal's copy is gone after the next publication.
 - By eye (the user): the boards of each design in the preview.
 
 ## Out of scope
@@ -127,3 +158,5 @@ Device-neutral. No device risk: nothing flashes or touches boot, recovery or use
 - **SC-002**: A designer agent can change a board and see the result, in any voice, scheme, pen and size and after
   clicks, as an image without a display and without claude.ai.
 - **SC-003**: No file of claude.ai's runtime is in any organization repository.
+- **SC-004**: A reviewer opens a proposed design from the link on its proposal and looks at its boards in the
+  browser before it is accepted.

@@ -1,0 +1,54 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-2.0-or-later
+# tools/site-designs STAGE [PRS]: the design boards of the published site (spec 003 FR-016, FR-017),
+# as tools/gen-reference --designs reads them. STAGE/PROJECT/ is tools/boards export of each
+# designs/PROJECT/ of this checkout. With PRS (tools/fetch-design-prs wrote it: PRS/N/pr.json and
+# PRS/N/designs/), STAGE/pr-N/PROJECT/ is the export of each of those folders, made by this
+# checkout's tools from the pull request's files, which are only read and copied, never run here.
+# A design of this checkout that fails to export fails the run; a pull request's is left out with a
+# warning. STAGE is replaced only if an earlier run wrote it.
+set -eu
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+NODE=${NODE:-node}
+[ $# -ge 1 ] && [ $# -le 2 ] || { echo "usage: tools/site-designs STAGE [PRS]" >&2; exit 2; }
+STAGE=$1 PRS=${2:-}
+if [ -e "$STAGE" ]; then
+	if [ -n "$(ls -A "$STAGE")" ] && [ ! -f "$STAGE/.site-designs" ]; then
+		echo "site-designs: $STAGE is not empty and was not written by site-designs" >&2
+		exit 1
+	fi
+	rm -rf "$STAGE"
+fi
+mkdir -p "$STAGE"
+: > "$STAGE/.site-designs"
+
+# a folder name a page can carry as it is: letters, digits, . _ -, not pr-* (the pull requests')
+name_ok() {
+	case $1 in
+	pr-* | .* | *[!A-Za-z0-9._-]* | '') return 1 ;;
+	esac
+}
+
+for d in "$ROOT"/designs/*/; do
+	[ -d "$d" ] || continue
+	p=$(basename "$d")
+	name_ok "$p" || { echo "site-designs: designs/$p: not a usable folder name (letters, digits, . _ -; not pr-*)" >&2; exit 1; }
+	"$NODE" "$ROOT/tools/boards" export "$d" "$STAGE/$p"
+done
+
+[ -n "$PRS" ] || exit 0
+for pr in "$PRS"/*/; do
+	[ -d "$pr" ] || continue
+	n=$(basename "$pr")
+	case $n in '' | 0* | *[!0-9]*) echo "site-designs: warning: $pr: not a pull request number, left out" >&2; continue ;; esac
+	[ -f "$pr/pr.json" ] || { echo "site-designs: warning: #$n has no pr.json, left out" >&2; continue; }
+	got=0
+	for d in "$pr"designs/*/; do
+		[ -d "$d" ] && [ ! -L "${d%/}" ] || continue
+		p=$(basename "$d")
+		if ! name_ok "$p"; then echo "site-designs: warning: #$n: designs/$p: not a usable folder name, left out" >&2; continue; fi
+		if "$NODE" "$ROOT/tools/boards" export "$d" "$STAGE/pr-$n/$p"; then got=1
+		else echo "site-designs: warning: #$n: designs/$p did not export, left out" >&2; rm -rf "$STAGE/pr-$n/$p"; fi
+	done
+	if [ "$got" = 1 ]; then cp "$pr/pr.json" "$STAGE/pr-$n/pr.json"; else rm -rf "$STAGE/pr-$n"; fi
+done

@@ -9,6 +9,7 @@
 //   boards shot    BOARD_FILE [--voice V] [--scheme S] [--pen P] [--size WxH] [--click SELECTOR]... [--out FILE]
 //                  [--interleaf DIR] [--timeout MS] [--chromium PATH]
 //   boards shots   [--out DIR] [--root DIR] [--jobs N] [--interleaf DIR] [--timeout MS] [--chromium PATH] < CHANGED_PATHS
+//   boards export  DESIGN_DIR OUT_DIR [--interleaf DIR] [--web DIR]
 //   boards stream  DESIGN_DIR [--interleaf DIR] [--web DIR] [--size WxH] [--chromium PATH]   (JSON lines on stdin/stdout)
 //   boards import  CANVAS_EXPORT_DIR DEST_DIR [--force]
 //   boards version
@@ -26,6 +27,7 @@ function usage(code) {
     '       boards shot BOARD_FILE [--voice V] [--scheme S] [--pen P] [--size WxH] [--click SELECTOR]... [--out FILE]',
     '                 [--interleaf DIR] [--timeout MS] [--chromium PATH]',
     '       boards shots [--out DIR] [--root DIR] [--jobs N] [--interleaf DIR] [--timeout MS] [--chromium PATH] < CHANGED_PATHS',
+    '       boards export DESIGN_DIR OUT_DIR [--interleaf DIR] [--web DIR]',
     '       boards stream DESIGN_DIR [--interleaf DIR] [--web DIR] [--size WxH] [--chromium PATH]',
     '       boards import CANVAS_EXPORT_DIR DEST_DIR [--force]',
     '       boards version',
@@ -152,6 +154,15 @@ async function main() {
     process.stdout.write('boards shots: ' + rep.summary.boards + ' boards, ' + rep.summary.failing + ' failing, in ' + out + '\n');
     for (const r of rep.boards) if (!r.ok) process.stdout.write('  FAIL ' + r.board + ': ' + (r.errors[0] ? r.errors[0].message : 'no image') + '\n');
     return rep.summary.ok ? 0 : 1;
+  }
+  if (cmd === 'export') {
+    const { pos, opt } = parse(rest, { interleaf: 'value', web: 'value' });
+    if (pos.length !== 2) usage(2);
+    const { exportDesign } = require(path.join(LIB, 'export.js'));
+    const r = exportDesign({ design: pos[0], out: pos[1], interleaf: opt.interleaf, web: opt.web });
+    process.stdout.write('boards export: ' + r.boards.length + ' boards of ' + r.design + ' into ' + r.out + '\n');
+    if (r.skipped.length) process.stdout.write('  left out: ' + r.skipped.join(', ') + '\n');
+    return 0;
   }
   if (cmd === 'import') {
     const { pos, opt } = parse(rest, { force: 'flag' });

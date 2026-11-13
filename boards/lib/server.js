@@ -6,7 +6,7 @@
 //                          file claude.ai serves there
 //   **/ds/interleaf/**     Interleaf from this checkout (or --interleaf), never a copy in the design
 //   **/ds/web/**           the web form (spec 002) from this checkout's web/, never a copy in the design
-//   /_boards/              the canvas index, the board view, the canvas API, live-reload events,
+//   /_boards/              the canvas index, the board view, the canvas data (api/canvas.json), live-reload events,
 //                          Interleaf's fonts (/_boards/fonts/)
 'use strict';
 const fs = require('fs');
@@ -27,8 +27,11 @@ const MIME = {
   '.md': 'text/markdown; charset=utf-8', '.ico': 'image/x-icon', '.pdf': 'application/pdf',
 };
 
+// config: {live, events} from the server; {live: false, root} in an export, root being the design
+// folder relative to this support.js ('', '../', ...), which the runtime resolves against the script
 function runtimeSource(config) {
   let s = 'window.__BOARDS_CONFIG = ' + JSON.stringify(config) + ';\n';
+  if (config.root !== undefined) s += 'window.__BOARDS_CONFIG.script = document.currentScript ? document.currentScript.src : location.href;\n';
   for (const f of RUNTIME_FILES) {
     s += fs.readFileSync(path.join(RUNTIME_DIR, f), 'utf8').replace(/\/\/# sourceMappingURL=\S+/g, '') + '\n;\n';
   }
@@ -174,8 +177,8 @@ function startServer(opts) {
       req.on('close', function () { clients.delete(res); });
       return;
     }
-    if (p === '/_boards/api/canvas') {
-      const body = JSON.stringify(describe(design));
+    if (p === '/_boards/api/canvas' || p === '/_boards/api/canvas.json') {
+      const body = JSON.stringify(Object.assign(describe(design), { live: live }));
       res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-cache' });
       res.end(body);
       return;

@@ -92,13 +92,12 @@
 
     <sc-if value="{{ open }}" hint-placeholder-val="{{ true }}">
       <div class="wf-actions" style="padding-top: var(--space-4); border-top: var(--v-row-rule)">
-        <sc-if value="{{ blocked }}" hint-placeholder-val="{{ false }}"><button type="button" class="il-btn il-btn--primary" id="dc-fix2" onClick="{{ applyFix }}" aria-describedby="dc-block">Apply the fix</button></sc-if>
-        <sc-if value="{{ free }}" hint-placeholder-val="{{ true }}"><button type="button" class="il-btn il-btn--primary" id="dc-ok" onClick="{{ approve }}">Approve v{{ c.to }}, with {{ nSens }} sensitive</button></sc-if>
+        <sc-if value="{{ blocked }}" hint-placeholder-val="{{ true }}"><p class="il-btn-reason" id="dc-block" style="flex: 1 1 100%; margin: 0">{{ blockText }}</p></sc-if>
+        <button type="button" class="il-btn il-btn--primary" id="dc-ok" aria-disabled="{{ blockedP }}" aria-describedby="dc-block" onClick="{{ approve }}">Approve v{{ c.to }}, with {{ nSens }} sensitive</button>
         <button type="button" class="il-btn" onClick="{{ decline }}">Decline</button>
         <a class="il-btn" href="WorkflowEditor.dc.html">Edit it yourself</a>
         <button type="button" class="il-btn" onClick="{{ sendBack }}">Send it back to the Steward</button>
       </div>
-      <sc-if value="{{ blocked }}" hint-placeholder-val="{{ true }}"><p class="wf-small" id="dc-block">{{ blockText }}</p></sc-if>
     </sc-if>
     <sc-if value="{{ answered }}" hint-placeholder-val="{{ false }}">
       <div class="wf-box" aria-live="polite"><span class="wf-by">{{ answerTag }}</span><p>{{ answerText }}</p></div>
@@ -131,7 +130,7 @@ class Component extends DCLogic {
       diff: diff.map(([k, t]) => { const s2 = k === 'add' && sensIn(t) && !diff.some((o) => o[0] === 'del' && sensIn(o[1]) && o[1] === t); return { text: k === 'gap' ? '⋯' : t, sens: s2, cls: (k === 'gap' ? 'wf-soft' : k) + (s2 ? ' wf-code-sens' : ''), sr: k === 'add' ? 'added: ' : k === 'del' ? 'removed: ' : k === 'gap' ? 'unchanged lines folded' : '' }; }),
       checks: ck.map((k) => ({ ...k, mark: G[k.kind], sr: SR[k.kind], hasBody: !!k.body, hasFix: !!k.fix && !st.fixed })),
       applyFix: () => this.setState({ fixed: true }),
-      blocked: !!problems && !a, free: !problems, blockText: problems ? 'No approval yet: the check finds ' + (problems === 1 ? 'a problem' : problems + ' problems') + ' (above). Apply its fix, edit it yourself, or send it back; then you can approve.' : '',
+      blocked: !!problems && !a, blockedP: String(!!problems), blockText: problems ? 'Approve waits: the check finds ' + (problems === 1 ? 'a problem' : problems + ' problems') + '. Apply its fix (above), edit it yourself, or send it back.' : '',
       open: !a, answered: !!a,
       answerTag: a === 'yes' ? 'Approved' : a === 'back' ? 'Sent back' : 'Declined',
       answerText: a === 'yes' ? c.workflow + ' v' + c.to + ' applies now' + (st.fixed ? ', with your fix to → fix' : '') + '. Sessions running ' + c.workflow + ' take it at their next move; the change and your answer are in the log.'

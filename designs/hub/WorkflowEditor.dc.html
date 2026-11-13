@@ -206,8 +206,8 @@
     <footer class="wf-ed__foot">
       <sc-if value="{{ saved }}" hint-placeholder-val="{{ false }}"><span class="il-chip il-chip--moving" aria-live="polite">Saved as v8 · sessions take it at their next move</span></sc-if>
       <sc-if value="{{ unsaved }}" hint-placeholder-val="{{ true }}">
-        <sc-if value="{{ canSave }}" hint-placeholder-val="{{ false }}"><button type="button" class="il-btn il-btn--primary" id="ed-save" onClick="{{ openSave }}">Save as v8…</button></sc-if>
-        <sc-if value="{{ cantSave }}" hint-placeholder-val="{{ true }}"><span class="wf-small"><strong>Not saved:</strong> {{ cantWhy }}</span></sc-if>
+        <button type="button" class="il-btn il-btn--primary" id="ed-save" aria-disabled="{{ cantSaveP }}" aria-describedby="ed-save-why" onClick="{{ openSave }}">Save as v8…</button>
+        <sc-if value="{{ cantSave }}" hint-placeholder-val="{{ true }}"><span class="il-btn-reason" id="ed-save-why">{{ cantWhy }}</span></sc-if>
         <button type="button" class="il-btn">Ask the Steward to propose it</button>
         <button type="button" class="il-btn">Discard the draft</button>
       </sc-if>
@@ -341,10 +341,10 @@ class Component extends DCLogic {
       checkLine: problems ? problems + ' problem · ' + sens + ' sensitive' : draft ? 'no problems · ' + sens + ' sensitive' : 'no problems',
       applyFix: () => set({ fixed: true }), selT3: () => set({ sel: 't3' }),
       isState: !isExit, isExit, st: stv, tr: trv,
-      saved: st.saved, unsaved: !st.saved && draft && st.wf === 'implement', canSave: !problems, cantSave: !!problems,
-      cantWhy: 'the check finds a problem. Fix it, or reorder the exits of review.',
+      saved: st.saved, unsaved: !st.saved && draft && st.wf === 'implement', cantSave: !!problems, cantSaveP: String(!!problems),
+      cantWhy: 'Save waits: the check finds a problem. Apply its fix, or reorder the exits of review.',
       footNote: st.wf !== 'implement' ? 'Editing it makes a draft v' + ((M.defs[st.wf].version || 0) + 1) + '; saving that draft is your approval. Or ask for a change in words.' : draft ? 'Saving it yourself is the approval. Asking the Steward turns it into a proposal with a review, which comes to Needs you.' : 'Pick v8 to edit the draft, or edit v7 to start a new one.',
-      openSave: () => set({ dialog: true }), closeSave: () => set({ dialog: false }), doSave: () => set({ dialog: false, saved: true }), dialog: st.dialog,
+      openSave: () => { if (!problems) set({ dialog: true }); }, closeSave: () => set({ dialog: false }), doSave: () => set({ dialog: false, saved: true }), dialog: st.dialog,
       summary: ['work › review grants approve runs from forks (sensitive)', 'merge-ready grants merge to main (sensitive)', 'work › review → escalated at 2 rounds instead of 3' + (st.fixed ? '; → fix below 2' : ''), r.indexOf('t5') < r.indexOf('t3') ? 'the exits of review are tried in a new order: ' + r.map((id) => '→ ' + T(id).to).join(', ') : 'the exits of review keep their order']
     };
   }

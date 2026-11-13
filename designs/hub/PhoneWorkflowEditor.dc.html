@@ -14,10 +14,10 @@
 <link rel="stylesheet" href="workflow.css">
 </helmet>
 <div class="wf il-page" data-theme="{{ theme }}" data-pen="{{ pen }}" style="min-height: 100vh">
-  <dc-import name="WorkflowEditor" view="outline" select="{{ select }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,3600px"></dc-import>
+  <dc-import name="WorkflowEditor" view="outline" select="{{ select }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,7990px"></dc-import>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"select":{"editor":"enum","options":["review","t3"],"default":"review"},"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":390,"height":3600}}'>
+<script type="text/x-dc" data-dc-script data-props='{"select":{"editor":"enum","options":["review","t3"],"default":"review"},"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":390,"height":7990}}'>
 class Component extends DCLogic {
   renderVals() { const P = this.props; return { theme: (P.voice || 'white') + '-' + (P.scheme || 'paper'), voice: P.voice || 'white', scheme: P.scheme || 'paper', pen: P.pen || '1', select: P.select || 'review' }; }
 }

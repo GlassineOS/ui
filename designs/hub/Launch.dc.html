@@ -314,7 +314,7 @@
 </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"open":{"editor":"boolean","default":true},"layer":{"editor":"enum","options":["fixed","absolute","inline"],"default":"fixed"},"entry":{"editor":"enum","options":["new","item","suggested","results"],"default":"item"},"stage":{"editor":"enum","options":["brief","planning","plan","run","result"],"default":"brief"},"action":{"editor":"enum","options":["review","address","fix","implement","triage","investigate","research","issue","sec","arch","road","docs","deps","compact","sweep"],"default":"implement"},"covers":{"editor":null},"repo":{"editor":null},"context":{"editor":null},"by":{"editor":"enum","options":["you","steward"],"default":"you"},"why":{"editor":null},"notes":{"editor":null},"describe":{"editor":null},"scope":{"editor":null},"pins":{"editor":null},"onClose":{"editor":null},"onStarted":{"editor":null},"onDone":{"editor":null},"$preview":{"width":1440,"height":1240}}'>
+<script type="text/x-dc" data-dc-script data-props='{"open":{"editor":"boolean","default":true},"layer":{"editor":"enum","options":["fixed","absolute","inline"],"default":"fixed"},"entry":{"editor":"enum","options":["new","item","suggested","results"],"default":"item"},"stage":{"editor":"enum","options":["brief","planning","plan","run","result"],"default":"brief"},"action":{"editor":"enum","options":["review","address","fix","implement","triage","investigate","research","issue","sec","arch","road","docs","deps","compact","sweep"],"default":"implement"},"covers":{"editor":null},"start":{"editor":null},"repo":{"editor":null},"context":{"editor":null},"by":{"editor":"enum","options":["you","steward"],"default":"you"},"why":{"editor":null},"notes":{"editor":null},"describe":{"editor":null},"scope":{"editor":null},"pins":{"editor":null},"onClose":{"editor":null},"onStarted":{"editor":null},"onDone":{"editor":null},"$preview":{"width":1440,"height":1240}}'>
 class Component extends DCLogic {
   constructor(p) {
     super(p);
@@ -347,7 +347,9 @@ class Component extends DCLogic {
     const ITEM_ACTIONS = { pr: ['review', 'address', 'fix'], issue: ['implement', 'triage'], run: ['investigate'], roadmap: ['road'], new: [] };
     const NEW = ['research', 'issue', 'sec', 'arch', 'road', 'docs', 'deps', 'compact', 'sweep'];
     const action = S.action || P.action || (entry === 'new' ? 'sec' : (ITEM_ACTIONS[kind] || ['implement'])[0]);
-    const def = H.actions[action];
+    /* Opened from a start (Workflows (012) FR-100): its label, persona, ceiling, prompt and models lead, until another action is picked. */
+    const start = P.start && !S.action ? P.start : null;
+    const def = start ? { ...H.actions[action], label: start.label, persona: start.persona, ceiling: start.ceiling, model: start.models[0] } : H.actions[action];
     const resultType = def.result;
     const repo = S.repo || P.repo || (prim ? (primItem && primItem.repo) || prim.split('#')[0].split(' ')[0] : 'hub');
     const model = S.model || def.model;
@@ -397,8 +399,9 @@ class Component extends DCLogic {
       compact: 'Compact ' + notesScope + '. Merge duplicates, supersede outdated claims, distil diary and transcript clusters into claims, answer open questions the evidence settles, and give every unlabelled row a status it can support. Never delete. Cite evidence for every change. Propose the notes commands; do not run them.',
       sweep: 'Compare the current claims in ' + notesScope + ' with the published docs. Draft one docs issue per finding: docs repeating a retracted claim first, then docs contradicting a current claim, then current claims no page covers, then open questions as known unknowns.',
       research: 'Answer the question below from the knowledge indexes (' + (S.scope !== null ? S.scope : (P.scope || 'docs, work items, code')) + '). Search, then read what you find. Cite every claim by path or ref; list what you could not settle.\n\nQuestion: ' + question,
-      deps: 'Rank outdated and vulnerable dependencies of GlassineOS/' + repo + '. One draft per upgrade group.' }[action] + (notesText ? '\n\nNotes: ' + notesText : '');
-    const promptText = S.prompt !== null ? S.prompt : firstPrompt;
+      deps: 'Rank outdated and vulnerable dependencies of GlassineOS/' + repo + '. One draft per upgrade group.' }[action];
+    const firstPrompt2 = (start ? start.prompt : firstPrompt) + (notesText ? '\n\nNotes: ' + notesText : '');
+    const promptText = S.prompt !== null ? S.prompt : firstPrompt2;
     const checkout = isNotes ? (action === 'compact' ? 'no checkout · the notes workspace, through the notes command' : 'no checkout · notes find and the docs index') : isResearch ? 'no checkout · reads through hub.search and hub.read_file' : def.mode.indexOf('read-only') >= 0 ? 'detached, read-only · ' + repo + '@main' : (action === 'address' || action === 'fix') ? 'the PR’s branch · ' + ((primItem && primItem.branch) || '').split(' →')[0] : 'new branch · agent/' + runName;
     const specRows = [['PERSONA', def.persona], ['MODE', def.mode], ['CHECKOUT', checkout], ['HUB TOOLS', isNotes ? (action === 'compact' ? 'notes find · show · merge · supersede · answer · status · add (the batch asks you) · hub.search' : 'notes find · hub.search(docs) · no writes') : def.mode.indexOf('read-only') >= 0 ? (isResearch ? 'hub.search across domains · read files, threads, runs · no writes' : 'read issues, PRs, runs, knowledge search · no writes') : 'read · comment on covered items · open PR (ask)'], ['COVERS', usesCovers ? covers.join(', ') : 'repo ' + repo], ['RESULT', { drafts: 'drafts you file', pr: 'a draft PR', comment: 'a review comment you post', labels: 'label changes you apply', findings: 'cause and smallest fix', report: 'a cited report, saved to Knowledge', notes: 'note changes you apply' }[resultType]], ['SESSION', runName + ' · usually ' + def.eta]];
     if (resultType === 'pr' && closesLines.length) specRows.splice(5, 0, ['PR WILL SAY', closesLines.join('\n')]);

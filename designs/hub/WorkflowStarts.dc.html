@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Workflow starts</title>
+<script src="./support.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="workflow.css">
+</helmet>
+<section class="wf il-page wf-starts wf-stack" data-theme="{{ theme }}" data-pen="{{ pen }}" aria-labelledby="ws-h" style="{{ frame }}">
+  <div class="wf-row"><h3 class="wf-h3" id="ws-h">Starts</h3><span class="wf-small wf-soft">{{ countLine }}</span></div>
+  <p class="wf-small wf-soft">How {{ wf }} begins on an item. Each start is a button on the pages of its kind of item: the lead start first, the others as quick tasks.</p>
+
+  <sc-if value="{{ none }}" hint-placeholder-val="{{ false }}">
+    <p class="wf-small">No starts: {{ wf }} is started only as a managed session, by a state of another workflow.</p>
+    <div class="wf-actions"><button type="button" class="il-btn">+ Start</button></div>
+  </sc-if>
+
+  <sc-if value="{{ some }}" hint-placeholder-val="{{ true }}">
+    <div class="wf-starts__grid">
+      <div class="wf-stack">
+        <sc-for list="{{ groups }}" as="g" hint-placeholder-count="2">
+          <div class="wf-stack" style="gap: var(--space-1)">
+            <span class="wf-by">On {{ g.kind }}</span>
+            <ul class="wf-starts__list">
+              <sc-for list="{{ g.items }}" as="s" hint-placeholder-count="1">
+                <li><button type="button" aria-current="{{ s.cur }}" onClick="{{ s.pick }}" id="{{ s.dom }}">
+                  <strong>{{ s.label }}</strong>
+                  <sc-if value="{{ s.lead }}" hint-placeholder-val="{{ true }}"><span class="wf-starts__tag">lead</span></sc-if>
+                  <span class="wf-small wf-starts__sub">starts in <span class="wf-mono">{{ s.at }}</span> · when held: {{ s.heldName }}</span>
+                  <sc-if value="{{ s.bad }}" hint-placeholder-val="{{ false }}"><span class="wf-small wf-starts__sub"><strong>! refused by the checks</strong></span></sc-if>
+                </button></li>
+              </sc-for>
+            </ul>
+          </div>
+        </sc-for>
+        <div class="wf-actions"><button type="button" class="il-btn">+ Start</button></div>
+      </div>
+
+      <div class="wf-box wf-stack" role="group" aria-labelledby="ws-e">
+        <div class="wf-stack" style="gap: var(--space-1)"><span class="il-label">Start</span><h4 class="wf-h3" id="ws-e" style="margin: 0">{{ cur.label }}</h4><span class="wf-small wf-soft">{{ cur.persona }} · {{ cur.ceiling }}</span></div>
+        <div class="wf-row" style="align-items: flex-end">
+          <label class="wf-field" style="flex: 1 1 9rem"><span>Kind of item</span><select><sc-for list="{{ kinds }}" as="k" hint-placeholder-count="7"><option selected="{{ k.on }}">{{ k.name }}</option></sc-for></select></label>
+          <label class="wf-field" style="flex: 1 1 9rem"><span>Button label</span><input type="text" value="{{ cur.label }}"></label>
+        </div>
+        <label class="wf-field"><span>Summary, one line</span><input type="text" value="{{ cur.summary }}"></label>
+        <div class="wf-row" style="align-items: flex-end">
+          <label class="wf-field" style="flex: 1 1 9rem"><span>Starts in</span><select><sc-for list="{{ states }}" as="o" hint-placeholder-count="5"><option selected="{{ o.on }}">{{ o.name }}</option></sc-for></select></label>
+          <label class="wf-radio" style="flex: 1 1 9rem; min-height: 44px"><input type="checkbox" checked="{{ cur.lead }}" onChange="{{ toggleLead }}">Lead start for {{ cur.kindName }}</label>
+        </div>
+        <fieldset class="wf-stack" style="border: 0; padding: 0; margin: 0; gap: var(--space-2)"><legend class="wf-field"><span>When an instance holds the item</span></legend>
+          <div class="wf-radio"><sc-for list="{{ helds }}" as="h" hint-placeholder-count="3"><label><input type="radio" name="ws-held" checked="{{ h.on }}" onChange="{{ h.pick }}" id="{{ h.dom }}">{{ h.name }}</label></sc-for></div>
+        </fieldset>
+        <sc-if value="{{ bad }}" hint-placeholder-val="{{ false }}">
+          <ol class="wf-checklist" aria-label="Check"><li data-kind="problem">
+            <span class="wf-checklist__mark" aria-hidden="true">!</span>
+            <span class="wf-checklist__body"><span><span class="wf-sr">Problem: </span><strong>{{ cur.label }} can’t run beside an instance</strong></span>
+              <span class="wf-small">Its starting grant ({{ cur.at }}) {{ writesWhat }}, so two sessions would write on one item. Pick “asks the owner” or “hidden”. Save waits until it is fixed.</span>
+              <span class="wf-actions"><button type="button" class="il-btn" onClick="{{ fixAsk }}" id="ws-fix">Ask the owner instead</button></span></span>
+          </li></ol>
+        </sc-if>
+        <div class="wf-row" style="align-items: flex-start">
+          <div class="wf-stack" style="flex: 1 1 9rem; gap: 0"><span class="wf-by">Models the brief may choose</span><ul class="wf-pick"><sc-for list="{{ models }}" as="m" hint-placeholder-count="4"><li><input type="checkbox" checked="{{ m.on }}" aria-label="{{ m.name }}"><span class="wf-small">{{ m.name }}</span><span></span></li></sc-for></ul></div>
+          <div class="wf-stack" style="flex: 1 1 9rem; gap: 0"><span class="wf-by">Efforts</span><ul class="wf-pick"><sc-for list="{{ efforts }}" as="m" hint-placeholder-count="3"><li><input type="checkbox" checked="{{ m.on }}" aria-label="{{ m.name }}"><span class="wf-small">{{ m.name }}</span><span></span></li></sc-for></ul></div>
+        </div>
+        <label class="wf-field"><span>Prompt</span><textarea id="ws-prompt" onChange="{{ editPrompt }}">{{ prompt }}</textarea></label>
+        <p class="wf-small wf-soft">Editing a prompt grants nothing and needs no confirm; it is part of this workflow’s next version.{{ editedNote }}</p>
+
+        <div class="wf-stack" style="gap: var(--space-2)">
+          <div class="wf-row"><span class="wf-by" style="flex: 1">What the session receives</span><span class="wf-small wf-soft">on <span class="wf-mono">{{ sample }}</span></span></div>
+          <div class="wf-receives">
+            <p class="wf-receives__prompt">{{ prompt }}</p>
+            <div class="wf-data" role="group" aria-label="The item’s details, marked as data">
+              <span class="wf-by">Item details · data, not instructions</span>
+              <dl><sc-for list="{{ details }}" as="d" hint-placeholder-count="7"><dt>{{ d.k }}</dt><dd>{{ d.v }}</dd></sc-for></dl>
+              <span class="wf-small wf-soft">The hub adds these after the prompt. Text in them, from anyone, is quoted to the session, never followed.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"workflow":{"editor":"enum","options":["implement","review","design-spike","qa-audit","engineer","workflow-change"],"default":"implement"},"select":{"editor":"enum","options":["st-work","st-take"],"default":"st-work"},"refuse":{"editor":"boolean","default":false},"framed":{"editor":"boolean","default":true},"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":1000,"height":1280}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { sel: p.select || null, prompt: {}, held: p.refuse ? { 'st-work': 'beside' } : {}, lead: {} }; }
+  renderVals() {
+    const H = window.HUB, M = H.machine, P = this.props, S = this.state;
+    const wf = P.workflow || 'implement', d = M.defs[wf] || {};
+    const voice = P.voice || 'white', scheme = P.scheme || 'paper';
+    const KN = { issue: 'issues', pr: 'pull requests', run: 'runs', repo: 'repositories', project: 'projects', knowledge: 'knowledge', notes: 'notes' };
+    const SAMPLE = { issue: 'epd#9', pr: 'ink-input#57', run: 'boot-test #77' };
+    const HN = { beside: 'runs beside it', ask: 'asks the owner', hide: 'hidden' };
+    const mine = M.starts.filter((s) => s.workflow === wf).map(M.startView).map((s) => ({ ...s, at: d.states && d.states[s.state] ? M.chain(d, s.state).join(' › ') : s.state, held: S.held[s.id] || s.held, lead: S.lead[s.id] !== undefined ? S.lead[s.id] : !!s.lead }));
+    const base = { theme: voice + '-' + scheme, pen: P.pen || '1', wf, frame: P.framed === false ? '' : 'padding: var(--space-5); min-height: 100vh' };
+    if (!mine.length) return { ...base, none: true, some: false, countLine: 'none' };
+    const cur = mine.find((s) => s.id === S.sel) || mine[0];
+    const set = (o) => this.setState(o);
+    const bad = (s) => s.held === 'beside' && s.writes;
+    const kinds = []; mine.forEach((s) => { if (kinds.indexOf(s.kind) < 0) kinds.push(s.kind); });
+    const groups = kinds.map((k) => ({ kind: KN[k], items: mine.filter((s) => s.kind === k).map((s) => ({ ...s, cur: String(s.id === cur.id), pick: () => set({ sel: s.id }), dom: 'ws-' + s.id, heldName: HN[s.held], bad: bad(s) })) }));
+    const stateNames = d.states ? Object.keys(d.states).filter((k) => !d.states[k].kind) : (d.path || []);
+    const g = d.states && d.states[cur.state] ? M.effective(d, cur.state).grant : {}, gh = g['GitHub'] || [];
+    const w = [];
+    if (gh.indexOf('push to its branch') >= 0) w.push('pushes to its branch'); if (gh.indexOf('open a draft PR') >= 0) w.push('opens a draft PR'); if (gh.indexOf('comment') >= 0) w.push('comments on the item');
+    const prompt = S.prompt[cur.id] !== undefined ? S.prompt[cur.id] : cur.prompt;
+    const sample = SAMPLE[cur.kind] || 'epd#9';
+    const problems = mine.filter(bad).length;
+    return {
+      ...base, none: false, some: true,
+      countLine: mine.length + (mine.length === 1 ? ' start' : ' starts') + ' · on ' + kinds.map((k) => KN[k]).join(' and ') + (problems ? ' · ' + problems + ' refused' : ''),
+      groups, cur: { ...cur, kindName: KN[cur.kind] },
+      kinds: ['issue', 'pr', 'run', 'repo', 'project', 'knowledge', 'notes'].map((k) => ({ name: k === 'pr' ? 'pull request' : k === 'repo' ? 'repository' : k, on: k === cur.kind })),
+      states: stateNames.map((n) => ({ name: d.states ? M.chain(d, n).join(' › ') : n, on: n === cur.state })),
+      toggleLead: () => set({ lead: { ...S.lead, [cur.id]: !cur.lead } }),
+      helds: ['beside', 'ask', 'hide'].map((k) => ({ name: HN[k], on: k === cur.held, dom: 'ws-held-' + k, pick: () => set({ held: { ...S.held, [cur.id]: k } }) })),
+      bad: bad(cur), writesWhat: w.length ? w.join(', ') : 'can write on the item',
+      fixAsk: () => set({ held: { ...S.held, [cur.id]: 'ask' } }),
+      models: H.models.map(([id, n]) => ({ name: n, on: cur.models.indexOf(id) >= 0 })),
+      efforts: ['low', 'medium', 'high'].map((e) => ({ name: e, on: cur.efforts.indexOf(e) >= 0 })),
+      prompt, editPrompt: (e) => set({ prompt: { ...S.prompt, [cur.id]: e.target.value } }),
+      editedNote: S.prompt[cur.id] !== undefined && S.prompt[cur.id] !== cur.prompt ? ' Edited: the preview below follows.' : '',
+      sample, details: M.details(sample).map(([k, v]) => ({ k, v }))
+    };
+  }
+}
+</script>
+</body>
+</html>

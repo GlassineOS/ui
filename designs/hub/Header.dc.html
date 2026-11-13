@@ -56,22 +56,22 @@ main :is(section,article,aside > div,[role="search"]):not([style*="background"])
 </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"active":{"editor":"enum","options":["overview","roadmap","work","knowledge","notes","sessions"],"default":"overview"},"menuOpen":{"editor":"boolean","default":false},"inboxOpen":{"editor":"boolean","default":false},"layer":{"editor":"enum","options":["fixed","absolute"],"default":"fixed"},"$preview":{"width":1440,"height":72}}'>
+<script type="text/x-dc" data-dc-script data-props='{"active":{"editor":"enum","options":["overview","roadmap","work","knowledge","notes","sessions","workflows","apps"],"default":"overview"},"menuOpen":{"editor":"boolean","default":false},"inboxOpen":{"editor":"boolean","default":false},"layer":{"editor":"enum","options":["fixed","absolute"],"default":"fixed"},"$preview":{"width":1440,"height":72}}'>
 class Component extends DCLogic {
   constructor(p) { super(p); this.state = { open: false, menu: !!p.menuOpen, inbox: !!p.inboxOpen }; }
   renderVals() {
     const H = window.HUB;
     const active = this.props.active || 'overview';
     const waiting = H.interactions.length;
-    const T = [['overview', 'Overview', 'Main.dc.html'], ['roadmap', 'Roadmap', 'Roadmap.dc.html'], ['work', 'Work', 'Work.dc.html'], ['knowledge', 'Knowledge', 'Knowledge.dc.html'], ['notes', 'Notes', 'Notes.dc.html'], ['sessions', 'Sessions', 'Sessions.dc.html']];
-    const NAMES = { overview: 'Overview', roadmap: 'Roadmap', work: 'Work', knowledge: 'Knowledge', notes: 'Notes', sessions: 'Sessions' };
+    const T = [['overview', 'Overview', 'Main.dc.html'], ['roadmap', 'Roadmap', 'Roadmap.dc.html'], ['work', 'Work', 'Work.dc.html'], ['knowledge', 'Knowledge', 'Knowledge.dc.html'], ['notes', 'Notes', 'Notes.dc.html'], ['sessions', 'Sessions', 'Sessions.dc.html'], ['workflows', 'Workflows', 'WorkflowEditor.dc.html'], ['apps', 'Apps', null]];
+    const NAMES = { overview: 'Overview', roadmap: 'Roadmap', work: 'Work', knowledge: 'Knowledge', notes: 'Notes', sessions: 'Sessions', workflows: 'Workflows', apps: 'Apps' };
     return {
       user: H.user, waiting: String(waiting), navClass: 'hub-nav' + (this.state.menu ? ' is-open' : ''), menuExpanded: this.state.menu ? 'true' : 'false', menuAria: this.state.menu ? 'Close menu' : 'Menu',
       menuIcon: this.state.menu ? 'M4 4l10 10M14 4L4 14' : 'M2 4.5h14M2 9h14M2 13.5h14', toggleMenu: () => this.setState({ menu: !this.state.menu }),
       tabs: T.map(([id, label, href]) => {
         const on = id === active;
         return { label, href, current: on ? 'page' : 'false', hasBadge: false, badge: '', aria: label,
-          style: 'display: flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 12px; text-decoration: none; color: #111111; font-weight: ' + (on ? '600; background: #111111; color: #ffffff' : '500; background: transparent') };
+          style: 'display: flex; align-items: center; min-height: 44px; padding: 0 10px; border-radius: 12px; text-decoration: none; color: #111111; font-weight: ' + (on ? '600; background: #111111; color: #ffffff' : '500; background: transparent') };
       }),
       inboxOpen: this.state.inbox, openInbox: () => this.setState({ inbox: true, menu: false }), closeInbox: () => this.setState({ inbox: false }),
       openNew: () => this.setState({ open: true }), closeNew: () => this.setState({ open: false }),

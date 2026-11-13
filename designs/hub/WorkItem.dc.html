@@ -48,12 +48,7 @@
         </sc-if>
       </div>
 
-      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 10px 14px; border: 1px solid #d0d0d0; border-radius: 16px; background: #ffffff">
-        <span style="font-size: 14px; font-weight: 600">Launch on <span style="font-family: 'IBM Plex Mono', monospace">{{ref}}</span></span>
-        <sc-for list="{{acts}}" as="a" hint-placeholder-count="3"><button type="button" onClick="{{a.go}}" style="{{a.style}}">{{a.label}}</button></sc-for>
-        <span style="flex: 1"></span>
-        <button type="button" onClick="{{newFrom}}" style="min-height: 44px; padding: 0 14px; border: 1.5px dashed #111111; border-radius: 12px; background: #ffffff; color: #111111; font: inherit; cursor: pointer">New work from this…</button>
-      </div>
+      <dc-import name="Starts" item-ref="{{ref}}" on-launch="{{startLaunch}}" hint-size="100%,300px"></dc-import>
 
       <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
         <div style="flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
@@ -92,15 +87,15 @@
                 </div>
               </sc-for>
               <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
-                <button type="button" onClick="{{addressPicked}}" style="min-height: 44px; padding: 0 16px; border: 1.5px solid #111111; border-radius: 12px; background: #2747b8; color: #ffffff; font: inherit; font-weight: 600; cursor: pointer; box-shadow: 0 3px 0 #b4b4b4">{{addressLabel}}</button>
-                
+                <button type="button" onClick="{{addressPicked}}" id="wi-address" style="{{addressStyle}}">{{addressLabel}}</button>
+                <sc-if value="{{askedOwner}}" hint-placeholder-val="{{false}}"><span role="status" style="font-size: 14px">{{askedText}}</span></sc-if>
               </div>
               <div style="display: flex; flex-direction: column; gap: 6px; padding-top: 6px">
                 <label for="cmt" style="font-weight: 500">Comment on {{ref}}</label>
                 <textarea id="cmt" rows="3" placeholder="Write a comment, or let Claude draft one" style="padding: 10px 12px; border: 1.5px solid #111111; border-radius: 12px; font: inherit; resize: vertical"></textarea>
                 <div style="display: flex; flex-wrap: wrap; gap: 8px">
                   <button type="button" style="min-height: 44px; padding: 0 16px; border: 1.5px solid #111111; border-radius: 12px; background: #ffffff; color: #111111; font: inherit; font-weight: 600; cursor: pointer">Post</button>
-                  <button type="button" onClick="{{draftReview}}" style="min-height: 44px; padding: 0 16px; border: 1.5px solid #111111; border-radius: 12px; background: #ffffff; color: #111111; font: inherit; cursor: pointer">Draft with Claude · Review → comment</button>
+                  <button type="button" onClick="{{draftReview}}" style="{{draftStyle}}">{{draftLabel}}</button>
                 </div>
               </div>
             </section>
@@ -166,11 +161,11 @@
     <dc-import style="display: flex; flex: none; position: static" name="Steward" context="{{ctx}}" layer="absolute" hint-size="400px,100%"></dc-import>
   </div>
   <sc-if value="{{launching}}" hint-placeholder-val="{{false}}">
-    <dc-import style="position: static" name="Launch" layer="absolute" entry="{{L.entry}}" action="{{L.action}}" covers="{{L.covers}}" notes="{{L.notes}}" by="{{L.by}}" why="{{L.why}}" context="{{ctx}}" on-close="{{closeLaunch}}" hint-size="100%,900px"></dc-import>
+    <dc-import style="position: static" name="Launch" layer="absolute" entry="{{L.entry}}" action="{{L.action}}" covers="{{L.covers}}" notes="{{L.notes}}" by="{{L.by}}" why="{{L.why}}" start="{{L.start}}" context="{{ctx}}" on-close="{{closeLaunch}}" hint-size="100%,900px"></dc-import>
   </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"details":{"editor":"boolean","default":false},"prTab":{"editor":"enum","options":["conv","files"],"default":"conv"},"itemRef":{"editor":"enum","options":["kernel#212","epd#9","build-image #1184","hub#47"],"default":"kernel#212"},"$preview":{"width":1440,"height":1500}}'>
+<script type="text/x-dc" data-dc-script data-props='{"details":{"editor":"boolean","default":false},"prTab":{"editor":"enum","options":["conv","files"],"default":"conv"},"itemRef":{"editor":"enum","options":["kernel#212","epd#9","build-image #1184","hub#47","ink-input#57","boot-test #77"],"default":"kernel#212"},"$preview":{"width":1440,"height":1500}}'>
 class Component extends DCLogic {
   constructor(p) { super(p); this.state = { pick: {}, bg: {}, L: null, tab: null, details: !!p.details, prTab: p.prTab || 'conv', openFiles: { 0: true } }; }
   renderVals() {
@@ -179,6 +174,7 @@ class Component extends DCLogic {
     const raw = H.items[ref];
     const it = { ...raw, state: raw.state || ['PLANNED', 'IN PROGRESS', 'IN REVIEW', 'DONE'][raw.status], body: raw.body || 'Strategic issue in GlassineOS/hub. Its progress is the issues in other repositories whose bodies say “Part of ' + ref + '”.' };
     const repo = it.repo || ref.split('#')[0];
+    const holder = H.machine.holderOf(ref);
     const IA = { pr: ['review', 'address', 'fix'], issue: ['implement', 'triage'], run: ['investigate'], roadmap: ['road', 'docs'] };
     const best = it.state === 'REVIEWED' ? 'address' : it.state === 'FAILING' ? 'fix' : IA[it.kind][0];
     const open = (action, extra) => this.setState({ L: Object.assign({ entry: 'item', action, covers: [ref], notes: '', by: 'you', why: '' }, extra || {}) });
@@ -209,14 +205,17 @@ class Component extends DCLogic {
     return {
       it, ref, repo, refUpper: ref.toUpperCase(),
       badge: 'font-family: \'IBM Plex Mono\', monospace; font-size: 12px; font-weight: 500; letter-spacing: 0.08em; padding: 2px 8px; border-radius: 6px; ' + (it.state === 'FAILED' || it.state === 'FAILING' ? 'border: 3px double #111111' : 'border: 1.5px solid #111111'),
-      acts: IA[it.kind].map((a) => ({ label: H.actions[a].label, go: () => open(a, a === 'address' ? { notes: picked.map((t) => t.where + ': ' + t.text).join('\n') } : {}),
-        style: 'min-height: 44px; padding: 0 16px; border-radius: 12px; font: inherit; font-weight: 600; cursor: pointer; ' + (a === best ? 'border: 1.5px solid #111111; background: #2747b8; color: #ffffff; box-shadow: 0 3px 0 #b4b4b4' : 'border: 1.5px solid #111111; background: #ffffff; color: #111111') })),
-      newFrom: () => open(it.kind === 'roadmap' ? 'road' : 'issue', { entry: 'item' }),
+      startLaunch: (a, st) => open(a, { entry: 'item', start: st || null }),
       hasChecks: !!(it.checks && it.checks.length), checks: (it.checks || []).map(([l, s, d]) => ({ label: (s === 'p' ? '✓ ' : s === 'f' ? '✕ ' : '◌ ') + l + ' · ' + d, style: 'font-family: \'IBM Plex Mono\', monospace; font-size: 12.5px; padding: 2px 8px; border-radius: 6px; ' + (s === 'f' ? 'border: 3px double #111111; background: #ffd9b8' : s === 'r' ? 'border: 1.5px dashed #111111' : 'border: 1.5px solid #111111') })),
       hasThreads: threads.length > 0, threads, openThreads: String(TH.filter((t) => t.open).length),
-      addressLabel: 'Address ' + picked.length + ' thread' + (picked.length === 1 ? '' : 's') + '…',
-      addressPicked: () => open('address', { notes: picked.map((t) => t.where + ': ' + t.text).join('\n') }),
-      draftReview: () => open('review', { notes: 'Draft a reply comment; keep it short.' }),
+      /* An item an instance holds: work that would write on it goes to its owner (Workflows (012) FR-104). */
+      addressLabel: (holder ? 'Ask ' + holder + ' to address ' : 'Address ') + picked.length + ' thread' + (picked.length === 1 ? '' : 's') + '…',
+      addressStyle: 'min-height: 44px; padding: 0 16px; border: 1.5px solid #111111; border-radius: 12px; font: inherit; font-weight: 600; cursor: pointer; ' + (holder ? 'background: #f2f2f2; color: #111111' : 'background: #2747b8; color: #ffffff; box-shadow: 0 3px 0 #b4b4b4'),
+      addressPicked: () => holder ? this.setState({ asked: 'address ' + picked.length + ' threads' }) : open('address', { notes: picked.map((t) => t.where + ': ' + t.text).join('\n') }),
+      draftLabel: holder ? 'Ask ' + holder + ' to draft a reply' : 'Draft with Claude · Review → comment',
+      draftStyle: 'min-height: 44px; padding: 0 16px; border: 1.5px solid #111111; border-radius: 12px; color: #111111; font: inherit; cursor: pointer; background: ' + (holder ? '#f2f2f2' : '#ffffff'),
+      draftReview: () => holder ? this.setState({ asked: 'draft a reply comment' }) : open('review', { notes: 'Draft a reply comment; keep it short.' }),
+      askedOwner: !!S.asked, askedText: 'Sent to ' + holder + ': ' + (S.asked || '') + '. It answers in its session below.',
       sessions: shown.map(([id]) => ({ sid: id, bg: () => this.setState({ bg: { ...this.state.bg, [id]: true } }) })), sessCount: String(sess.length), multi: order.length > 1, pickTab: (id) => this.setState({ tab: id }),
       tabs: order.map(([id, o]) => { const on = cur && cur[0] === id; const f = H.families[(H.personas[o.persona] || {}).family] || { tint: '#ffffff', label: '' }; return { sid: id, persona: o.persona, sel: on ? 'true' : 'false', what: o.persona + ' · ' + f.label + (o.state === 'DONE' ? ' · finished' : o.state === 'WAITING' ? ' · waits for you' : ' · running'), pick: () => this.setState({ tab: id }),
         style: 'display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 4px 14px 4px 6px; border-radius: 12px; color: #111111; font: inherit; cursor: pointer; background: ' + f.tint + '; border: ' + (on ? '2.5px solid #111111; box-shadow: 0 3px 0 #b4b4b4' : '1.5px solid #d0d0d0') }; }),

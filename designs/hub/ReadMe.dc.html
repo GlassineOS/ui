@@ -42,20 +42,20 @@
         </sc-for>
       </tbody>
     </table>
-    <p style="margin: 0; font-size: 14.5px">Chrome around them: <span style="font-family: 'IBM Plex Mono', monospace">Header</span> (nav, Sessions badge = number of open interactions, ＋ New work), <span style="font-family: 'IBM Plex Mono', monospace">Steward</span> (sidebar: its interactions as a filtered Feed, its terminal as a compact SessionView), <span style="font-family: 'IBM Plex Mono', monospace">SessionsTabs</span>. Inputs: <span style="font-family: 'IBM Plex Mono', monospace">ItemPill</span> (an item anywhere: kind, ref, title, link), <span style="font-family: 'IBM Plex Mono', monospace">ItemPicker</span> (search issues and PRs by meaning or GitHub syntax, picks become pills), <span style="font-family: 'IBM Plex Mono', monospace">PersonaBadge</span> and <span style="font-family: 'IBM Plex Mono', monospace">SessionChip</span> (who a session is, everywhere a session appears), <span style="font-family: 'IBM Plex Mono', monospace">RepoPicker</span> (type-to-filter, recent and failing first, layer chips, single or multi).</p>
+    <p style="margin: 0; font-size: 14.5px">Chrome around them: <span style="font-family: 'IBM Plex Mono', monospace">Header</span> (nav, Sessions badge = number of open interactions, + New work), <span style="font-family: 'IBM Plex Mono', monospace">Steward</span> (sidebar: its interactions as a filtered Feed, its terminal as a compact SessionView), <span style="font-family: 'IBM Plex Mono', monospace">SessionsTabs</span>. Inputs: <span style="font-family: 'IBM Plex Mono', monospace">ItemPill</span> (an item anywhere: kind, ref, title, link), <span style="font-family: 'IBM Plex Mono', monospace">ItemPicker</span> (search issues and PRs by meaning or GitHub syntax, picks become pills), <span style="font-family: 'IBM Plex Mono', monospace">PersonaBadge</span> and <span style="font-family: 'IBM Plex Mono', monospace">SessionChip</span> (who a session is, everywhere a session appears), <span style="font-family: 'IBM Plex Mono', monospace">RepoPicker</span> (type-to-filter, recent and failing first, layer chips, single or multi).</p>
     <p style="margin: 0; padding: 12px 16px; border: 1.5px solid #111111; border-radius: 12px; background: #f2f2f2; font-size: 14.5px"><span style="font-weight: 600">Scale rule.</span> The project has {{repoCount}} repositories and will have more. Nothing may list every repository as buttons or pills: choosing one goes through RepoPicker, choosing items through ItemPicker, and lists of repositories (Overview) are dense rows, sorted by what needs attention, five per layer until expanded, with a filter.</p>
     <pre style="margin: 0; padding: 14px 16px; background: #f2f2f2; border-radius: 12px; font-family: 'IBM Plex Mono', monospace; font-size: 13px; line-height: 1.7; white-space: pre-wrap">Interaction  ← imports nothing
 SessionView  → Interaction                  (a session’s own prompts, inline)
 Launch       → SessionView                  (Run stage embeds the real session)
 Feed         → Interaction, Launch          (suggestion / results cards open Launch)
-Header       → Launch                       (＋ New work)
+Header       → Launch                       (+ New work)
 Steward      → Feed, SessionView, Launch
 screens      → Header, Steward, + the blocks they show</pre>
   </section>
 
   <section aria-labelledby="h-launch" style="display: flex; flex-direction: column; gap: 12px; background: transparent">
     <h2 id="h-launch" style="margin: 0; font-size: 22px; font-weight: 600">Launch: one flow for every agent</h2>
-    <p style="margin: 0; max-width: 90ch">Every session that is not a plain shell starts here, from wherever you are: a row in Work, an item page, a roadmap card, a repo card, ＋ New work, the Steward, or a suggestion card. The entry only changes what is prefilled.</p>
+    <p style="margin: 0; max-width: 90ch">Every session that is not a plain shell starts here, from wherever you are: a row in Work, an item page, a roadmap card, a repo card, + New work, the Steward, or a suggestion card. The entry only changes what is prefilled.</p>
     <ol style="margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px">
       <sc-for list="{{stages}}" as="s" hint-placeholder-count="4">
         <li style="display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border: 1.5px solid #111111; border-radius: 12px">
@@ -172,7 +172,7 @@ class Component extends DCLogic {
       ].map(([name, what, bg]) => ({ name, what, bg })),
       blocks: [
         ['Item', 'An issue, PR, workflow run or roadmap item, keyed by its ref (kernel#212, build-image #1184).', 'WorkItem.dc.html', 'Work rows, Work item page, Roadmap cards, covers chips everywhere.'],
-        ['Launch', 'The only way an agent starts: Brief → Plan → Run → Result, in one modal that can go to the background.', 'Launch.dc.html', '＋ New work, item buttons, repo and roadmap cards, Knowledge › Research it, Steward, suggestion and results cards.'],
+        ['Launch', 'The only way an agent starts: Brief → Plan → Run → Result, in one modal that can go to the background.', 'Launch.dc.html', '+ New work, item buttons, repo and roadmap cards, Knowledge › Research it, Steward, suggestion and results cards.'],
         ['Session', 'A Claude Code (or plain) tmux session with persona, model, mode, covers and its terminal.', 'SessionView.dc.html', 'Full in Sessions, embedded on the item it covers and in Launch › Run, compact in the Steward.'],
         ['Interaction', 'Something a session waits on or offers you: permission, question, suggestion, results.', 'Interaction.dc.html + Feed.dc.html + Inbox.dc.html', 'The Needs you modal (header button on every screen; the Steward’s strip opens it filtered to the Steward), inline in the session that asked, item pages.']
       ].map(([name, what, file, where]) => ({ name, what, file, where })),

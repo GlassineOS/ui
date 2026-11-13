@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Starts · every kind</title>
+<script src="./support.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Kalam&amp;display=swap">
+<style>body{margin:0;background:#f2f2f2}</style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: 28px; padding: 24px 28px 40px; box-sizing: border-box; background: #f2f2f2; color: #111111; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 15px; line-height: 1.5">
+  <sc-for list="{{rows}}" as="r" hint-placeholder-count="5">
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0; font-size: 15.5px; font-weight: 600">{{r.title}} <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 400; color: #4a4a4a">{{r.ref}}</span></h2>
+      <p style="margin: 0; font-size: 13.5px; color: #4a4a4a">{{r.note}}</p>
+      <dc-import name="Starts" item-ref="{{r.ref}}" hint-size="100%,300px"></dc-import>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1000,"height":2620}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { rows: [
+      { ref: 'epd#9', title: 'An issue', note: 'The lead start works on it through the implementor; the other starts for issues follow as quick tasks. Each names the persona it starts and what that persona may do.' },
+      { ref: 'ink-input#57', title: 'A pull request no instance holds', note: 'Take this on starts an implementor in its review state, with this pull request as its own.' },
+      { ref: 'boot-test #77', title: 'A failed run', note: 'Investigate failure leads; the read-only tasks follow.' },
+      { ref: 'kernel#212', title: 'A pull request an implementor holds', note: 'The page leads with the instance. A start that would write asks the owner or is hidden; a read-only one runs beside it.' },
+      { ref: 'build-image #1184', title: 'A run a one-state instance holds', note: 'The same rule for any workflow: investigate-1184 carries this run, so Investigate failure is hidden and Fix on a branch asks it.' }
+    ] };
+  }
+}
+</script>
+</body>
+</html>

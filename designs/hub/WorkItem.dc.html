@@ -48,12 +48,7 @@
         </sc-if>
       </div>
 
-      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 10px 14px; border: 1px solid #d0d0d0; border-radius: 16px; background: #ffffff">
-        <span style="font-size: 14px; font-weight: 600">Launch on <span style="font-family: 'IBM Plex Mono', monospace">{{ref}}</span></span>
-        <sc-for list="{{acts}}" as="a" hint-placeholder-count="3"><button type="button" onClick="{{a.go}}" style="{{a.style}}">{{a.label}}</button></sc-for>
-        <span style="flex: 1"></span>
-        <button type="button" onClick="{{newFrom}}" style="min-height: 44px; padding: 0 14px; border: 1.5px dashed #111111; border-radius: 12px; background: #ffffff; color: #111111; font: inherit; cursor: pointer">New work from this…</button>
-      </div>
+      <dc-import name="Starts" item-ref="{{ref}}" on-launch="{{startLaunch}}" hint-size="100%,300px"></dc-import>
 
       <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
         <div style="flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
@@ -170,7 +165,7 @@
   </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"details":{"editor":"boolean","default":false},"prTab":{"editor":"enum","options":["conv","files"],"default":"conv"},"itemRef":{"editor":"enum","options":["kernel#212","epd#9","build-image #1184","hub#47"],"default":"kernel#212"},"$preview":{"width":1440,"height":1500}}'>
+<script type="text/x-dc" data-dc-script data-props='{"details":{"editor":"boolean","default":false},"prTab":{"editor":"enum","options":["conv","files"],"default":"conv"},"itemRef":{"editor":"enum","options":["kernel#212","epd#9","build-image #1184","hub#47","ink-input#57","boot-test #77"],"default":"kernel#212"},"$preview":{"width":1440,"height":1500}}'>
 class Component extends DCLogic {
   constructor(p) { super(p); this.state = { pick: {}, bg: {}, L: null, tab: null, details: !!p.details, prTab: p.prTab || 'conv', openFiles: { 0: true } }; }
   renderVals() {
@@ -209,9 +204,7 @@ class Component extends DCLogic {
     return {
       it, ref, repo, refUpper: ref.toUpperCase(),
       badge: 'font-family: \'IBM Plex Mono\', monospace; font-size: 12px; font-weight: 500; letter-spacing: 0.08em; padding: 2px 8px; border-radius: 6px; ' + (it.state === 'FAILED' || it.state === 'FAILING' ? 'border: 3px double #111111' : 'border: 1.5px solid #111111'),
-      acts: IA[it.kind].map((a) => ({ label: H.actions[a].label, go: () => open(a, a === 'address' ? { notes: picked.map((t) => t.where + ': ' + t.text).join('\n') } : {}),
-        style: 'min-height: 44px; padding: 0 16px; border-radius: 12px; font: inherit; font-weight: 600; cursor: pointer; ' + (a === best ? 'border: 1.5px solid #111111; background: #2747b8; color: #ffffff; box-shadow: 0 3px 0 #b4b4b4' : 'border: 1.5px solid #111111; background: #ffffff; color: #111111') })),
-      newFrom: () => open(it.kind === 'roadmap' ? 'road' : 'issue', { entry: 'item' }),
+      startLaunch: (a) => open(a, { entry: 'item' }),
       hasChecks: !!(it.checks && it.checks.length), checks: (it.checks || []).map(([l, s, d]) => ({ label: (s === 'p' ? '✓ ' : s === 'f' ? '✕ ' : '◌ ') + l + ' · ' + d, style: 'font-family: \'IBM Plex Mono\', monospace; font-size: 12.5px; padding: 2px 8px; border-radius: 6px; ' + (s === 'f' ? 'border: 3px double #111111; background: #ffd9b8' : s === 'r' ? 'border: 1.5px dashed #111111' : 'border: 1.5px solid #111111') })),
       hasThreads: threads.length > 0, threads, openThreads: String(TH.filter((t) => t.open).length),
       addressLabel: 'Address ' + picked.length + ' thread' + (picked.length === 1 ? '' : 's') + '…',

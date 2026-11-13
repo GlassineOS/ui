@@ -203,6 +203,10 @@
       </aside>
     </div>
 
+    <div class="wf-ed__starts">
+      <dc-import name="WorkflowStarts" workflow="{{ wfName }}" select="{{ startSel }}" refuse="{{ refuse }}" framed="{{ false }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,1300px"></dc-import>
+    </div>
+
     <footer class="wf-ed__foot">
       <sc-if value="{{ saved }}" hint-placeholder-val="{{ false }}"><span class="il-chip il-chip--moving" aria-live="polite">Saved as v8 · sessions take it at their next move</span></sc-if>
       <sc-if value="{{ unsaved }}" hint-placeholder-val="{{ true }}">
@@ -238,7 +242,7 @@
   </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"select":{"editor":"enum","options":["review","work","t3","t9"],"default":"review"},"view":{"editor":"enum","options":["diagram","outline","text"],"default":"diagram"},"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":1440,"height":1900}}'>
+<script type="text/x-dc" data-dc-script data-props='{"select":{"editor":"enum","options":["review","work","t3","t9"],"default":"review"},"view":{"editor":"enum","options":["diagram","outline","text"],"default":"diagram"},"start":{"editor":"enum","options":["st-work","st-take"],"default":"st-work"},"refuse":{"editor":"boolean","default":false},"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":1440,"height":1900}}'>
 class Component extends DCLogic {
   constructor(p) { super(p); this.state = { sel: p.select || 'review', view: p.view || 'diagram', ver: '8', fixed: false, order: {}, dialog: false, saved: false, wf: 'implement' }; }
   renderVals() {
@@ -320,11 +324,12 @@ class Component extends DCLogic {
       };
     }
 
-    const lst = ['implement', 'review', 'qa-audit', 'design-spike', 'engineer', 'workflow-change'].map((k) => { const d = M.defs[k]; return { name: k, sub: (k === 'implement' ? 'v7 · draft v8 · 1 change asked' : 'v' + d.version) + ' · ' + d.running + ' running', cur: String(st.wf === k), pick: () => set({ wf: k, sel: '', order: {} }), dom: 'ed-wf-' + k }; });
+    const nStarts = (k) => { const n = M.starts.filter((x) => x.workflow === k).length; return n ? ' · ' + n + (n === 1 ? ' start' : ' starts') : ''; };
+    const lst = ['implement', 'review', 'qa-audit', 'design-spike', 'engineer', 'workflow-change'].map((k) => { const d = M.defs[k]; return { name: k, sub: (k === 'implement' ? 'v7 · draft v8 · 1 change asked' : 'v' + d.version) + ' · ' + d.running + ' running' + nStarts(k), cur: String(st.wf === k), pick: () => set({ wf: k, sel: '', order: {} }), dom: 'ed-wf-' + k }; });
     const od = M.defs[st.wf];
     const viewNote = st.view === 'diagram' ? 'Drag a state to move it; drag from its edge to add an exit.' : st.view === 'outline' ? 'The outline is the same machine as a list: parents hold their states, each state lists its exits in order.' : 'Diagram, outline and text are one definition; a change in one shows in the others.';
     return {
-      theme: voice + '-' + scheme, pen: P.pen || '1', voice, scheme,
+      theme: voice + '-' + scheme, pen: P.pen || '1', voice, scheme, startSel: P.start || 'st-work', refuse: !!P.refuse,
       title: st.wf === 'implement' ? 'implement' : st.wf,
       status: st.wf !== 'implement' ? (M.defs[st.wf].states ? 'v' + M.defs[st.wf].version + ' · in use · ' + M.defs[st.wf].running + ' running · editing makes a draft v' + (M.defs[st.wf].version + 1) : '') : st.saved ? 'v8 saved by you · in use for the organisation' : draft ? 'v8 draft · from the Steward’s proposal d1, edited by you · not saved' : 'v7 · in use since 2 Nov · 4 sessions run it',
       ver: st.ver, pickVer: (e) => set({ ver: e.target.value }),

@@ -18,7 +18,7 @@
 #   make reference       the browsable Interleaf reference (tools/gen-reference) in out/reference/
 #   make site            the reference and the design boards (tools/boards export) in out/reference/
 #   make serve-reference build it and serve it on http://127.0.0.1:8000/ (REFERENCE_HOST, REFERENCE_PORT)
-VERSION = 1.2.0
+VERSION = 1.3.0
 SOMAJOR = 1
 PREFIX ?= /usr/local
 LIBDIR ?= $(PREFIX)/lib

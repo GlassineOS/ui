@@ -27,7 +27,7 @@
   function issues(b) { return b.issues && b.issues.length; }
   function clamp(s) { return Math.min(MAX, Math.max(MIN, s)); }
   function store(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* no storage */ } }
-  function viewHref(file) { return '/_boards/view.html?board=' + encodeURIComponent(file); }
+  function viewHref(file) { return 'view.html?board=' + encodeURIComponent(file); }
 
   // the zoom: only the plane's transform, the scroll area and the readable text change, so live boards
   // keep their state; (cx, cy), a point in the canvas box, stays where it is

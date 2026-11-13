@@ -8,6 +8,8 @@
 - every relative link and source resolves to a file, and every #fragment to an id in it;
   no link is root-relative (the site is published under a sub-path)
 - two builds are byte for byte the same
+- with --designs: the designs page lists main's and the pull requests' exported folders, every link of
+  it resolves, a pull request's title is escaped, its own page is at designs/pr-N/; bad stages are refused
 """
 import html.parser
 import importlib.machinery
@@ -70,8 +72,17 @@ def load_generator():
     return mod
 
 
-def build(dest):
-    return subprocess.run([sys.executable, GEN, "--out", dest], capture_output=True, text=True)
+def build(dest, *extra):
+    return subprocess.run([sys.executable, GEN, "--out", dest] + list(extra), capture_output=True, text=True)
+
+
+def fake_export(d, title, boards):
+    """what tools/boards export writes and the designs page reads (no node here)"""
+    os.makedirs(os.path.join(d, "_boards", "api"))
+    with open(os.path.join(d, "_boards", "api", "canvas.json"), "w") as fh:
+        json.dump({"title": title, "pages": [], "boards": [{"file": "B%d.dc.html" % i, "exists": True} for i in range(boards)]}, fh)
+    open(os.path.join(d, "_boards", "index.html"), "w").close()
+    open(os.path.join(d, "index.html"), "w").close()
 
 
 if os.path.isdir(TMP):
@@ -188,6 +199,8 @@ try:
                 bad.append("%s: %s=%s is root-relative" % (rel, k, v))
                 continue
             target = os.path.normpath(os.path.join(base, unquote(u.path))).replace(os.sep, "/") if u.path else rel
+            if u.path.endswith("/"):
+                target += "/index.html"
             if not os.path.isfile(os.path.join(a, target)):
                 bad.append("%s: %s=%s: no file" % (rel, k, v))
                 continue
@@ -197,6 +210,52 @@ try:
 
     r = build(b)
     ok(r.returncode == 0 and same(a, b), "two builds are the same")
+
+    # without --designs no designs page and no link to one
+    ok(not os.path.exists(os.path.join(a, "designs.html")) and "designs.html" not in index, "no --designs: no designs page")
+
+    # --designs: the boards of main and of the open pull requests (spec 003 FR-016, FR-017)
+    stage = os.path.join(TMP, "stage")
+    fake_export(os.path.join(stage, "hub"), "The <hub>", 3)
+    fake_export(os.path.join(stage, "pr-12", "shell"), "Shell", 2)
+    with open(os.path.join(stage, "pr-12", "pr.json"), "w") as fh:
+        json.dump({"number": 12, "title": "<img src=x onerror=alert(1)> new look", "url": "https://github.com/o/ui/pull/12",
+                   "head": "0123456789abcdef0123456789abcdef01234567"}, fh)
+    d = os.path.join(TMP, "d")
+    r = build(d, "--designs", stage)
+    ok(r.returncode == 0, "--designs: the build runs" + ("" if r.returncode == 0 else ": " + r.stderr.strip()))
+    dp = open(os.path.join(d, "designs.html"), encoding="utf-8").read()
+    pr = open(os.path.join(d, "designs", "pr-12", "index.html"), encoding="utf-8").read()
+    dpages = {rel: parse(os.path.join(d, rel)) for rel in ("index.html", "designs.html", "designs/pr-12/index.html")}
+    ok('href="designs.html"' in open(os.path.join(d, "index.html"), encoding="utf-8").read(), "--designs: the pages link the designs page")
+    ok('href="designs/hub/_boards/"' in dp and 'href="designs/pr-12/shell/_boards/"' in dp and 'href="designs/pr-12/"' in dp
+       and "3 boards" in dp and 'href="shell/_boards/"' in pr and 'href="../../designs.html"' in pr,
+       "--designs: main's designs and the pull request's, each to its canvas")
+    ok(dp.count('id="main"') == 1, "--designs: one id main")
+    ok("<img" not in dp and "<img" not in pr and "&lt;img" in dp and "The &lt;hub&gt;" in dp, "--designs: titles are escaped")
+    ok(os.path.isfile(os.path.join(d, "designs", "hub", "_boards", "api", "canvas.json"))
+       and os.path.isfile(os.path.join(d, "designs", "index.html")), "--designs: the exports copied to designs/")
+    bad = []
+    for rel, p in dpages.items():
+        for tag, k, v in p.refs:
+            u = urlsplit(v)
+            if u.scheme or u.netloc or not u.path:
+                continue
+            t = os.path.normpath(os.path.join(os.path.dirname(rel), unquote(u.path))) + ("/index.html" if u.path.endswith("/") else "")
+            if v.startswith("/") or not os.path.isfile(os.path.join(d, t)):
+                bad.append("%s: %s" % (rel, v))
+    ok(not bad, "--designs: every link resolves" + ("" if not bad else ": " + ", ".join(bad)))
+    def refused(mutate, what):
+        st2 = os.path.join(TMP, "stage2")
+        shutil.rmtree(st2, ignore_errors=True)
+        shutil.copytree(stage, st2)
+        mutate(st2)
+        r = build(os.path.join(TMP, "d2"), "--designs", st2)
+        ok(r.returncode != 0, "--designs: refused: " + what)
+    refused(lambda st: fake_export(os.path.join(st, "pr-x"), "x", 1), "a design named pr-*")
+    refused(lambda st: os.makedirs(os.path.join(st, "loose")), "a folder that is not an export")
+    refused(lambda st: json.dump({"number": 13, "url": "https://x"}, open(os.path.join(st, "pr-12", "pr.json"), "w")), "pr.json of another number")
+    refused(lambda st: json.dump({"number": 12, "url": "javascript:alert(1)"}, open(os.path.join(st, "pr-12", "pr.json"), "w")), "a url that is not https")
 
     # --out replaces only a directory this tool wrote
     keep = os.path.join(TMP, "keep")

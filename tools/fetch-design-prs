@@ -1,0 +1,31 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-2.0-or-later
+# tools/fetch-design-prs OUT: the files under designs/ of every open pull request of this repository
+# (none from a fork: their boards' JavaScript would run on the organization's github.io origin,
+# which only people with write access to this repository may put there) that changes designs/, at its
+# head: OUT/N/designs/ and OUT/N/pr.json ({number, title, url, head}). Only files are written; nothing
+# of the pull request runs. Needs gh (GH_TOKEN), jq, git with this repository as origin, and
+# GITHUB_REPOSITORY (OWNER/NAME). Prints the numbers fetched, one per line.
+set -eu
+[ $# -eq 1 ] || { echo "usage: tools/fetch-design-prs OUT" >&2; exit 2; }
+OUT=$1
+: "${GITHUB_REPOSITORY:?OWNER/NAME}"
+rm -rf "$OUT"
+mkdir -p "$OUT"
+# every API answer goes to a file first: a failed call fails the run (the last deployment stays)
+# instead of publishing a site without the pull requests
+list=$OUT/.open.tsv files=$OUT/.files.txt
+gh api --paginate "repos/$GITHUB_REPOSITORY/pulls?state=open&per_page=100" \
+	--jq '.[] | select(.head.repo.full_name == "'"$GITHUB_REPOSITORY"'") | [.number, .head.sha] | @tsv' > "$list"
+while IFS="$(printf '\t')" read -r n sha; do
+	case $n in '' | *[!0-9]*) continue ;; esac
+	case $sha in *[!0-9a-f]* | '') continue ;; esac
+	gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$n/files?per_page=100" --jq '.[].filename' > "$files"
+	grep -q '^designs/' "$files" || continue
+	git fetch -q --no-tags --depth=1 origin "$sha"
+	mkdir -p "$OUT/$n"
+	if git ls-tree -d "$sha" designs | grep -q .; then git archive "$sha" designs | tar -x -C "$OUT/$n"; fi
+	gh api "repos/$GITHUB_REPOSITORY/pulls/$n" --jq '{number, title, url: .html_url, head: .head.sha}' > "$OUT/$n/pr.json"
+	echo "$n"
+done < "$list"
+rm -f "$list" "$files"

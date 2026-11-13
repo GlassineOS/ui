@@ -1,0 +1,39 @@
+name: design pull request
+# A pull request of this repository that changes designs/ opened, changed or closed: start the site
+# build on main (reference.yml), which publishes the boards of every open design pull request (spec
+# 003 FR-017). Nothing deploys here (the Pages environment takes main only), and nothing of the pull
+# request runs: this job only asks for the build. On close, the link comment says the copy is gone.
+# Pull requests from forks are not published.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    paths: ['designs/**']
+permissions: {}
+jobs:
+  site:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    permissions:
+      actions: write
+      pull-requests: write
+    steps:
+      - name: closed, the link comment says so
+        if: github.event.action == 'closed'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          N: ${{ github.event.pull_request.number }}
+        run: |
+          # a failed lookup must fail the step, not post a second comment
+          set -o pipefail
+          mark='<!-- boards-pages -->'
+          id=$(gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$N/comments" \
+            --jq ".[] | select(.user.login == \"github-actions[bot]\" and (.body | startswith(\"$mark\"))) | .id" | head -n 1)
+          if [ -n "$id" ]; then
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$id" \
+              -f body="$mark
+          This pull request is closed; its boards leave the site with the next publish." >/dev/null
+          fi
+      - name: the site build on main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run reference.yml --repo "$GITHUB_REPOSITORY" --ref main

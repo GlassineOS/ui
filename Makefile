@@ -16,6 +16,7 @@
 #   make contrast-check  the contrast check of every component (Chromium; tools/in-alpine)
 #   make contrast-test   the contrast check's self-test and the known failures it must catch
 #   make reference       the browsable Interleaf reference (tools/gen-reference) in out/reference/
+#   make site            the reference and the design boards (tools/boards export) in out/reference/
 #   make serve-reference build it and serve it on http://127.0.0.1:8000/ (REFERENCE_HOST, REFERENCE_PORT)
 VERSION = 1.2.0
 SOMAJOR = 1
@@ -159,15 +160,24 @@ REFERENCE_PORT ?= 8000
 reference:
 	$(PYTHON) tools/gen-reference --out $(O)/reference
 
+# the published site (spec 002 FR-031, spec 003 FR-016, FR-017): the reference, and the boards of
+# every design under designs/ (tools/boards export, beside the reference at designs/PROJECT/, listed
+# on designs.html). SITE_PRS (tools/fetch-design-prs) adds the open pull requests' designs at
+# designs/pr-N/PROJECT/. Needs node.
+SITE_PRS ?=
+site:
+	sh tools/site-designs $(O)/site-designs $(SITE_PRS)
+	$(PYTHON) tools/gen-reference --out $(O)/reference --designs $(O)/site-designs
+
 serve-reference: reference
 	@echo "Interleaf reference: http://$(REFERENCE_HOST):$(REFERENCE_PORT)/ (Ctrl-C stops it)"
 	$(PYTHON) -m http.server --bind $(REFERENCE_HOST) --directory $(O)/reference $(REFERENCE_PORT)
 
 clean:
 	rm -f $(O)/libglassine-ui.so* $(O)/glassine-ui.pc $(O)/pc.vars
-	rm -rf $(O)/test $(O)/reference
+	rm -rf $(O)/test $(O)/reference $(O)/site-designs
 
 .PHONY: all generate install check check-forms check-lib check-boards boards-check designs-check designs-shots designs-icons designs-icons-check references references-update \
-	previews-check previews-update boards-references boards-references-update contrast-check contrast-test reference \
+	previews-check previews-update boards-references boards-references-update contrast-check contrast-test reference site \
 	serve-reference clean FORCE
 FORCE:

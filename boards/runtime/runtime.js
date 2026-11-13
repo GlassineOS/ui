@@ -33,8 +33,14 @@
   });
 
   const h = P.h;
-  const ROOT = new URL('/', location.href).href;
-  function fileOf(url) { const u = new URL(url); return decodeURIComponent(u.pathname.slice(1)); }
+  // the design folder: the server's root, or in an export the folder CFG.root names (relative to
+  // this support.js), so the boards work under any sub-path of a static site
+  const ROOT = CFG.root !== undefined ? new URL(CFG.root || './', CFG.script || location.href).href : new URL('/', location.href).href;
+  const ROOT_PATH = new URL(ROOT).pathname;
+  function fileOf(url) {
+    const p = new URL(url).pathname;
+    return decodeURIComponent(p.indexOf(ROOT_PATH) === 0 ? p.slice(ROOT_PATH.length) : p.slice(1));
+  }
 
   // ---- the visible error (003 FR-003) ---------------------------------------------------------
   function errorBox(board, lines) {
@@ -70,6 +76,11 @@
       helmets.add(key);
       const el = document.createElement(n.tag);
       for (const k of Object.keys(n.attrs)) el.setAttribute(k, n.attrs[k]);
+      // in an export the board's file names the vendored faces in place of Google Fonts, relative to
+      // the board (tools/boards export); a board imported from another folder still finds them
+      if (CFG.googleFonts && n.tag === 'link' && n.attrs.href && n.attrs.href.replace(/^(\.\.\/)+/, '') === CFG.googleFonts) {
+        el.setAttribute('href', new URL(CFG.googleFonts, ROOT).href);
+      }
       if (n.text) el.textContent = n.text;
       el.setAttribute('data-dc-helmet', doc.file);
       document.head.appendChild(el);

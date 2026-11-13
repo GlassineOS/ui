@@ -21,8 +21,13 @@ async function until(fn, what) {
 
 async function main() {
   let failures = 0;
+  // each test has its own deadline (E2E_TEST_TIMEOUT ms, default 180000), so a hang fails with its name
+  const LIMIT = Number(process.env.E2E_TEST_TIMEOUT) || 180000;
   const test = async (name, fn) => {
-    try { await fn(); process.stdout.write('ok - ' + name + '\n'); } catch (e) { failures++; process.stdout.write('not ok - ' + name + '\n  ' + String(e && e.stack || e).split('\n').join('\n  ') + '\n'); }
+    if (process.env.E2E_SKIP && new RegExp(process.env.E2E_SKIP).test(name)) { process.stdout.write('skip - ' + name + '\n'); return; }
+    let timer;
+    const deadline = new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('timed out after ' + LIMIT + ' ms')), LIMIT); });
+    try { await Promise.race([fn(), deadline]); process.stdout.write('ok - ' + name + '\n'); } catch (e) { failures++; process.stdout.write('not ok - ' + name + '\n  ' + String(e && e.stack || e).split('\n').join('\n  ') + '\n'); } finally { clearTimeout(timer); }
   };
 
   await test('every sample renders clean', async () => {
@@ -290,14 +295,143 @@ async function main() {
       } finally { await p.close(); }
     });
 
-    await test('preview: canvas boards in use, middle-button pan, zoom around the pointer', async () => {
+    // live reload: saving a board reloads the board view's frame and the canvas's data
+    await test('preview: live reload of the canvas and the board view', async () => {
+      const fs = require('fs');
+      const dir = path.join(ROOT, 'out', 'test', 'boards-live');
+      fs.rmSync(dir, { recursive: true, force: true });
+      fs.cpSync(path.join(ROOT, 'boards/samples'), dir, { recursive: true });
+      const live = await startServer({ design: dir, interleaf: INTERLEAF, live: true });
+      const p = await browser.newPage();
+      try {
+        let fetches = 0;
+        p.on('request', (r) => { if (/_boards\/api\/canvas\.json/.test(r.url())) fetches++; });
+        await p.goto(live.url + '_boards/', { waitUntil: 'load' });
+        await p.waitForSelector('.board');
+        await sleep(500);
+        const before = fetches;
+        fs.appendFileSync(path.join(dir, 'Card.dc.html'), '\n');
+        await until(() => fetches > before, 'the canvas fetches its data again');
+        await p.goto(live.url + '_boards/view.html?board=Counter.dc.html', { waitUntil: 'load' });
+        let f = await (await p.$('#frame')).contentFrame();
+        await f.waitForFunction('window.__boards && window.__boards.settled', { polling: 100 });
+        await f.evaluate(() => { window.__mark = 1; });
+        await sleep(500);
+        fs.appendFileSync(path.join(dir, 'Counter.dc.html'), '\n');
+        await until(async () => { f = await (await p.$('#frame')).contentFrame(); try { return await f.evaluate(() => !window.__mark && !!window.__boards); } catch (e) { return false; } }, 'the frame reloads');
+      } finally { await p.close(); await live.close(); }
+    });
+
+    // tools/boards export, served by a plain static server under a sub-path (as GitHub Pages does)
+    await test('export: every board and the preview pages work from a static folder under a sub-path', async () => {
+      const fs = require('fs'), http = require('http');
+      const { exportDesign } = require(path.join(ROOT, 'boards/lib/export.js'));
+      const { sendFile, within, describe } = require(path.join(ROOT, 'boards/lib/server.js'));
+      const R = require(path.join(ROOT, 'boards/lib/references.js'));
+      const out = path.join(ROOT, 'out', 'test', 'boards-export-e2e');
+      exportDesign({ design: path.join(ROOT, 'boards/samples'), out: out });
+      const PREFIX = '/ui/designs/samples/';
+      const st = http.createServer((req, res) => {
+        const p = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+        if (p === '/favicon.ico') { res.writeHead(204); res.end(); return; } // the host's, not the export's
+        if (!p.startsWith(PREFIX)) { res.writeHead(404); res.end(); return; }
+        let f = within(out, p.slice(PREFIX.length));
+        if (f && fs.existsSync(f) && fs.statSync(f).isDirectory()) f = path.join(f, 'index.html');
+        sendFile(res, f);
+      });
+      await new Promise((r) => st.listen(0, '127.0.0.1', r));
+      const base = 'http://127.0.0.1:' + st.address().port + PREFIX;
+      const p = await browser.newPage();
+      const errs = [];
+      p.on('pageerror', (e) => errs.push(String(e)));
+      p.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); });
+      try {
+        const faces = R.vendoredFaces(base, path.join(ROOT, 'interleaf'), path.join(ROOT, 'boards/samples'), null);
+        for (const b of describe(path.join(ROOT, 'boards/samples')).boards) {
+          const r = await renderBoard(browser, base, b.file, { width: b.size.width, height: b.size.height, faces: faces });
+          assert.ok(r.ok, b.file + ': ' + JSON.stringify(r, null, 1));
+        }
+        // the folder opens the canvas; the board view picks, links move the view, the board names itself from the folder
+        await p.goto(base, { waitUntil: 'load' });
+        await p.waitForSelector('.board');
+        assert.strictEqual(new URL(p.url()).pathname, PREFIX + '_boards/');
+        assert.strictEqual(await p.$$eval('.board', (b) => b.length), 3);
+        const links = await p.$$eval('.board .hit, .board .label .open', (b) => b.map((a) => a.href));
+        assert.strictEqual(links.length, 6);
+        assert.ok(links.every((h) => h.startsWith(base + '_boards/view.html?board=')), JSON.stringify(links));
+        await p.goto(base + '_boards/view.html?board=Main.dc.html&voice=stationery', { waitUntil: 'load' });
+        await p.waitForSelector('#controls select');
+        const f = await (await p.$('#frame')).contentFrame();
+        await f.waitForFunction('window.__boards && window.__boards.settled', { polling: 100 });
+        assert.strictEqual(await f.evaluate(() => window.__boards.board), 'Main.dc.html');
+        assert.match(await f.$eval('#settings', (e) => e.textContent), /voice=stationery/);
+        await Promise.all([p.waitForFunction(() => /board=Counter/.test(location.search), { polling: 100 }), f.$eval('#to-counter', (a) => a.click())]);
+        await p.goto(base + 'sub/Badge.dc.html', { waitUntil: 'load' });
+        await p.waitForFunction('window.__boards && window.__boards.settled', { polling: 100 });
+        assert.strictEqual(await p.evaluate(() => window.__boards.board), 'sub/Badge.dc.html');
+        assert.deepStrictEqual(await p.evaluate(() => window.__boards.errors), []);
+        assert.deepStrictEqual(errs, []);
+      } finally { await p.close(); st.closeAllConnections(); await new Promise((r) => st.close(r)); }
+    });
+
+    // spec 003 FR-018: the exported boards' Google Fonts links load the vendored faces; no other site
+    await test('export: Google Fonts links answered by the vendored faces, no request elsewhere', async () => {
+      const fs = require('fs'), http = require('http');
+      const { exportDesign } = require(path.join(ROOT, 'boards/lib/export.js'));
+      const { sendFile, within } = require(path.join(ROOT, 'boards/lib/server.js'));
+      const out = path.join(ROOT, 'out', 'test', 'boards-export-fonts');
+      exportDesign({ design: path.join(__dirname, 'fonts'), out: out });
+      const PREFIX = '/ui/designs/fonts/';
+      const st = http.createServer((req, res) => {
+        const p = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+        if (p === '/favicon.ico') { res.writeHead(204); res.end(); return; }
+        if (!p.startsWith(PREFIX)) { res.writeHead(404); res.end(); return; }
+        sendFile(res, within(out, p.slice(PREFIX.length)));
+      });
+      await new Promise((r) => st.listen(0, '127.0.0.1', r));
+      const base = 'http://127.0.0.1:' + st.address().port + PREFIX;
+      try {
+        for (const [file, fams] of [['Gf.dc.html', ['Kalam', 'IBM Plex Sans', 'Project Face', 'IBM Plex Mono']], ['sub/Part.dc.html', ['IBM Plex Mono']]]) {
+          // no faces given: any request to Google (or elsewhere) is reported as external
+          const r = await renderBoard(browser, base, file, { width: 300, height: 160, keepPage: true });
+          try {
+            assert.ok(r.ok, file + ': ' + JSON.stringify(r, null, 1));
+            assert.deepStrictEqual(r.external, []);
+            const got = await r.page.evaluate(async (fams) => {
+              await document.fonts.ready;
+              const links = Array.from(document.querySelectorAll('link[data-dc-helmet][rel=stylesheet]')).map((l) => l.href);
+              return { links: links, loaded: fams.filter((f) => Array.from(document.fonts).some((x) => x.family.replace(/"/g, '') === f && x.status === 'loaded')) };
+            }, fams);
+            assert.ok(got.links.length && got.links.every((h) => h === base + '_boards/fonts/google.css'), JSON.stringify(got.links));
+            assert.deepStrictEqual(got.loaded.sort(), fams.slice().sort());
+          } finally { await r.page.close(); }
+        }
+      } finally { st.closeAllConnections(); await new Promise((r) => st.close(r)); }
+    });
+
+    // the same canvas from the preview server and from a static export under a sub-path
+    const fs = require('fs'), http = require('http');
+    const { exportDesign } = require(path.join(ROOT, 'boards/lib/export.js'));
+    const exported = path.join(ROOT, 'out', 'test', 'boards-export-canvas');
+    exportDesign({ design: path.join(ROOT, 'boards/samples'), out: exported });
+    const { sendFile: sendStatic, within: withinStatic } = require(path.join(ROOT, 'boards/lib/server.js'));
+    const stat = http.createServer((req, res) => {
+      const u = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+      if (u === '/favicon.ico') { res.writeHead(204); res.end(); return; }
+      if (!u.startsWith('/ui/samples/')) { res.writeHead(404); res.end(); return; }
+      let f = withinStatic(exported, u.slice('/ui/samples/'.length));
+      if (f && fs.existsSync(f) && fs.statSync(f).isDirectory()) f = path.join(f, 'index.html');
+      sendStatic(res, f);
+    });
+    await new Promise((r) => stat.listen(0, '127.0.0.1', r));
+    for (const [what, at] of [['preview', srv.url], ['export', 'http://127.0.0.1:' + stat.address().port + '/ui/samples/']]) await test(what + ': canvas boards in use, middle-button pan, zoom around the pointer', async () => {
       const p = await browser.newPage();
       const errs = [];
       p.on('pageerror', (e) => errs.push(String(e)));
       p.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); });
       try {
         await p.setViewport({ width: 600, height: 400 });
-        await p.goto(srv.url + '_boards/', { waitUntil: 'load' });
+        await p.goto(at + '_boards/', { waitUntil: 'load' });
         await p.waitForSelector('.board');
         await p.evaluate(() => { localStorage.setItem('boards.live', '1'); localStorage.setItem('boards.use', '0'); localStorage.setItem('boards.zoom', '50'); });
         await p.reload({ waitUntil: 'load' });
@@ -344,6 +478,7 @@ async function main() {
         assert.deepStrictEqual(errs, []);
       } finally { await p.close(); }
     });
+    stat.closeAllConnections(); await new Promise((r) => stat.close(r));
   } finally {
     await browser.close();
     await srv.close();

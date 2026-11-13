@@ -37,6 +37,7 @@ make contrast-test       # its self-test and the known failures it must catch (C
 make generate            # write the generated forms (tools/gen-interleaf, then tools/gen-voices)
 make reference           # the Interleaf reference in out/reference/ (see "Reference")
 make serve-reference     # build it and serve it on http://127.0.0.1:8000/
+make site                # the published site: the reference and the design boards (see "Published boards")
 make references          # rendered images against their references (Chromium; see "References")
 make references-update   # write them after an intended change: tools/in-alpine make references-update
 ```
@@ -226,8 +227,9 @@ make serve-reference     # serve it on 127.0.0.1:8000 (REFERENCE_HOST=, REFERENC
 
 The picker remembers the choice in the browser; `?voice=editorial&scheme=eink&pen=2` on any page
 picks one. Every link is relative, so the same files work from disk, the local server and a
-sub-path. `.github/workflows/reference.yml` builds it on every push to main and publishes it to
-GitHub Pages (https://glassineos.github.io/ui/ once Pages uses GitHub Actions as its source).
+sub-path. `.github/workflows/reference.yml` builds it with the design boards (`make site`, see
+"Published boards") on every push to main and publishes it to GitHub Pages
+(https://glassineos.github.io/ui/ once Pages uses GitHub Actions as its source).
 
 ## Contrast check
 
@@ -462,6 +464,7 @@ tools/boards shot   BOARD_FILE [--voice V] [--scheme S] [--pen P] [--size WxH] [
                     [--interleaf DIR] [--timeout MS] [--chromium PATH]
 tools/boards shots  [--out out/shots] [--root DIR] [--jobs N] [--interleaf DIR] [--timeout MS] [--chromium PATH] < CHANGED_PATHS
 tools/boards references DESIGN_DIR [--update] [--refs DIR] [--out DIR] [--json FILE|-] [--board FILE]... [--allow-empty]
+tools/boards export  DESIGN_DIR OUT_DIR [--interleaf DIR] [--web DIR]
 tools/boards stream DESIGN_DIR [--interleaf DIR] [--web DIR] [--size WxH] [--chromium PATH]   # JSON lines on stdin/stdout
 tools/boards import  CANVAS_EXPORT_DIR DEST_DIR [--force]
 tools/in-alpine CMD...      # CMD in alpine:3.24 with the pinned Chromium and node, as the calling user
@@ -515,6 +518,15 @@ tools/in-alpine CMD...      # CMD in alpine:3.24 with the pinned Chromium and no
 - `shots` reads changed paths from stdin (`git diff --name-only`) and renders the boards they touch,
   each as `out/shots/<project>/<board>.png`, with a `report.json`: a changed board, or every board of a
   folder when anything else in it changed. `make designs-shots` is what CI runs for FR-015.
+- `export` writes the preview of a design folder as static files (spec 003 FR-016): the folder's files
+  under the same rules as the preview (no dotfiles, no link leading outside, a link inside copied as
+  its file, no `ds/` or `support.js` of its own), the preview's pages at `_boards/` with the canvas
+  data as `_boards/api/canvas.json` (no live reload) and Interleaf's fonts at `_boards/fonts/`, and in
+  every folder that holds a board its `support.js` (the runtime, told where the design folder is),
+  `ds/interleaf/` and `ds/web/` (the web form). A board's links to `fonts.googleapis.com` and
+  `fonts.gstatic.com` are rewritten to `_boards/fonts/google.css` (Interleaf's faces and the design's
+  `references.json` `fonts`) and `data:,` (no connection); the design folder itself is not changed. Every URL is relative, so `OUT_DIR` works from any sub-path; its `index.html` opens
+  the canvas. It replaces `OUT_DIR` only if it is empty or an earlier export (`.boards-export`).
 - `stream` is the live picture for another program (FR-013; the hub's design view): one headless
   Chromium on the preview of the folder, with live reload. Contract: live picture, version 1. It reads
   one JSON command per line on stdin and writes one JSON event per line on stdout; the end of stdin
@@ -538,6 +550,41 @@ tools/in-alpine CMD...      # CMD in alpine:3.24 with the pinned Chromium and no
   sample data. It leaves out claude.ai's own files (`artifact-type/`, `SKILL.md`, `index.html`, any
   `support.js`), the embedded `ds/` copy (in any folder) and symbolic links (never followed), removes
   `designSystems` from `canvas.json`, and lists what it left out.
+
+### Published boards
+
+The site (`make site`, published by `.github/workflows/reference.yml` with the reference, one
+deployment) holds every design folder as `tools/boards export` writes it, at
+`designs/PROJECT/` (the canvas at `designs/PROJECT/_boards/`, a board's view at
+`designs/PROJECT/_boards/view.html?board=FILE&voice=V&scheme=S&pen=P`), listed on `designs.html`,
+which every reference page links (spec 003 FR-016). Boards render in the viewer's browser; nothing
+rendered is stored, and a visitor's browser asks no other site: a board's Google Fonts links name
+`_boards/fonts/google.css` in the export (Interleaf's vendored faces and the design's own, from
+`references.json` `fonts`, as the checks answer them; a family in neither is not loaded).
+
+Each open pull request of this repository that changes `designs/` is on the site too, at
+`designs/pr-N/` (`designs/pr-N/PROJECT/_boards/`), with the boards of its latest commit (FR-017):
+
+- `.github/workflows/design-pr.yml` runs when such a pull request opens, gets a push, reopens or
+  closes, and starts `reference.yml` on main (`gh workflow run`); it deploys nothing and runs nothing
+  of the pull request. The Pages environment takes main only, and so does the build.
+- That build lists the open pull requests (`tools/fetch-design-prs`: not from forks, whose boards
+  would run on the site; only those whose files include `designs/`), reads each one's `designs/` at
+  its head with `git archive` (files only), and exports them with main's tools and main's Interleaf
+  (`tools/site-designs`; one that fails to export is left out with a warning). A closed pull request
+  is no longer listed, so its copy is gone from that publication.
+- A published pull request's boards run their JavaScript on the organization's github.io origin,
+  next to the reference. That is acceptable only because a pull request from this repository comes
+  from someone with write access to it already; this is why pull requests from forks are never
+  published. Do not relax that rule.
+- After the deployment, each published pull request gets one comment (marked `<!-- boards-pages -->`)
+  with the links, edited in place on every publish; on close it says the copy is gone.
+
+```
+make site                          # out/reference/ with designs.html and designs/ (needs node)
+make site SITE_PRS=DIR             # and the pull requests of DIR (DIR/N/pr.json, DIR/N/designs/)
+GITHUB_REPOSITORY=OWNER/ui tools/fetch-design-prs DIR   # what CI does to fill DIR (gh, jq, git)
+```
 
 What a board can do: its logic is JavaScript from the export, and `preview` and `check` run it as it
 is, so open only boards you would run anyway. A board page has the same origin as the preview's own

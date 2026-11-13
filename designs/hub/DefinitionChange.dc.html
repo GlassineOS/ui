@@ -40,6 +40,18 @@
       <p style="max-width: var(--measure)">{{ c.why }}</p>
     </section>
 
+    <section class="wf-stack" aria-labelledby="dc-ba">
+      <div class="wf-row" style="justify-content: space-between">
+        <h3 class="wf-h3" id="dc-ba">Before and after</h3>
+        <div class="wf-seg" role="group" aria-label="Show">
+          <span class="wf-wide-only"><button type="button" class="il-btn" aria-pressed="{{ v.split }}" onClick="{{ toSplit }}" id="dc-v-split">Side by side</button></span>
+          <button type="button" class="il-btn" aria-pressed="{{ v.unified }}" onClick="{{ toUnified }}" id="dc-v-unified">One column</button>
+          <button type="button" class="il-btn" aria-pressed="{{ onlyP }}" onClick="{{ toggleOnly }}" id="dc-only">Only what changes</button>
+        </div>
+      </div>
+      <dc-import name="MachineOutlineDiff" workflow="{{ c.workflow }}" request="" fixed="{{ fixed }}" mode="{{ odMode }}" only="{{ only }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,700px"></dc-import>
+    </section>
+
     <section class="wf-stack wf-wide-only" aria-labelledby="dc-map">
       <h3 class="wf-h3" id="dc-map">Where it changes the machine</h3>
       <dc-import name="MachineDiagram" workflow="{{ c.workflow }}" sid="" draft="{{ true }}" marks="{{ true }}" fixed="{{ fixed }}" legend="{{ false }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,600px"></dc-import>
@@ -94,9 +106,9 @@
   </article>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"bare":{"editor":"boolean","default":false},"$preview":{"width":1000,"height":2600}}'>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"bare":{"editor":"boolean","default":false},"$preview":{"width":1000,"height":3300}}'>
 class Component extends DCLogic {
-  constructor(p) { super(p); this.state = { a: '', fixed: false }; }
+  constructor(p) { super(p); this.state = { a: '', fixed: false, view: 'split', only: true }; }
   renderVals() {
     const P = this.props, M = window.HUB.machine, c = M.change, st = this.state, a = st.a;
     const n = c.warnings.length, words = ['none', 'one', 'two', 'three', 'four'];
@@ -110,6 +122,9 @@ class Component extends DCLogic {
     const voice = P.voice || 'white', scheme = P.scheme || 'paper';
     return {
       theme: voice + '-' + scheme, pen: P.pen || '1', voice, scheme, c, fixed: st.fixed,
+      v: { split: String(st.view === 'split'), unified: String(st.view === 'unified') }, odMode: st.view,
+      toSplit: () => this.setState({ view: 'split' }), toUnified: () => this.setState({ view: 'unified' }),
+      only: st.only, onlyP: String(st.only), toggleOnly: () => this.setState({ only: !st.only }),
       pad: P.bare ? 'background: transparent' : 'padding: var(--space-6) max(var(--space-4), 2vw); min-height: 100vh',
       nSens: String(n), nSensWords: words[n] || String(n),
       warnings: c.warnings, notes: c.notes, diffStat: '+' + adds + ' −' + dels,

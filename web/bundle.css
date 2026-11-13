@@ -195,6 +195,13 @@
 [data-theme^="stationery"] .il-code { border-radius: var(--radius-paper); box-shadow: 0 0 0 1px rgba(40, 25, 10, 0.3), 0 3px 6px rgba(0, 0, 0, 0.15); background: var(--paper); }
 [data-theme^="stationery"] .il-code__head { border-bottom: 2px solid var(--index-red); }
 [data-theme^="stationery"] .il-code pre { padding: 0 0 14px; line-height: 28px; background: repeating-linear-gradient(180deg, transparent 0 27px, var(--index-line) 27px 28px), var(--paper); }
+/* Changed lines (a diff): told apart by a sign, weight and a strike, never by colour alone. */
+.il-code .add, .il-code .del { position: relative; padding-left: 36px; }
+.il-code .add::before, .il-code .del::before { position: absolute; left: 14px; font-weight: 600; }
+.il-code .add { font-weight: 600; box-shadow: inset 4px 0 0 var(--ink); }
+.il-code .add::before { content: "+"; }
+.il-code .del { color: var(--ink-soft); text-decoration: line-through; text-decoration-thickness: 1.5px; }
+.il-code .del::before { content: "\2212"; text-decoration: none; }
 
 /* ---------- Table ---------- */
 .il-table-wrap { overflow-x: auto; }
@@ -240,6 +247,49 @@
 [data-theme^="stationery"] .il-footer { background: var(--leather-dark); border-top: 0; color: var(--on-accent-soft); }
 [data-theme^="stationery"] .il-footer a { color: var(--on-accent); }
 [data-theme^="stationery"] .il-footer a:hover { color: var(--gilt); }
+
+/* ---------- Chip ----------
+   A short state label beside a name (a session's state, a check, a count). The state is told
+   by the edge and by a word, never by the fill alone: solid = holds, dashed = moving,
+   heavy = waits for someone, double = sent up, soft = over. */
+.il-chip { display: inline-flex; align-items: center; gap: var(--space-1); min-height: 26px; padding: 0 var(--space-2); box-sizing: border-box; border: 1.5px solid var(--ink); border-radius: var(--radius-pill); background: var(--paper); color: var(--ink); font-family: var(--font-mono); font-size: 12px; font-weight: 600; letter-spacing: 0.02em; line-height: 1.2; white-space: nowrap; vertical-align: middle; }
+.il-chip svg { flex: none; width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.il-chip__sub { font-weight: 400; }
+.il-chip--moving { border-style: dashed; }
+.il-chip--waits { border-width: 2.5px; background: var(--highlight); }
+.il-chip--up { border-width: 3.5px; border-style: double; }
+.il-chip--over { border-width: 1px; border-color: var(--rule); background: var(--sheet); color: var(--ink-soft); }
+.il-chip--lg { min-height: 34px; padding: 0 var(--space-3); font-size: 14px; }
+[data-theme^="editorial"] .il-chip { border-radius: var(--radius-none); border-width: 1px; font-family: var(--font-serif); font-size: 15px; font-weight: 400; font-variant: small-caps; text-transform: lowercase; letter-spacing: 0.06em; }
+[data-theme^="editorial"] .il-chip--waits { border-width: 2px; }
+[data-theme^="editorial"] .il-chip--up { border-width: 3px; }
+[data-theme^="editorial"] .il-chip--lg { font-size: 17px; }
+[data-theme^="stationery"] .il-chip { border-radius: var(--radius-chip); border-width: 1px; border-color: var(--gold); font-family: var(--font-garamond); font-size: 16px; font-weight: 500; font-variant: small-caps; text-transform: lowercase; letter-spacing: 0.08em; }
+[data-theme^="stationery"] .il-chip--waits { border-width: 2px; border-color: var(--ink); }
+[data-theme^="stationery"] .il-chip--up { border-width: 3px; border-color: var(--ink); }
+[data-theme^="stationery"] .il-chip--over { border-color: var(--rule); }
+[data-theme^="stationery"] .il-chip--lg { font-size: 18px; }
+
+/* ---------- Dialog ----------
+   A modal question over the page: one title, what it changes, and two or three answers.
+   The page behind is dimmed; on e-ink it is covered by one flat grey (no translucency). */
+.il-dialog-scrim { position: fixed; inset: 0; z-index: 50; display: flex; align-items: flex-start; justify-content: center; padding: var(--space-8) var(--space-4); box-sizing: border-box; overflow-y: auto; background: color-mix(in srgb, var(--grey-0) 45%, transparent); }
+[data-theme="eink"] .il-dialog-scrim, [data-theme="white-eink"] .il-dialog-scrim, [data-theme="editorial-eink"] .il-dialog-scrim, [data-theme="stationery-eink"] .il-dialog-scrim { background: var(--shade); }
+.il-dialog { width: 100%; max-width: 640px; display: flex; flex-direction: column; box-sizing: border-box; background: var(--paper); color: var(--ink); border-radius: var(--v-card-radius); box-shadow: var(--v-card-edge); font-family: var(--v-text); font-size: var(--v-body); line-height: var(--v-lh); }
+.il-dialog__head { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-5) var(--space-6) var(--space-4); border-bottom: var(--v-title-rule); }
+.il-dialog__title { margin: 0; font-family: var(--v-head); font-size: calc(var(--v-h2) * 0.85); font-weight: var(--v-h2-w); font-variant: var(--v-h2-variant); letter-spacing: var(--v-h2-ls); line-height: 1.2; text-wrap: balance; }
+.il-dialog__body { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-5) var(--space-6); }
+.il-dialog__body p { margin: 0; }
+.il-dialog__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-3); padding: var(--space-4) var(--space-6) var(--space-5); border-top: var(--v-row-rule); }
+.il-btn--primary { background: var(--accent); color: var(--on-accent); font-weight: 600; }
+[data-theme^="editorial"] .il-btn--primary { background: var(--accent); }
+[data-theme^="stationery"] .il-dialog { border-radius: var(--radius-paper); box-shadow: var(--card-stack); }
+@media (max-width: 560px) {
+  .il-dialog-scrim { padding: var(--space-4); }
+  .il-dialog__head, .il-dialog__body { padding-left: var(--space-4); padding-right: var(--space-4); }
+  .il-dialog__actions { flex-direction: column-reverse; align-items: stretch; padding-left: var(--space-4); padding-right: var(--space-4); }
+  .il-dialog__actions .il-btn { justify-content: center; }
+}
 
 @media (prefers-reduced-motion: reduce) { .il-page * { transition: none !important; } }
 

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Machine outline diff</title>
+<script src="./support.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="workflow.css">
+</helmet>
+<div class="wf il-page" data-theme="{{ theme }}" data-pen="{{ pen }}" style="background: transparent">
+  <div class="wf-od" role="group" aria-label="{{ aria }}">
+    <p class="wf-small wf-soft" style="padding-bottom: var(--space-2)">{{ stat }}</p>
+    <sc-if value="{{ split }}" hint-placeholder-val="{{ true }}">
+      <div class="wf-od__split" style="display: flex; flex-direction: column">
+        <div class="wf-od__head"><span class="il-label">Before · v{{ vA }}</span><span class="il-label">After · v{{ vB }} {{ draftWord }}</span></div>
+        <sc-for list="{{ rows }}" as="r" hint-placeholder-count="14">
+          <sc-if value="{{ r.fold }}" hint-placeholder-val="{{ false }}"><div class="wf-od__row"><span class="wf-od__fold">{{ r.foldText }}</span></div></sc-if>
+          <sc-if value="{{ r.line }}" hint-placeholder-val="{{ true }}">
+            <div class="wf-od__row" data-kind="{{ r.kind }}" data-depth="{{ r.depth }}">
+              <div class="wf-od__cell" data-mark="{{ r.L.mark }}" data-t="{{ r.L.t }}" data-s="{{ r.L.s }}" style="--depth: {{ r.depth }}"><span class="wf-sr">{{ r.L.sr }}</span><span class="wf-od__title">{{ r.L.title }}</span><sc-if value="{{ r.L.hasSub }}" hint-placeholder-val="{{ false }}"><span class="wf-od__sub">{{ r.L.sub }}</span></sc-if><sc-if value="{{ r.L.hasTag }}" hint-placeholder-val="{{ false }}"><span class="wf-od__tag">{{ r.L.tag }}</span></sc-if></div>
+              <div class="wf-od__cell" data-mark="{{ r.R.mark }}" style="--depth: {{ r.depth }}"><span class="wf-sr">{{ r.R.sr }}</span><span class="wf-od__title">{{ r.R.title }}</span><sc-if value="{{ r.R.hasSub }}" hint-placeholder-val="{{ false }}"><span class="wf-od__sub">{{ r.R.sub }}</span></sc-if><sc-if value="{{ r.R.hasTag }}" hint-placeholder-val="{{ false }}"><span class="wf-od__tag">{{ r.R.tag }}</span></sc-if></div>
+            </div>
+          </sc-if>
+        </sc-for>
+      </div>
+    </sc-if>
+    <div class="{{ oneCls }}">
+      <div class="wf-od__head" style="grid-template-columns: minmax(0, 1fr)"><span class="il-label">v{{ vA }} → v{{ vB }} {{ draftWord }}, in one column</span></div>
+      <sc-for list="{{ rows }}" as="r" hint-placeholder-count="14">
+        <sc-if value="{{ r.fold }}" hint-placeholder-val="{{ false }}"><div class="wf-od__row" style="grid-template-columns: minmax(0, 1fr)"><span class="wf-od__fold">{{ r.foldText }}</span></div></sc-if>
+        <sc-if value="{{ r.line }}" hint-placeholder-val="{{ true }}">
+          <div class="wf-od__row" data-kind="{{ r.kind }}" data-depth="{{ r.depth }}" style="grid-template-columns: minmax(0, 1fr)">
+            <sc-for list="{{ r.U }}" as="c" hint-placeholder-count="1">
+              <div class="wf-od__cell" data-mark="{{ c.mark }}" data-t="{{ c.t }}" data-s="{{ c.s }}" style="--depth: {{ r.depth }}"><span class="wf-sr">{{ c.sr }}</span><span class="wf-od__title">{{ c.title }}</span><sc-if value="{{ c.hasSub }}" hint-placeholder-val="{{ false }}"><span class="wf-od__sub">{{ c.sub }}</span></sc-if><sc-if value="{{ c.hasTag }}" hint-placeholder-val="{{ false }}"><span class="wf-od__tag">{{ c.tag }}</span></sc-if></div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"workflow":{"editor":"enum","options":["implement"],"default":"implement"},"request":{"editor":"enum","options":["r1",""],"default":"r1"},"fixed":{"editor":"boolean","default":true},"mode":{"editor":"enum","options":["split","unified"],"default":"split"},"only":{"editor":"boolean","default":false},"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":1000,"height":1500}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const P = this.props, M = window.HUB.machine, wf = P.workflow || 'implement';
+    const req = P.request === undefined ? 'r1' : P.request;
+    const a = M.defs[wf], b = req ? M.requested(req) : M.def(wf, true, P.fixed !== false);
+    const D = M.outlineDiff(a, b);
+    const T = { added: '+ added', removed: '− removed', changed: '~ changed', moved: '↕ moved' };
+    const SR = { added: 'Added: ', removed: 'Removed: ', changed: 'Changed: ', moved: 'Moved: ', old: 'Before: ' };
+    const face = (r, x) => {
+      if (!x) return null;
+      if (r.kind === 'state') return { title: x.name + (x.tag ? '  · ' + x.tag : ''), sub: '' };
+      if (r.kind === 'exit') return { title: x.n + ' → ' + x.to, sub: x.why };
+      return { title: (r.change === 'removed' ? '− ' : '+ ') + x.text, sub: '' };
+    };
+    const cell = (f, mark, tag, sr, t, s2) => f ? { ...f, hasSub: !!f.sub, mark, tag, hasTag: !!tag, sr, t: t || '', s: s2 || '' } : { title: '', sub: '', hasSub: false, mark: 'none', tag: '', hasTag: false, sr: '', t: '', s: '' };
+    const rows = [];
+    let fold = [];
+    const flush = (depth) => { if (fold.length) rows.push({ fold: true, line: false, foldText: '⋯ ' + fold.length + ' unchanged: ' + fold.join(', ') }); fold = []; };
+    /* Only what changes keeps the other exits of a state that changes itself (not only inside a child):
+       their order decides which one moves. */
+    const owner = [], own = D.map((r) => { if (r.kind === 'state') { owner[r.depth] = r; return null; } return owner[r.depth - 1]; });
+    const direct = new Set(); D.forEach((r, i) => { if (own[i] && r.change !== 'same') direct.add(own[i]); });
+    D.forEach((r, i) => {
+      const ch = r.change;
+      const hide = P.only && ch === 'same' && !(r.kind === 'state' && r.holds) && !(r.kind === 'exit' && direct.has(own[i]));
+      if (hide) { if (r.kind === 'state' && r.depth === 0) fold.push(r.name); else if (r.kind === 'state') fold.push(r.name); return; }
+      flush();
+      const fa = face(r, r.before), fb = face(r, r.after);
+      /* The old side of a change strikes only what changed: where it goes, or why. */
+      const xt = ch === 'changed' && r.before.to !== r.after.to ? 'x' : '', xs = ch === 'changed' && r.before.why !== r.after.why ? 'x' : '';
+      const mv = ch === 'moved' ? '↕ moved ' + r.before.n + ' → ' + r.after.n : '';
+      const L = ch === 'added' ? cell(null) : cell(fa, ch === 'removed' ? 'del' : ch === 'changed' ? 'old' : ch === 'moved' ? 'moved' : '', ch === 'removed' ? T.removed : '', ch === 'same' ? '' : SR.old, xt, xs);
+      const R = ch === 'removed' ? cell(null) : cell(fb, ch === 'added' || ch === 'changed' ? 'add' : ch === 'moved' ? 'moved' : '', ch === 'added' ? T.added : ch === 'changed' ? T.changed + (r.before.n !== r.after.n ? ', ' + r.before.n + ' → ' + r.after.n : '') : mv, ch === 'same' ? '' : SR[ch]);
+      const U = ch === 'changed' ? [cell(fa, 'old', '', SR.old, xt, xs), cell(fb, 'add', R.tag, SR.changed)] : ch === 'removed' ? [cell(fa, 'del', T.removed, SR.removed)] : [cell(fb, ch === 'added' ? 'add' : ch === 'moved' ? 'moved' : '', R.tag, ch === 'same' ? '' : SR[ch])];
+      rows.push({ fold: false, line: true, kind: r.kind === 'state' ? 'state' : 'detail', depth: r.depth, L, R, U });
+    });
+    flush();
+    const n = (k) => D.filter((r) => r.change === k).length;
+    const split = (P.mode || 'split') === 'split';
+    return {
+      theme: (P.voice || 'white') + '-' + (P.scheme || 'paper'), pen: P.pen || '1', rows, split,
+      oneCls: split ? 'wf-od__one wf-od__fallback' : 'wf-od__one',
+      vA: String(a.version), vB: String(b.version), draftWord: b.draft ? 'draft' : '',
+      stat: [n('added') + ' added', n('removed') + ' removed', n('changed') + ' changed', n('moved') + ' moved'].join(' · ') + (P.only ? ' · only what changes, and the states that hold it' : ''),
+      aria: wf + ' before and after, as an outline'
+    };
+  }
+}
+</script>
+</body>
+</html>

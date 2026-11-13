@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Machine panel</title>
+<script src="./support.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="workflow.css">
+</helmet>
+<section class="wf il-page wf-panel" data-theme="{{ theme }}" data-pen="{{ pen }}" aria-label="Workflow of {{ sid }}" style="{{ frame }}">
+  <div class="wf-stack wf-stack--wide">
+    <div class="wf-row">
+      <sc-if value="{{ head }}" hint-placeholder-val="{{ true }}"><h2 class="wf-h2">Workflow</h2>
+      <dc-import name="StateChip" sid="{{ sid }}" size="lg" kind="{{ chip.kind }}" label="{{ chip.label }}" note="{{ chip.note }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="300px,34px"></dc-import></sc-if>
+      <span class="wf-small wf-soft" style="flex: 1 1 240px">{{ defLine }}</span>
+      <a class="il-btn" href="WorkflowEditor.dc.html">Open {{ wfName }} in the editor</a>
+    </div>
+
+    <div class="wf-only-wide"><dc-import name="MachineDiagram" workflow="{{ wfName }}" sid="{{ sid }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,660px"></dc-import></div>
+
+    <div class="wf-cols">
+      <div class="wf-stack wf-stack--wide">
+        <section class="wf-stack" aria-labelledby="mp-ex">
+          <h3 class="wf-h3" id="mp-ex">Exits from {{ exFrom }}, in order</h3>
+          <p class="wf-small wf-soft">The first exit that holds moves. A signal ({{ signal }}) made the hub try them all.</p>
+          <ol class="wf-exits">
+            <sc-for list="{{ exits }}" as="e" hint-placeholder-count="4">
+              <li class="wf-exit" data-holds="{{ e.holds }}" data-waits="{{ e.waits }}">
+                <div class="wf-exit__head"><span class="wf-exit__n">{{ e.n }}</span><span class="wf-exit__to">→ {{ e.to }}</span><span class="wf-by">{{ e.by }}</span><span class="{{ e.chip }}">{{ e.result }}</span></div>
+                <sc-if value="{{ e.hasWhen }}" hint-placeholder-val="{{ false }}"><p class="wf-small wf-quote">{{ e.when }}</p></sc-if>
+                <ul class="wf-checks wf-small" aria-label="Checks">
+                  <sc-for list="{{ e.checks }}" as="c" hint-placeholder-count="2"><li><span class="wf-check" aria-hidden="true">{{ c.mark }}</span><span>{{ c.text }} <span class="wf-soft">· {{ c.value }}</span><span class="wf-sr">{{ c.sr }}</span></span></li></sc-for>
+                </ul>
+                <sc-if value="{{ e.act }}" hint-placeholder-val="{{ false }}">
+                  <ul class="wf-stack wf-small" aria-label="Evidence">
+                    <sc-for list="{{ evidence }}" as="v" hint-placeholder-count="2"><li class="{{ v.cls }}"><span class="wf-by">{{ v.k }}</span> {{ v.v }}</li></sc-for>
+                  </ul>
+                  <p class="wf-small">It widens the grant, so it waits until you confirm it.</p>
+                  <div class="wf-actions">
+                    <button type="button" class="il-btn il-btn--primary" id="mp-review" onClick="{{ openConfirm }}">See what fix adds…</button>
+                    <button type="button" class="il-btn" onClick="{{ keep }}">Keep it in review</button>
+                  </div>
+                </sc-if>
+              </li>
+            </sc-for>
+          </ol>
+        </section>
+        <sc-if value="{{ confirmed }}" hint-placeholder-val="{{ false }}">
+          <section class="wf-next" data-kind="moving" aria-live="polite">
+            <span class="il-label">Moving</span>
+            <h3 class="wf-h3">Resuming in work › fix under a new launch</h3>
+            <p class="wf-small">You confirmed at 11:55. The hub stops the session at the end of its turn and resumes the same conversation with the grant of fix. The reviewer stops (on_exit stop); the QA engineer is kept (on_exit keep).</p>
+          </section>
+        </sc-if>
+        <sc-if value="{{ kept }}" hint-placeholder-val="{{ false }}">
+          <section class="wf-next" aria-live="polite">
+            <span class="il-label">Set aside</span>
+            <h3 class="wf-h3">Stays in review</h3>
+            <p class="wf-small">Logged as your call. The hub tries the exits again at the next signal; the round count is unchanged.</p>
+          </section>
+        </sc-if>
+
+        <section class="wf-stack" aria-labelledby="mp-sub">
+          <h3 class="wf-h3" id="mp-sub">Running under {{ exFrom }}</h3>
+          <p class="wf-small wf-soft">Sessions this state manages. Each runs a workflow of its own, capped at this session’s grant; what it returns is a fact for the exits above.</p>
+          <ul class="wf-subm">
+            <sc-for list="{{ children }}" as="c" hint-placeholder-count="2">
+              <li>
+                <span class="wf-stack" style="gap: var(--space-1)">
+                  <span class="wf-row"><span class="wf-mono" style="font-weight: 600">{{ c.sid }}</span><dc-import name="StateChip" sid="{{ c.sid }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="200px,28px"></dc-import></span>
+                  <span class="wf-small">{{ c.persona }} · workflow {{ c.workflow }} v{{ c.version }} · returned {{ c.returned }} · {{ c.exit }}</span>
+                  <ol class="wf-subm__path" aria-label="States of {{ c.workflow }}"><sc-for list="{{ c.path }}" as="p" hint-placeholder-count="3"><li data-at="{{ p.at }}">{{ p.name }}{{ p.arrow }}</li></sc-for></ol>
+                </span>
+                <a class="il-btn" href="Sessions.dc.html">Its session</a>
+              </li>
+            </sc-for>
+          </ul>
+        </section>
+
+        <div class="wf-only-narrow">
+          <section class="wf-stack" aria-labelledby="mp-ol">
+            <h3 class="wf-h3" id="mp-ol">The whole machine</h3>
+            <dc-import name="MachineOutline" workflow="{{ wfName }}" sid="{{ sid }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,1200px"></dc-import>
+          </section>
+        </div>
+
+        <section class="wf-stack" aria-labelledby="mp-hist">
+          <h3 class="wf-h3" id="mp-hist">History</h3>
+          <p class="wf-small wf-soft">Every evaluation and move: the signal, who proposed it, its evidence and the hub’s checks.</p>
+          <ol class="wf-hist">
+            <sc-for list="{{ hist }}" as="h" hint-placeholder-count="5">
+              <li data-kind="{{ h.kind }}">
+                <span class="wf-hist__at">{{ h.at }}</span>
+                <span class="wf-hist__dot" aria-hidden="true"></span>
+                <div class="wf-hist__body">
+                  <span><strong>{{ h.move }}</strong> · {{ h.what }} <span class="wf-by">by {{ h.by }}</span></span>
+                  <span class="wf-small">{{ h.result }}</span>
+                  <details>
+                    <summary>Evidence and checks</summary>
+                    <dl class="wf-kv wf-small">
+                      <dt>Signal</dt><dd>{{ h.signal }}</dd>
+                      <dt>Evidence</dt><dd>{{ h.evidence }}</dd>
+                      <dt>Checks</dt><dd>{{ h.checks }}</dd>
+                      <sc-if value="{{ h.hasJudge }}" hint-placeholder-val="{{ false }}"><dt>Judge</dt><dd>{{ h.judge }}</dd></sc-if>
+                    </dl>
+                  </details>
+                </div>
+              </li>
+            </sc-for>
+          </ol>
+        </section>
+      </div>
+
+      <div class="wf-stack wf-stack--wide">
+        <section class="wf-box" aria-labelledby="mp-count">
+          <h3 class="wf-h3" id="mp-count">Counters</h3>
+          <dl class="wf-kv wf-small">
+            <sc-for list="{{ counters }}" as="c" hint-placeholder-count="5"><dt>{{ c.k }}</dt><dd>{{ c.v }}</dd></sc-for>
+          </dl>
+          <p class="wf-small wf-soft">Exits test them: review sends the work up at 3 rounds, and work sends it up when tokens pass 600 k.</p>
+        </section>
+
+        <section class="wf-box" aria-labelledby="mp-ov">
+          <h3 class="wf-h3" id="mp-ov">Move by hand</h3>
+          <p class="wf-small">To any state, inside work or out. Logged with your reason. A move that widens the grant asks you to confirm what it adds.</p>
+          <label class="wf-field"><span>Move to</span>
+            <select id="mp-to" onChange="{{ pickTo }}" value="{{ to }}">
+              <sc-for list="{{ targets }}" as="t" hint-placeholder-count="8"><option value="{{ t.id }}">{{ t.label }}</option></sc-for>
+            </select>
+          </label>
+          <label class="wf-field"><span>Reason</span><input type="text" placeholder="Why, in a line" value=""></label>
+          <div class="wf-actions">
+            <button type="button" class="il-btn" id="mp-move" onClick="{{ moveByHand }}">Move by hand</button>
+          </div>
+          <div class="wf-section">
+            <div class="wf-actions">
+              <button type="button" class="il-btn">Roll back the last move</button>
+              <button type="button" class="il-btn" aria-pressed="{{ pausedP }}" onClick="{{ togglePause }}">{{ pauseLabel }}</button>
+            </div>
+            <p class="wf-small wf-soft">{{ pauseNote }}</p>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+  <sc-if value="{{ showConfirm }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="WidenConfirm" sid="{{ sid }}" to="{{ confirmTo }}" layer="{{ layer }}" on-close="{{ closeConfirm }}" on-confirm="{{ doConfirm }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,100%"></dc-import>
+  </sc-if>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"sid":{"editor":"enum","options":["kernel-lut"],"default":"kernel-lut"},"open":{"editor":"enum","options":["none","confirm"],"default":"none"},"layer":{"editor":"enum","options":["absolute","fixed"],"default":"absolute"},"framed":{"editor":"boolean","default":true},"onMove":{"editor":null},"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":1040,"height":2000}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { confirm: p.open === 'confirm', done: '', to: 'implement', paused: false }; }
+  renderVals() {
+    const P = this.props, M = window.HUB.machine, sid = P.sid || 'kernel-lut';
+    const m = M.sessions[sid], pn = M.panel[sid], d = M.defs[m.workflow], st = this.state;
+    const voice = P.voice || 'white', scheme = P.scheme || 'paper', pen = P.pen || '1';
+    const T = (id) => d.transitions.find((t) => t.id === id), G = { judge: 'judged', fact: 'facts', counter: 'counter', hand: 'by hand' };
+    const set = (done) => { this.setState({ confirm: false, done }); if (P.onMove) P.onMove(done); };
+    const exits = pn.exits.map((x, i) => {
+      const t = T(x.t), waits = x.holds && !st.done;
+      return { n: x.inherited ? 'then, from ' + x.inherited : String(i + 1), to: t.to, by: G[t.by], when: t.when ? '“' + t.when + '”' : '', hasWhen: !!t.when,
+        holds: String(x.holds), waits: String(waits), act: waits, result: x.holds ? (st.done === 'confirmed' ? 'moved' : st.done === 'kept' ? 'set aside by you' : x.result) : x.result,
+        chip: 'il-chip' + (x.holds ? (st.done ? ' il-chip--moving' : ' il-chip--waits') : ' il-chip--over'),
+        checks: x.checks.map(([c, ok, v]) => ({ text: c, value: v, mark: ok ? '✓' : '✗', sr: ok ? ', holds' : ', fails' })) };
+    });
+    const hist = (st.done === 'confirmed' ? [{ at: '11:55', from: 'review', to: 'fix', what: 'moved', by: 'you', signal: 'your confirm', evidence: 'verdict = fail, 3 findings', checks: 'reviewer.verdict == fail ✓ · rounds.review < 3 ✓', result: 'widened: you confirmed · resuming under launch 3 · stopped review-kernel-212, kept qa-kernel-212', kind: 'holds' }]
+      : st.done === 'kept' ? [{ at: '11:55', from: 'review', to: 'fix', what: 'set aside', by: 'you', signal: 'your answer', evidence: 'kept in review', checks: '—', result: 'stayed in review', kind: 'hand' }] : [])
+      .concat(pn.history).map((h) => ({ ...h, move: h.from ? h.from + ' → ' + h.to : 'in ' + h.to, hasJudge: !!h.judge }));
+    const children = pn.children.map((c) => { const wd = M.defs[c.workflow]; const gone = st.done === 'confirmed' && /^stops/.test(c.on_exit); return { ...c, exit: gone ? 'stopped at 11:55, when review was left' : c.on_exit, version: String(wd.version), path: wd.path.map((p, i) => ({ name: p, at: p === c.at ? 'now' : 'other', arrow: i < wd.path.length - 1 ? ' →' : '' })) }; });
+    const label = (k) => M.chain(d, k).join(' › ');
+    const nowS = st.done === 'confirmed' ? 'fix' : m.state;
+    const targets = Object.keys(d.states).filter((k) => d.states[k].kind !== 'parent' && k !== nowS).map((k) => ({ id: k, label: label(k) + (d.states[k].kind === 'final' ? ' (final)' : '') }));
+    return {
+      theme: voice + '-' + scheme, pen, voice, scheme, sid, head: P.framed !== false, now: nowS, exFrom: m.state,
+      chip: st.done === 'confirmed' ? { kind: 'moving', label: 'fix', note: 'resuming under launch 3' } : st.done === 'kept' ? { kind: 'holds', label: 'review', note: 'kept by you' } : { kind: '', label: '', note: '' },
+      frame: P.framed === false ? 'padding: var(--space-5) 0' : 'padding: var(--space-6); border-radius: var(--v-card-radius); box-shadow: var(--v-card-edge)',
+      wfName: m.workflow, defLine: m.workflow + ' v' + d.version + ' · ' + d.scope + ' · in ' + label(m.state) + ' · owner ' + (m.owner || '—'),
+      signal: pn.history[0].signal, exits, evidence: pn.evidence.map(([k, v]) => ({ k: k === 'fact' ? 'Fact' : 'Quote', v, cls: k === 'quote' ? 'wf-quote' : '' })),
+      confirmed: st.done === 'confirmed', kept: st.done === 'kept', children, hist, counters: pn.counters.map(([k, v]) => ({ k, v })),
+      targets, to: st.to, pickTo: (e) => this.setState({ to: e.target.value }),
+      moveByHand: () => { const c = M.compare(m.workflow, nowS, st.to); if (c.adds.length) this.setState({ confirm: true, confirmTo: st.to }); },
+      showConfirm: st.confirm, confirmTo: st.confirmTo || 'fix', layer: P.layer || 'absolute',
+      openConfirm: () => this.setState({ confirm: true, confirmTo: 'fix' }), closeConfirm: () => this.setState({ confirm: false }),
+      doConfirm: () => set('confirmed'), keep: () => set('kept'),
+      pausedP: st.paused ? 'true' : 'false', togglePause: () => this.setState({ paused: !st.paused }),
+      pauseLabel: st.paused ? 'Resume automatic moves' : 'Pause automatic moves',
+      pauseNote: st.paused ? 'Paused: the hub still tries the exits and logs them; nothing moves until you resume.' : 'While paused, the hub still tries the exits and logs them; nothing moves on its own.'
+    };
+  }
+}
+</script>
+</body>
+</html>

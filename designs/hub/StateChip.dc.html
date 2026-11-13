@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>State chip</title>
+<script src="./support.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="workflow.css">
+</helmet>
+<span class="wf" data-theme="{{ theme }}" data-pen="{{ pen }}" style="display: inline-flex; background: transparent">
+  <sc-if value="{{ has }}" hint-placeholder-val="{{ true }}">
+    <span class="{{ cls }}" title="{{ tip }}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="{{ glyph }}"></path></svg>
+      <span class="wf-sr">Workflow state:</span>{{ label }}<sc-if value="{{ hasSub }}" hint-placeholder-val="{{ true }}"><span class="il-chip__sub">· {{ sub }}</span></sc-if>
+    </span>
+  </sc-if>
+</span>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"sid":{"editor":"enum","options":["kernel-lut","docs-edl","investigate-1184","review-kernel-212","review-docs-88","arch-kernel","audit-hub","triage-weekly","steward","maintainer","shell-brightness","design-brightness"],"default":"kernel-lut"},"kind":{"editor":null},"label":{"editor":null},"note":{"editor":null},"short":{"editor":"boolean","default":false},"size":{"editor":"enum","options":["s","lg"],"default":"s"},"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":320,"height":40}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const P = this.props, M = window.HUB.machine;
+    const m0 = M.sessions[P.sid || 'kernel-lut'];
+    /* kind, label and note override the fixture, for a board that has moved the machine on (a confirm). */
+    const m = m0 && P.kind ? { ...m0, kind: P.kind, state: P.label || m0.state, to: P.label ? '' : m0.to, note: P.note || '' } : m0;
+    const theme = (P.voice || 'white') + '-' + (P.scheme || 'paper');
+    if (!m) return { has: false, theme, pen: P.pen || '1' };
+    const G = { holds: 'M12 8a4 4 0 1 0 0 8 4 4 0 1 0 0-8z', moving: 'M4 12h12M12 7l5 5-5 5', waits: 'M12 3a9 9 0 1 0 0 18 9 9 0 1 0 0-18zM12 7v5l3 2', up: 'M12 19V6M6 11l6-6 6 6', over: 'M5 12l4 4 10-10' };
+    const def = M.defs[m.workflow];
+    /* The large chip names the parent states too: work › review → fix. */
+    const up = def && def.states && def.states[m.state] && P.size === 'lg' ? M.chain(def, m.state).slice(0, -1) : [];
+    const label = up.map((x) => x + ' › ').join('') + (m.to ? m.state + ' → ' + m.to : m.state);
+    const sub = P.short ? '' : (m.note || (m.round ? m.round : ''));
+    return {
+      has: true, theme, pen: P.pen || '1', label, sub, hasSub: !!sub, glyph: G[m.kind] || G.holds,
+      cls: 'il-chip' + (m.kind === 'holds' ? '' : ' il-chip--' + m.kind) + (P.size === 'lg' ? ' il-chip--lg' : ''),
+      tip: 'Workflow ' + m.workflow + (def ? ' v' + def.version : '') + (m.oneState ? ' (one state)' : '') + ' · state ' + label + (m.note ? ' · ' + m.note : '') + (m.round ? ' · ' + m.round : '') + (m.owner ? ' · owner ' + m.owner : '')
+    };
+  }
+}
+</script>
+</body>
+</html>

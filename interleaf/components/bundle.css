@@ -114,6 +114,12 @@
 .il-btn { min-height: 44px; padding: 0 var(--space-4); border: 0; border-radius: var(--v-ui-radius); background: var(--paper); color: var(--ink); box-shadow: var(--v-ui-edge); font-family: var(--v-label); font-size: var(--v-label-size); font-weight: var(--v-label-w); text-transform: var(--v-label-case); font-variant: var(--v-label-variant); letter-spacing: var(--v-label-ls); cursor: pointer; display: inline-flex; align-items: center; gap: var(--space-2); }
 [data-theme^="editorial"] .il-btn { background: transparent; }
 .il-btn[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+/* Disabled (Button): dim label, no fill and no edge, a dashed dim outline; the same size as enabled.
+   The theme prefix outweighs the voices' own .il-btn rules and a primary button's fill. */
+:root .il-btn:is(:disabled, [aria-disabled="true"]), :root .il-btn:is(:disabled, [aria-disabled="true"])[aria-pressed="true"] {
+  box-sizing: border-box; padding: 0 calc(var(--space-4) - 1.5px); border: 1.5px dashed var(--dim);
+  background: transparent; color: var(--dim); box-shadow: none; cursor: not-allowed; }
+.il-btn-reason { color: var(--ink-soft); font-family: var(--v-text); font-size: 0.875em; }
 .il-swatch { width: 26px; height: 18px; position: relative; display: inline-block; }
 .il-swatch::before { content: ""; position: absolute; left: 0; bottom: 1px; width: 18px; height: 9px; border-radius: 3px; background: var(--sw-hl, var(--highlight)); transform: rotate(-4deg); }
 .il-swatch::after { content: ""; position: absolute; right: 0; top: 0; width: 12px; height: 12px; border-radius: 50%; background: var(--sw-pen, var(--accent)); box-shadow: 0 0 0 1px var(--ink); }

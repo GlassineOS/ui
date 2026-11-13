@@ -1,0 +1,19 @@
+<!-- @dsCard group="Controls" height=200 subtitle="Default, pressed and disabled, with the reason" -->
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Button — preview</title></head>
+<body style="margin:0">
+<div class="il-page" style="padding:24px 32px">
+  <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+    <button class="il-btn" type="button">Run checks</button>
+    <button class="il-btn" type="button" aria-pressed="true">Follow</button>
+    <button class="il-btn" type="button" disabled>Next step</button>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:16px">
+    <button class="il-btn" type="button" aria-disabled="true" aria-describedby="why-merge">Merge</button>
+    <span class="il-btn-reason" id="why-merge">Checks are still running</span>
+  </div>
+</div>
+<script>/* static preview */</script>
+</body>
+</html>

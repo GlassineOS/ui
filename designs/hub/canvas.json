@@ -102,7 +102,7 @@
    "x": 1520,
    "y": 5220,
    "w": 1440,
-   "h": 1630,
+   "h": 1800,
    "title": "Sessions › Running",
    "page": "screens",
    "expand": "fill",
@@ -418,7 +418,7 @@
   "SessionChip.dc.html": {
    "x": 2500,
    "y": 1900,
-   "w": 260,
+   "w": 420,
    "h": 36,
    "title": "SessionChip · a session anywhere",
    "page": "components"
@@ -470,6 +470,86 @@
    "title": "GhActions · your own GitHub actions, one split button",
    "page": "components",
    "is_interactive": true
+  },
+  "StateChips.dc.html": {
+   "x": 0,
+   "y": 2600,
+   "w": 760,
+   "h": 820,
+   "title": "StateChip · every kind, and where it shows (workflows)",
+   "page": "components"
+  },
+  "StateChip.dc.html": {
+   "x": 0,
+   "y": 3480,
+   "w": 360,
+   "h": 40,
+   "title": "StateChip · a session’s workflow state",
+   "page": "components"
+  },
+  "MachinePanel.dc.html": {
+   "x": 840,
+   "y": 2600,
+   "w": 1040,
+   "h": 1320,
+   "title": "MachinePanel · state, history with evidence, move by hand",
+   "page": "components",
+   "is_interactive": true
+  },
+  "WidenConfirm.dc.html": {
+   "x": 1960,
+   "y": 2600,
+   "w": 760,
+   "h": 940,
+   "title": "WidenConfirm · a move that widens the grant",
+   "page": "components",
+   "is_interactive": true
+  },
+  "DefinitionChange.dc.html": {
+   "x": 2800,
+   "y": 2600,
+   "w": 1000,
+   "h": 1260,
+   "title": "Needs you · a workflow definition change, with its diff",
+   "page": "components",
+   "is_interactive": true
+  },
+  "DesignSpike.dc.html": {
+   "x": 3880,
+   "y": 2600,
+   "w": 1000,
+   "h": 940,
+   "title": "Needs you · look at the design (a design spike)",
+   "page": "components",
+   "is_interactive": true
+  },
+  "SessionMachine.dc.html": {
+   "x": 4560,
+   "y": 5220,
+   "w": 1280,
+   "h": 1380,
+   "title": "Session · its workflow (machine panel, confirm on a widening move)",
+   "page": "screens",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "PhoneMachine.dc.html": {
+   "x": 2820,
+   "y": 14810,
+   "w": 390,
+   "h": 2720,
+   "title": "Phone · a session’s workflow",
+   "page": "screens",
+   "is_interactive": true
+  },
+  "PhoneDecisions.dc.html": {
+   "x": 3290,
+   "y": 14810,
+   "w": 390,
+   "h": 3440,
+   "title": "Phone · Needs you: workflow change, look at the design",
+   "page": "screens",
+   "is_interactive": true
   }
  },
  "order": [
@@ -519,7 +599,16 @@
   "WorkNewIssue.dc.html",
   "WorkRunWorkflow.dc.html",
   "WorkItemFiles.dc.html",
-  "GhActions.dc.html"
+  "GhActions.dc.html",
+  "StateChips.dc.html",
+  "StateChip.dc.html",
+  "MachinePanel.dc.html",
+  "WidenConfirm.dc.html",
+  "DefinitionChange.dc.html",
+  "DesignSpike.dc.html",
+  "SessionMachine.dc.html",
+  "PhoneMachine.dc.html",
+  "PhoneDecisions.dc.html"
  ],
  "notes": {
   "s1": {
@@ -631,6 +720,23 @@
    "size": "m",
    "page": "components",
    "text": "Two kinds of button, never mixed:\n• Blue = start an agent (Launch).\n• Black split button with the commit symbol = something you do yourself on GitHub. The most relevant action is inline; the arrow lists the rest. Disabled items say why (e.g. Merge: checks running · not approved). Merge and Close confirm."
+  },
+  "c6": {
+   "x": 0,
+   "y": 2420,
+   "text": "Workflows — the state machine each session holds (a proposal)",
+   "kind": "title1",
+   "maxW": 4880,
+   "page": "components"
+  },
+  "c7": {
+   "x": 0,
+   "y": 3580,
+   "w": 760,
+   "fill": "blue",
+   "size": "m",
+   "page": "components",
+   "text": "These boards use Interleaf’s tokens (voice, scheme and pen props) and new Interleaf parts: Chip, Dialog and the changed lines of CodeBlock. The older hub boards are fixed White · Paper; the state chip and the machine panel sit in them as tokened parts.\n\nState is told by edge and words: solid holds, dashed moves, heavy waits for someone, double was sent up, hairline is over."
   }
  }
 }

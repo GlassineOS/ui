@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Confirm a widening move</title>
+<script src="./support.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="workflow.css">
+</helmet>
+<div class="wf il-dialog-scrim" data-theme="{{ theme }}" data-pen="{{ pen }}" style="{{ scrim }}">
+  <section class="il-dialog" role="dialog" aria-modal="true" aria-labelledby="wc-t" aria-describedby="wc-d" style="max-width: 680px">
+    <div class="il-dialog__head">
+      <span class="il-label">Confirm · this move widens the grant</span>
+      <h2 class="il-dialog__title" id="wc-t">Move {{ sid }} from {{ from }} to {{ to }}?</h2>
+      <p class="wf-small wf-soft" id="wc-d">{{ why }}</p>
+    </div>
+    <div class="il-dialog__body">
+      <section class="wf-stack" aria-labelledby="wc-adds">
+        <h3 class="wf-h3" id="wc-adds">{{ to }} adds</h3>
+        <ul class="wf-grant">
+          <sc-for list="{{ adds }}" as="a" hint-placeholder-count="3">
+            <li data-sign="add"><span class="wf-grant__sign" aria-hidden="true">+</span><span class="wf-grant__kind">{{ a.kind }}</span>
+              <span class="wf-grant__what"><span class="wf-row"><strong>{{ a.what }}</strong><sc-if value="{{ a.sens }}" hint-placeholder-val="{{ false }}"><span class="wf-sens">Sensitive</span></sc-if></span><sc-if value="{{ a.hasDetail }}" hint-placeholder-val="{{ true }}"><span class="wf-small wf-soft">{{ a.detail }}</span></sc-if></span></li>
+          </sc-for>
+        </ul>
+      </section>
+      <sc-if value="{{ hasSens }}" hint-placeholder-val="{{ false }}">
+        <aside class="il-admonition il-admonition--danger">
+          <span class="il-admonition__label"><span class="il-admonition__seal" aria-hidden="true">!</span>Sensitive</span>
+          <p class="il-admonition__title">{{ sensTitle }}</p>
+          <p class="wf-small">{{ sensBody }}</p>
+          <p class="wf-small"><strong>Way out:</strong> answer “Not now”; the move waits in {{ from }} and nothing changes until you confirm.</p>
+        </aside>
+      </sc-if>
+      <sc-if value="{{ hasRemoves }}" hint-placeholder-val="{{ true }}">
+        <section class="wf-stack" aria-labelledby="wc-rm">
+          <h3 class="wf-h3" id="wc-rm">{{ to }} takes away</h3>
+          <ul class="wf-grant">
+            <sc-for list="{{ removes }}" as="r" hint-placeholder-count="1">
+              <li data-sign="del"><span class="wf-grant__sign" aria-hidden="true">−</span><span class="wf-grant__kind">{{ r.kind }}</span><span class="wf-grant__what"><strong>{{ r.what }}</strong><sc-if value="{{ r.hasDetail }}" hint-placeholder-val="{{ false }}"><span class="wf-small wf-soft">{{ r.detail }}</span></sc-if></span></li>
+            </sc-for>
+          </ul>
+        </section>
+      </sc-if>
+      <p class="wf-small"><span class="wf-by">Keeps</span> {{ keeps }}</p>
+      <div class="wf-box wf-small">
+        <span class="wf-by">What happens</span>
+        <p>{{ how }}</p>
+      </div>
+    </div>
+    <div class="il-dialog__actions">
+      <button type="button" class="il-btn" id="wc-keep" onClick="{{ close }}">Not now</button>
+      <button type="button" class="il-btn il-btn--primary" id="wc-ok" onClick="{{ confirm }}">Confirm and resume in {{ to }}</button>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"sid":{"editor":"enum","options":["kernel-lut","docs-edl"],"default":"kernel-lut"},"to":{"editor":"enum","options":["fix","implement","merge-ready","publish"],"default":"fix"},"layer":{"editor":"enum","options":["inline","absolute","fixed"],"default":"inline"},"onClose":{"editor":null},"onConfirm":{"editor":null},"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":760,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const P = this.props, M = window.HUB.machine, sid = P.sid || 'kernel-lut';
+    const m = M.sessions[sid], w = M.widen[sid] || {}, det = w.detail || {};
+    const from = w.from || m.state, to = w.from ? w.to : (P.to || m.to || 'fix');
+    let adds, removes, keeps;
+    if (M.defs[m.workflow]) {
+      const c = M.compare(m.workflow, from, to);
+      const pm = c.adds.find((a) => a[0] === 'Permission mode'), pmOld = c.removes.find((a) => a[0] === 'Permission mode');
+      adds = c.adds.filter((a) => a[0] !== 'Permission mode').concat(pm ? [['Permission mode', (pmOld ? pmOld[1] + ' → ' : '') + pm[1]]] : []).map(([k, x]) => [k, x, det[x] || '']);
+      removes = c.removes.filter((a) => a[0] !== 'Permission mode').map(([k, x]) => [k, x, det[x] || '']);
+      keeps = c.keeps;
+    } else { adds = w.adds; removes = w.removes; keeps = w.keeps; }
+    const sens = adds.filter((a) => M.sensitive.indexOf(a[1]) >= 0);
+    const L = P.layer || 'inline';
+    const ev = (M.panel[sid] && M.panel[sid].next) ? 'Proposed by a fact: ' + M.panel[sid].next.evidence[0][1] + '. The hub’s checks hold.' : 'Proposed by the judge on the last Stop. The hub’s checks hold.';
+    return {
+      theme: (P.voice || 'white') + '-' + (P.scheme || 'paper'), pen: P.pen || '1', sid, from, to, why: ev,
+      scrim: L === 'inline' ? 'position: relative; inset: auto; min-height: 100vh' : L === 'absolute' ? 'position: absolute' : '',
+      adds: adds.map(([k, x, d]) => ({ kind: k, what: x, detail: d, hasDetail: !!d, sens: M.sensitive.indexOf(x) >= 0 })),
+      hasSens: sens.length > 0,
+      sensTitle: sens.length ? to + ' grants ' + sens.map((a) => a[1]).join(' and ') : '',
+      sensBody: sens.length ? 'One of the four sensitive items. It is marked so you see it; it adds no rule: a merge still needs your approved merge decision for the PR head.' : '',
+      hasRemoves: removes.length > 0, removes: removes.map(([k, x, d]) => ({ kind: k, what: x, detail: d, hasDetail: !!d })),
+      keeps: keeps.join(', '), how: w.how || ('The hub stops ' + sid + ' at the end of its turn and resumes the same conversation under a new launch with the grant of ' + to + '.'),
+      close: () => { if (P.onClose) P.onClose(); }, confirm: () => { if (P.onConfirm) P.onConfirm(); }
+    };
+  }
+}
+</script>
+</body>
+</html>

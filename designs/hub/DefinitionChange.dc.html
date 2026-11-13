@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Workflow change decision</title>
+<script src="./support.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="workflow.css">
+</helmet>
+<div class="wf il-page" data-theme="{{ theme }}" data-pen="{{ pen }}" style="{{ pad }}">
+  <article class="wf-decision" aria-labelledby="dc-t">
+    <div class="wf-decision__head">
+      <div class="wf-stack" style="flex: 1 1 320px; gap: var(--space-2)">
+        <span class="il-label">Needs you · a change to a workflow</span>
+        <h2 class="wf-h2" id="dc-t">{{ c.title }}</h2>
+        <p class="wf-small wf-soft">From the Steward · reviewed by {{ c.reviewer }}: {{ c.verdict }} · {{ c.scope }} · waited {{ c.waited }}</p>
+      </div>
+      <span class="il-chip il-chip--waits">{{ nSens }} sensitive</span>
+    </div>
+
+    <aside class="il-admonition il-admonition--danger" aria-labelledby="dc-w">
+      <span class="il-admonition__label"><span class="il-admonition__seal" aria-hidden="true">!</span>Sensitive</span>
+      <p class="il-admonition__title" id="dc-w">This change grants {{ nSensWords }} of the four sensitive items</p>
+      <ul class="wf-stack">
+        <sc-for list="{{ warnings }}" as="w" hint-placeholder-count="2">
+          <li class="wf-stack" style="gap: var(--space-1)"><span class="wf-row"><span class="wf-sens">{{ w.item }}</span><span class="wf-small wf-soft">in {{ w.where }}</span></span><span class="wf-small">{{ w.what }}</span></li>
+        </sc-for>
+      </ul>
+      <p class="wf-small">The warning only marks them: it adds no rule, and approving takes them as written. <strong>Way out:</strong> decline, or edit the change and take them out.</p>
+    </aside>
+
+    <section class="wf-stack" aria-labelledby="dc-why">
+      <h3 class="wf-h3" id="dc-why">Why the Steward proposes it</h3>
+      <p style="max-width: var(--measure)">{{ c.why }}</p>
+    </section>
+
+    <section class="wf-stack" aria-labelledby="dc-diff">
+      <h3 class="wf-h3" id="dc-diff">The change</h3>
+      <div class="il-code">
+        <div class="il-code__head"><span class="wf-mono">{{ c.workflow }} · v{{ c.from }} → v{{ c.to }}</span><span class="wf-small wf-soft">{{ diffStat }}</span></div>
+        <pre><sc-for list="{{ diff }}" as="d" hint-placeholder-count="10"><span class="{{ d.cls }}"><span class="wf-sr">{{ d.sr }}</span>{{ d.text }}<sc-if value="{{ d.sens }}" hint-placeholder-val="{{ false }}"><span class="wf-code-flag">sensitive</span></sc-if></span></sc-for></pre>
+      </div>
+    </section>
+
+    <section class="wf-stack" aria-labelledby="dc-rev">
+      <h3 class="wf-h3" id="dc-rev">The reviewer’s notes</h3>
+      <ul class="wf-stack wf-small"><sc-for list="{{ notes }}" as="n" hint-placeholder-count="2"><li class="wf-quote">{{ n }}</li></sc-for></ul>
+      <p class="wf-small wf-soft">{{ c.affects }}</p>
+    </section>
+
+    <sc-if value="{{ open }}" hint-placeholder-val="{{ true }}">
+      <div class="wf-actions" style="padding-top: var(--space-4); border-top: var(--v-row-rule)">
+        <button type="button" class="il-btn il-btn--primary" id="dc-ok" onClick="{{ approve }}">Approve v{{ c.to }}, with {{ nSens }} sensitive</button>
+        <button type="button" class="il-btn" onClick="{{ decline }}">Decline</button>
+        <button type="button" class="il-btn">Edit it yourself</button>
+        <button type="button" class="il-btn">Ask the Steward</button>
+      </div>
+    </sc-if>
+    <sc-if value="{{ answered }}" hint-placeholder-val="{{ false }}">
+      <div class="wf-box" aria-live="polite"><span class="wf-by">{{ answerTag }}</span><p>{{ answerText }}</p></div>
+    </sc-if>
+  </article>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"bare":{"editor":"boolean","default":false},"$preview":{"width":1000,"height":1700}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { a: '' }; }
+  renderVals() {
+    const P = this.props, c = window.HUB.machine.change, a = this.state.a;
+    const n = c.warnings.length, words = ['none', 'one', 'two', 'three', 'four'];
+    const adds = c.diff.filter((d) => d[0] === 'add').length, dels = c.diff.filter((d) => d[0] === 'del').length;
+    return {
+      theme: (P.voice || 'white') + '-' + (P.scheme || 'paper'), pen: P.pen || '1', c,
+      pad: P.bare ? 'background: transparent' : 'padding: var(--space-6) max(var(--space-4), 2vw); min-height: 100vh',
+      nSens: String(n), nSensWords: words[n] || String(n),
+      warnings: c.warnings, notes: c.notes, diffStat: '+' + adds + ' −' + dels,
+      diff: c.diff.map(([k, t, sens]) => ({ text: t, sens: !!sens, cls: (k ? k : '') + (sens ? ' wf-code-sens' : ''), sr: k === 'add' ? 'added: ' : k === 'del' ? 'removed: ' : '' })),
+      open: !a, answered: !!a,
+      answerTag: a === 'yes' ? 'Approved' : 'Declined',
+      answerText: a === 'yes' ? 'implement v8 applies now. Sessions running implement take it at their next move; the change and your answer are in the log.' : 'v7 stays. The Steward gets your answer as a fact and can propose again.',
+      approve: () => this.setState({ a: 'yes' }), decline: () => this.setState({ a: 'no' })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -264,7 +264,7 @@ ok(gen.coverage(tok, '.x { box-shadow: var(--sheet-stack); } [data-theme^="white
 # the component sources: a README and a preview whose first line is claude.ai's card marker
 comp = os.path.join(ROOT, "interleaf", "components")
 names = sorted(n for n in os.listdir(comp) if os.path.isdir(os.path.join(comp, n)))
-ok(len(names) == 15, "15 components")
+ok(len(names) == 16, "16 components")
 # a component has a README; Cover's is not written yet (the import had none), and no other may be missing
 no_readme = [n for n in names if not os.path.exists(os.path.join(comp, n, "README.md"))]
 ok(set(no_readme) <= {"Cover"}, "every component but Cover has a README%s" % (": missing " + ", ".join(no_readme) if set(no_readme) - {"Cover"} else ""))

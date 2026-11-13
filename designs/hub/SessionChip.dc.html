@@ -18,6 +18,7 @@
     <sc-if value="{{hasIcon}}" hint-placeholder-val="{{true}}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="{{icon}}"></path></svg></sc-if>
   </span>
   <span aria-hidden="true" style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600; white-space: nowrap">{{sid}}</span>
+  <dc-import name="StateChip" sid="{{sid}}" short="{{yes}}" hint-size="140px,26px"></dc-import>
   <sc-if value="{{waiting}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.06em; padding: 0 5px; border: 1px solid #111111; border-radius: 999px; background: #ffd86b">WAITS</span></sc-if>
 </a>
 </x-dc>
@@ -29,7 +30,7 @@ class Component extends DCLogic {
     const s = H.sessions[sid] || { persona: 'Engineer', state: '' };
     const pe = H.personas[s.persona] || H.personas.Engineer;
     const fam = H.families[pe.family];
-    return { sid, icon: pe.icon, hasIcon: !!pe.icon, isSteward: pe.family === 'steward', waiting: s.state === 'WAITING',
+    return { yes: true, sid, icon: pe.icon, hasIcon: !!pe.icon, isSteward: pe.family === 'steward', waiting: s.state === 'WAITING',
       tip: sid + ' · ' + s.persona + ' (' + fam.label + ')' + (s.state ? ' · ' + s.state.toLowerCase() : ''),
       wrap: 'display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 0 8px 0 4px; border: 1.5px ' + (s.state === 'RUNNING' ? 'dashed' : 'solid') + ' #111111; border-radius: 999px; text-decoration: none; color: #111111; background: ' + fam.tint };
   }

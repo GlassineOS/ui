@@ -373,3 +373,393 @@ window.HUB.diffs = {
 window.HUB.logs = {
   'build-image #1184': ['##[group]Run sudo debootstrap --arch=arm64 --foreign bookworm rootfs', 'I: Retrieving InRelease', 'I: Validating Packages', 'I: Extracting base-files…', 'I: Running second stage', 'chroot: failed to run command ‘/debootstrap/debootstrap’: Exec format error', '##[error]Process completed with exit code 1.']
 };
+
+/* Workflows: a state machine held by each session (a proposal). A workflow is a statechart: states
+   nest in parent states, which give their children a shared grant and shared exits; a state can have
+   many exits (branches), tried in their order; a state's managed sessions run workflows of their own.
+   Named HUB.machine so it is not taken for GitHub Actions workflows (HUB.workflows above).
+   kind = how the state chip draws: holds, moving, waits, up, over. */
+window.HUB.personas['Designer'] = { family: 'write', icon: 'M12 3l7 7-7 11-7-11zM12 3v8M10 13a2 2 0 1 0 4 0 2 2 0 1 0-4 0' };
+/* Drafts a change to a workflow from your words; it reads workflows and session history and writes drafts, nothing else. */
+window.HUB.personas['Workflow author'] = { family: 'organise', icon: 'M4 6h6v4H4zM14 14h6v4h-6zM10 8h4v8M7 10v8h7' };
+window.HUB.personas['QA engineer'] = { family: 'review', icon: 'M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3M7 15h10' };
+window.HUB.machine = {
+  grantKinds: ['GitHub', 'Shell', 'Web', 'Hub tools', 'Sessions', 'Permission mode'],
+  sensitive: ['merge to main', 'approve runs from forks', 'make a repository public', 'delete a repository'],
+  /* Everything a grant can name, for the editor's pickers. */
+  catalogue: {
+    'GitHub': ['read issues and PRs', 'comment', 'label and assign', 're-run checks', 'push to its branch', 'open a draft PR', 'mark ready for review', 'merge to main', 'approve runs from forks', 'make a repository public', 'delete a repository'],
+    'Shell': ['run in its checkout', 'edit files in its checkout', 'reach the dev hub'],
+    'Web': ['search', 'fetch'],
+    'Hub tools': ['docs search', 'notes', 'code search', 'code map', 'read workflows', 'read session history', 'write a draft'],
+    'Permission mode': ['plan · read-only', 'accept edits', 'default']
+  },
+  facts: ['branch pushed', 'PR open', 'checks pass', 'checks fail', 'reviewer.verdict == pass', 'reviewer.verdict == fail', 'qa.verdict == pass', 'qa.verdict == fail', 'rounds.review < 3', 'rounds.review >= 3', 'time in state > 2 h', 'tokens > 600 k', 'design PR merged', 'design PR closed unmerged', 'owner answered', 'PR merged', 'the item is user-facing', 'security.findings has HIGH', 'draft written', 'checks find a problem', 'draft grants a sensitive item', 'rounds.draft < 3', 'rounds.draft >= 3', 'you answered', 'you saved it', 'you asked for changes', 'you discarded it'],
+  signals: ['Stop', 'SessionEnd', 'PostToolUse: push', 'checks changed', 'review submitted', 'PR merged', 'PR closed', 'managed session ended', 'report answered', 'decision answered', 'checks done'],
+  defs: {
+    implement: {
+      title: 'implement', version: 7, scope: 'organisation default', running: 4, overrides: ['kernel: review asks for 2 reviewers'],
+      about: 'Carries a piece of work on git from its first commit to merged: implement, review and fix inside work, with a design spike and escalation beside it.',
+      initial: 'work',
+      states: {
+        'work': { parent: '', kind: 'parent', initial: 'implement', history: true, personas: ['Implementor'], context: 'keep',
+          note: 'Shared by implement, review and fix: their common grant and the exit when the work is stuck.',
+          grant: { 'GitHub': ['read issues and PRs', 'comment'], 'Shell': ['run in its checkout'], 'Web': ['search', 'fetch'], 'Hub tools': ['docs search', 'notes', 'code search'] }, manages: [] },
+        'implement': { parent: 'work', personas: ['Implementor'], context: 'keep', instructions: 'Implement the issue on your branch. Open a draft PR early. Ask for an Engineer when a part is separate enough to hand over.',
+          grant: { 'GitHub': ['push to its branch', 'open a draft PR'], 'Shell': ['edit files in its checkout'], 'Permission mode': ['accept edits'] },
+          manages: [{ persona: 'Engineer', workflow: 'engineer', start: 'on-demand', when: '', max: 1, reuse: 'resume', on_exit: 'stop', returns: 'commits' }] },
+        'review': { parent: 'work', personas: ['Implementor'], context: 'compact: the open findings and what each needs', instructions: 'Don’t change code. Wait for the reviewer and the QA engineer; when they return, summarise their findings by file.',
+          grant: { 'GitHub': ['re-run checks'], 'Permission mode': ['plan · read-only'] },
+          manages: [{ persona: 'Code reviewer', workflow: 'review', start: 'auto', when: '', max: 1, reuse: 'fresh', on_exit: 'stop', returns: 'verdict pass | fail, findings' },
+            { persona: 'QA engineer', workflow: 'qa-audit', start: 'auto', when: 'the workpiece is user-facing', max: 1, reuse: 'resume', on_exit: 'keep', returns: 'verdict pass | fail, findings' }] },
+        'fix': { parent: 'work', personas: ['Implementor'], context: 'keep', instructions: 'Answer every finding with a fixup commit or a reply. Don’t start new work.',
+          grant: { 'GitHub': ['re-run checks', 'push to its branch'], 'Shell': ['edit files in its checkout'], 'Permission mode': ['accept edits'] },
+          manages: [{ persona: 'Engineer', workflow: 'engineer', start: 'on-demand', when: '', max: 1, reuse: 'resume', on_exit: 'stop', returns: 'commits' }] },
+        'design': { parent: '', personas: ['Implementor'], context: 'keep', instructions: 'A design question came up. Wait for the Designer’s draft and the maintainer’s answer; don’t build the part in question.',
+          grant: { 'GitHub': ['read issues and PRs', 'comment'], 'Hub tools': ['docs search', 'notes'], 'Permission mode': ['plan · read-only'] },
+          manages: [{ persona: 'Designer', workflow: 'design-spike', start: 'auto', when: '', max: 1, reuse: 'resume', on_exit: 'stop', returns: 'design PR' }] },
+        'merge-ready': { parent: '', personas: ['Implementor'], context: 'compact: the PR’s summary', instructions: 'Mark the PR ready for review and ask for the merge decision. Watch the checks.',
+          grant: { 'GitHub': ['read issues and PRs', 'comment', 'mark ready for review'], 'Hub tools': ['docs search', 'notes'], 'Permission mode': ['plan · read-only'] }, manages: [] },
+        'escalated': { parent: '', personas: ['Implementor'], context: 'keep', instructions: 'Send your owner a report: the blocker, the evidence, what you propose. Wait for the answer.',
+          grant: { 'GitHub': ['read issues and PRs', 'comment'], 'Permission mode': ['plan · read-only'] }, manages: [] },
+        'merged': { parent: '', kind: 'final', grant: {}, manages: [] },
+        'abandoned': { parent: '', kind: 'final', grant: {}, manages: [], note: 'Reached from any state, by hand only.' }
+      },
+      /* Order within a state matters: when two exits hold at once, the first one moves. */
+      transitions: [
+        { id: 't1', from: 'implement', to: 'review', by: 'judge', label: 'complete', when: 'The change is complete and the tests pass', requires: ['branch pushed', 'PR open'], on: ['Stop', 'checks changed'], move: 'auto', approve: 'none' },
+        { id: 't2', from: 'implement', to: 'design', by: 'judge', label: 'design question', when: 'The work meets a design question that no accepted board answers', requires: ['the item is user-facing'], on: ['Stop'], move: 'on-request', approve: 'none' },
+        { id: 't3', from: 'review', to: 'fix', by: 'fact', label: 'a fail, < 3', when: '', requires: ['reviewer.verdict == fail or qa.verdict == fail', 'rounds.review < 3'], on: ['managed session ended'], move: 'auto', approve: 'none' },
+        { id: 't4', from: 'review', to: 'merge-ready', by: 'fact', label: 'both pass', when: '', requires: ['reviewer.verdict == pass', 'qa.verdict == pass', 'checks pass'], on: ['managed session ended', 'checks changed'], move: 'auto', approve: 'none' },
+        { id: 't5', from: 'review', to: 'escalated', by: 'counter', label: 'rounds ≥ 3', when: '', requires: ['rounds.review >= 3'], on: ['managed session ended'], move: 'auto', approve: 'none' },
+        { id: 't6', from: 'fix', to: 'review', by: 'judge', label: 'fixups in', when: 'Every finding has a fixup commit or a reply', requires: ['checks pass', 'branch pushed'], on: ['Stop'], move: 'auto', approve: 'none' },
+        { id: 't7', from: 'work', to: 'escalated', by: 'judge', label: 'stuck', when: 'The session seems stuck: the same error three turns running, or no progress', requires: ['time in state > 2 h or tokens > 600 k'], on: ['Stop'], move: 'auto', approve: 'none' },
+        { id: 't8', from: 'escalated', to: 'work', enter: 'history', by: 'fact', label: 'answered', when: '', requires: ['owner answered'], on: ['report answered'], move: 'auto', approve: 'none' },
+        { id: 't9', from: 'design', to: 'work', enter: 'history', by: 'fact', label: 'design merged', when: '', requires: ['design PR merged'], on: ['PR merged'], move: 'auto', approve: 'none' },
+        { id: 't10', from: 'design', to: 'escalated', by: 'fact', label: 'design closed', when: '', requires: ['design PR closed unmerged'], on: ['PR closed'], move: 'auto', approve: 'none' },
+        { id: 't11', from: 'merge-ready', to: 'merged', by: 'fact', label: 'merged', when: '', requires: ['PR merged'], on: ['PR merged'], move: 'auto', approve: 'me' },
+        { id: 't12', from: 'merge-ready', to: 'fix', by: 'fact', label: 'checks fail', when: '', requires: ['checks fail'], on: ['checks changed', 'review submitted'], move: 'auto', approve: 'none' },
+        { id: 't13', from: '*', to: 'abandoned', by: 'hand', label: 'any state · by hand', when: '', requires: [], on: [], move: 'by hand', approve: 'me' }
+      ],
+      /* The diagram: boxes [x, y, w, h] and edges (path, label centre) in a 1000 × 600 view. */
+      layout: {
+        w: 1000, h: 600, start: [44, 108], history: [556, 334],
+        states: { 'work': [20, 30, 570, 330], 'implement': [70, 80, 150, 56], 'review': [320, 80, 150, 56], 'fix': [320, 250, 150, 56], 'design': [70, 440, 150, 56],
+          'merge-ready': [660, 60, 150, 56], 'merged': [890, 60, 100, 56], 'escalated': [660, 250, 150, 56], 'abandoned': [890, 510, 100, 56] },
+        edges: { t1: ['M220 108H320', 270, 108], t2: ['M145 136V440', 145, 400], t3: ['M362 136V250', 290, 193], t4: ['M470 92H660', 565, 92], t5: ['M470 124H780V250', 780, 188],
+          t6: ['M430 250V136', 430, 165], t7: ['M590 282H660', 625, 266], t8: ['M735 306V334H568', 650, 348], t9: ['M220 462H556V346', 390, 462], t10: ['M220 480H770V306', 650, 480],
+          t11: ['M810 88H890', 850, 88], t12: ['M690 116V224H345V250', 560, 224], t13: ['M700 538H890', 780, 538] }
+      }
+    },
+    review: { title: 'review', version: 3, scope: 'organisation default', running: 2, about: 'The Code reviewer’s own machine, started by review in implement.', initial: 'read',
+      path: ['read', 'comment', 'verdict'], returns: 'verdict pass | fail, findings' },
+    'qa-audit': { title: 'qa-audit', version: 2, scope: 'organisation default', running: 1, about: 'The QA engineer’s machine: plan the test, run it (tests, the dev hub, the device on your go), report.', initial: 'plan',
+      path: ['plan', 'run › tests', 'run › dev hub', 'run › device', 'report'], returns: 'verdict pass | fail, findings' },
+    'design-spike': { title: 'design-spike', version: 1, scope: 'organisation default', running: 1, about: 'The Designer’s machine: draft boards, open a draft PR, wait for your answer.', initial: 'draft',
+      path: ['draft', 'look', 'revise', 'accepted'], returns: 'design PR' },
+    engineer: { title: 'engineer', version: 2, scope: 'organisation default', running: 0, about: 'An Engineer started on demand for a part the Implementor hands over.', initial: 'build', path: ['build', 'hand back'], returns: 'commits' },
+    /* Asking an AI for a change to a workflow is a workflow too. The Workflow author drafts; the hub checks
+       and replays the draft; a sensitive grant gets a reviewer; you answer. No state can save a workflow:
+       saving stays yours. */
+    'workflow-change': {
+      title: 'workflow-change', version: 1, scope: 'organisation default', running: 1, overrides: [],
+      about: 'A change you ask for in words: the Workflow author drafts it, the hub checks it and replays it on past sessions, and you get the before and after.',
+      initial: 'drafting', path: ['draft', 'check', 'review', 'propose'], returns: 'a draft version',
+      checks: [
+        { kind: 'ok', title: 'Every state can be reached, and every state but the final ones has an exit', body: '' },
+        { kind: 'ok', title: 'Every loop is bounded by a counter', body: 'draft ⇄ check and draft ⇄ review by rounds.draft: at 3, drafting → ask you.' },
+        { kind: 'ok', title: 'Every requires names a fact the hub knows', body: '' },
+        { kind: 'ok', title: 'No state grants saving a workflow', body: 'Only you save: → applied needs “you saved it”.' }
+      ],
+      states: {
+        'drafting': { parent: '', kind: 'parent', initial: 'draft', history: true, personas: ['Workflow author'], context: 'keep',
+          note: 'Shared by draft, check and review: read-only, and nothing that saves a workflow.',
+          grant: { 'Hub tools': ['docs search', 'notes', 'read workflows', 'read session history'], 'Permission mode': ['plan · read-only'] }, manages: [] },
+        'draft': { parent: 'drafting', personas: ['Workflow author'], context: 'keep', instructions: 'Write the change as a draft of the workflow. Say what you changed and why, a line each. If the checks found a problem, fix it. You can’t save it.',
+          grant: { 'Hub tools': ['write a draft'] }, manages: [] },
+        'check': { parent: 'drafting', personas: [], context: 'keep', note: 'The hub runs the checks and replays the last sessions on the draft; no model runs here.', instructions: '', grant: {}, manages: [] },
+        'review': { parent: 'drafting', personas: ['Workflow author'], context: 'keep', instructions: 'Wait for the reviewer.', grant: {},
+          manages: [{ persona: 'Code reviewer', workflow: 'review', start: 'auto', when: '', max: 1, reuse: 'fresh', on_exit: 'stop', returns: 'verdict pass | fail, findings' }] },
+        'ask': { parent: '', personas: ['Workflow author'], context: 'keep', instructions: 'Ask your question in Needs you and wait for the answer.', grant: { 'Permission mode': ['plan · read-only'] }, manages: [] },
+        'propose': { parent: '', personas: ['Workflow author'], context: 'keep', instructions: 'Wait: the before and after are in Needs you.', grant: { 'Permission mode': ['plan · read-only'] }, manages: [] },
+        'applied': { parent: '', kind: 'final', grant: {}, manages: [] },
+        'declined': { parent: '', kind: 'final', grant: {}, manages: [], note: 'Discarded by you, or stopped by hand.' }
+      },
+      transitions: [
+        { id: 'w1', from: 'draft', to: 'check', by: 'fact', label: 'written', when: '', requires: ['draft written'], on: ['Stop'], move: 'auto', approve: 'none' },
+        { id: 'w7', from: 'draft', to: 'ask', by: 'judge', label: 'unclear', when: 'The request is unclear, or two parts of it contradict each other', requires: [], on: ['Stop'], move: 'on-request', approve: 'none' },
+        { id: 'w2', from: 'check', to: 'draft', by: 'fact', label: 'a problem', when: '', requires: ['checks find a problem', 'rounds.draft < 3'], on: ['checks done'], move: 'auto', approve: 'none' },
+        { id: 'w3', from: 'check', to: 'review', by: 'fact', label: 'sensitive', when: '', requires: ['checks pass', 'draft grants a sensitive item'], on: ['checks done'], move: 'auto', approve: 'none' },
+        { id: 'w4', from: 'check', to: 'propose', by: 'fact', label: 'checks pass', when: '', requires: ['checks pass'], on: ['checks done'], move: 'auto', approve: 'none' },
+        { id: 'w5', from: 'review', to: 'propose', by: 'fact', label: 'pass', when: '', requires: ['reviewer.verdict == pass'], on: ['managed session ended'], move: 'auto', approve: 'none' },
+        { id: 'w6', from: 'review', to: 'draft', by: 'fact', label: 'fail', when: '', requires: ['reviewer.verdict == fail'], on: ['managed session ended'], move: 'auto', approve: 'none' },
+        { id: 'w8', from: 'drafting', to: 'ask', by: 'counter', label: 'rounds ≥ 3', when: '', requires: ['rounds.draft >= 3'], on: ['checks done'], move: 'auto', approve: 'none' },
+        { id: 'w9', from: 'ask', to: 'drafting', enter: 'history', by: 'fact', label: 'answered', when: '', requires: ['you answered'], on: ['decision answered'], move: 'auto', approve: 'none' },
+        { id: 'w10', from: 'propose', to: 'applied', by: 'fact', label: 'saved', when: '', requires: ['you saved it'], on: ['decision answered'], move: 'auto', approve: 'me' },
+        { id: 'w11', from: 'propose', to: 'draft', by: 'fact', label: 'asked again', when: '', requires: ['you asked for changes'], on: ['decision answered'], move: 'auto', approve: 'none' },
+        { id: 'w12', from: 'propose', to: 'declined', by: 'fact', label: 'discarded', when: '', requires: ['you discarded it'], on: ['decision answered'], move: 'auto', approve: 'none' },
+        { id: 'w13', from: '*', to: 'declined', by: 'hand', label: 'any state · by hand', when: '', requires: [], on: [], move: 'by hand', approve: 'me' }
+      ],
+      layout: {
+        w: 1000, h: 560, start: [44, 100], history: [520, 334],
+        states: { 'drafting': [20, 30, 540, 330], 'draft': [70, 80, 150, 56], 'check': [330, 80, 150, 56], 'review': [330, 250, 150, 56], 'ask': [70, 440, 150, 56],
+          'propose': [680, 80, 150, 56], 'applied': [900, 80, 90, 56], 'declined': [900, 440, 90, 56] },
+        edges: { w1: ['M220 100H330', 275, 100], w2: ['M330 124H220', 275, 124], w7: ['M145 136V440', 145, 290], w3: ['M380 136V250', 380, 193], w6: ['M330 278H175V136', 250, 278],
+          w4: ['M480 100H680', 620, 100], w5: ['M480 278H755V136', 620, 278], w8: ['M300 360V468H220', 300, 405], w9: ['M220 484H520V346', 400, 484],
+          w10: ['M830 108H900', 865, 108], w11: ['M705 80V14H8V120H70', 420, 14], w12: ['M790 136V468H900', 790, 300], w13: ['M640 530H945V496', 760, 530] }
+      }
+    }
+  },
+  /* One-state workflows: each action as it is today. */
+  oneState: ['triage', 'investigate', 'security audit', 'architecture audit', 'docs gap sweep', 'dependency review', 'steward'],
+
+  /* One machine per session. path = the parent states, outermost first. Sessions without one (plain shells) show no chip. */
+  sessions: {
+    'steward': { workflow: 'steward', state: 'align', kind: 'holds', note: 'organisation', oneState: true },
+    'kernel-lut': { workflow: 'implement', path: ['work'], state: 'review', to: 'fix', kind: 'waits', note: 'waits for you', round: 'review 2 of 3', owner: 'steward', since: '3 min' },
+    'review-kernel-212': { workflow: 'review', state: 'verdict', kind: 'over', note: 'returned fail', owner: 'kernel-lut' },
+    'qa-kernel-212': { workflow: 'qa-audit', state: 'report', kind: 'over', note: 'returned pass', owner: 'kernel-lut' },
+    'docs-edl': { workflow: 'docs', state: 'draft', to: 'publish', kind: 'moving', note: 'checking', owner: 'steward' },
+    'review-docs-88': { workflow: 'review', state: 'read', kind: 'holds', owner: 'docs-edl' },
+    'investigate-1184': { workflow: 'investigate', state: 'investigate', kind: 'up', note: 'sent up to the Steward', owner: 'steward', oneState: true },
+    'audit-hub': { workflow: 'security audit', state: 'done', kind: 'over', oneState: true },
+    'arch-kernel': { workflow: 'architecture audit', state: 'audit', kind: 'holds', oneState: true },
+    'triage-weekly': { workflow: 'triage', state: 'done', kind: 'over', oneState: true },
+    'shell-brightness': { workflow: 'implement', state: 'design', kind: 'waits', note: 'waits for ui#31', owner: 'steward' },
+    'design-brightness': { workflow: 'design-spike', state: 'look', kind: 'waits', note: 'waits for you', owner: 'shell-brightness' },
+    'author-implement': { workflow: 'workflow-change', path: [], state: 'propose', kind: 'waits', note: 'waits for you', owner: 'you', since: '2 min' }
+  },
+  /* The machine panel of kernel-lut. Newest first. by: judge, fact, counter, you, hub. */
+  panel: {
+    /* The change request: drafted twice, the checks passed the second time. */
+    'author-implement': { visited: ['drafting', 'draft', 'check'], taken: ['w1', 'w2', 'w4'], pending: '', exits: [], counters: [['Rounds', 'draft 2'], ['Since asked', '6 min']], evidence: [], children: [], history: [] },
+    'kernel-lut': {
+      visited: ['work', 'implement', 'review', 'fix'], taken: ['t1', 't3', 't6'], pending: 't3',
+      counters: [['Rounds', 'review 2 of 3 · fix 1'], ['In this state', '3 min'], ['Since start', '2 h 40 min'], ['Judge calls', '6, 1 set aside by you'], ['Tokens', '412 k of 600 k']],
+      /* Every exit of the current state, in order, then the parent's: how far each holds now. */
+      exits: [
+        { t: 't3', holds: true, result: 'holds · waits for you: it widens the grant', checks: [['reviewer.verdict == fail', true, 'review-kernel-212 returned fail, 3 findings'], ['rounds.review < 3', true, '2']] },
+        { t: 't4', holds: false, result: 'doesn’t hold', checks: [['reviewer.verdict == pass', false, 'fail'], ['qa.verdict == pass', true, 'qa-kernel-212 returned pass'], ['checks pass', true, '5 of 5']] },
+        { t: 't5', holds: false, result: 'doesn’t hold', checks: [['rounds.review >= 3', false, '2']] },
+        { t: 't7', holds: false, inherited: 'work', result: 'judge: no · last turn made progress', checks: [['time in state > 2 h or tokens > 600 k', false, '3 min · 412 k']] }
+      ],
+      evidence: [['fact', 'review-kernel-212 returned verdict = fail, 3 findings'], ['quote', '“epd_lut.c:142 still leaks the buffer when the header check fails.”']],
+      /* Managed sessions running under this state, each with its own machine. */
+      children: [
+        { sid: 'review-kernel-212', persona: 'Code reviewer', workflow: 'review', at: 'verdict', returned: 'fail · 3 findings', on_exit: 'stops when review is left' },
+        { sid: 'qa-kernel-212', persona: 'QA engineer', workflow: 'qa-audit', at: 'report', returned: 'pass · 1 finding (a slow test)', on_exit: 'kept: looks after the test setup' }
+      ],
+      history: [
+        { at: '11:52', from: 'review', to: 'fix', what: 'proposed', by: 'fact', signal: 'review-kernel-212 ended', evidence: 'verdict = fail, 3 findings · exits tried in order: → fix holds, → merge-ready and → escalated don’t', checks: 'reviewer.verdict == fail ✓ · rounds.review < 3 ✓', result: 'waits for you: it widens the grant', kind: 'waits' },
+        { at: '11:20', from: 'fix', to: 'review', what: 'moved', by: 'judge', signal: 'Stop', evidence: '“Every review thread has a fixup commit and the checks pass.”', checks: 'checks pass ✓ · branch pushed ✓', result: 'narrowed in the session: push and edits taken away · started review-kernel-212 again (fresh)', kind: 'holds', judge: 'small model · high' },
+        { at: '11:05', from: 'fix', to: 'review', what: 'set aside', by: 'you', signal: 'Stop', evidence: 'judge: “The fixups are in.” You: “dt-validate still fails on the binding example.”', checks: '—', result: 'stayed in fix', kind: 'hand' },
+        { at: '10:31', from: 'review', to: 'fix', what: 'moved', by: 'you', signal: 'review-kernel-212 ended', evidence: 'verdict = fail, 3 findings', checks: 'reviewer.verdict == fail ✓ · rounds.review < 3 ✓', result: 'widened: you confirmed · resumed the same conversation under launch 2', kind: 'holds' },
+        { at: '10:05', from: 'implement', to: 'review', what: 'moved', by: 'judge', signal: 'Stop · checks changed', evidence: '“All three cases in kernel#204 are handled and the tests pass.”', checks: 'branch pushed ✓ · PR open ✓ (kernel#212)', result: 'narrowed in the session · started review-kernel-212 and qa-kernel-212', kind: 'holds', judge: 'small model · high' },
+        { at: '09:12', from: '', to: 'work › implement', what: 'started', by: 'hub', signal: 'the Steward’s suggestion, accepted by you', evidence: 'covers kernel#204, kernel#219', checks: '—', result: 'launch 1', kind: 'holds' }
+      ]
+    }
+  },
+  /* What a move adds, per session: details the confirm modal shows beside the grant comparison. */
+  widen: {
+    'kernel-lut': { detail: { 'push to its branch': 'agent/kernel-lut only', 'edit files in its checkout': '~/hub-worktrees/kernel/agent-kernel-lut', 'Engineer · on demand, at most 1': 'its grant is capped at this session’s', 'Code reviewer · auto, at most 1': 'stopped when it leaves review', 'QA engineer · auto, at most 1': 'kept: on_exit = keep' },
+      how: 'The hub stops kernel-lut at the end of its turn and resumes the same conversation under a new launch with the new grant. Nothing it has done is lost.' },
+    'docs-edl': { from: 'draft', to: 'publish', adds: [['GitHub', 'push to its branch', 'agent/docs-edl only'], ['GitHub', 'merge to main', 'docs only, after your approved merge decision']],
+      removes: [], keeps: ['read issues and PRs', 'comment', 'edit files in its checkout', 'docs search', 'notes'],
+      how: 'The hub stops docs-edl at the end of its turn and resumes the same conversation under a new launch with the grant of publish.' }
+  },
+  /* A definition change the Steward proposes; it reaches you as a decision in Needs you. The editor opens it as a draft. */
+  change: {
+    id: 'd1', workflow: 'implement', from: 7, to: 8, scope: 'organisation default', by: 'steward', reviewer: 'review-wf-8', verdict: 'pass, 2 notes', waited: '25 min',
+    title: 'implement v7 → v8: QA rounds, fork runs, merging',
+    why: 'Two of the last five pieces of work ran three review rounds without a new finding after the second. Contributors’ fixes from forks wait on a person to approve their runs. Merges wait on a person twice: the merge decision and the merge itself.',
+    notes: ['The fork-run grant is per repository in effect: only repositories whose rulesets require an approving review are reached.', 'merge-ready still needs your approved merge decision: approve = "me" on → merged is unchanged.'],
+    /* The draft: what v8 changes in v7. */
+    patch: { grants: { 'review': { 'GitHub': ['approve runs from forks'] }, 'merge-ready': { 'GitHub': ['merge to main'] } }, requires: { t5: ['rounds.review >= 2'] } },
+    marks: { states: { 'review': 'changed', 'merge-ready': 'changed' }, edges: { t5: 'changed' } },
+    /* The fix the editor's check offers for the overlap it finds in the draft. */
+    fix: { requires: { t3: ['reviewer.verdict == fail or qa.verdict == fail', 'rounds.review < 2'] }, labels: { t3: 'a fail, < 2' }, edges: { t3: 'changed' } },
+    warnings: [
+      { item: 'approve runs from forks', where: 'work › review', what: 'Sessions in review could approve GitHub Actions runs on pull requests from forks, so code from outside the organisation runs on its runners.' },
+      { item: 'merge to main', where: 'merge-ready', what: 'Sessions in merge-ready could merge to main themselves once you have approved the merge decision for the PR head.' }
+    ],
+    affects: '4 sessions run implement now; each takes v8 at its next move. Repository overrides (kernel) keep their own changes on top.'
+  },
+  /* What the editor's check finds in the v8 draft. kind: problem, sensitive, ok. */
+  checks: [
+    { kind: 'problem', title: 'Two exits of review can hold at once', body: 'With reviewer.verdict == fail and rounds.review == 2, both → fix (rounds.review < 3) and → escalated (rounds.review >= 2) hold. The first in order moves (→ fix), so the new limit of 2 never applies.', fix: 'Set → fix to rounds.review < 2', at: 't3' },
+    { kind: 'sensitive', title: 'review grants approve runs from forks', body: 'One of the four sensitive items. Marked so you see it; it adds no rule.', at: 'review' },
+    { kind: 'sensitive', title: 'merge-ready grants merge to main', body: 'One of the four sensitive items. Merges still need your approved merge decision (→ merged: approve = me).', at: 'merge-ready' },
+    { kind: 'ok', title: 'Every state can be reached, and every state but the final ones has an exit', body: '' },
+    { kind: 'ok', title: 'Every loop is bounded by a counter', body: 'review ⇄ fix by rounds.review; work → escalated → work by tokens and time in state.' },
+    { kind: 'ok', title: 'Every requires names a fact the hub knows', body: '' }
+  ],
+  /* A design spike: a state started a Designer session for a question no accepted board answers. */
+  spike: {
+    id: 'd2', owner: 'shell-brightness', ownerPersona: 'Engineer', ownerState: 'design', designer: 'design-brightness', item: 'shell#288', pr: 'ui#31', waited: '8 min',
+    question: 'How does the brightness slider show the panel’s 16 steps, so each touch moves exactly one?',
+    raisedAt: 'implement, after 1 round', why: 'No accepted board covers the slider’s steps. The Designer has a draft with two boards.',
+    boards: [['shell', 'QuickSettings.dc.html', 'changed', 'the slider in quick settings, 16 marked steps'], ['shell', 'BrightnessSlider.dc.html', 'new', 'the slider on its own: drag, tap, keys']],
+    requires: 'design PR merged (ui#31)', after: 'it goes back into work where it left off (history), with the accepted boards as context.'
+  },
+  /* Changes asked for in words. The Workflow author's draft is a patch on the definition, like d1's. */
+  requests: {
+    r1: {
+      id: 'r1', workflow: 'implement', from: 7, to: 8, sid: 'author-implement', persona: 'Workflow author', model: 'claude-opus-5-5', asked: '10:40', ready: '10:46',
+      words: 'Changes under hubd/auth need a security review before they can merge. Have the Security auditor look at them during review, and send the work up if it finds anything HIGH. Also, two failed review rounds are enough: send it up then, not after three.',
+      about: ['work › review'],
+      summary: [
+        ['review runs a Security auditor', 'when the PR touches hubd/auth; a fresh one each time, stopped when review is left. Its grant is capped at review’s: read-only.'],
+        ['review → escalated on a HIGH finding, tried first', 'so a HIGH sends the work up even when the reviewer passes it.'],
+        ['review → escalated after 2 rounds', 'was 3.'],
+        ['review → fix below 2 rounds', 'was below 3. Draft 1 left it at 3, and the checks found that → fix and → escalated both held at 2 rounds.']
+      ],
+      drafts: [
+        { n: 1, at: '10:43', result: 'The checks found a problem: → fix (rounds < 3) and → escalated (rounds ≥ 2) both hold at 2 rounds, and → fix is tried first.', kind: 'problem' },
+        { n: 2, at: '10:46', result: 'The checks pass. No sensitive item, so no reviewer. Replayed on the last 5 sessions: kernel-lut would have gone up at 11:52 instead of to fix; the other 4 move as they did.', kind: 'ok' }
+      ],
+      patch: {
+        requires: { t3: ['reviewer.verdict == fail or qa.verdict == fail', 'rounds.review < 2'], t5: ['rounds.review >= 2'] },
+        labels: { t3: 'a fail, < 2', t5: 'rounds ≥ 2' },
+        manages: { review: [{ persona: 'Security auditor', workflow: 'security audit', start: 'auto', when: 'the PR touches hubd/auth', max: 1, reuse: 'fresh', on_exit: 'stop', returns: 'findings by severity' }] },
+        add: [{ id: 't14', from: 'review', to: 'escalated', by: 'fact', label: 'HIGH', when: '', requires: ['security.findings has HIGH'], on: ['managed session ended'], move: 'auto', approve: 'none' }],
+        order: { review: ['t14', 't3', 't4', 't5'] },
+        edges: { t14: ['M470 108H740V250', 740, 160] }
+      },
+      marks: { states: { review: 'changed' }, edges: { t3: 'changed', t5: 'changed', t14: 'changed' } },
+      checks: [
+        { kind: 'ok', title: 'The exits of review don’t overlap', body: '→ escalated on HIGH first, then → fix below 2 rounds, → merge-ready, → escalated from 2.' },
+        { kind: 'ok', title: 'Every state can be reached, and every state but the final ones has an exit', body: '' },
+        { kind: 'ok', title: 'Every loop is bounded by a counter', body: 'review ⇄ fix by rounds.review.' },
+        { kind: 'ok', title: 'Every requires names a fact the hub knows', body: 'security.findings comes from the Security auditor’s report.' },
+        { kind: 'ok', title: 'No sensitive item is granted', body: 'The auditor reads; it can’t push, comment or approve.' }
+      ]
+    }
+  }
+};
+
+/* The helpers the hub would run: effective grants (a parent's grant applies to its children), the grant
+   comparison that tells a widening move, a definition with a draft applied, and its text form. */
+(function (M) {
+  /* A draft is the definition with a patch on top. A patch names: grants to add per state, requires,
+     labels, sessions a state runs (manages), new transitions, the order of a state's exits and the
+     layout of new edges. */
+  M.apply = function (d, p, version) {
+    const s = {};
+    Object.keys(d.states).forEach((k) => {
+      const g = {}; Object.keys(d.states[k].grant || {}).forEach((x) => { g[x] = d.states[k].grant[x].slice(); });
+      Object.keys(((p.grants || {})[k] || {})).forEach((x) => { g[x] = (g[x] || []).concat(p.grants[k][x]); });
+      s[k] = { ...d.states[k], grant: g, manages: (d.states[k].manages || []).concat(((p.manages || {})[k]) || []) };
+    });
+    let ts = d.transitions.map((t) => ({ ...t, ...((p.requires || {})[t.id] ? { requires: p.requires[t.id] } : {}), ...((p.labels || {})[t.id] ? { label: p.labels[t.id] } : {}) })).concat(p.add || []);
+    const froms = []; ts.forEach((t) => { if (froms.indexOf(t.from) < 0) froms.push(t.from); });
+    ts = [].concat(...froms.map((f) => { const own = ts.filter((t) => t.from === f), o = (p.order || {})[f]; return o ? o.map((id) => own.find((t) => t.id === id)) : own; }));
+    const layout = p.edges ? { ...d.layout, edges: { ...d.layout.edges, ...p.edges } } : d.layout;
+    return { ...d, version: version || d.version + 1, draft: true, states: s, transitions: ts, layout };
+  };
+  /* fixed: also apply the fix the check offers for the overlap (→ fix becomes rounds.review < 2). */
+  M.def = function (name, draft, fixed) {
+    const d = M.defs[name];
+    if (!draft || name !== M.change.workflow) return d;
+    const c = M.change, p = { ...c.patch, requires: { ...c.patch.requires, ...(fixed ? c.fix.requires : {}) }, labels: { t5: 'rounds ≥ 2', ...(fixed ? c.fix.labels : {}) } };
+    return M.apply(d, p, c.to);
+  };
+  /* What a change request's draft makes of its workflow. */
+  M.requested = function (id) { const r = M.requests[id]; return M.apply(M.defs[r.workflow], r.patch, r.to); };
+  /* The outline of a definition as rows: each state, then its exits in order (a parent's after its
+     states'). With a second definition, the rows of both, each marked same, added, removed, changed
+     or moved; grants and sessions a state runs show only where they differ. */
+  M.outlineDiff = function (a, b) {
+    const G = { judge: '≈', fact: '=', counter: '#', hand: '' };
+    const why = (t) => (G[t.by] ? G[t.by] + ' ' : '') + (t.when ? '“' + t.when + '”' + (t.requires.length ? ' · requires ' + t.requires.join(', ') : '') : t.requires.length ? t.requires.join(', ') : 'by hand') + (t.approve !== 'none' ? ' · approve: ' + t.approve : '');
+    const rowsOf = (d) => {
+      const out = [], kids = (k) => Object.keys(d.states).filter((c) => d.states[c].parent === k);
+      const visit = (k, depth) => {
+        const st = d.states[k];
+        out.push({ key: 's:' + k, kind: 'state', depth, name: k, tag: st.kind === 'parent' ? 'parent' + (st.history ? ' · H' : '') : st.kind === 'final' ? 'final' : '' });
+        Object.entries(st.grant || {}).forEach(([g, xs]) => xs.forEach((x) => out.push({ key: 'g:' + k + ':' + g + ':' + x, kind: 'grant', depth: depth + 1, text: g + ': ' + x, item: x })));
+        (st.manages || []).forEach((m) => out.push({ key: 'm:' + k + ':' + m.persona, kind: 'manages', depth: depth + 1, text: 'runs ' + m.persona + ' (' + m.workflow + (m.when ? ', when ' + m.when : '') + ')' }));
+        kids(k).forEach((c) => visit(c, depth + 1));
+        M.exitsOf(d, k).forEach((t, i) => out.push({ key: 't:' + t.id, kind: 'exit', depth: depth + 1, n: st.kind === 'parent' ? 'then' : String(i + 1), to: t.to + (t.enter === 'history' ? ' (where it was)' : ''), why: why(t) }));
+      };
+      Object.keys(d.states).filter((k) => !d.states[k].parent).forEach((k) => visit(k, 0));
+      return out;
+    };
+    const A = rowsOf(a), B = b ? rowsOf(b) : A, ka = {}, kb = {};
+    A.forEach((r) => { ka[r.key] = r; }); B.forEach((r) => { kb[r.key] = r; });
+    const res = [];
+    const mark = (x, y) => {
+      if (!x) return 'added'; if (!y) return 'removed';
+      if (x.kind === 'exit') { if (x.to !== y.to || x.why !== y.why) return 'changed'; if (x.n !== y.n) return 'moved'; }
+      return 'same';
+    };
+    let ia = 0;
+    B.forEach((r) => {
+      /* Rows of the old outline that are gone come in where they stood, before the next row both share. */
+      if (ka[r.key]) { const at = A.indexOf(ka[r.key]); for (; ia < at; ia++) if (!kb[A[ia].key]) res.push({ ...A[ia], change: 'removed', before: A[ia], after: null }); ia = Math.max(ia, at + 1); }
+      res.push({ ...r, change: mark(ka[r.key], r), before: ka[r.key] || null, after: r });
+    });
+    for (; ia < A.length; ia++) if (!kb[A[ia].key]) res.push({ ...A[ia], change: 'removed', before: A[ia], after: null });
+    /* A state holds a change when one of its rows does. */
+    res.forEach((r, i) => { if (r.kind === 'state') { let j = i + 1, any = false; while (j < res.length && !(res[j].kind === 'state' && res[j].depth <= r.depth)) { if (res[j].change !== 'same') any = true; j++; } r.holds = any; } });
+    return res.filter((r) => r.kind === 'state' || r.kind === 'exit' || r.change !== 'same');
+  };
+  M.chain = function (d, id) { const out = []; let k = id; while (k) { out.unshift(k); k = (d.states[k] || {}).parent; } return out; };
+  M.effective = function (d, id) {
+    const g = {}, from = {};
+    M.chain(d, id).forEach((k) => {
+      Object.entries(d.states[k].grant || {}).forEach(([kind, xs]) => { if (kind === 'Permission mode') { g[kind] = xs.slice(); xs.forEach((x) => { from[kind + ':' + x] = k; }); return; } g[kind] = (g[kind] || []).concat(xs.filter((x) => (g[kind] || []).indexOf(x) < 0)); xs.forEach((x) => { if (!from[kind + ':' + x]) from[kind + ':' + x] = k; }); });
+      (d.states[k].manages || []).forEach((m) => { g['Sessions'] = (g['Sessions'] || []).concat([m.persona + ' · ' + (m.start === 'auto' ? 'auto' : 'on demand') + ', at most ' + m.max]); });
+    });
+    return { grant: g, from };
+  };
+  M.compare = function (workflow, from, to) {
+    const d = M.defs[workflow], a = M.effective(d, from).grant, b = M.effective(d, to).grant, out = { adds: [], removes: [], keeps: [] };
+    M.grantKinds.forEach((k) => {
+      (b[k] || []).forEach((x) => { if ((a[k] || []).indexOf(x) < 0) out.adds.push([k, x]); else out.keeps.push(x); });
+      (a[k] || []).forEach((x) => { if ((b[k] || []).indexOf(x) < 0) out.removes.push([k, x]); });
+    });
+    return out;
+  };
+  /* A line diff (longest common subsequence), with n lines of context around each change. */
+  M.diff = function (a, b, n) {
+    const m = a.length, k = b.length, T = Array.from({ length: m + 1 }, () => new Array(k + 1).fill(0));
+    for (let i = m - 1; i >= 0; i--) for (let j = k - 1; j >= 0; j--) T[i][j] = a[i] === b[j] ? T[i + 1][j + 1] + 1 : Math.max(T[i + 1][j], T[i][j + 1]);
+    const out = []; let i = 0, j = 0;
+    while (i < m || j < k) {
+      if (i < m && j < k && a[i] === b[j]) { out.push(['', a[i]]); i++; j++; }
+      else if (i < m && (j === k || T[i + 1][j] >= T[i][j + 1])) { out.push(['del', a[i]]); i++; }
+      else { out.push(['add', b[j]]); j++; }
+    }
+    const keep = out.map(() => false), head = (x) => /^\[/.test(x);
+    out.forEach((d, x) => { if (d[0]) { for (let y = Math.max(0, x - n); y <= Math.min(out.length - 1, x + n); y++) keep[y] = true;
+      for (let y = x; y >= 0; y--) if (head(out[y][1])) { keep[y] = true; break; } } });
+    const res = []; let gap = false;
+    out.forEach((d, x) => { if (keep[x]) { if (gap && res.length) res.push(['gap', '⋯']); res.push(d); gap = false; } else gap = true; });
+    return res;
+  };
+  M.exitsOf = function (d, id) { return d.transitions.filter((t) => t.from === id); };
+  M.text = function (d) {
+    const L = [], q = (xs) => '[' + xs.map((x) => '"' + x + '"').join(', ') + ']', name = (k) => M.chain(d, k).join('.');
+    L.push('# ' + d.title + ' v' + d.version + (d.draft ? ' (draft)' : '') + ' · ' + d.scope);
+    L.push('initial = "' + d.initial + '"');
+    Object.entries(d.states).forEach(([k, s]) => {
+      L.push(''); L.push('[state.' + name(k) + ']');
+      if (s.kind === 'parent') { L.push('initial = "' + s.initial + '"'); if (s.history) L.push('history = true'); }
+      if (s.kind === 'final') L.push('final = true');
+      if (s.personas) L.push('personas = ' + q(s.personas));
+      if (s.context && s.kind !== 'final') L.push('context = "' + s.context + '"');
+      Object.entries(s.grant || {}).forEach(([kind, xs]) => { L.push('grant.' + kind.toLowerCase().replace(/ /g, '_') + ' = ' + q(xs)); });
+      (s.manages || []).forEach((m) => { L.push('manages = { persona = "' + m.persona + '", workflow = "' + m.workflow + '", start = "' + m.start + '"' + (m.when ? ', when = "' + m.when + '"' : '') + ', max = ' + m.max + ', reuse = "' + m.reuse + '", on_exit = "' + m.on_exit + '" }'); });
+      d.transitions.filter((t) => t.from === k).forEach((t) => {
+        L.push('[[state.' + name(k) + '.transition]]');
+        L.push('to = "' + name(t.to) + '"' + (t.enter === 'history' ? '   # back to where it was' : ''));
+        if (t.when) L.push('when = "' + t.when + '"');
+        if (t.requires.length) L.push('requires = ' + q(t.requires));
+        if (t.on.length) L.push('on = ' + q(t.on));
+        L.push('move = "' + t.move + '"' + (t.approve !== 'none' ? '\napprove = "' + t.approve + '"' : ''));
+      });
+    });
+    d.transitions.filter((t) => t.from === '*').forEach((t) => { L.push(''); L.push('[[transition]]   # from any state'); L.push('to = "' + t.to + '"'); L.push('move = "by hand"'); });
+    return L.join('\n').split('\n');
+  };
+})(window.HUB.machine);

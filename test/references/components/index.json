@@ -554,6 +554,276 @@
    "width": 390,
    "height": 152
   },
+  "Chip/desktop/editorial-eink-1": {
+   "file": "577bd7b52b786616.png",
+   "width": 1280,
+   "height": 82
+  },
+  "Chip/desktop/editorial-eink-2": {
+   "file": "577bd7b52b786616.png",
+   "width": 1280,
+   "height": 82
+  },
+  "Chip/desktop/editorial-eink-3": {
+   "file": "577bd7b52b786616.png",
+   "width": 1280,
+   "height": 82
+  },
+  "Chip/desktop/editorial-night-1": {
+   "file": "bc19f8a2162efb0d.png",
+   "width": 1280,
+   "height": 82
+  },
+  "Chip/desktop/editorial-night-2": {
+   "file": "0e1a1c18a1586714.png",
+   "width": 1280,
+   "height": 82
+  },
+  "Chip/desktop/editorial-night-3": {
+   "file": "dd7ce84399de0b20.png",
+   "width": 1280,
+   "height": 82
+  },
+  "Chip/desktop/editorial-paper-1": {
+   "file": "b6397b94fd6eb218.png",
+   "width": 1280,
+   "height": 82
+  },
+  "Chip/desktop/editorial-paper-2": {
+   "file": "c4527f429dc4194d.png",
+   "width": 1280,
+   "height": 82
+  },
+  "Chip/desktop/editorial-paper-3": {
+   "file": "55a3199c255d93f3.png",
+   "width": 1280,
+   "height": 82
+  },
+  "Chip/desktop/stationery-eink-1": {
+   "file": "2445da6f8863949e.png",
+   "width": 1280,
+   "height": 82
+  },
+  "Chip/desktop/stationery-eink-2": {
+   "file": "2445da6f8863949e.png",
+   "width": 1280,
+   "height": 82
+  },
+  "Chip/desktop/stationery-eink-3": {
+   "file": "2445da6f8863949e.png",
+   "width": 1280,
+   "height": 82
+  },
+  "Chip/desktop/stationery-night-1": {
+   "file": "877ee5ea1aa20961.png",
+   "width": 1280,
+   "height": 82
+  },
+  "Chip/desktop/stationery-night-2": {
+   "file": "877ee5ea1aa20961.png",
+   "width": 1280,
+   "height": 82
+  },
+  "Chip/desktop/stationery-night-3": {
+   "file": "877ee5ea1aa20961.png",
+   "width": 1280,
+   "height": 82
+  },
+  "Chip/desktop/stationery-paper-1": {
+   "file": "50f492511f867d44.png",
+   "width": 1280,
+   "height": 82
+  },
+  "Chip/desktop/stationery-paper-2": {
+   "file": "50f492511f867d44.png",
+   "width": 1280,
+   "height": 82
+  },
+  "Chip/desktop/stationery-paper-3": {
+   "file": "50f492511f867d44.png",
+   "width": 1280,
+   "height": 82
+  },
+  "Chip/desktop/white-eink-1": {
+   "file": "9ae3173a02dc76e1.png",
+   "width": 1280,
+   "height": 82
+  },
+  "Chip/desktop/white-eink-2": {
+   "file": "9ae3173a02dc76e1.png",
+   "width": 1280,
+   "height": 82
+  },
+  "Chip/desktop/white-eink-3": {
+   "file": "9ae3173a02dc76e1.png",
+   "width": 1280,
+   "height": 82
+  },
+  "Chip/desktop/white-night-1": {
+   "file": "e16a021c79772a91.png",
+   "width": 1280,
+   "height": 82
+  },
+  "Chip/desktop/white-night-2": {
+   "file": "1af9fb1f06d3740f.png",
+   "width": 1280,
+   "height": 82
+  },
+  "Chip/desktop/white-night-3": {
+   "file": "02943549702d844a.png",
+   "width": 1280,
+   "height": 82
+  },
+  "Chip/desktop/white-paper-1": {
+   "file": "cd555ea9dcf4ce52.png",
+   "width": 1280,
+   "height": 82
+  },
+  "Chip/desktop/white-paper-2": {
+   "file": "d23cc774532e1765.png",
+   "width": 1280,
+   "height": 82
+  },
+  "Chip/desktop/white-paper-3": {
+   "file": "94cc8256505d7e3d.png",
+   "width": 1280,
+   "height": 82
+  },
+  "Chip/phone/editorial-eink-1": {
+   "file": "6f81b23a47f77008.png",
+   "width": 390,
+   "height": 196
+  },
+  "Chip/phone/editorial-eink-2": {
+   "file": "6f81b23a47f77008.png",
+   "width": 390,
+   "height": 196
+  },
+  "Chip/phone/editorial-eink-3": {
+   "file": "6f81b23a47f77008.png",
+   "width": 390,
+   "height": 196
+  },
+  "Chip/phone/editorial-night-1": {
+   "file": "6ce188ec4dd72b69.png",
+   "width": 390,
+   "height": 196
+  },
+  "Chip/phone/editorial-night-2": {
+   "file": "890e833f5d5e25a0.png",
+   "width": 390,
+   "height": 196
+  },
+  "Chip/phone/editorial-night-3": {
+   "file": "33e3d77b4d3d94eb.png",
+   "width": 390,
+   "height": 196
+  },
+  "Chip/phone/editorial-paper-1": {
+   "file": "92b8ed0e6db9266f.png",
+   "width": 390,
+   "height": 196
+  },
+  "Chip/phone/editorial-paper-2": {
+   "file": "8028ccee86272c0f.png",
+   "width": 390,
+   "height": 196
+  },
+  "Chip/phone/editorial-paper-3": {
+   "file": "237808d5a257996c.png",
+   "width": 390,
+   "height": 196
+  },
+  "Chip/phone/stationery-eink-1": {
+   "file": "b27f3b1e5240a1c6.png",
+   "width": 390,
+   "height": 234
+  },
+  "Chip/phone/stationery-eink-2": {
+   "file": "b27f3b1e5240a1c6.png",
+   "width": 390,
+   "height": 234
+  },
+  "Chip/phone/stationery-eink-3": {
+   "file": "b27f3b1e5240a1c6.png",
+   "width": 390,
+   "height": 234
+  },
+  "Chip/phone/stationery-night-1": {
+   "file": "c51b6adc0212007e.png",
+   "width": 390,
+   "height": 234
+  },
+  "Chip/phone/stationery-night-2": {
+   "file": "c51b6adc0212007e.png",
+   "width": 390,
+   "height": 234
+  },
+  "Chip/phone/stationery-night-3": {
+   "file": "c51b6adc0212007e.png",
+   "width": 390,
+   "height": 234
+  },
+  "Chip/phone/stationery-paper-1": {
+   "file": "d00b0ef3e6d9295c.png",
+   "width": 390,
+   "height": 234
+  },
+  "Chip/phone/stationery-paper-2": {
+   "file": "d00b0ef3e6d9295c.png",
+   "width": 390,
+   "height": 234
+  },
+  "Chip/phone/stationery-paper-3": {
+   "file": "d00b0ef3e6d9295c.png",
+   "width": 390,
+   "height": 234
+  },
+  "Chip/phone/white-eink-1": {
+   "file": "de2ec6d69ee1231f.png",
+   "width": 390,
+   "height": 196
+  },
+  "Chip/phone/white-eink-2": {
+   "file": "de2ec6d69ee1231f.png",
+   "width": 390,
+   "height": 196
+  },
+  "Chip/phone/white-eink-3": {
+   "file": "de2ec6d69ee1231f.png",
+   "width": 390,
+   "height": 196
+  },
+  "Chip/phone/white-night-1": {
+   "file": "1f7275abeef3f83b.png",
+   "width": 390,
+   "height": 196
+  },
+  "Chip/phone/white-night-2": {
+   "file": "9801dc7c7b342e86.png",
+   "width": 390,
+   "height": 196
+  },
+  "Chip/phone/white-night-3": {
+   "file": "5907d2e3285eb1a9.png",
+   "width": 390,
+   "height": 196
+  },
+  "Chip/phone/white-paper-1": {
+   "file": "1fc5bd8e608b0412.png",
+   "width": 390,
+   "height": 196
+  },
+  "Chip/phone/white-paper-2": {
+   "file": "8e543581fd6b670e.png",
+   "width": 390,
+   "height": 196
+  },
+  "Chip/phone/white-paper-3": {
+   "file": "d74df4990af700b1.png",
+   "width": 390,
+   "height": 196
+  },
   "CodeBlock/desktop/editorial-eink-1": {
    "file": "80255e74a30cdada.png",
    "width": 1280,
@@ -1363,6 +1633,276 @@
    "file": "a05a360fed36127e.png",
    "width": 390,
    "height": 262
+  },
+  "Dialog/desktop/editorial-eink-1": {
+   "file": "95df336b57046e7d.png",
+   "width": 1280,
+   "height": 420
+  },
+  "Dialog/desktop/editorial-eink-2": {
+   "file": "95df336b57046e7d.png",
+   "width": 1280,
+   "height": 420
+  },
+  "Dialog/desktop/editorial-eink-3": {
+   "file": "95df336b57046e7d.png",
+   "width": 1280,
+   "height": 420
+  },
+  "Dialog/desktop/editorial-night-1": {
+   "file": "b61cf771daecb4c7.png",
+   "width": 1280,
+   "height": 420
+  },
+  "Dialog/desktop/editorial-night-2": {
+   "file": "cc8e148ce66b44d0.png",
+   "width": 1280,
+   "height": 420
+  },
+  "Dialog/desktop/editorial-night-3": {
+   "file": "68b791c2ea4e1c96.png",
+   "width": 1280,
+   "height": 420
+  },
+  "Dialog/desktop/editorial-paper-1": {
+   "file": "e26537d6177cd6c6.png",
+   "width": 1280,
+   "height": 420
+  },
+  "Dialog/desktop/editorial-paper-2": {
+   "file": "661c7e20adfb22a9.png",
+   "width": 1280,
+   "height": 420
+  },
+  "Dialog/desktop/editorial-paper-3": {
+   "file": "358ebe219426de38.png",
+   "width": 1280,
+   "height": 420
+  },
+  "Dialog/desktop/stationery-eink-1": {
+   "file": "d09bc582b4beda80.png",
+   "width": 1280,
+   "height": 420
+  },
+  "Dialog/desktop/stationery-eink-2": {
+   "file": "d09bc582b4beda80.png",
+   "width": 1280,
+   "height": 420
+  },
+  "Dialog/desktop/stationery-eink-3": {
+   "file": "d09bc582b4beda80.png",
+   "width": 1280,
+   "height": 420
+  },
+  "Dialog/desktop/stationery-night-1": {
+   "file": "fef9a9f89a0feb63.png",
+   "width": 1280,
+   "height": 420
+  },
+  "Dialog/desktop/stationery-night-2": {
+   "file": "47dd1ae373152180.png",
+   "width": 1280,
+   "height": 420
+  },
+  "Dialog/desktop/stationery-night-3": {
+   "file": "bcd7e71d405c94a6.png",
+   "width": 1280,
+   "height": 420
+  },
+  "Dialog/desktop/stationery-paper-1": {
+   "file": "f3028ceb4322a8bd.png",
+   "width": 1280,
+   "height": 420
+  },
+  "Dialog/desktop/stationery-paper-2": {
+   "file": "961fcf1c7a819f3e.png",
+   "width": 1280,
+   "height": 420
+  },
+  "Dialog/desktop/stationery-paper-3": {
+   "file": "167b72db483281ea.png",
+   "width": 1280,
+   "height": 420
+  },
+  "Dialog/desktop/white-eink-1": {
+   "file": "b162951b92f346de.png",
+   "width": 1280,
+   "height": 420
+  },
+  "Dialog/desktop/white-eink-2": {
+   "file": "b162951b92f346de.png",
+   "width": 1280,
+   "height": 420
+  },
+  "Dialog/desktop/white-eink-3": {
+   "file": "b162951b92f346de.png",
+   "width": 1280,
+   "height": 420
+  },
+  "Dialog/desktop/white-night-1": {
+   "file": "048a947327aab414.png",
+   "width": 1280,
+   "height": 420
+  },
+  "Dialog/desktop/white-night-2": {
+   "file": "e83287d134693349.png",
+   "width": 1280,
+   "height": 420
+  },
+  "Dialog/desktop/white-night-3": {
+   "file": "e4a0c1debf118c15.png",
+   "width": 1280,
+   "height": 420
+  },
+  "Dialog/desktop/white-paper-1": {
+   "file": "579d311c78cefe30.png",
+   "width": 1280,
+   "height": 420
+  },
+  "Dialog/desktop/white-paper-2": {
+   "file": "6ab0df927f54e767.png",
+   "width": 1280,
+   "height": 420
+  },
+  "Dialog/desktop/white-paper-3": {
+   "file": "bfbac1b0fe04c645.png",
+   "width": 1280,
+   "height": 420
+  },
+  "Dialog/phone/editorial-eink-1": {
+   "file": "d980adbf58ad1f7b.png",
+   "width": 390,
+   "height": 445
+  },
+  "Dialog/phone/editorial-eink-2": {
+   "file": "d980adbf58ad1f7b.png",
+   "width": 390,
+   "height": 445
+  },
+  "Dialog/phone/editorial-eink-3": {
+   "file": "d980adbf58ad1f7b.png",
+   "width": 390,
+   "height": 445
+  },
+  "Dialog/phone/editorial-night-1": {
+   "file": "9934cab623ae42ee.png",
+   "width": 390,
+   "height": 445
+  },
+  "Dialog/phone/editorial-night-2": {
+   "file": "638a21ed3e28ad5a.png",
+   "width": 390,
+   "height": 445
+  },
+  "Dialog/phone/editorial-night-3": {
+   "file": "9d30cb6e9dea8571.png",
+   "width": 390,
+   "height": 445
+  },
+  "Dialog/phone/editorial-paper-1": {
+   "file": "c378e6fe0bc4c301.png",
+   "width": 390,
+   "height": 445
+  },
+  "Dialog/phone/editorial-paper-2": {
+   "file": "047031515f8449b6.png",
+   "width": 390,
+   "height": 445
+  },
+  "Dialog/phone/editorial-paper-3": {
+   "file": "b4d0938b1f9130e4.png",
+   "width": 390,
+   "height": 445
+  },
+  "Dialog/phone/stationery-eink-1": {
+   "file": "4b477aacd4bf02ea.png",
+   "width": 390,
+   "height": 484
+  },
+  "Dialog/phone/stationery-eink-2": {
+   "file": "4b477aacd4bf02ea.png",
+   "width": 390,
+   "height": 484
+  },
+  "Dialog/phone/stationery-eink-3": {
+   "file": "4b477aacd4bf02ea.png",
+   "width": 390,
+   "height": 484
+  },
+  "Dialog/phone/stationery-night-1": {
+   "file": "df945a7528aa3fc0.png",
+   "width": 390,
+   "height": 484
+  },
+  "Dialog/phone/stationery-night-2": {
+   "file": "9e4df0925df3cc72.png",
+   "width": 390,
+   "height": 484
+  },
+  "Dialog/phone/stationery-night-3": {
+   "file": "31c1582552f74f6a.png",
+   "width": 390,
+   "height": 484
+  },
+  "Dialog/phone/stationery-paper-1": {
+   "file": "ec96baeb015b6221.png",
+   "width": 390,
+   "height": 484
+  },
+  "Dialog/phone/stationery-paper-2": {
+   "file": "e41ac85ef5ccbf11.png",
+   "width": 390,
+   "height": 484
+  },
+  "Dialog/phone/stationery-paper-3": {
+   "file": "8e70c24c8cf0dcae.png",
+   "width": 390,
+   "height": 484
+  },
+  "Dialog/phone/white-eink-1": {
+   "file": "684e458e6b3b9e74.png",
+   "width": 390,
+   "height": 429
+  },
+  "Dialog/phone/white-eink-2": {
+   "file": "684e458e6b3b9e74.png",
+   "width": 390,
+   "height": 429
+  },
+  "Dialog/phone/white-eink-3": {
+   "file": "684e458e6b3b9e74.png",
+   "width": 390,
+   "height": 429
+  },
+  "Dialog/phone/white-night-1": {
+   "file": "2e6143373a83dc84.png",
+   "width": 390,
+   "height": 429
+  },
+  "Dialog/phone/white-night-2": {
+   "file": "857603255061f162.png",
+   "width": 390,
+   "height": 429
+  },
+  "Dialog/phone/white-night-3": {
+   "file": "a443dac1ac7c9699.png",
+   "width": 390,
+   "height": 429
+  },
+  "Dialog/phone/white-paper-1": {
+   "file": "fb785f05f5518843.png",
+   "width": 390,
+   "height": 429
+  },
+  "Dialog/phone/white-paper-2": {
+   "file": "4cdea2f79a02c973.png",
+   "width": 390,
+   "height": 429
+  },
+  "Dialog/phone/white-paper-3": {
+   "file": "2b13d62c6a56ac41.png",
+   "width": 390,
+   "height": 429
   },
   "Footer/desktop/editorial-eink-1": {
    "file": "35e6a44f877c9f22.png",

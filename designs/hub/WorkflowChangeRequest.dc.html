@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Workflow change request</title>
+<script src="./support.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="workflow.css">
+</helmet>
+<div class="wf il-page" data-theme="{{ theme }}" data-pen="{{ pen }}" style="{{ pad }}">
+
+  <sc-if value="{{ asking }}" hint-placeholder-val="{{ false }}">
+    <section class="wf-decision" aria-labelledby="rq-a-t">
+      <div class="wf-stack" style="gap: var(--space-2)">
+        <span class="il-label">Workflows · implement · ask for a change</span>
+        <h2 class="wf-h2" id="rq-a-t">What should change in implement?</h2>
+        <p class="wf-small wf-soft">Say it in your words. The Workflow author drafts the change. The hub checks the draft and replays it on past sessions, and you get the before and after. Nothing changes until you save.</p>
+      </div>
+      <label class="wf-field"><span>Your request</span><textarea class="wf-ask" id="rq-words">{{ r.words }}</textarea></label>
+      <div class="wf-row">
+        <label class="wf-field" style="flex: 1 1 14rem"><span>About</span><select><option>work › review (selected in the editor)</option><option>the whole workflow</option></select></label>
+        <label class="wf-field" style="flex: 1 1 14rem"><span>Start from</span><select><option>v7 · in use</option><option>v8 · draft from the Steward</option></select></label>
+      </div>
+      <dl class="wf-kv wf-small">
+        <dt>Drafted by</dt><dd>a Workflow author session (claude-opus-5-5), running the workflow <span class="wf-mono">workflow-change</span> v1</dd>
+        <dt>It may</dt><dd>read workflows and session history, search the docs and notes, and write drafts</dd>
+        <dt>It may not</dt><dd>save a workflow, or change a session: no state of its workflow grants that</dd>
+      </dl>
+      <div class="wf-actions"><button type="button" class="il-btn il-btn--primary" id="rq-ask" onClick="{{ ask }}">Ask the Workflow author</button><a class="il-btn" href="WorkflowEditor.dc.html">Back to the editor</a></div>
+    </section>
+  </sc-if>
+
+  <sc-if value="{{ drafting }}" hint-placeholder-val="{{ false }}">
+    <section class="wf-decision" aria-labelledby="rq-d-t" aria-live="polite">
+      <div class="wf-decision__head">
+        <div class="wf-stack" style="flex: 1 1 320px; gap: var(--space-2)">
+          <span class="il-label">Workflows · implement · a change you asked for</span>
+          <h2 class="wf-h2" id="rq-d-t">{{ draftTitle }}</h2>
+          <p class="wf-small wf-soft">{{ draftNote }}</p>
+        </div>
+        <dc-import name="StateChip" sid="author-implement" kind="moving" label="draft" note="{{ chipNote }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="260px,30px"></dc-import>
+      </div>
+      <ol class="wf-checklist">
+        <sc-for list="{{ steps }}" as="k" hint-placeholder-count="4"><li data-kind="{{ k.kind }}"><span class="wf-checklist__mark" aria-hidden="true">{{ k.mark }}</span><span class="wf-checklist__body"><strong>{{ k.title }}</strong><span class="wf-small">{{ k.body }}</span></span></li></sc-for>
+      </ol>
+      <p class="wf-small">You can leave: it comes to Needs you when it is ready, or with a question if your request is unclear.</p>
+    </section>
+  </sc-if>
+
+  <sc-if value="{{ proposed }}" hint-placeholder-val="{{ true }}">
+    <article class="wf-decision" aria-labelledby="rq-t">
+      <div class="wf-decision__head">
+        <div class="wf-stack" style="flex: 1 1 320px; gap: var(--space-2)">
+          <span class="il-label">Needs you · a change you asked for</span>
+          <h2 class="wf-h2" id="rq-t">implement v7 → v8: a security review in review, up after 2 rounds</h2>
+          <p class="wf-small wf-soft">Drafted by author-implement (Workflow author) in 6 min, in 2 drafts · asked at {{ r.asked }} · ready at {{ r.ready }}</p>
+        </div>
+        <dc-import name="StateChip" sid="author-implement" kind="{{ chip.kind }}" label="{{ chip.label }}" note="{{ chip.note }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="260px,30px"></dc-import>
+      </div>
+
+      <section class="wf-stack" aria-labelledby="rq-you">
+        <h3 class="wf-h3" id="rq-you">You asked</h3>
+        <p class="wf-quote" style="max-width: var(--measure)">{{ r.words }}</p>
+        <p class="wf-small wf-soft">About work › review · from v7</p>
+      </section>
+
+      <section class="wf-stack" aria-labelledby="rq-what">
+        <h3 class="wf-h3" id="rq-what">What the author changed</h3>
+        <ul class="wf-stack">
+          <sc-for list="{{ summary }}" as="s" hint-placeholder-count="4"><li class="wf-stack" style="gap: 2px"><strong>{{ s.what }}</strong><span class="wf-small">{{ s.why }}</span></li></sc-for>
+        </ul>
+      </section>
+
+      <section class="wf-stack" aria-labelledby="rq-ba">
+        <div class="wf-row" style="justify-content: space-between">
+          <h3 class="wf-h3" id="rq-ba">Before and after</h3>
+          <div class="wf-seg" role="group" aria-label="Show">
+            <span class="wf-wide-only"><button type="button" class="il-btn" aria-pressed="{{ v.split }}" onClick="{{ toSplit }}" id="rq-v-split">Side by side</button></span>
+            <button type="button" class="il-btn" aria-pressed="{{ v.unified }}" onClick="{{ toUnified }}" id="rq-v-unified">One column</button>
+            <span class="wf-wide-only"><button type="button" class="il-btn" aria-pressed="{{ v.diagram }}" onClick="{{ toDiagram }}" id="rq-v-diagram">Diagram</button></span>
+            <button type="button" class="il-btn" aria-pressed="{{ v.text }}" onClick="{{ toText }}" id="rq-v-text">Text</button>
+          </div>
+        </div>
+        <sc-if value="{{ showOutline }}" hint-placeholder-val="{{ true }}">
+          <div class="wf-row"><button type="button" class="il-btn" aria-pressed="{{ onlyP }}" onClick="{{ toggleOnly }}" id="rq-only">Only what changes</button><span class="wf-small wf-soft">The outline lists each state’s exits in the order they are tried, so a new branch or a new order shows as well as a new condition.</span></div>
+          <dc-import name="MachineOutlineDiff" workflow="implement" request="r1" mode="{{ odMode }}" only="{{ only }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,900px"></dc-import>
+        </sc-if>
+        <sc-if value="{{ showDiagram }}" hint-placeholder-val="{{ false }}">
+          <div class="wf-stack">
+            <span class="il-label">Before · v7</span>
+            <dc-import name="MachineDiagram" workflow="implement" def="{{ before }}" sid="" tag="before" legend="{{ false }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,600px"></dc-import>
+            <span class="il-label">After · v8 draft · changes marked CHANGED</span>
+            <dc-import name="MachineDiagram" workflow="implement" def="{{ after }}" sid="" marks="{{ r.marks }}" tag="after" legend="{{ false }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,600px"></dc-import>
+          </div>
+        </sc-if>
+        <sc-if value="{{ showText }}" hint-placeholder-val="{{ false }}">
+          <div class="il-code">
+            <div class="il-code__head"><span class="wf-mono">implement · v7 → v8 draft</span><span class="wf-small wf-soft">{{ diffStat }}</span></div>
+            <pre><sc-for list="{{ diff }}" as="d" hint-placeholder-count="14"><span class="{{ d.cls }}"><span class="wf-sr">{{ d.sr }}</span>{{ d.text }}</span></sc-for></pre>
+          </div>
+        </sc-if>
+      </section>
+
+      <section class="wf-stack" aria-labelledby="rq-how">
+        <h3 class="wf-h3" id="rq-how">How the draft got here</h3>
+        <div class="wf-wide-only"><dc-import name="MachineDiagram" workflow="workflow-change" sid="author-implement" legend="{{ false }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,560px"></dc-import></div>
+        <ol class="wf-hist">
+          <sc-for list="{{ drafts }}" as="h" hint-placeholder-count="2">
+            <li data-kind="{{ h.kind }}"><span class="wf-hist__at">{{ h.at }}</span><span class="wf-hist__dot" aria-hidden="true"></span><div class="wf-hist__body"><span><strong>Draft {{ h.n }}</strong> · {{ h.word }}</span><span class="wf-small">{{ h.result }}</span></div></li>
+          </sc-for>
+        </ol>
+        <p class="wf-small wf-soft">The author’s own workflow, <span class="wf-mono">workflow-change</span> v1: it drafts inside drafting, the hub checks each draft, and a draft that grants a sensitive item goes to a reviewer first. After three failed drafts it asks you.</p>
+      </section>
+
+      <section class="wf-stack" aria-labelledby="rq-chk">
+        <h3 class="wf-h3" id="rq-chk">The hub’s checks on draft 2</h3>
+        <ol class="wf-checklist">
+          <sc-for list="{{ checks }}" as="k" hint-placeholder-count="5"><li data-kind="{{ k.kind }}"><span class="wf-checklist__mark" aria-hidden="true">{{ k.mark }}</span><span class="wf-checklist__body"><span><span class="wf-sr">{{ k.sr }}</span><strong>{{ k.title }}</strong></span><sc-if value="{{ k.hasBody }}" hint-placeholder-val="{{ false }}"><span class="wf-small">{{ k.body }}</span></sc-if></span></li></sc-for>
+        </ol>
+      </section>
+
+      <sc-if value="{{ open }}" hint-placeholder-val="{{ true }}">
+        <div class="wf-stack" style="padding-top: var(--space-4); border-top: var(--v-row-rule)">
+          <div class="wf-actions">
+            <button type="button" class="il-btn il-btn--primary" id="rq-save" onClick="{{ openSave }}">Save as v8…</button>
+            <a class="il-btn" href="WorkflowEditor.dc.html">Open it in the editor</a>
+            <button type="button" class="il-btn" id="rq-again" aria-expanded="{{ againP }}" onClick="{{ toggleAgain }}">Ask for changes…</button>
+            <button type="button" class="il-btn" id="rq-discard" onClick="{{ discard }}">Discard it</button>
+          </div>
+          <sc-if value="{{ again }}" hint-placeholder-val="{{ false }}">
+            <label class="wf-field"><span>What should the author change?</span><textarea id="rq-note">Only send it up on a HIGH finding when the reviewer fails it too; a HIGH on its own should go to fix.</textarea></label>
+            <div class="wf-actions"><button type="button" class="il-btn" id="rq-send" onClick="{{ send }}">Send it back to the author</button></div>
+          </sc-if>
+          <p class="wf-small wf-soft">Opening it in the editor makes it your draft; the author’s session ends. Saving from here is the same save as in the editor.</p>
+        </div>
+      </sc-if>
+      <sc-if value="{{ answered }}" hint-placeholder-val="{{ false }}">
+        <div class="wf-box" aria-live="polite"><span class="wf-by">{{ answerTag }}</span><p>{{ answerText }}</p></div>
+      </sc-if>
+    </article>
+  </sc-if>
+
+  <sc-if value="{{ dialog }}" hint-placeholder-val="{{ false }}">
+    <div class="il-dialog-scrim" style="position: fixed">
+      <section class="il-dialog" role="dialog" aria-modal="true" aria-labelledby="rq-s-t" style="max-width: 620px">
+        <div class="il-dialog__head"><span class="il-label">Save a workflow</span><h2 class="il-dialog__title" id="rq-s-t">Save implement as v8 for the organisation?</h2></div>
+        <div class="il-dialog__body wf-stack">
+          <p>It replaces v7 for every repository; the kernel override stays on top.</p>
+          <ul class="wf-stack wf-small"><sc-for list="{{ summary }}" as="s" hint-placeholder-count="4"><li>{{ s.what }}</li></sc-for></ul>
+          <p class="wf-small">It grants no sensitive item. 4 sessions run implement now; each takes v8 at its next move. kernel-lut is in review: at its next move a HIGH finding or a second failed round sends it up.</p>
+        </div>
+        <div class="il-dialog__actions">
+          <button type="button" class="il-btn il-btn--primary" id="rq-save-ok" onClick="{{ doSave }}">Save v8</button>
+          <button type="button" class="il-btn" onClick="{{ closeSave }}">Not yet</button>
+        </div>
+      </section>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"stage":{"editor":"enum","options":["proposed","ask"],"default":"proposed"},"view":{"editor":"enum","options":["split","unified","diagram","text"],"default":"split"},"bare":{"editor":"boolean","default":false},"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":1200,"height":3000}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { stage: p.stage || 'proposed', view: p.view || 'split', only: true, again: false, a: '', dialog: false }; }
+  renderVals() {
+    const P = this.props, M = window.HUB.machine, r = M.requests.r1, st = this.state;
+    const voice = P.voice || 'white', scheme = P.scheme || 'paper', set = (o) => this.setState(o);
+    const before = M.defs[r.workflow], after = M.requested('r1');
+    const diff = M.diff(M.text(before), M.text(after), 1);
+    const MK = { problem: '!', sensitive: '◆', ok: '✓', run: '…', wait: '·' }, SR = { problem: 'Problem: ', sensitive: 'Sensitive: ', ok: 'Holds: ' };
+    const sent = st.a === 'again';
+    const steps = sent
+      ? [{ kind: 'ok', mark: '✓', title: 'Your note is with the author', body: 'It drafts again from draft 2, with your note and the checks it passed.' }, { kind: 'run', mark: '…', title: 'Draft 3', body: 'Writing.' }, { kind: 'wait', mark: '·', title: 'The hub’s checks and the replay', body: 'On each draft, before it reaches you.' }, { kind: 'wait', mark: '·', title: 'Back to you', body: 'A new before and after in Needs you.' }]
+      : [{ kind: 'run', mark: '…', title: 'Draft 1', body: 'The author reads implement v7 and the last 5 sessions that ran it, and writes a draft.' }, { kind: 'wait', mark: '·', title: 'The hub’s checks and the replay', body: 'A problem sends the draft back to the author, at most 3 times; after that it asks you.' }, { kind: 'wait', mark: '·', title: 'A reviewer, if it grants a sensitive item', body: 'This request names none.' }, { kind: 'wait', mark: '·', title: 'Before and after, to you', body: 'In Needs you: the outline side by side, the diagram, the text, the checks.' }];
+    return {
+      theme: voice + '-' + scheme, pen: P.pen || '1', voice, scheme, r,
+      pad: P.bare ? 'background: transparent' : 'padding: var(--space-6) max(var(--space-4), 2vw); min-height: 100vh',
+      asking: st.stage === 'ask', drafting: st.stage === 'drafting' || sent, proposed: st.stage === 'proposed' && !sent,
+      ask: () => set({ stage: 'drafting' }),
+      draftTitle: sent ? 'Drafting again, with your note' : 'The Workflow author is drafting', draftNote: sent ? 'author-implement went back to draft (you asked for changes). Draft 2 stays as it was until draft 3 is ready.' : 'author-implement started at 10:40 · workflow-change v1 · about work › review',
+      chipNote: sent ? 'round 3' : 'round 1', steps,
+      chip: st.a === 'saved' ? { kind: 'over', label: 'applied', note: 'saved by you' } : st.a === 'discarded' ? { kind: 'over', label: 'declined', note: 'discarded by you' } : { kind: '', label: '', note: '' },
+      summary: r.summary.map(([what, why]) => ({ what, why })),
+      v: { split: String(st.view === 'split'), unified: String(st.view === 'unified'), diagram: String(st.view === 'diagram'), text: String(st.view === 'text') },
+      toSplit: () => set({ view: 'split' }), toUnified: () => set({ view: 'unified' }), toDiagram: () => set({ view: 'diagram' }), toText: () => set({ view: 'text' }),
+      showOutline: st.view === 'split' || st.view === 'unified', showDiagram: st.view === 'diagram', showText: st.view === 'text',
+      odMode: st.view === 'unified' ? 'unified' : 'split', only: st.only, onlyP: String(st.only), toggleOnly: () => set({ only: !st.only }),
+      before, after,
+      diff: diff.map(([k, t]) => ({ text: k === 'gap' ? '⋯' : t, cls: k === 'gap' ? 'wf-soft' : k, sr: k === 'add' ? 'added: ' : k === 'del' ? 'removed: ' : k === 'gap' ? 'unchanged lines folded' : '' })),
+      diffStat: '+' + diff.filter((d) => d[0] === 'add').length + ' −' + diff.filter((d) => d[0] === 'del').length,
+      drafts: r.drafts.map((h) => ({ ...h, word: h.kind === 'ok' ? 'the checks pass' : 'back to the author', kind: h.kind === 'ok' ? 'holds' : 'waits' })),
+      checks: r.checks.map((k) => ({ ...k, mark: MK[k.kind], sr: SR[k.kind], hasBody: !!k.body })),
+      open: !st.a, answered: st.a === 'saved' || st.a === 'discarded',
+      answerTag: st.a === 'saved' ? 'Saved' : 'Discarded',
+      answerText: st.a === 'saved' ? 'implement v8 applies now. Sessions running implement take it at their next move. author-implement ended in applied; your request, its drafts and your answer are in the log.' : 'v7 stays. author-implement ended in declined; the drafts stay in its log.',
+      again: st.again, againP: String(st.again), toggleAgain: () => set({ again: !st.again }), send: () => set({ a: 'again', again: false }), discard: () => set({ a: 'discarded' }),
+      dialog: st.dialog, openSave: () => set({ dialog: true }), closeSave: () => set({ dialog: false }), doSave: () => set({ dialog: false, a: 'saved' })
+    };
+  }
+}
+</script>
+</body>
+</html>

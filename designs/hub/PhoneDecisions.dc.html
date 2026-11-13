@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Phone · workflow decisions</title>
+<script src="./support.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="workflow.css">
+</helmet>
+<div class="wf il-page" data-theme="{{ theme }}" data-pen="{{ pen }}" style="min-height: 100vh">
+  <div class="wf-pad wf-stack wf-stack--wide" style="padding-left: var(--space-4); padding-right: var(--space-4)">
+    <h1 class="wf-h2">Needs you</h1>
+    <dc-import name="DefinitionChange" bare="{{ yes }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,2000px"></dc-import>
+    <dc-import name="DesignSpike" bare="{{ yes }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,1300px"></dc-import>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":390,"height":3400}}'>
+class Component extends DCLogic {
+  renderVals() { const P = this.props; return { yes: true, theme: (P.voice || 'white') + '-' + (P.scheme || 'paper'), voice: P.voice || 'white', scheme: P.scheme || 'paper', pen: P.pen || '1' }; }
+}
+</script>
+</body>
+</html>

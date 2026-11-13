@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>State chips</title>
+<script src="./support.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="workflow.css">
+</helmet>
+<div class="wf il-page wf-pad" data-theme="{{ theme }}" data-pen="{{ pen }}" style="min-height: 100vh">
+  <div class="wf-stack wf-stack--wide">
+    <div class="wf-stack">
+      <span class="il-label">Workflow state · one chip wherever a session shows</span>
+      <h1 class="wf-h2">The state chip</h1>
+      <p style="max-width: var(--measure)">The session’s workflow state, beside its run state (waiting, running, done). The edge says what kind of state it is and the words say which; the fill never says it alone.</p>
+    </div>
+    <ul class="wf-grant" aria-label="Kinds">
+      <sc-for list="{{ kinds }}" as="k" hint-placeholder-count="5">
+        <li><span></span><span class="wf-grant__kind">{{ k.edge }}</span>
+          <span class="wf-grant__what"><span class="wf-row"><dc-import name="StateChip" sid="{{ k.sid }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="260px,28px"></dc-import><span class="wf-small wf-soft">{{ k.sid }}</span></span><span class="wf-small">{{ k.means }}</span></span></li>
+      </sc-for>
+    </ul>
+    <section class="wf-stack" aria-labelledby="sc-where">
+      <h2 class="wf-h3" id="sc-where">Where it shows</h2>
+      <ul class="wf-stack wf-small">
+        <li><strong>Sessions:</strong> each row of the list, short, after the run state; the session’s head, short; and a Workflow row under the head with the long chip and “Show the workflow”, which opens the machine panel in place.</li>
+        <li><strong>The work item:</strong> each session tab and the embedded session’s head.</li>
+        <li><strong>The Steward panel:</strong> the Steward’s own state beside “always on”.</li>
+        <li><strong>Anywhere a session is named</strong> (SessionChip: Overview, Work, Roadmap, Knowledge): short, inside the pill.</li>
+        <li><strong>One-state workflows</strong> (each action as it is today) show the action’s name. A plain shell has no workflow and shows no chip.</li>
+      </ul>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":760,"height":820}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const P = this.props;
+    const K = [['arch-kernel', 'solid', 'Holds: in this state, working within its grant.'], ['docs-edl', 'dashed', 'Moving: a signal came in and the judge or the hub is checking a move.'],
+      ['kernel-lut', 'heavy, marked', 'Waits for someone: a move needs a confirm or an approval. The words say who.'], ['investigate-1184', 'double', 'Sent up: it reported a blocker or a decision to its owner.'], ['review-kernel-212', 'hairline, soft', 'Over: the machine ended; a managed session says what it returned.']];
+    return { theme: (P.voice || 'white') + '-' + (P.scheme || 'paper'), voice: P.voice || 'white', scheme: P.scheme || 'paper', pen: P.pen || '1',
+      kinds: K.map(([sid, edge, means]) => ({ sid, edge, means })) };
+  }
+}
+</script>
+</body>
+</html>

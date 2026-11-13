@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Session · its workflow</title>
+<script src="./support.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="workflow.css">
+</helmet>
+<div class="wf il-page" data-theme="{{ theme }}" data-pen="{{ pen }}" style="min-height: 100vh">
+  <header class="wf-head">
+    <span class="wf-head__name">{{ sid }}</span>
+    <dc-import name="StateChip" sid="{{ sid }}" size="lg" kind="{{ chip.kind }}" label="{{ chip.label }}" note="{{ chip.note }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="280px,34px"></dc-import>
+    <span class="wf-small wf-head__sub" style="flex: 1 1 220px">{{ sub }}</span>
+    <a class="il-btn" href="Sessions.dc.html">Terminal</a>
+  </header>
+  <div class="wf-pad">
+    <dc-import name="MachinePanel" sid="{{ sid }}" framed="{{ no }}" layer="fixed" open="{{ open }}" on-move="{{ moved }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,1300px"></dc-import>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"sid":{"editor":"enum","options":["kernel-lut"],"default":"kernel-lut"},"open":{"editor":"enum","options":["none","confirm"],"default":"none"},"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":1280,"height":1500}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { done: '' }; }
+  renderVals() {
+    const P = this.props, H = window.HUB, sid = P.sid || 'kernel-lut', s = H.sessions[sid], m = H.machine.sessions[sid];
+    return { theme: (P.voice || 'white') + '-' + (P.scheme || 'paper'), voice: P.voice || 'white', scheme: P.scheme || 'paper', pen: P.pen || '1', sid, no: false, open: P.open || 'none',
+      moved: (d) => this.setState({ done: d }),
+      chip: this.state.done === 'confirmed' ? { kind: 'moving', label: 'fix', note: 'resuming under launch 3' } : this.state.done === 'kept' ? { kind: 'holds', label: 'review', note: 'kept by you' } : { kind: '', label: '', note: '' },
+      sub: s.persona + ' · ' + (s.covers || []).concat(s.prs || []).join(', ') + ' · workflow ' + m.workflow };
+  }
+}
+</script>
+</body>
+</html>

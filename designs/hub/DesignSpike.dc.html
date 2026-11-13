@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Look at the design</title>
+<script src="./support.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="workflow.css">
+</helmet>
+<div class="wf il-page" data-theme="{{ theme }}" data-pen="{{ pen }}" style="{{ pad }}">
+  <article class="wf-decision" aria-labelledby="ds-t">
+    <div class="wf-decision__head">
+      <div class="wf-stack" style="flex: 1 1 320px; gap: var(--space-2)">
+        <span class="il-label">Needs you · look at the design</span>
+        <h2 class="wf-h2" id="ds-t">{{ s.question }}</h2>
+        <p class="wf-small wf-soft">Raised in {{ s.raisedAt }} of {{ s.owner }} · {{ s.item }} · waited {{ s.waited }}</p>
+      </div>
+    </div>
+
+    <dl class="wf-kv wf-small">
+      <dt>Owner</dt><dd class="wf-row"><span class="wf-mono">{{ s.owner }}</span><dc-import name="StateChip" sid="{{ s.owner }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="220px,28px"></dc-import></dd>
+      <dt>Designer</dt><dd class="wf-row"><span class="wf-mono">{{ s.designer }}</span><dc-import name="StateChip" sid="{{ s.designer }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="220px,28px"></dc-import></dd>
+      <dt>Draft PR</dt><dd><span class="wf-mono">{{ s.pr }}</span> · {{ nBoards }} boards</dd>
+    </dl>
+    <p style="max-width: var(--measure)">{{ s.why }}</p>
+
+    <section class="wf-stack" aria-labelledby="ds-b">
+      <h3 class="wf-h3" id="ds-b">The boards</h3>
+      <ul class="wf-boards">
+        <sc-for list="{{ boards }}" as="b" hint-placeholder-count="2">
+          <li>
+            <span class="wf-stack" style="gap: 2px"><span class="wf-row"><span class="wf-mono">{{ b.path }}</span><span class="{{ b.chip }}">{{ b.kind }}</span></span><span class="wf-small wf-soft">{{ b.what }}</span></span>
+            <button type="button" class="il-btn" onClick="{{ b.open }}" aria-label="Open {{ b.name }} in the design view">Open</button>
+          </li>
+        </sc-for>
+      </ul>
+    </section>
+
+    <div class="wf-box wf-small">
+      <span class="wf-by">Accepting is yours</span>
+      <p>Merging {{ s.pr }} accepts the design. {{ s.owner }} waits in design until then (requires: {{ s.requires }}); {{ s.after }}</p>
+    </div>
+
+    <sc-if value="{{ viewing }}" hint-placeholder-val="{{ false }}">
+      <div class="wf-next" data-kind="moving" aria-live="polite">
+        <span class="il-label">Design view</span>
+        <p><strong>Open on {{ viewing }}</strong>, in the E-ink scheme as the device shows it. The other boards of {{ s.pr }} are one step away in the view. Comment there, or come back here to answer.</p>
+      </div>
+    </sc-if>
+
+    <div class="wf-actions" style="padding-top: var(--space-4); border-top: var(--v-row-rule)">
+      <button type="button" class="il-btn il-btn--primary" id="ds-look" onClick="{{ look }}">Look at the design</button>
+      <button type="button" class="il-btn">Open {{ s.pr }}</button>
+      <button type="button" class="il-btn">Ask the Designer</button>
+      <button type="button" class="il-btn">Not now</button>
+    </div>
+  </article>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"bare":{"editor":"boolean","default":false},"$preview":{"width":1000,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { v: '' }; }
+  renderVals() {
+    const P = this.props, s = window.HUB.machine.spike;
+    const voice = P.voice || 'white', scheme = P.scheme || 'paper', pen = P.pen || '1';
+    return {
+      theme: voice + '-' + scheme, voice, scheme, pen, s, nBoards: String(s.boards.length),
+      pad: P.bare ? 'background: transparent' : 'padding: var(--space-6) max(var(--space-4), 2vw); min-height: 100vh',
+      boards: s.boards.map(([proj, name, kind, what]) => ({ name, path: 'designs/' + proj + '/' + name, kind, what,
+        chip: 'il-chip' + (kind === 'new' ? '' : ' il-chip--moving'), open: () => this.setState({ v: name }) })),
+      viewing: this.state.v, look: () => this.setState({ v: s.boards[0][1] })
+    };
+  }
+}
+</script>
+</body>
+</html>

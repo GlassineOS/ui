@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Machine diagram</title>
+<script src="./support.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="workflow.css">
+</helmet>
+<figure class="wf il-page" data-theme="{{ theme }}" data-pen="{{ pen }}" style="margin: 0; background: transparent; display: flex; flex-direction: column; gap: var(--space-2)">
+  <svg class="wf-dg" viewBox="{{ viewBox }}" role="group" aria-label="{{ aria }}">
+    <defs>
+      <marker id="{{ arrowId }}" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto-start-reverse"><path class="wf-dg-arrow" d="M0 0L10 5L0 10z"></path></marker>
+    </defs>
+    <sc-for list="{{ parents }}" as="p" hint-placeholder-count="1">
+      <g class="wf-dg-pa" data-at="{{ p.at }}" data-sel="{{ p.sel }}" data-mark="{{ p.mark }}" role="button" tabindex="0" aria-label="{{ p.aria }}" onClick="{{ p.pick }}" id="{{ p.dom }}">
+        <rect x="{{ p.x }}" y="{{ p.y }}" width="{{ p.w }}" height="{{ p.h }}"></rect>
+        <text class="wf-dg-name" x="{{ p.tx }}" y="{{ p.ty }}">{{ p.name }}</text>
+        <text class="wf-dg-sub" x="{{ p.tx }}" y="{{ p.sy }}">{{ p.sub }}</text>
+      </g>
+    </sc-for>
+    <circle class="wf-dg-dot" cx="{{ start.x }}" cy="{{ start.y }}" r="6"></circle>
+    <path class="wf-dg-ed" d="{{ start.d }}" style="fill: none; stroke: var(--ink); stroke-width: 1.5" marker-end="url(#{{ arrowId }})"></path>
+    <g class="wf-dg-h" aria-label="H: back to the state it left"><circle cx="{{ hist.x }}" cy="{{ hist.y }}" r="12"></circle><text x="{{ hist.tx }}" y="{{ hist.ty }}">H</text></g>
+    <sc-for list="{{ edges }}" as="e" hint-placeholder-count="10">
+      <g class="wf-dg-ed" data-at="{{ e.at }}" data-by="{{ e.by }}" data-sel="{{ e.sel }}" data-mark="{{ e.mark }}">
+        <path d="{{ e.d }}" marker-end="url(#{{ arrowId }})"></path>
+        <g class="wf-dg-lab" role="button" tabindex="0" aria-label="{{ e.aria }}" onClick="{{ e.pick }}" id="{{ e.dom }}">
+          <rect x="{{ e.lx }}" y="{{ e.ly }}" width="{{ e.lw }}" height="22"></rect>
+          <text x="{{ e.tx }}" y="{{ e.ty }}" text-anchor="middle">{{ e.text }}</text>
+        </g>
+      </g>
+    </sc-for>
+    <sc-for list="{{ states }}" as="s" hint-placeholder-count="8">
+      <g class="wf-dg-st" data-at="{{ s.at }}" data-sel="{{ s.sel }}" data-mark="{{ s.mark }}" role="button" tabindex="0" aria-label="{{ s.aria }}" onClick="{{ s.pick }}" id="{{ s.dom }}">
+        <rect x="{{ s.x }}" y="{{ s.y }}" width="{{ s.w }}" height="{{ s.h }}"></rect>
+        <sc-if value="{{ s.final }}" hint-placeholder-val="{{ false }}"><rect class="wf-dg-inner" x="{{ s.ix }}" y="{{ s.iy }}" width="{{ s.iw }}" height="{{ s.ih }}"></rect></sc-if>
+        <text class="wf-dg-name" x="{{ s.cx }}" y="{{ s.ny }}" text-anchor="middle">{{ s.name }}</text>
+        <text class="wf-dg-sub" x="{{ s.cx }}" y="{{ s.sy }}" text-anchor="middle">{{ s.sub }}</text>
+        <sc-if value="{{ s.hasTag }}" hint-placeholder-val="{{ false }}"><g class="wf-dg-tag"><rect x="{{ s.tgx }}" y="{{ s.tgy }}" width="{{ s.tgw }}" height="18" rx="9"></rect><text x="{{ s.tgtx }}" y="{{ s.tgty }}" text-anchor="middle">{{ s.tag }}</text></g></sc-if>
+      </g>
+    </sc-for>
+  </svg>
+  <sc-if value="{{ legend }}" hint-placeholder-val="{{ true }}">
+    <figcaption class="wf-legend"><span><b>≈</b> judged (when)</span><span><b>=</b> facts (requires)</span><span><b>#</b> a counter</span><span><b>H</b> back to where it was</span><span>heavy box: now</span><span>solid arrows: the path taken</span><span>heavy dashed arrow: proposed</span><span>a state’s exits are tried in order; a parent’s exits apply in every state inside it</span></figcaption>
+  </sc-if>
+</figure>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"workflow":{"editor":"enum","options":["implement"],"default":"implement"},"sid":{"editor":"enum","options":["kernel-lut",""],"default":"kernel-lut"},"draft":{"editor":"boolean","default":false},"marks":{"editor":"boolean","default":false},"fixed":{"editor":"boolean","default":false},"selected":{"editor":null},"def":{"editor":null},"onSelect":{"editor":null},"legend":{"editor":"boolean","default":true},"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":1000,"height":680}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const P = this.props, M = window.HUB.machine, wf = P.workflow || 'implement';
+    const d = P.def || M.def(wf, !!P.draft, !!P.fixed), L = d.layout, sid = P.sid === undefined ? 'kernel-lut' : P.sid;
+    const inst = sid && M.sessions[sid] && M.sessions[sid].workflow === wf ? M.sessions[sid] : null, pn = inst ? M.panel[sid] : null;
+    const marks = P.marks ? { states: M.change.marks.states, edges: { ...M.change.marks.edges, ...(P.fixed ? M.change.fix.edges : {}) } } : { states: {}, edges: {} }, sel = P.selected || '';
+    const pick = (id) => () => { if (P.onSelect) P.onSelect(id); };
+    const atOf = (k) => inst && inst.state === k ? 'now' : inst && inst.to === k ? 'next' : pn && pn.visited.indexOf(k) >= 0 ? 'visited' : 'other';
+    const glyph = { judge: '≈ ', fact: '= ', counter: '# ', hand: '' };
+    const subOf = (s) => (s.manages || []).length ? 'runs ' + s.manages.map((m) => ({ 'Code reviewer': 'reviewer', 'QA engineer': 'QA' })[m.persona] || m.persona.toLowerCase()).join(', ') : s.kind === 'final' ? 'final' : '';
+    const parents = [], states = [];
+    Object.entries(d.states).forEach(([k, s]) => {
+      const [x, y, w, h] = L.states[k];
+      if (s.kind === 'parent') {
+        parents.push({ name: k, x, y, w, h, tx: x + 16, ty: y + 26, sy: y + 44, sub: 'parent · ' + Object.values(d.states).filter((c) => c.parent === k).length + ' states · shared grant and exits', at: atOf(k), sel: String(sel === k), mark: marks.states[k] || '', pick: pick(k), dom: 'dg-s-' + k, aria: 'Parent state ' + k });
+        return;
+      }
+      const at = atOf(k), tag = at === 'now' ? 'NOW' : at === 'next' ? 'PROPOSED' : marks.states[k] ? 'CHANGED' : '';
+      const tw = tag.length * 7.5 + 14;
+      states.push({ name: k, x, y, w, h, cx: x + w / 2, ny: y + (subOf(s) ? 25 : 33), sy: y + 44, sub: subOf(s), final: s.kind === 'final', ix: x + 4, iy: y + 4, iw: w - 8, ih: h - 8,
+        at, sel: String(sel === k), mark: marks.states[k] || '', pick: pick(k), dom: 'dg-s-' + k, aria: 'State ' + k + (at === 'now' ? ', current' : '') + (s.kind === 'final' ? ', final' : ''),
+        hasTag: !!tag, tag, tgw: tw, tgx: x + w - tw + 6, tgy: y - 10, tgtx: x + w - tw / 2 + 6, tgty: y + 3 });
+    });
+    const edges = d.transitions.map((t) => {
+      const [path, cx, cy] = L.edges[t.id], text = (glyph[t.by] || '') + t.label, lw = Math.round(text.length * 7.6 + 14);
+      const at = pn && pn.pending === t.id && inst.to ? 'pending' : pn && pn.taken.indexOf(t.id) >= 0 ? 'taken' : 'other';
+      return { d: path, at, by: t.by, text, lw, lx: cx - lw / 2, ly: cy - 11, tx: cx, ty: cy + 4.5, sel: String(sel === t.id), mark: marks.edges[t.id] || '', pick: pick(t.id), dom: 'dg-t-' + t.id,
+        aria: 'Transition ' + (t.from === '*' ? 'any state' : t.from) + ' to ' + t.to + (t.enter === 'history' ? ' (where it was)' : '') + ': ' + (t.by === 'judge' ? 'judged, ' + t.when : t.requires.join(', ') || 'by hand') };
+    });
+    const [hx, hy] = L.history, [sx, sy] = L.start;
+    return {
+      theme: (P.voice || 'white') + '-' + (P.scheme || 'paper'), pen: P.pen || '1', viewBox: '0 0 ' + L.w + ' ' + L.h, arrowId: 'arr-' + wf + (P.draft ? '-d' : '') + (P.marks ? '-m' : '') + (P.fixed ? '-f' : ''),
+      aria: 'Statechart of ' + wf + ' v' + d.version + (inst ? ', ' + sid + ' is in ' + inst.state : ''),
+      parents, states, edges, hist: { x: hx, y: hy, tx: hx - 5, ty: hy + 5 }, start: { x: sx, y: sy, d: 'M' + (sx + 6) + ' ' + sy + 'H70' },
+      legend: P.legend !== false
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -77,7 +77,8 @@ class Component extends DCLogic {
     } else { adds = w.adds; removes = w.removes; keeps = w.keeps; }
     const sens = adds.filter((a) => M.sensitive.indexOf(a[1]) >= 0);
     const L = P.layer || 'inline';
-    const ev = (M.panel[sid] && M.panel[sid].next) ? 'Proposed by a fact: ' + M.panel[sid].next.evidence[0][1] + '. The hub’s checks hold.' : 'Proposed by the judge on the last Stop. The hub’s checks hold.';
+    const pn = M.panel[sid];
+    const ev = pn && to !== m.to ? 'You asked for it by hand; it is logged with your reason.' : pn ? 'Proposed by a fact: ' + pn.evidence[0][1] + '. It is the first exit of ' + from + ' that holds, and the hub’s checks hold.' : 'Proposed by the judge on the last Stop. The hub’s checks hold.';
     return {
       theme: (P.voice || 'white') + '-' + (P.scheme || 'paper'), pen: P.pen || '1', sid, from, to, why: ev,
       scrim: L === 'inline' ? 'position: relative; inset: auto; min-height: 100vh' : L === 'absolute' ? 'position: absolute' : '',

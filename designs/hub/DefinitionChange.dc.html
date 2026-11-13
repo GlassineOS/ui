@@ -40,12 +40,36 @@
       <p style="max-width: var(--measure)">{{ c.why }}</p>
     </section>
 
+    <section class="wf-stack wf-wide-only" aria-labelledby="dc-map">
+      <h3 class="wf-h3" id="dc-map">Where it changes the machine</h3>
+      <dc-import name="MachineDiagram" workflow="{{ c.workflow }}" sid="" draft="{{ true }}" marks="{{ true }}" fixed="{{ fixed }}" legend="{{ false }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,600px"></dc-import>
+      <p class="wf-small wf-soft">Boxes and arrows marked CHANGED differ from v{{ c.from }}. The rest of the machine is as it is.</p>
+    </section>
+
     <section class="wf-stack" aria-labelledby="dc-diff">
-      <h3 class="wf-h3" id="dc-diff">The change</h3>
+      <h3 class="wf-h3" id="dc-diff">The change, as written</h3>
       <div class="il-code">
         <div class="il-code__head"><span class="wf-mono">{{ c.workflow }} · v{{ c.from }} → v{{ c.to }}</span><span class="wf-small wf-soft">{{ diffStat }}</span></div>
-        <pre><sc-for list="{{ diff }}" as="d" hint-placeholder-count="10"><span class="{{ d.cls }}"><span class="wf-sr">{{ d.sr }}</span>{{ d.text }}<sc-if value="{{ d.sens }}" hint-placeholder-val="{{ false }}"><span class="wf-code-flag">sensitive</span></sc-if></span></sc-for></pre>
+        <pre><sc-for list="{{ diff }}" as="d" hint-placeholder-count="14"><span class="{{ d.cls }}"><span class="wf-sr">{{ d.sr }}</span>{{ d.text }}<sc-if value="{{ d.sens }}" hint-placeholder-val="{{ false }}"><span class="wf-code-flag">sensitive</span></sc-if></span></sc-for></pre>
       </div>
+      <p class="wf-small wf-soft">State names carry their parents: <span class="wf-mono">work.review</span> is review inside work. Unchanged lines are folded (⋯).</p>
+    </section>
+
+    <section class="wf-stack" aria-labelledby="dc-chk">
+      <h3 class="wf-h3" id="dc-chk">The hub’s checks</h3>
+      <ol class="wf-checklist">
+        <sc-for list="{{ checks }}" as="k" hint-placeholder-count="5">
+          <li data-kind="{{ k.kind }}">
+            <span class="wf-checklist__mark" aria-hidden="true">{{ k.mark }}</span>
+            <span class="wf-checklist__body">
+              <span><span class="wf-sr">{{ k.sr }}</span><strong>{{ k.title }}</strong></span>
+              <sc-if value="{{ k.hasBody }}" hint-placeholder-val="{{ false }}"><span class="wf-small">{{ k.body }}</span></sc-if>
+              <sc-if value="{{ k.hasFix }}" hint-placeholder-val="{{ false }}"><span class="wf-actions"><button type="button" class="il-btn" id="dc-fix" onClick="{{ applyFix }}">{{ k.fix }}</button></span></sc-if>
+            </span>
+          </li>
+        </sc-for>
+      </ol>
+      <p class="wf-small wf-soft">A problem stops the approval until it is fixed; a sensitive item only marks what you are granting.</p>
     </section>
 
     <section class="wf-stack" aria-labelledby="dc-rev">
@@ -56,11 +80,13 @@
 
     <sc-if value="{{ open }}" hint-placeholder-val="{{ true }}">
       <div class="wf-actions" style="padding-top: var(--space-4); border-top: var(--v-row-rule)">
-        <button type="button" class="il-btn il-btn--primary" id="dc-ok" onClick="{{ approve }}">Approve v{{ c.to }}, with {{ nSens }} sensitive</button>
+        <sc-if value="{{ blocked }}" hint-placeholder-val="{{ false }}"><button type="button" class="il-btn il-btn--primary" id="dc-fix2" onClick="{{ applyFix }}" aria-describedby="dc-block">Apply the fix</button></sc-if>
+        <sc-if value="{{ free }}" hint-placeholder-val="{{ true }}"><button type="button" class="il-btn il-btn--primary" id="dc-ok" onClick="{{ approve }}">Approve v{{ c.to }}, with {{ nSens }} sensitive</button></sc-if>
         <button type="button" class="il-btn" onClick="{{ decline }}">Decline</button>
-        <button type="button" class="il-btn">Edit it yourself</button>
-        <button type="button" class="il-btn">Ask the Steward</button>
+        <a class="il-btn" href="WorkflowEditor.dc.html">Edit it yourself</a>
+        <button type="button" class="il-btn" onClick="{{ sendBack }}">Send it back to the Steward</button>
       </div>
+      <sc-if value="{{ blocked }}" hint-placeholder-val="{{ true }}"><p class="wf-small" id="dc-block">{{ blockText }}</p></sc-if>
     </sc-if>
     <sc-if value="{{ answered }}" hint-placeholder-val="{{ false }}">
       <div class="wf-box" aria-live="polite"><span class="wf-by">{{ answerTag }}</span><p>{{ answerText }}</p></div>
@@ -68,23 +94,34 @@
   </article>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"bare":{"editor":"boolean","default":false},"$preview":{"width":1000,"height":1700}}'>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"bare":{"editor":"boolean","default":false},"$preview":{"width":1000,"height":2600}}'>
 class Component extends DCLogic {
-  constructor(p) { super(p); this.state = { a: '' }; }
+  constructor(p) { super(p); this.state = { a: '', fixed: false }; }
   renderVals() {
-    const P = this.props, c = window.HUB.machine.change, a = this.state.a;
+    const P = this.props, M = window.HUB.machine, c = M.change, st = this.state, a = st.a;
     const n = c.warnings.length, words = ['none', 'one', 'two', 'three', 'four'];
-    const adds = c.diff.filter((d) => d[0] === 'add').length, dels = c.diff.filter((d) => d[0] === 'del').length;
+    const diff = M.diff(M.text(M.def(c.workflow)), M.text(M.def(c.workflow, true, st.fixed)), 1);
+    const adds = diff.filter((d) => d[0] === 'add').length, dels = diff.filter((d) => d[0] === 'del').length;
+    const sensIn = (t) => M.sensitive.some((x) => t.indexOf('"' + x + '"') >= 0);
+    const ck = M.checks.map((k) => k.kind === 'problem' && st.fixed
+      ? { kind: 'ok', title: 'The exits of review don’t overlap', body: '→ fix holds below 2 rounds, → escalated from 2. Fixed by you.' } : k);
+    const problems = ck.filter((k) => k.kind === 'problem').length;
+    const G = { problem: '!', sensitive: '◆', ok: '✓' }, SR = { problem: 'Problem: ', sensitive: 'Sensitive: ', ok: 'Holds: ' };
+    const voice = P.voice || 'white', scheme = P.scheme || 'paper';
     return {
-      theme: (P.voice || 'white') + '-' + (P.scheme || 'paper'), pen: P.pen || '1', c,
+      theme: voice + '-' + scheme, pen: P.pen || '1', voice, scheme, c, fixed: st.fixed,
       pad: P.bare ? 'background: transparent' : 'padding: var(--space-6) max(var(--space-4), 2vw); min-height: 100vh',
       nSens: String(n), nSensWords: words[n] || String(n),
       warnings: c.warnings, notes: c.notes, diffStat: '+' + adds + ' −' + dels,
-      diff: c.diff.map(([k, t, sens]) => ({ text: t, sens: !!sens, cls: (k ? k : '') + (sens ? ' wf-code-sens' : ''), sr: k === 'add' ? 'added: ' : k === 'del' ? 'removed: ' : '' })),
+      diff: diff.map(([k, t]) => { const s2 = k === 'add' && sensIn(t) && !diff.some((o) => o[0] === 'del' && sensIn(o[1]) && o[1] === t); return { text: k === 'gap' ? '⋯' : t, sens: s2, cls: (k === 'gap' ? 'wf-soft' : k) + (s2 ? ' wf-code-sens' : ''), sr: k === 'add' ? 'added: ' : k === 'del' ? 'removed: ' : k === 'gap' ? 'unchanged lines folded' : '' }; }),
+      checks: ck.map((k) => ({ ...k, mark: G[k.kind], sr: SR[k.kind], hasBody: !!k.body, hasFix: !!k.fix && !st.fixed })),
+      applyFix: () => this.setState({ fixed: true }),
+      blocked: !!problems && !a, free: !problems, blockText: problems ? 'No approval yet: the check finds ' + (problems === 1 ? 'a problem' : problems + ' problems') + ' (above). Apply its fix, edit it yourself, or send it back; then you can approve.' : '',
       open: !a, answered: !!a,
-      answerTag: a === 'yes' ? 'Approved' : 'Declined',
-      answerText: a === 'yes' ? 'implement v8 applies now. Sessions running implement take it at their next move; the change and your answer are in the log.' : 'v7 stays. The Steward gets your answer as a fact and can propose again.',
-      approve: () => this.setState({ a: 'yes' }), decline: () => this.setState({ a: 'no' })
+      answerTag: a === 'yes' ? 'Approved' : a === 'back' ? 'Sent back' : 'Declined',
+      answerText: a === 'yes' ? c.workflow + ' v' + c.to + ' applies now' + (st.fixed ? ', with your fix to → fix' : '') + '. Sessions running ' + c.workflow + ' take it at their next move; the change and your answer are in the log.'
+        : a === 'back' ? 'The Steward gets the check’s findings and your answer, and proposes again.' : 'v' + c.from + ' stays. The Steward gets your answer as a fact and can propose again.',
+      approve: () => { if (!problems) this.setState({ a: 'yes' }); }, decline: () => this.setState({ a: 'no' }), sendBack: () => this.setState({ a: 'back' })
     };
   }
 }

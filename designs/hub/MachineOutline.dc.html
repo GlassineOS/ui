@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Machine outline</title>
+<script src="./support.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="workflow.css">
+</helmet>
+<div class="wf il-page" data-theme="{{ theme }}" data-pen="{{ pen }}" style="background: transparent">
+  <ul class="wf-tree" aria-label="{{ aria }}">
+    <sc-for list="{{ rows }}" as="r" hint-placeholder-count="12">
+      <li data-row="{{ r.row }}" data-depth="{{ r.depth }}" data-at="{{ r.at }}" style="--depth: {{ r.depth }}">
+        <sc-if value="{{ r.isState }}" hint-placeholder-val="{{ true }}">
+          <span class="wf-row"><button type="button" class="wf-tree__name" aria-pressed="{{ r.sel }}" onClick="{{ r.pick }}" id="{{ r.dom }}">{{ r.name }}</button><sc-for list="{{ r.tags }}" as="t" hint-placeholder-count="1"><span class="{{ t.cls }}">{{ t.text }}</span></sc-for></span>
+          <sc-if value="{{ r.hasSub }}" hint-placeholder-val="{{ true }}"><span class="wf-small wf-soft">{{ r.sub }}</span></sc-if>
+        </sc-if>
+        <sc-if value="{{ r.isExit }}" hint-placeholder-val="{{ false }}">
+          <button type="button" class="wf-tree__exit" aria-pressed="{{ r.sel }}" onClick="{{ r.pick }}" id="{{ r.dom }}"><span class="wf-tree__n">{{ r.n }}</span><span class="wf-tree__to">→ {{ r.to }}</span><span class="wf-tree__why">{{ r.why }}</span><sc-if value="{{ r.hasHolds }}" hint-placeholder-val="{{ false }}"><span class="wf-tree__holds">· {{ r.holds }}</span></sc-if></button>
+        </sc-if>
+      </li>
+    </sc-for>
+  </ul>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"workflow":{"editor":"enum","options":["implement"],"default":"implement"},"sid":{"editor":"enum","options":["kernel-lut",""],"default":"kernel-lut"},"draft":{"editor":"boolean","default":false},"selected":{"editor":null},"def":{"editor":null},"onSelect":{"editor":null},"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":640,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const P = this.props, M = window.HUB.machine, wf = P.workflow || 'implement', d = P.def || M.def(wf, !!P.draft);
+    const sid = P.sid === undefined ? 'kernel-lut' : P.sid, inst = sid && M.sessions[sid] && M.sessions[sid].workflow === wf ? M.sessions[sid] : null, pn = inst ? M.panel[sid] : null;
+    const sel = P.selected || '', pick = (id) => () => { if (P.onSelect) P.onSelect(id); };
+    const G = { judge: '≈', fact: '=', counter: '#', hand: '' };
+    const why = (t) => (G[t.by] ? G[t.by] + ' ' : '') + (t.when ? '“' + t.when + '”' + (t.requires.length ? ' · requires ' + t.requires.join(', ') : '') : t.requires.length ? t.requires.join(', ') : 'by hand') + (t.approve !== 'none' ? ' · approve: ' + t.approve : '') + (t.move === 'on-request' ? ' · on request' : '');
+    const rows = [], kids = (k) => Object.keys(d.states).filter((c) => d.states[c].parent === k);
+    const holdsOf = (t) => { const e = pn && pn.exits.find((x) => x.t === t.id); return e ? (e.holds ? 'holds' : 'doesn’t hold') : ''; };
+    const visit = (k, depth) => {
+      const s = d.states[k], at = inst && inst.state === k ? 'now' : inst && (inst.path || []).indexOf(k) >= 0 ? 'inside' : 'other';
+      const tags = [];
+      if (at === 'now') tags.push({ cls: 'il-chip il-chip--waits', text: 'now' });
+      if (at === 'inside') tags.push({ cls: 'il-chip', text: 'inside it now' });
+      if (s.kind === 'parent') tags.push({ cls: 'il-chip il-chip--over', text: 'parent' + (s.history ? ' · H' : '') });
+      if (s.kind === 'final') tags.push({ cls: 'il-chip il-chip--over', text: 'final' });
+      if (d.initial === k || (d.states[s.parent] || {}).initial === k) tags.push({ cls: 'il-chip il-chip--over', text: 'starts here' });
+      const sub = s.kind === 'parent' ? 'Its grant and its exits apply in ' + kids(k).join(', ') + '.' : (s.manages || []).length ? 'Runs ' + s.manages.map((m) => m.persona + ' (' + m.workflow + ', ' + m.start + ')').join(' and ') + '.' : (s.note || '');
+      rows.push({ row: 'state', isState: true, isExit: false, depth, at, name: k, tags, sub, hasSub: !!sub, sel: String(sel === k), pick: pick(k), dom: 'ol-s-' + k });
+      /* A child's own exits are tried first; a parent's exits come after its children, in any of them. */
+      kids(k).forEach((c) => visit(c, depth + 1));
+      M.exitsOf(d, k).forEach((t, i) => {
+        const h = at === 'now' || at === 'inside' ? holdsOf(t) : '';
+        rows.push({ row: 'exit', isState: false, isExit: true, depth: depth + 1, at: 'other', n: s.kind === 'parent' ? 'then, in any of them' : String(i + 1), to: t.to + (t.enter === 'history' ? ' (where it was)' : ''), why: why(t), holds: h, hasHolds: !!h, sel: String(sel === t.id), pick: pick(t.id), dom: 'ol-t-' + t.id });
+      });
+    };
+    Object.keys(d.states).filter((k) => !d.states[k].parent).forEach((k) => visit(k, 0));
+    const any = d.transitions.find((t) => t.from === '*');
+    if (any) rows.push({ row: 'exit', isState: false, isExit: true, depth: 0, at: 'other', n: 'any', to: any.to, why: 'from any state, by hand', holds: '', hasHolds: false, sel: String(sel === any.id), pick: pick(any.id), dom: 'ol-t-' + any.id });
+    return { theme: (P.voice || 'white') + '-' + (P.scheme || 'paper'), pen: P.pen || '1', rows, aria: 'States and exits of ' + wf + ' v' + d.version };
+  }
+}
+</script>
+</body>
+</html>

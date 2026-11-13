@@ -17,7 +17,7 @@ body{margin:0}
 @media (max-width: 760px){
   .stw-rail{position:fixed !important;right:16px;bottom:16px;width:auto !important;padding:0 !important;border:0 !important;background:transparent !important;z-index:35}
   .stw-rail button{width:56px !important;height:56px !important;box-shadow:0 3px 0 #b4b4b4}
-  .stw-panel{position:fixed !important;inset:0;width:auto !important;height:auto !important;z-index:45;border-left:0 !important}
+  .stw-panel{position:fixed !important;inset:0;width:auto !important;height:100vh !important;height:100dvh !important;z-index:45;border-left:0 !important}
   .stw-grip{display:none !important}
 }
 </style>
@@ -60,7 +60,7 @@ body{margin:0}
     <dc-import style="height: 100%" name="SessionView" sid="steward" size="compact" hide-asks="{{yes}}" hint-size="100%,100%"></dc-import>
   </div>
   <div style="display: flex; gap: 8px; padding: 10px 16px; border-top: 1px solid #d0d0d0; background: #ffffff">
-    <button type="button" onClick="{{openNew}}" style="flex: 1; min-height: 44px; border: 1.5px solid #111111; border-radius: 12px; background: #ffffff; color: #111111; font: inherit; font-weight: 600; cursor: pointer">＋ Plan new work with the Steward</button>
+    <button type="button" onClick="{{openNew}}" style="flex: 1; min-height: 44px; border: 1.5px solid #111111; border-radius: 12px; background: #ffffff; color: #111111; font: inherit; font-weight: 600; cursor: pointer">+ Plan new work with the Steward</button>
   </div>
 </aside>
 </sc-if>

@@ -763,3 +763,119 @@ window.HUB.machine = {
     return L.join('\n').split('\n');
   };
 })(window.HUB.machine);
+
+/* Starts (how a workflow begins on an item): each names its kind of item, label, summary, starting state, lead
+   flag, the models and efforts the brief may choose, its prompt, and what it does while an instance holds the
+   item: runs beside it, asks the owner (ask = the request's label), or is hidden. A start of a multi-state
+   workflow takes its persona and ceiling from its starting state; a one-state one names them. launch = the
+   Launch action its brief opens with. writes = its starting grant can write on the item. */
+window.HUB.personas['Implementor'] = { family: 'build', icon: 'M4 17l5-5-5-5M11 19h9M14 5h6M14 9h4' };
+window.HUB.items['boot-test #77'] = { kind: 'run', title: 'kernel · boot-test (qemu)', state: 'FAILED', icon: 'f', age: '2h', group: 'FAILED', repo: 'kernel', trigger: 'nightly · main @ 9f1e2aa', runner: 'ubuntu-24.04-arm', duration: '22m 40s',
+  body: 'The boot test timed out waiting for the login prompt. The two runs before it passed on the same commit.', checks: [['build · arm64', 'p', '6m 02s'], ['boot-test · qemu', 'f', '16m 38s']] };
+(function (M) {
+  const BIG = ['claude-fable-5-1', 'claude-opus-5-5'], MID = ['claude-opus-5-5', 'claude-sonnet-5-5'], SMALL = ['claude-sonnet-5-5', 'claude-haiku-5-5'];
+  M.starts = [
+    { id: 'st-work', workflow: 'implement', kind: 'issue', label: 'Work on this', lead: true, state: 'implement', launch: 'implement', models: BIG, efforts: ['high', 'medium'], held: 'hide',
+      summary: 'Implement it on a branch and carry it through review to merged.',
+      prompt: 'Implement the issue below on your own branch. Open a draft PR early and say in its body which issue it closes. Ask before you widen what the issue asks for.' },
+    { id: 'st-take', workflow: 'implement', kind: 'pr', label: 'Take this on', lead: true, state: 'review', launch: 'review', models: BIG, efforts: ['high', 'medium'], held: 'hide',
+      summary: 'An implementor makes this pull request its own, starting at review.',
+      prompt: 'The pull request below is now yours. Read it and its threads, let the reviewer and QA run, then summarise their findings by file. Don’t change code in review.' },
+    { id: 'st-triage', workflow: 'triage', kind: 'issue', label: 'Triage', state: 'triage', launch: 'triage', persona: 'Triage', ceiling: 'Proposes labels and Part of lines; you apply them.', writes: false, models: SMALL, efforts: ['low', 'medium'], held: 'beside',
+      summary: 'Labels and a Part of line, proposed for you to apply.',
+      prompt: 'Propose labels for the issue below and a “Part of …” line if it belongs to a strategic issue. Propose; don’t apply.' },
+    { id: 'st-design', workflow: 'design-spike', kind: 'issue', label: 'Design it on the boards', state: 'draft', launch: 'implement', persona: 'Designer', ceiling: 'Its own branch in ui and a draft design PR. No merge.', writes: true, models: MID, efforts: ['high'], held: 'ask', ask: 'Ask for a design spike',
+      summary: 'Boards for the question the issue raises, as a draft design PR.',
+      prompt: 'Draw boards that answer the design question in the issue below. Open a draft PR in ui with the boards changed or added, and say which question each answers.' },
+    { id: 'st-docs', workflow: 'docs gap sweep', kind: 'issue', label: 'Draft docs', state: 'sweep', launch: 'docs', persona: 'Docs writer', ceiling: 'Read-only. Drafts docs issues; you file them.', writes: false, models: SMALL, efforts: ['medium'], held: 'beside',
+      summary: 'What the docs would need to say once this ships.',
+      prompt: 'List what the docs would need to say once the issue below is done. One draft docs issue per page.' },
+    { id: 'st-sess-i', workflow: 'session', kind: 'issue', label: 'Open a session', state: 'session', launch: 'implement', persona: 'Engineer', ceiling: 'Its own checkout; asks you before each edit, push or comment.', writes: true, models: BIG.concat(['claude-sonnet-5-5']), efforts: ['high', 'medium', 'low'], held: 'hide',
+      summary: 'A session with the issue loaded and no plan; you steer it.',
+      prompt: 'The issue below is the context. Wait for the maintainer’s first message.' },
+    { id: 'st-review', workflow: 'review', kind: 'pr', label: 'Review this PR', state: 'read', launch: 'review', persona: 'Code reviewer', ceiling: 'Read and comment. Never merge, close or push.', writes: true, models: BIG, efforts: ['high'], held: 'ask', ask: 'Ask for a review',
+      summary: 'One summary comment; inline notes only for blockers.',
+      prompt: 'Review the pull request below for correctness, tests and fit with what it is part of. One summary comment; inline notes only for blockers.' },
+    { id: 'st-explain-pr', workflow: 'explain', kind: 'pr', label: 'Explain the diff', state: 'explain', launch: 'research', persona: 'Researcher', ceiling: 'Read-only. Answers in the session; writes nothing on GitHub.', writes: false, models: MID, efforts: ['medium'], held: 'beside',
+      summary: 'What the change does, file by file, in plain words.',
+      prompt: 'Explain the diff of the pull request below file by file: what each change does and why it is there. Write nothing on GitHub.' },
+    { id: 'st-sec-pr', workflow: 'security audit', kind: 'pr', label: 'Security audit', state: 'audit', launch: 'sec', persona: 'Security auditor', ceiling: 'Read-only checkout. Drafts findings; you file them.', writes: false, models: BIG, efforts: ['high'], held: 'beside',
+      summary: 'Findings with severity and evidence, as drafts.',
+      prompt: 'Audit the change in the pull request below as an attacker would read it. One finding per draft issue, with severity and evidence. Read-only.' },
+    { id: 'st-sess-p', workflow: 'session', kind: 'pr', label: 'Open a session', state: 'session', launch: 'review', persona: 'Engineer', ceiling: 'Its own checkout of the branch; asks you before each edit, push or comment.', writes: true, models: BIG.concat(['claude-sonnet-5-5']), efforts: ['high', 'medium', 'low'], held: 'hide',
+      summary: 'A session on the branch with the pull request loaded; you steer it.',
+      prompt: 'The pull request below is the context. Wait for the maintainer’s first message.' },
+    { id: 'st-inv', workflow: 'investigate', kind: 'run', label: 'Investigate failure', lead: true, state: 'investigate', launch: 'investigate', persona: 'CI investigator', ceiling: 'Own branch; reruns only when you ask.', writes: true, models: MID, efforts: ['high', 'medium'], held: 'hide',
+      summary: 'The cause and the smallest fix, on its own branch.',
+      prompt: 'Find why the run below failed. Its failed log is attached. Report the cause and the smallest fix; open a draft PR only for a fix you are sure of.' },
+    { id: 'st-explain-run', workflow: 'explain', kind: 'run', label: 'Explain', state: 'explain', launch: 'investigate', persona: 'Researcher', ceiling: 'Read-only. Answers in the session; writes nothing on GitHub.', writes: false, models: SMALL, efforts: ['low', 'medium'], held: 'beside',
+      summary: 'What the run does, step by step, and where it stopped.',
+      prompt: 'Explain the run below step by step and where it stopped. Write nothing on GitHub.' },
+    { id: 'st-fix-run', workflow: 'fix checks', kind: 'run', label: 'Fix on a branch', state: 'fix', launch: 'investigate', persona: 'CI fixer', ceiling: 'Its own branch and a draft PR. No merge.', writes: true, models: MID, efforts: ['high', 'medium'], held: 'ask', ask: 'Ask it to fix on its branch',
+      summary: 'The smallest change that makes the run pass, as a draft PR.',
+      prompt: 'Make the run below pass with the smallest change, on your own branch, and open a draft PR that says which run it fixes.' },
+    { id: 'st-flaky', workflow: 'flakiness', kind: 'run', label: 'Flakiness', state: 'flakiness', launch: 'investigate', persona: 'CI investigator', ceiling: 'Read-only. Reads the last 30 runs; writes a report.', writes: false, models: SMALL, efforts: ['medium'], held: 'beside',
+      summary: 'Whether this step fails on its own, from the last 30 runs.',
+      prompt: 'From the last 30 runs of this workflow, say whether the failing step of the run below fails without a change to blame, and how often.' },
+    { id: 'st-slow', workflow: 'why slow', kind: 'run', label: 'Why slow', state: 'timing', launch: 'investigate', persona: 'CI investigator', ceiling: 'Read-only. Compares step timings; writes a report.', writes: false, models: SMALL, efforts: ['low', 'medium'], held: 'beside',
+      summary: 'Where the time goes, step by step, against the last green run.',
+      prompt: 'Compare the step timings of the run below with the last green run of the same workflow and say where the time goes.' }
+  ];
+  /* What the page of an item an instance holds says next, and the moves the maintainer can ask its owner for.
+     holds = whether the move's facts hold now. */
+  M.held = {
+    'kernel-lut': { next: 'Waits for you: → fix holds, and it widens the grant (push to its branch), so it needs your confirm.',
+      moves: [{ label: 'Move to fix', via: 'a move request: review → fix', holds: true, note: 'Its facts hold now; it still waits for your confirm, as any widening move does.' },
+        { label: 'Mark ready to merge', via: 'a move request: review → merge-ready', holds: false, note: 'Doesn’t hold: reviewer.verdict == pass is false (review-kernel-212 returned fail).' }] },
+    'investigate-1184': { next: 'Sent up to the Steward: it asks which fix image-builder#40 should use. The question is in Needs you.', moves: [] },
+    'docs-edl': { next: 'Checking the draft before it asks to move to publish.', moves: [] }
+  };
+  /* The instance that holds an item: a session that has not ended, carries the item (covers) or opened it (prs),
+     and is not a managed session of another holder. */
+  M.holderOf = function (ref) {
+    const H = window.HUB, on = Object.entries(H.sessions).filter(([id, s]) => s.state !== 'DONE' && M.sessions[id] && ((s.covers || []).indexOf(ref) >= 0 || (s.prs || []).indexOf(ref) >= 0));
+    const ids = on.map(([id]) => id), top = ids.filter((id) => ids.indexOf(M.sessions[id].owner) < 0);
+    return top[0] || null;
+  };
+  /* The plain-words ceiling of a grant. */
+  M.ceiling = function (g) {
+    const gh = g['GitHub'] || [], ro = (g['Permission mode'] || []).indexOf('plan · read-only') >= 0, out = [];
+    if (ro) out.push('Read-only checkout'); else if ((g['Shell'] || []).indexOf('edit files in its checkout') >= 0) out.push('Edits its own checkout');
+    const does = [];
+    if (gh.indexOf('push to its branch') >= 0) does.push('pushes to its own branch');
+    if (gh.indexOf('open a draft PR') >= 0) does.push('opens a draft PR');
+    if (gh.indexOf('comment') >= 0) does.push('comments');
+    if (gh.indexOf('re-run checks') >= 0) does.push('re-runs checks');
+    const ses = g['Sessions'] || [], auto = ses.filter((x) => / · auto/.test(x)).map((x) => x.split(' · ')[0]), ask = ses.filter((x) => !/ · auto/.test(x)).map((x) => 'an ' + x.split(' · ')[0]);
+    let line = out.join('') + (does.length ? (out.length ? '; ' : '') + does.join(', ') : '');
+    line = line.charAt(0).toUpperCase() + line.slice(1) + '.';
+    if (auto.length) line += ' Runs the ' + auto.join(' and the ') + '.';
+    if (ask.length) line += ' Can ask for ' + ask.join(' or ') + '.';
+    if (gh.indexOf('merge to main') < 0) line += ' No merge.';
+    return line;
+  };
+  /* A start as an item's page shows it: its persona, ceiling and whether it writes. */
+  M.startView = function (st) {
+    const d = M.defs[st.workflow];
+    if (d && d.states && d.states[st.state]) {
+      const g = M.effective(d, st.state).grant, gh = g['GitHub'] || [];
+      return { ...st, persona: d.states[st.state].personas[0], ceiling: M.ceiling(g), where: st.workflow + ' › ' + M.chain(d, st.state).join(' › '),
+        writes: gh.some((x) => ['push to its branch', 'open a draft PR', 'comment', 'mark ready for review'].indexOf(x) >= 0) || (g['Shell'] || []).indexOf('edit files in its checkout') >= 0 };
+    }
+    return { ...st, where: st.workflow + (st.state && st.state !== st.workflow ? ' › ' + st.state : '') };
+  };
+  /* The starts for a kind, lead first. */
+  M.startsFor = function (kind) { return M.starts.filter((s) => s.kind === kind).map(M.startView).sort((a, b) => !!b.lead - !!a.lead); };
+  /* The item's details as the session receives them after the prompt, marked as data. */
+  M.details = function (ref) {
+    const H = window.HUB, it = H.items[ref] || {}, num = ref.indexOf('#') >= 0 ? ref.split('#')[1].trim() : '';
+    const repo = it.repo || ref.split('#')[0].split(' ')[0];
+    const K = { issue: 'issue', pr: 'pull request', run: 'workflow run', roadmap: 'issue' };
+    const L = [['kind', K[it.kind] || it.kind], ['repository', 'GlassineOS/' + repo], ['number', num], ['title', it.title], ['state', (it.state || '').toLowerCase()]];
+    if (it.branch) L.push(['branch', it.branch]);
+    if (it.labels) L.push(['labels', it.labels.join(', ') || 'none']);
+    if (it.checks) L.push(['checks', it.checks.map(([n, s]) => n + ' ' + ({ p: 'passed', f: 'failed', r: 'running' }[s])).join(' · ')]);
+    L.push(['links', (it.partOf ? 'Part of ' + it.partOf : 'none')]);
+    return L;
+  };
+})(window.HUB.machine);

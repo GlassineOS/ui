@@ -62,8 +62,8 @@
    "x": 0,
    "y": 2620,
    "w": 1440,
-   "h": 2300,
-   "title": "Work item · PR kernel#212 (review threads, its session embedded)",
+   "h": 2780,
+   "title": "Work item · PR kernel#212, held by kernel-lut (the instance leads; writing starts ask it or are hidden)",
    "page": "screens",
    "expand": "fill",
    "is_interactive": true
@@ -73,7 +73,7 @@
    "y": 2620,
    "w": 1440,
    "h": 1520,
-   "title": "Work item · issue epd#9 (no session yet, the Steward’s suggestion)",
+   "title": "Work item · issue epd#9 (its starts: Work on this leads; no session yet, the Steward’s suggestion)",
    "page": "screens",
    "expand": "fill",
    "is_interactive": true
@@ -82,15 +82,15 @@
    "x": 3040,
    "y": 2620,
    "w": 1440,
-   "h": 1580,
-   "title": "Work item · run build-image #1184",
+   "h": 2020,
+   "title": "Work item · run build-image #1184, held by investigate-1184 (a one-state instance)",
    "page": "screens",
    "expand": "fill",
    "is_interactive": true
   },
   "NeedsYou.dc.html": {
    "x": 0,
-   "y": 5220,
+   "y": 5780,
    "w": 1440,
    "h": 1100,
    "title": "Needs you · one modal, opened from the header on any screen",
@@ -100,7 +100,7 @@
   },
   "Sessions.dc.html": {
    "x": 1520,
-   "y": 5220,
+   "y": 5780,
    "w": 1440,
    "h": 1800,
    "title": "Sessions › Running",
@@ -110,7 +110,7 @@
   },
   "History.dc.html": {
    "x": 3040,
-   "y": 5220,
+   "y": 5780,
    "w": 1440,
    "h": 1760,
    "title": "Sessions › History & cleanup",
@@ -178,7 +178,7 @@
    "y": 1360,
    "w": 1440,
    "h": 72,
-   "title": "Header",
+   "title": "Header · primary navigation with Workflows and Apps",
    "page": "components",
    "expand": "fill",
    "is_interactive": true
@@ -266,7 +266,7 @@
   },
   "Notes.dc.html": {
    "x": 0,
-   "y": 9170,
+   "y": 9730,
    "w": 1440,
    "h": 2010,
    "title": "Notes · results, every status",
@@ -276,7 +276,7 @@
   },
   "NotesEmpty.dc.html": {
    "x": 1520,
-   "y": 9170,
+   "y": 9730,
    "w": 1440,
    "h": 900,
    "title": "Notes · before any search",
@@ -286,7 +286,7 @@
   },
   "NotesNone.dc.html": {
    "x": 0,
-   "y": 11790,
+   "y": 12350,
    "w": 1440,
    "h": 900,
    "title": "Notes · no results",
@@ -296,7 +296,7 @@
   },
   "NotesMore.dc.html": {
    "x": 1520,
-   "y": 11790,
+   "y": 12350,
    "w": 1440,
    "h": 2600,
    "title": "Notes · more than shown",
@@ -306,7 +306,7 @@
   },
   "NotesLimit.dc.html": {
    "x": 3040,
-   "y": 11790,
+   "y": 12350,
    "w": 1440,
    "h": 2200,
    "title": "Notes · 100-row limit",
@@ -316,7 +316,7 @@
   },
   "NotesMissing.dc.html": {
    "x": 4560,
-   "y": 11790,
+   "y": 12350,
    "w": 1440,
    "h": 800,
    "title": "Notes · not set up",
@@ -326,7 +326,7 @@
   },
   "NotesFailed.dc.html": {
    "x": 6080,
-   "y": 11790,
+   "y": 12350,
    "w": 1440,
    "h": 900,
    "title": "Notes · tool refused",
@@ -336,7 +336,7 @@
   },
   "PhoneNotes.dc.html": {
    "x": 0,
-   "y": 14810,
+   "y": 15370,
    "w": 390,
    "h": 3600,
    "title": "Phone · Notes results",
@@ -345,7 +345,7 @@
   },
   "PhoneOverview.dc.html": {
    "x": 470,
-   "y": 14810,
+   "y": 15370,
    "w": 390,
    "h": 2600,
    "title": "Phone · Overview",
@@ -354,16 +354,16 @@
   },
   "PhoneWorkItem.dc.html": {
    "x": 940,
-   "y": 14810,
+   "y": 15370,
    "w": 390,
-   "h": 3200,
-   "title": "Phone · Work item kernel#212",
+   "h": 4220,
+   "title": "Phone · Work item kernel#212, held by kernel-lut",
    "page": "screens",
    "is_interactive": true
   },
   "PhoneMenu.dc.html": {
    "x": 1410,
-   "y": 14810,
+   "y": 15370,
    "w": 390,
    "h": 844,
    "title": "Phone · menu open",
@@ -372,7 +372,7 @@
   },
   "PhoneSteward.dc.html": {
    "x": 1880,
-   "y": 14810,
+   "y": 15370,
    "w": 390,
    "h": 844,
    "title": "Phone · Steward open",
@@ -381,7 +381,7 @@
   },
   "PhoneLaunch.dc.html": {
    "x": 2350,
-   "y": 14810,
+   "y": 15370,
    "w": 390,
    "h": 1800,
    "title": "Phone · Launch, plan stage",
@@ -399,7 +399,7 @@
   },
   "NotesIndexing.dc.html": {
    "x": 3040,
-   "y": 9170,
+   "y": 9730,
    "w": 1440,
    "h": 2200,
    "title": "Notes · indexer running (badge)",
@@ -525,7 +525,7 @@
   },
   "SessionMachine.dc.html": {
    "x": 4560,
-   "y": 5220,
+   "y": 5780,
    "w": 1280,
    "h": 2840,
    "title": "Session · its workflow (machine panel, confirm on a widening move)",
@@ -535,7 +535,7 @@
   },
   "PhoneMachine.dc.html": {
    "x": 2820,
-   "y": 14810,
+   "y": 15370,
    "w": 390,
    "h": 5480,
    "title": "Phone · a session’s workflow",
@@ -544,7 +544,7 @@
   },
   "PhoneDecisions.dc.html": {
    "x": 3290,
-   "y": 14810,
+   "y": 15370,
    "w": 390,
    "h": 7540,
    "title": "Phone · Needs you: workflow change, look at the design",
@@ -571,20 +571,20 @@
   },
   "WorkflowEditor.dc.html": {
    "x": 5920,
-   "y": 5220,
+   "y": 5780,
    "w": 1440,
-   "h": 2700,
-   "title": "Workflows · the editor: diagram, outline, text, inspector, checks",
+   "h": 3960,
+   "title": "Workflows · the editor: diagram, outline, text, inspector, checks, starts",
    "page": "screens",
    "expand": "fill",
    "is_interactive": true
   },
   "PhoneWorkflowEditor.dc.html": {
    "x": 3760,
-   "y": 14810,
+   "y": 15370,
    "w": 390,
-   "h": 5980,
-   "title": "Phone · the workflow editor (outline and inspector)",
+   "h": 7990,
+   "title": "Phone · the workflow editor (outline, inspector and starts)",
    "page": "screens",
    "is_interactive": true
   },
@@ -599,7 +599,7 @@
   },
   "WorkflowAsk.dc.html": {
    "x": 7440,
-   "y": 5220,
+   "y": 5780,
    "w": 1200,
    "h": 600,
    "title": "Workflows · ask the Workflow author for a change, in words",
@@ -608,7 +608,7 @@
   },
   "WorkflowChangeRequest.dc.html": {
    "x": 7440,
-   "y": 5900,
+   "y": 6460,
    "w": 1200,
    "h": 2780,
    "title": "Needs you · a change you asked for: before and after, how the draft got here, the checks",
@@ -617,11 +617,66 @@
   },
   "PhoneWorkflowChange.dc.html": {
    "x": 4230,
-   "y": 14810,
+   "y": 15370,
    "w": 390,
    "h": 3600,
    "title": "Phone · a change you asked for (one-column outline diff)",
    "page": "screens",
+   "is_interactive": true
+  },
+  "WorkItemPrOpen.dc.html": {
+   "x": 6080,
+   "y": 2620,
+   "w": 1440,
+   "h": 1100,
+   "title": "Work item · PR ink-input#57, no instance holds it (Take this on leads)",
+   "page": "screens",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "PhoneWorkItemIssue.dc.html": {
+   "x": 4700,
+   "y": 15370,
+   "w": 390,
+   "h": 1540,
+   "title": "Phone · Work item epd#9 (its starts)",
+   "page": "screens",
+   "is_interactive": true
+  },
+  "Starts.dc.html": {
+   "x": 4960,
+   "y": 5300,
+   "w": 1000,
+   "h": 380,
+   "title": "Starts · the start row of an item (lead, quick tasks; or the instance that holds it)",
+   "page": "components",
+   "is_interactive": true
+  },
+  "StartRows.dc.html": {
+   "x": 4960,
+   "y": 2600,
+   "w": 1000,
+   "h": 2620,
+   "title": "Starts · every kind: issue, pull request, run, and items an instance holds",
+   "page": "components",
+   "is_interactive": true
+  },
+  "WorkflowStarts.dc.html": {
+   "x": 6040,
+   "y": 2600,
+   "w": 1000,
+   "h": 1280,
+   "title": "WorkflowStarts · a workflow’s starts by kind, one start’s prompt and what the session receives",
+   "page": "components",
+   "is_interactive": true
+  },
+  "WorkflowStartsRefused.dc.html": {
+   "x": 6040,
+   "y": 3960,
+   "w": 1000,
+   "h": 1470,
+   "title": "WorkflowStarts · the checks refuse a writing start set to run beside",
+   "page": "components",
    "is_interactive": true
   }
  },
@@ -689,7 +744,13 @@
   "PhoneMachine.dc.html",
   "PhoneDecisions.dc.html",
   "PhoneWorkflowEditor.dc.html",
-  "PhoneWorkflowChange.dc.html"
+  "PhoneWorkflowChange.dc.html",
+  "WorkItemPrOpen.dc.html",
+  "PhoneWorkItemIssue.dc.html",
+  "Starts.dc.html",
+  "StartRows.dc.html",
+  "WorkflowStarts.dc.html",
+  "WorkflowStartsRefused.dc.html"
  ],
  "notes": {
   "s1": {
@@ -710,7 +771,7 @@
   },
   "s3": {
    "x": 0,
-   "y": 4920,
+   "y": 5480,
    "text": "Sessions — Needs you, Running, History",
    "kind": "title1",
    "maxW": 4400,
@@ -761,7 +822,7 @@
   },
   "s5": {
    "x": 0,
-   "y": 8870,
+   "y": 9430,
    "text": "Notes — what the project has learned, and how far to trust it",
    "kind": "title1",
    "maxW": 5920,
@@ -769,7 +830,7 @@
   },
   "s6": {
    "x": 0,
-   "y": 14510,
+   "y": 15070,
    "text": "Phone — the same screens at 390 px",
    "kind": "title1",
    "maxW": 3200,
@@ -777,7 +838,7 @@
   },
   "s7": {
    "x": 6080,
-   "y": 9170,
+   "y": 9730,
    "w": 520,
    "fill": "orange",
    "size": "m",
@@ -818,6 +879,15 @@
    "size": "m",
    "page": "components",
    "text": "These boards use Interleaf’s tokens (voice, scheme and pen props) and new Interleaf parts: Chip, Dialog and the changed lines of CodeBlock. The older hub boards are fixed White · Paper; the state chip and the machine panel sit in them as tokened parts.\n\nA workflow is a statechart: parent states share their grant and exits with the states inside them, H returns to where it was, each state's exits are tried in order (the first that holds moves), and a state can run sessions whose own workflows nest under it.\n\nState is told by edge and words: solid holds, dashed moves, heavy waits for someone, double was sent up, hairline is over."
+  },
+  "c9": {
+   "x": 6040,
+   "y": 5520,
+   "w": 520,
+   "fill": "blue",
+   "size": "m",
+   "page": "components",
+   "text": "A start is how a workflow begins on an item: kind of item, label, summary, starting state, lead flag, models and efforts, prompt. Its persona and ceiling come from its starting state.\n\nWhile an instance holds the item, each start runs beside it (read-only only), asks the owner, or is hidden. Asking goes to the owner session, so its grants, caps and approvals apply."
   }
  }
 }

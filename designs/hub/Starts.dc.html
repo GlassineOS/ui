@@ -19,15 +19,15 @@ body{margin:0;background:#ffffff}
 @media (max-width: 760px){.st-quick{grid-template-columns:minmax(0,1fr)}.st-lead > button{flex:1 1 100%}}
 </style>
 </helmet>
-<section class="st" aria-labelledby="st-h" style="display: flex; flex-direction: column; gap: 12px; padding: 14px 16px; border: {{frame}}; border-radius: 16px; background: #ffffff; color: #111111; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 15px; line-height: 1.5">
+<section class="st" aria-labelledby="st-h-{{ slug }}" style="display: flex; flex-direction: column; gap: 12px; padding: 14px 16px; border: {{frame}}; border-radius: 16px; background: #ffffff; color: #111111; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 15px; line-height: 1.5">
   <sc-if value="{{free}}" hint-placeholder-val="{{true}}">
     <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px">
-      <h2 id="st-h" style="margin: 0; font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600; letter-spacing: 0.08em">START ON {{refUpper}}</h2>
+      <h2 id="st-h-{{ slug }}" style="margin: 0; font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600; letter-spacing: 0.08em">START ON {{refUpper}}</h2>
       <span style="flex: 1"></span>
       <button type="button" onClick="{{newFrom}}" style="min-height: 44px; padding: 0 14px; border: 1.5px dashed #111111; border-radius: 12px; background: #ffffff; color: #111111; font: inherit; cursor: pointer">New work from this…</button>
     </div>
     <div class="st-lead">
-      <button type="button" onClick="{{lead.go}}" id="st-lead" style="display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 20px 8px 10px; border: 1.5px solid #111111; border-radius: 14px; background: #2747b8; color: #ffffff; font: inherit; text-align: left; cursor: pointer; box-shadow: 0 3px 0 #b4b4b4">
+      <button type="button" onClick="{{lead.go}}" id="st-lead-{{ slug }}" style="display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 20px 8px 10px; border: 1.5px solid #111111; border-radius: 14px; background: #2747b8; color: #ffffff; font: inherit; text-align: left; cursor: pointer; box-shadow: 0 3px 0 #b4b4b4">
         <dc-import name="PersonaBadge" persona="{{lead.persona}}" size="m" hint-size="34px,34px"></dc-import>
         <span style="display: flex; flex-direction: column; line-height: 1.25"><span style="font-size: 17px; font-weight: 600">{{lead.label}}</span><span style="font-size: 13px">{{lead.persona}} · <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px">{{lead.where}}</span></span></span>
       </button>
@@ -49,7 +49,7 @@ body{margin:0;background:#ffffff}
 
   <sc-if value="{{held}}" hint-placeholder-val="{{false}}">
     <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px">
-      <h2 id="st-h" style="margin: 0; font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600; letter-spacing: 0.08em">HELD BY</h2>
+      <h2 id="st-h-{{ slug }}" style="margin: 0; font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600; letter-spacing: 0.08em">HELD BY</h2>
       <dc-import name="SessionChip" sid="{{sid}}" hint-size="220px,30px"></dc-import>
       <dc-import name="PersonaBadge" persona="{{owner.persona}}" size="s" show-name="{{yes}}" hint-size="150px,30px"></dc-import>
       <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: #4a4a4a">{{owner.wf}}</span>
@@ -59,8 +59,8 @@ body{margin:0;background:#ffffff}
     </div>
     <p style="margin: 0; font-size: 15.5px"><span style="font-weight: 600">Next:</span> {{owner.next}}</p>
 
-    <div role="group" aria-labelledby="st-ask" style="display: flex; flex-direction: column; gap: 8px; padding-top: 10px; border-top: 1px dotted #111111">
-      <span id="st-ask" style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500; letter-spacing: 0.08em">ASK {{sidUpper}}</span>
+    <div role="group" aria-labelledby="st-ask-{{ slug }}" style="display: flex; flex-direction: column; gap: 8px; padding-top: 10px; border-top: 1px dotted #111111">
+      <span id="st-ask-{{ slug }}" style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500; letter-spacing: 0.08em">ASK {{sidUpper}}</span>
       <span style="font-size: 13.5px; color: #4a4a4a">These go to {{sid}}, not to a new session. Grants, caps and approvals apply as if {{sid}} had asked for it.</span>
       <div style="display: flex; flex-wrap: wrap; gap: 8px">
         <sc-for list="{{asks}}" as="a" hint-placeholder-count="3">
@@ -73,8 +73,8 @@ body{margin:0;background:#ffffff}
       <sc-if value="{{sent}}" hint-placeholder-val="{{false}}"><p role="status" style="margin: 0; padding: 8px 12px; border: 1.5px solid #111111; border-radius: 10px; font-size: 14px">{{sentText}}</p></sc-if>
     </div>
 
-    <div role="group" aria-labelledby="st-beside" style="display: flex; flex-direction: column; gap: 8px; padding-top: 10px; border-top: 1px dotted #111111">
-      <span id="st-beside" style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500; letter-spacing: 0.08em">RUNS BESIDE IT · READ-ONLY</span>
+    <div role="group" aria-labelledby="st-beside-{{ slug }}" style="display: flex; flex-direction: column; gap: 8px; padding-top: 10px; border-top: 1px dotted #111111">
+      <span id="st-beside-{{ slug }}" style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500; letter-spacing: 0.08em">RUNS BESIDE IT · READ-ONLY</span>
       <div class="st-quick">
         <sc-for list="{{beside}}" as="q" hint-placeholder-count="2">
           <button type="button" onClick="{{q.go}}" aria-label="{{q.aria}}" style="display: flex; align-items: flex-start; gap: 10px; min-height: 44px; padding: 8px 12px 8px 8px; border: 1.5px solid #111111; border-radius: 12px; background: #ffffff; color: #111111; font: inherit; text-align: left; cursor: pointer">
@@ -106,8 +106,9 @@ class Component extends DCLogic {
     const launch = (s) => () => { if (P.onLaunch) P.onLaunch(s.launch, s); };
     const btn = (s) => ({ ...s, go: launch(s), showPersona: s.persona !== s.label, aria: s.label + ', starts ' + s.persona + '. ' + s.ceiling });
     const lead = all.find((s) => s.lead) || all[0];
+    const slug = ref.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
     if (!sid) {
-      return { free: true, held: false, frame: '1px solid #d0d0d0', refUpper: ref.toUpperCase(), lead: btn(lead), quick: all.filter((s) => s !== lead).map(btn),
+      return { slug, free: true, held: false, frame: '1px solid #d0d0d0', refUpper: ref.toUpperCase(), lead: btn(lead), quick: all.filter((s) => s !== lead).map(btn),
         newFrom: () => { if (P.onLaunch) P.onLaunch('issue', null); } };
     }
     const m = M.sessions[sid], d = M.defs[m.workflow], h = M.held[sid] || { next: m.note || '', moves: [] };
@@ -115,10 +116,10 @@ class Component extends DCLogic {
     const off = (on) => 'display: flex; align-items: center; gap: 8px; width: 100%; min-height: 44px; padding: 0 14px; border-radius: 12px; font: inherit; font-weight: 600; text-align: left; cursor: pointer; ' + (on ? 'border: 1.5px solid #111111; background: #f2f2f2; color: #111111' : 'border: 1.5px dashed #b4b4b4; background: #ffffff; color: #4a4a4a; cursor: not-allowed');
     const send = (label, ok) => () => { if (ok) this.setState({ sent: label }); };
     const asks = all.filter((s) => s.held === 'ask').map((s) => ({ label: s.ask || s.label, via: 'a session under ' + sid + ': ' + s.persona, note: '', holds: true }))
-      .concat(h.moves).map((a, i) => ({ ...a, hasNote: !!a.note, noteId: 'st-ask-' + i, offP: a.holds ? 'false' : 'true', style: off(a.holds), go: send(a.label, a.holds) }));
+      .concat(h.moves).map((a, i) => ({ ...a, hasNote: !!a.note, noteId: 'st-ask-' + slug + '-' + i, offP: a.holds ? 'false' : 'true', style: off(a.holds), go: send(a.label, a.holds) }));
     const isOwnWf = (s) => s.workflow === m.workflow || s.lead;
     return {
-      free: false, held: true, frame: '2.5px solid #111111', yes: true, sid, sidUpper: sid.toUpperCase(),
+      slug, free: false, held: true, frame: '2.5px solid #111111', yes: true, sid, sidUpper: sid.toUpperCase(),
       owner: { persona, wf: m.workflow + (d ? ' v' + d.version : ''), next: h.next },
       asks, beside: all.filter((s) => s.held === 'beside').map(btn),
       hidden: all.filter((s) => s.held === 'hide').map((s) => ({ label: s.label, persona: s.persona, why: isOwnWf(s) ? sid + ' already holds ' + ref + '; a second instance would be refused.' : 'it can write on ' + ref + '.' })),

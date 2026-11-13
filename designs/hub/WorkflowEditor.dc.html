@@ -22,7 +22,7 @@
         <span class="wf-small wf-soft">{{ status }}</span>
       </div>
       <label class="wf-field" style="flex: 0 1 18rem"><span>Version</span>
-        <select id="ed-ver" onChange="{{ pickVer }}" value="{{ ver }}"><option value="8">v8 · draft from the Steward</option><option value="7">v7 · in use</option></select>
+        <select id="ed-ver" onChange="{{ pickVer }}" value="{{ verSel }}"><sc-for list="{{ vers }}" as="o" hint-placeholder-count="2"><option value="{{ o.v }}">{{ o.name }}</option></sc-for></select>
       </label>
       <label class="wf-field" style="flex: 0 1 17rem"><span>Scope</span>
         <select><option>organisation default</option><option>kernel · override: review asks for 2 reviewers</option></select>
@@ -52,18 +52,19 @@
               <button type="button" class="il-btn">+ State</button>
               <button type="button" class="il-btn">+ State inside {{ parentFor }}</button>
               <button type="button" class="il-btn">+ Exit from {{ selState }}</button>
+              <a class="il-btn" href="WorkflowAsk.dc.html" id="ed-ask">Ask for a change…</a>
             </div>
           </div>
           <sc-if value="{{ showDiagram }}" hint-placeholder-val="{{ true }}">
-            <div class="wf-ed__narrow"><dc-import name="MachineOutline" workflow="implement" def="{{ def }}" sid="" selected="{{ sel }}" on-select="{{ pick }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,1100px"></dc-import></div>
-            <div class="wf-ed__wide"><dc-import name="MachineDiagram" workflow="implement" def="{{ def }}" sid="" draft="{{ draft }}" marks="{{ draft }}" fixed="{{ fixed }}" selected="{{ sel }}" on-select="{{ pick }}" legend="{{ false }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,560px"></dc-import></div>
+            <div class="wf-ed__narrow"><dc-import name="MachineOutline" workflow="{{ wfName }}" def="{{ def }}" sid="" selected="{{ sel }}" on-select="{{ pick }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,1100px"></dc-import></div>
+            <div class="wf-ed__wide"><dc-import name="MachineDiagram" workflow="{{ wfName }}" def="{{ def }}" sid="" draft="{{ draft }}" marks="{{ draft }}" fixed="{{ fixed }}" selected="{{ sel }}" on-select="{{ pick }}" legend="{{ false }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,560px"></dc-import></div>
           </sc-if>
           <sc-if value="{{ showOutline }}" hint-placeholder-val="{{ false }}">
-            <dc-import name="MachineOutline" workflow="implement" def="{{ def }}" sid="" selected="{{ sel }}" on-select="{{ pick }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,1100px"></dc-import>
+            <dc-import name="MachineOutline" workflow="{{ wfName }}" def="{{ def }}" sid="" selected="{{ sel }}" on-select="{{ pick }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,1100px"></dc-import>
           </sc-if>
           <sc-if value="{{ showText }}" hint-placeholder-val="{{ false }}">
             <div class="il-code">
-              <div class="il-code__head"><span class="wf-mono">implement.toml · v{{ ver }}</span><span class="wf-small wf-soft">the same definition; edits here are checked as you type</span></div>
+              <div class="il-code__head"><span class="wf-mono">{{ wfName }}.toml · v{{ verShown }}</span><span class="wf-small wf-soft">the same definition; edits here are checked as you type</span></div>
               <pre><sc-for list="{{ text }}" as="l" hint-placeholder-count="20"><span>{{ l }}</span></sc-for></pre>
             </div>
           </sc-if>
@@ -106,7 +107,7 @@
             <div class="wf-stack" style="gap: var(--space-1)"><span class="il-label">State</span><h2 class="wf-h3" id="ed-i">{{ st.chain }}</h2><span class="wf-small wf-soft">{{ st.kindLine }}</span></div>
             <div class="wf-row">
               <label class="wf-field" style="flex: 1 1 8rem"><span>Name</span><input type="text" value="{{ st.name }}"></label>
-              <label class="wf-field" style="flex: 1 1 8rem"><span>Inside</span><select value="{{ st.parent }}"><option value="">— top level</option><option value="work">work</option></select></label>
+              <label class="wf-field" style="flex: 1 1 8rem"><span>Inside</span><select value="{{ st.parent }}"><option value="">— top level</option><sc-for list="{{ st.parents }}" as="o" hint-placeholder-count="1"><option value="{{ o }}">{{ o }}</option></sc-for></select></label>
             </div>
             <fieldset class="wf-stack" style="border: 0; padding: 0; margin: 0; gap: var(--space-2)"><legend class="wf-field"><span>Kind</span></legend>
               <div class="wf-radio"><sc-for list="{{ st.kinds }}" as="k" hint-placeholder-count="3"><label><input type="radio" name="ed-kind" checked="{{ k.on }}">{{ k.name }}</label></sc-for></div>
@@ -241,10 +242,11 @@
 class Component extends DCLogic {
   constructor(p) { super(p); this.state = { sel: p.select || 'review', view: p.view || 'diagram', ver: '8', fixed: false, order: {}, dialog: false, saved: false, wf: 'implement' }; }
   renderVals() {
-    const P = this.props, M = window.HUB.machine, st = this.state, draft = st.ver === '8';
+    const P = this.props, M = window.HUB.machine, st = this.state, draft = st.wf === 'implement' && st.ver === '8';
     const voice = P.voice || 'white', scheme = P.scheme || 'paper';
     /* The working copy: v7 or the v8 draft, with the fix and the exit order as edited here. */
-    const base = M.def('implement', draft, st.fixed);
+    /* A workflow drawn only as a path (review, qa-audit…) shows its summary; the machine below is not shown for it. */
+    const base = M.def(M.defs[st.wf].states ? st.wf : 'implement', draft, st.fixed);
     const ord = (from) => st.order[from] || base.transitions.filter((t) => t.from === from).map((t) => t.id);
     const froms = []; base.transitions.forEach((t) => { if (froms.indexOf(t.from) < 0) froms.push(t.from); });
     const def = { ...base, transitions: [].concat(...froms.map((f) => ord(f).map((id) => base.transitions.find((t) => t.id === id)))) };
@@ -252,19 +254,20 @@ class Component extends DCLogic {
     const chain = (k) => M.chain(def, k).join(' › ');
     const G = { judge: '≈', fact: '=', counter: '#', hand: '✋' };
     const why = (t) => (t.by === 'judge' ? '≈ “' + t.when + '”' : G[t.by] + ' ' + (t.requires.join(', ') || 'by hand')) + (t.approve === 'me' ? ' · approve: me' : '');
-    const sel = st.sel, isExit = !!T(sel), stateId = isExit ? (T(sel).from === '*' ? 'work' : T(sel).from) : sel;
+    const first = (k) => S[k] && S[k].kind === 'parent' ? first(S[k].initial) : k;
+    const sel = S[st.sel] || T(st.sel) ? st.sel : first(def.initial), isExit = !!T(sel), stateId = isExit ? (T(sel).from === '*' ? def.initial : T(sel).from) : sel;
     const set = (o) => this.setState(o);
     const move = (from, id, d) => () => { const o = ord(from).slice(), i = o.indexOf(id), j = i + d; if (j < 0 || j >= o.length) return; [o[i], o[j]] = [o[j], o[i]]; set({ order: { ...st.order, [from]: o } }); };
 
     /* Checks: the overlap is a problem while → fix (rounds < 3) is tried before → escalated (rounds >= 2). */
-    const r = ord('review'), overlap = draft && !st.fixed && r.indexOf('t3') < r.indexOf('t5');
-    const CK = M.checks.map((k) => {
+    const r = st.wf === 'implement' ? ord('review') : [], overlap = draft && !st.fixed && r.indexOf('t3') < r.indexOf('t5');
+    const CK = st.wf !== 'implement' ? (M.defs[st.wf].checks || []).slice() : M.checks.map((k) => {
       if (k.kind !== 'problem') return draft || k.kind === 'ok' ? k : null;
       if (!draft) return { kind: 'ok', title: 'No two exits of a state hold at once', body: '' };
       if (overlap) return k;
       return { kind: 'ok', title: 'The exits of review don’t overlap', body: st.fixed ? '→ fix holds below 2 rounds, → escalated from 2. Fixed by you.' : '→ escalated is tried before → fix, so at 2 rounds the work goes up. Reordered by you.' };
     }).filter(Boolean);
-    const replay = draft ? { kind: 'ok', title: 'Replayed on kernel-lut’s history', body: overlap ? 'v8 would have done what v7 did: at 11:52 → fix (round 2).' : 'v8 would have sent kernel-lut to escalated at 11:52 instead of → fix: its second review round failed.' } : null;
+    const replay = draft && st.wf === 'implement' ? { kind: 'ok', title: 'Replayed on kernel-lut’s history', body: overlap ? 'v8 would have done what v7 did: at 11:52 → fix (round 2).' : 'v8 would have sent kernel-lut to escalated at 11:52 instead of → fix: its second review round failed.' } : null;
     const checks = CK.concat(replay ? [replay] : []);
     const MK = { problem: '!', sensitive: '◆', ok: '✓' }, SR = { problem: 'Problem: ', sensitive: 'Sensitive: ', ok: 'Holds: ' };
     const problems = checks.filter((k) => k.kind === 'problem').length, sens = checks.filter((k) => k.kind === 'sensitive').length;
@@ -283,7 +286,7 @@ class Component extends DCLogic {
     const exits = ord(stateId).map((id, i, a) => { const t = T(id); return { n: String(i + 1), to: t.to + (t.enter === 'history' ? ' (where it was)' : ''), why: why(t), pick: () => set({ sel: id }), up: move(stateId, id, -1), down: move(stateId, id, 1), upId: 'ed-up-' + id, downId: 'ed-dn-' + id }; });
     const inherited = M.chain(def, stateId).slice(0, -1).reverse().map((p) => ord(p).map((id) => ({ from: p, to: T(id).to, why: why(T(id)) }))).flat();
     const stv = {
-      chain: chain(stateId), name: stateId, parent: s.parent || '',
+      chain: chain(stateId), name: stateId, parent: s.parent || '', parents: Object.keys(S).filter((k) => S[k].kind === 'parent' && k !== stateId),
       kindLine: kind === 'parent' ? 'Parent of ' + Object.keys(S).filter((k) => S[k].parent === stateId).join(', ') + ' · starts in ' + s.initial + (s.history ? ' · remembers where it was (H)' : '') : kind === 'final' ? 'Final: the session ends here.' : (s.parent ? 'Inside ' + s.parent + ': takes its grant and its exits.' : 'Top level.'),
       kinds: ['state', 'parent', 'final'].map((k) => ({ name: k === 'state' ? 'a state' : k === 'parent' ? 'a parent (holds states)' : 'final', on: k === kind })),
       isLeaf: kind !== 'parent' && kind !== 'final', instructions: s.instructions || '',
@@ -299,7 +302,7 @@ class Component extends DCLogic {
     let trv = {};
     if (isExit) {
       const t = T(sel), place = t.from === '*' ? 'from any state' : (ord(t.from).indexOf(t.id) + 1) + ' of ' + ord(t.from).length + ' exits from ' + chain(t.from);
-      const names = Object.keys(S), c = t.from !== '*' && M.compare('implement', t.from === 'work' ? 'implement' : t.from, t.to === 'work' ? 'implement' : t.to);
+      const names = Object.keys(S), c = t.from !== '*' && M.compare(st.wf, first(t.from), first(t.to));
       trv = {
         title: (t.from === '*' ? 'any state' : t.from) + ' → ' + t.to, place, from: t.from === '*' ? 'work' : t.from, to: t.to,
         froms: ['any state'].concat(names).map((n) => ({ name: n === 'any state' ? n : chain(n), on: n === t.from || (n === 'any state' && t.from === '*') })),
@@ -307,39 +310,40 @@ class Component extends DCLogic {
         toParent: (S[t.to] || {}).kind === 'parent', first: (S[t.to] || {}).initial, atFirst: t.enter !== 'history', atHistory: t.enter === 'history',
         bys: [['judge', 'a judge (when)'], ['fact', 'facts only'], ['counter', 'a counter'], ['hand', 'by hand only']].map(([k, n]) => ({ name: n, on: k === t.by })),
         isJudge: t.by === 'judge', when: t.when,
-        requires: t.requires.map((x) => ({ text: x, tag: draft && M.defs.implement.transitions.find((o) => o.id === t.id).requires.indexOf(x) < 0 ? 'changed in v8' : '' })),
+        requires: t.requires.map((x) => ({ text: x, tag: draft && M.defs[st.wf].transitions.find((o) => o.id === t.id).requires.indexOf(x) < 0 ? 'changed in v8' : '' })),
         facts: M.facts.filter((f) => t.requires.indexOf(f) < 0),
         signals: M.signals.map((g) => ({ name: g, on: t.on.indexOf(g) >= 0 })),
         moves: [['auto', 'by itself'], ['on-request', 'when the session asks'], ['by hand', 'by hand only']].map(([k, n]) => ({ name: n, on: k === t.move })),
         approves: [['none', 'no one'], ['owner', 'its owner'], ['me', 'me']].map(([k, n]) => ({ name: n, on: k === t.approve })),
         widen: !c ? 'From any state: the hub asks you, every time.' : c.adds.length ? 'It widens the grant (' + c.adds.map((a) => a[0] === 'Permission mode' ? 'permission mode ' + a[1] : a[1]).join(', ') + '), so it always waits for a confirm, whatever “Approve” says.' : 'It doesn’t widen the grant, so it needs no confirm.',
-        back: () => set({ sel: t.from === '*' ? 'work' : t.from })
+        back: () => set({ sel: t.from === '*' ? first(def.initial) : t.from })
       };
     }
 
-    const lst = ['implement', 'review', 'qa-audit', 'design-spike', 'engineer'].map((k) => { const d = M.defs[k]; return { name: k, sub: (k === 'implement' ? 'v7 · draft v8' : 'v' + d.version) + ' · ' + d.running + ' running', cur: String(st.wf === k), pick: () => set({ wf: k }), dom: 'ed-wf-' + k }; });
+    const lst = ['implement', 'review', 'qa-audit', 'design-spike', 'engineer', 'workflow-change'].map((k) => { const d = M.defs[k]; return { name: k, sub: (k === 'implement' ? 'v7 · draft v8 · 1 change asked' : 'v' + d.version) + ' · ' + d.running + ' running', cur: String(st.wf === k), pick: () => set({ wf: k, sel: '', order: {} }), dom: 'ed-wf-' + k }; });
     const od = M.defs[st.wf];
     const viewNote = st.view === 'diagram' ? 'Drag a state to move it; drag from its edge to add an exit.' : st.view === 'outline' ? 'The outline is the same machine as a list: parents hold their states, each state lists its exits in order.' : 'Diagram, outline and text are one definition; a change in one shows in the others.';
     return {
       theme: voice + '-' + scheme, pen: P.pen || '1', voice, scheme,
       title: st.wf === 'implement' ? 'implement' : st.wf,
-      status: st.wf !== 'implement' ? '' : st.saved ? 'v8 saved by you · in use for the organisation' : draft ? 'v8 draft · from the Steward’s proposal d1, edited by you · not saved' : 'v7 · in use since 2 Nov · 4 sessions run it',
+      status: st.wf !== 'implement' ? (M.defs[st.wf].states ? 'v' + M.defs[st.wf].version + ' · in use · ' + M.defs[st.wf].running + ' running · editing makes a draft v' + (M.defs[st.wf].version + 1) : '') : st.saved ? 'v8 saved by you · in use for the organisation' : draft ? 'v8 draft · from the Steward’s proposal d1, edited by you · not saved' : 'v7 · in use since 2 Nov · 4 sessions run it',
       ver: st.ver, pickVer: (e) => set({ ver: e.target.value }),
-      wfs: lst, isImpl: st.wf === 'implement', isOther: st.wf !== 'implement',
+      wfs: lst, wfName: st.wf, isImpl: !!M.defs[st.wf].states, isOther: !M.defs[st.wf].states,
+      vers: st.wf === 'implement' ? [{ v: '8', name: 'v8 · draft from the Steward' }, { v: '7', name: 'v7 · in use' }] : [{ v: String(M.defs[st.wf].version), name: 'v' + M.defs[st.wf].version + ' · in use' }],
       other: od ? { title: od.title, version: String(od.version), about: od.about || '', states: (od.path || []).map((p, i, a) => p + (i < a.length - 1 ? ' →' : '')), returns: od.returns || '—', running: String(od.running) } : {},
       v: { diagram: String(st.view === 'diagram'), outline: String(st.view === 'outline'), text: String(st.view === 'text') },
       toDiagram: () => set({ view: 'diagram' }), toOutline: () => set({ view: 'outline' }), toText: () => set({ view: 'text' }),
       showDiagram: st.view === 'diagram', showOutline: st.view === 'outline', showText: st.view === 'text', viewNote,
       def, draft, fixed: st.fixed, sel, pick: (id) => set({ sel: id }),
-      parentFor: (S[stateId] || {}).kind === 'parent' ? stateId : 'work', selState: stateId,
-      text: M.text(def),
+      parentFor: (S[stateId] || {}).kind === 'parent' ? stateId : (Object.keys(S).find((k) => S[k].kind === 'parent') || 'a parent'), selState: stateId,
+      text: M.text(def), verShown: String(def.version), verSel: st.wf === 'implement' ? st.ver : String(M.defs[st.wf].version || ''),
       checks: checks.map((k) => ({ ...k, mark: MK[k.kind], sr: SR[k.kind], hasBody: !!k.body, hasFix: k.kind === 'problem' && !!k.fix })),
       checkLine: problems ? problems + ' problem · ' + sens + ' sensitive' : draft ? 'no problems · ' + sens + ' sensitive' : 'no problems',
       applyFix: () => set({ fixed: true }), selT3: () => set({ sel: 't3' }),
       isState: !isExit, isExit, st: stv, tr: trv,
       saved: st.saved, unsaved: !st.saved && draft && st.wf === 'implement', canSave: !problems, cantSave: !!problems,
       cantWhy: 'the check finds a problem. Fix it, or reorder the exits of review.',
-      footNote: draft ? 'Saving it yourself is the approval. Asking the Steward turns it into a proposal with a review, which comes to Needs you.' : 'Pick v8 to edit the draft, or edit v7 to start a new one.',
+      footNote: st.wf !== 'implement' ? 'Editing it makes a draft v' + ((M.defs[st.wf].version || 0) + 1) + '; saving that draft is your approval. Or ask for a change in words.' : draft ? 'Saving it yourself is the approval. Asking the Steward turns it into a proposal with a review, which comes to Needs you.' : 'Pick v8 to edit the draft, or edit v7 to start a new one.',
       openSave: () => set({ dialog: true }), closeSave: () => set({ dialog: false }), doSave: () => set({ dialog: false, saved: true }), dialog: st.dialog,
       summary: ['work › review grants approve runs from forks (sensitive)', 'merge-ready grants merge to main (sensitive)', 'work › review → escalated at 2 rounds instead of 3' + (st.fixed ? '; → fix below 2' : ''), r.indexOf('t5') < r.indexOf('t3') ? 'the exits of review are tried in a new order: ' + r.map((id) => '→ ' + T(id).to).join(', ') : 'the exits of review keep their order']
     };

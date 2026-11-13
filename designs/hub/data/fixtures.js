@@ -380,6 +380,8 @@ window.HUB.logs = {
    Named HUB.machine so it is not taken for GitHub Actions workflows (HUB.workflows above).
    kind = how the state chip draws: holds, moving, waits, up, over. */
 window.HUB.personas['Designer'] = { family: 'write', icon: 'M12 3l7 7-7 11-7-11zM12 3v8M10 13a2 2 0 1 0 4 0 2 2 0 1 0-4 0' };
+/* Drafts a change to a workflow from your words; it reads workflows and session history and writes drafts, nothing else. */
+window.HUB.personas['Workflow author'] = { family: 'organise', icon: 'M4 6h6v4H4zM14 14h6v4h-6zM10 8h4v8M7 10v8h7' };
 window.HUB.personas['QA engineer'] = { family: 'review', icon: 'M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3M7 15h10' };
 window.HUB.machine = {
   grantKinds: ['GitHub', 'Shell', 'Web', 'Hub tools', 'Sessions', 'Permission mode'],
@@ -389,11 +391,11 @@ window.HUB.machine = {
     'GitHub': ['read issues and PRs', 'comment', 'label and assign', 're-run checks', 'push to its branch', 'open a draft PR', 'mark ready for review', 'merge to main', 'approve runs from forks', 'make a repository public', 'delete a repository'],
     'Shell': ['run in its checkout', 'edit files in its checkout', 'reach the dev hub'],
     'Web': ['search', 'fetch'],
-    'Hub tools': ['docs search', 'notes', 'code search', 'code map'],
+    'Hub tools': ['docs search', 'notes', 'code search', 'code map', 'read workflows', 'read session history', 'write a draft'],
     'Permission mode': ['plan · read-only', 'accept edits', 'default']
   },
-  facts: ['branch pushed', 'PR open', 'checks pass', 'checks fail', 'reviewer.verdict == pass', 'reviewer.verdict == fail', 'qa.verdict == pass', 'qa.verdict == fail', 'rounds.review < 3', 'rounds.review >= 3', 'time in state > 2 h', 'tokens > 600 k', 'design PR merged', 'design PR closed unmerged', 'owner answered', 'PR merged', 'the item is user-facing'],
-  signals: ['Stop', 'SessionEnd', 'PostToolUse: push', 'checks changed', 'review submitted', 'PR merged', 'PR closed', 'managed session ended', 'report answered', 'decision answered'],
+  facts: ['branch pushed', 'PR open', 'checks pass', 'checks fail', 'reviewer.verdict == pass', 'reviewer.verdict == fail', 'qa.verdict == pass', 'qa.verdict == fail', 'rounds.review < 3', 'rounds.review >= 3', 'time in state > 2 h', 'tokens > 600 k', 'design PR merged', 'design PR closed unmerged', 'owner answered', 'PR merged', 'the item is user-facing', 'security.findings has HIGH', 'draft written', 'checks find a problem', 'draft grants a sensitive item', 'rounds.draft < 3', 'rounds.draft >= 3', 'you answered', 'you saved it', 'you asked for changes', 'you discarded it'],
+  signals: ['Stop', 'SessionEnd', 'PostToolUse: push', 'checks changed', 'review submitted', 'PR merged', 'PR closed', 'managed session ended', 'report answered', 'decision answered', 'checks done'],
   defs: {
     implement: {
       title: 'implement', version: 7, scope: 'organisation default', running: 4, overrides: ['kernel: review asks for 2 reviewers'],
@@ -455,7 +457,58 @@ window.HUB.machine = {
       path: ['plan', 'run › tests', 'run › dev hub', 'run › device', 'report'], returns: 'verdict pass | fail, findings' },
     'design-spike': { title: 'design-spike', version: 1, scope: 'organisation default', running: 1, about: 'The Designer’s machine: draft boards, open a draft PR, wait for your answer.', initial: 'draft',
       path: ['draft', 'look', 'revise', 'accepted'], returns: 'design PR' },
-    engineer: { title: 'engineer', version: 2, scope: 'organisation default', running: 0, about: 'An Engineer started on demand for a part the Implementor hands over.', initial: 'build', path: ['build', 'hand back'], returns: 'commits' }
+    engineer: { title: 'engineer', version: 2, scope: 'organisation default', running: 0, about: 'An Engineer started on demand for a part the Implementor hands over.', initial: 'build', path: ['build', 'hand back'], returns: 'commits' },
+    /* Asking an AI for a change to a workflow is a workflow too. The Workflow author drafts; the hub checks
+       and replays the draft; a sensitive grant gets a reviewer; you answer. No state can save a workflow:
+       saving stays yours. */
+    'workflow-change': {
+      title: 'workflow-change', version: 1, scope: 'organisation default', running: 1, overrides: [],
+      about: 'A change you ask for in words: the Workflow author drafts it, the hub checks it and replays it on past sessions, and you get the before and after.',
+      initial: 'drafting', path: ['draft', 'check', 'review', 'propose'], returns: 'a draft version',
+      checks: [
+        { kind: 'ok', title: 'Every state can be reached, and every state but the final ones has an exit', body: '' },
+        { kind: 'ok', title: 'Every loop is bounded by a counter', body: 'draft ⇄ check and draft ⇄ review by rounds.draft: at 3, drafting → ask you.' },
+        { kind: 'ok', title: 'Every requires names a fact the hub knows', body: '' },
+        { kind: 'ok', title: 'No state grants saving a workflow', body: 'Only you save: → applied needs “you saved it”.' }
+      ],
+      states: {
+        'drafting': { parent: '', kind: 'parent', initial: 'draft', history: true, personas: ['Workflow author'], context: 'keep',
+          note: 'Shared by draft, check and review: read-only, and nothing that saves a workflow.',
+          grant: { 'Hub tools': ['docs search', 'notes', 'read workflows', 'read session history'], 'Permission mode': ['plan · read-only'] }, manages: [] },
+        'draft': { parent: 'drafting', personas: ['Workflow author'], context: 'keep', instructions: 'Write the change as a draft of the workflow. Say what you changed and why, a line each. If the checks found a problem, fix it. You can’t save it.',
+          grant: { 'Hub tools': ['write a draft'] }, manages: [] },
+        'check': { parent: 'drafting', personas: [], context: 'keep', note: 'The hub runs the checks and replays the last sessions on the draft; no model runs here.', instructions: '', grant: {}, manages: [] },
+        'review': { parent: 'drafting', personas: ['Workflow author'], context: 'keep', instructions: 'Wait for the reviewer.', grant: {},
+          manages: [{ persona: 'Code reviewer', workflow: 'review', start: 'auto', when: '', max: 1, reuse: 'fresh', on_exit: 'stop', returns: 'verdict pass | fail, findings' }] },
+        'ask': { parent: '', personas: ['Workflow author'], context: 'keep', instructions: 'Ask your question in Needs you and wait for the answer.', grant: { 'Permission mode': ['plan · read-only'] }, manages: [] },
+        'propose': { parent: '', personas: ['Workflow author'], context: 'keep', instructions: 'Wait: the before and after are in Needs you.', grant: { 'Permission mode': ['plan · read-only'] }, manages: [] },
+        'applied': { parent: '', kind: 'final', grant: {}, manages: [] },
+        'declined': { parent: '', kind: 'final', grant: {}, manages: [], note: 'Discarded by you, or stopped by hand.' }
+      },
+      transitions: [
+        { id: 'w1', from: 'draft', to: 'check', by: 'fact', label: 'written', when: '', requires: ['draft written'], on: ['Stop'], move: 'auto', approve: 'none' },
+        { id: 'w7', from: 'draft', to: 'ask', by: 'judge', label: 'unclear', when: 'The request is unclear, or two parts of it contradict each other', requires: [], on: ['Stop'], move: 'on-request', approve: 'none' },
+        { id: 'w2', from: 'check', to: 'draft', by: 'fact', label: 'a problem', when: '', requires: ['checks find a problem', 'rounds.draft < 3'], on: ['checks done'], move: 'auto', approve: 'none' },
+        { id: 'w3', from: 'check', to: 'review', by: 'fact', label: 'sensitive', when: '', requires: ['checks pass', 'draft grants a sensitive item'], on: ['checks done'], move: 'auto', approve: 'none' },
+        { id: 'w4', from: 'check', to: 'propose', by: 'fact', label: 'checks pass', when: '', requires: ['checks pass'], on: ['checks done'], move: 'auto', approve: 'none' },
+        { id: 'w5', from: 'review', to: 'propose', by: 'fact', label: 'pass', when: '', requires: ['reviewer.verdict == pass'], on: ['managed session ended'], move: 'auto', approve: 'none' },
+        { id: 'w6', from: 'review', to: 'draft', by: 'fact', label: 'fail', when: '', requires: ['reviewer.verdict == fail'], on: ['managed session ended'], move: 'auto', approve: 'none' },
+        { id: 'w8', from: 'drafting', to: 'ask', by: 'counter', label: 'rounds ≥ 3', when: '', requires: ['rounds.draft >= 3'], on: ['checks done'], move: 'auto', approve: 'none' },
+        { id: 'w9', from: 'ask', to: 'drafting', enter: 'history', by: 'fact', label: 'answered', when: '', requires: ['you answered'], on: ['decision answered'], move: 'auto', approve: 'none' },
+        { id: 'w10', from: 'propose', to: 'applied', by: 'fact', label: 'saved', when: '', requires: ['you saved it'], on: ['decision answered'], move: 'auto', approve: 'me' },
+        { id: 'w11', from: 'propose', to: 'draft', by: 'fact', label: 'asked again', when: '', requires: ['you asked for changes'], on: ['decision answered'], move: 'auto', approve: 'none' },
+        { id: 'w12', from: 'propose', to: 'declined', by: 'fact', label: 'discarded', when: '', requires: ['you discarded it'], on: ['decision answered'], move: 'auto', approve: 'none' },
+        { id: 'w13', from: '*', to: 'declined', by: 'hand', label: 'any state · by hand', when: '', requires: [], on: [], move: 'by hand', approve: 'me' }
+      ],
+      layout: {
+        w: 1000, h: 560, start: [44, 100], history: [520, 334],
+        states: { 'drafting': [20, 30, 540, 330], 'draft': [70, 80, 150, 56], 'check': [330, 80, 150, 56], 'review': [330, 250, 150, 56], 'ask': [70, 440, 150, 56],
+          'propose': [680, 80, 150, 56], 'applied': [900, 80, 90, 56], 'declined': [900, 440, 90, 56] },
+        edges: { w1: ['M220 100H330', 275, 100], w2: ['M330 124H220', 275, 124], w7: ['M145 136V440', 145, 290], w3: ['M380 136V250', 380, 193], w6: ['M330 278H175V136', 250, 278],
+          w4: ['M480 100H680', 620, 100], w5: ['M480 278H755V136', 620, 278], w8: ['M300 360V468H220', 300, 405], w9: ['M220 484H520V346', 400, 484],
+          w10: ['M830 108H900', 865, 108], w11: ['M705 80V14H8V120H70', 420, 14], w12: ['M790 136V468H900', 790, 300], w13: ['M640 530H945V496', 760, 530] }
+      }
+    }
   },
   /* One-state workflows: each action as it is today. */
   oneState: ['triage', 'investigate', 'security audit', 'architecture audit', 'docs gap sweep', 'dependency review', 'steward'],
@@ -473,10 +526,13 @@ window.HUB.machine = {
     'arch-kernel': { workflow: 'architecture audit', state: 'audit', kind: 'holds', oneState: true },
     'triage-weekly': { workflow: 'triage', state: 'done', kind: 'over', oneState: true },
     'shell-brightness': { workflow: 'implement', state: 'design', kind: 'waits', note: 'waits for ui#31', owner: 'steward' },
-    'design-brightness': { workflow: 'design-spike', state: 'look', kind: 'waits', note: 'waits for you', owner: 'shell-brightness' }
+    'design-brightness': { workflow: 'design-spike', state: 'look', kind: 'waits', note: 'waits for you', owner: 'shell-brightness' },
+    'author-implement': { workflow: 'workflow-change', path: [], state: 'propose', kind: 'waits', note: 'waits for you', owner: 'you', since: '2 min' }
   },
   /* The machine panel of kernel-lut. Newest first. by: judge, fact, counter, you, hub. */
   panel: {
+    /* The change request: drafted twice, the checks passed the second time. */
+    'author-implement': { visited: ['drafting', 'draft', 'check'], taken: ['w1', 'w2', 'w4'], pending: '', exits: [], counters: [['Rounds', 'draft 2'], ['Since asked', '6 min']], evidence: [], children: [], history: [] },
     'kernel-lut': {
       visited: ['work', 'implement', 'review', 'fix'], taken: ['t1', 't3', 't6'], pending: 't3',
       counters: [['Rounds', 'review 2 of 3 · fix 1'], ['In this state', '3 min'], ['Since start', '2 h 40 min'], ['Judge calls', '6, 1 set aside by you'], ['Tokens', '412 k of 600 k']],
@@ -544,23 +600,108 @@ window.HUB.machine = {
     raisedAt: 'implement, after 1 round', why: 'No accepted board covers the slider’s steps. The Designer has a draft with two boards.',
     boards: [['shell', 'QuickSettings.dc.html', 'changed', 'the slider in quick settings, 16 marked steps'], ['shell', 'BrightnessSlider.dc.html', 'new', 'the slider on its own: drag, tap, keys']],
     requires: 'design PR merged (ui#31)', after: 'it goes back into work where it left off (history), with the accepted boards as context.'
+  },
+  /* Changes asked for in words. The Workflow author's draft is a patch on the definition, like d1's. */
+  requests: {
+    r1: {
+      id: 'r1', workflow: 'implement', from: 7, to: 8, sid: 'author-implement', persona: 'Workflow author', model: 'claude-opus-5-5', asked: '10:40', ready: '10:46',
+      words: 'Changes under hubd/auth need a security review before they can merge. Have the Security auditor look at them during review, and send the work up if it finds anything HIGH. Also, two failed review rounds are enough: send it up then, not after three.',
+      about: ['work › review'],
+      summary: [
+        ['review runs a Security auditor', 'when the PR touches hubd/auth; a fresh one each time, stopped when review is left. Its grant is capped at review’s: read-only.'],
+        ['review → escalated on a HIGH finding, tried first', 'so a HIGH sends the work up even when the reviewer passes it.'],
+        ['review → escalated after 2 rounds', 'was 3.'],
+        ['review → fix below 2 rounds', 'was below 3. Draft 1 left it at 3, and the checks found that → fix and → escalated both held at 2 rounds.']
+      ],
+      drafts: [
+        { n: 1, at: '10:43', result: 'The checks found a problem: → fix (rounds < 3) and → escalated (rounds ≥ 2) both hold at 2 rounds, and → fix is tried first.', kind: 'problem' },
+        { n: 2, at: '10:46', result: 'The checks pass. No sensitive item, so no reviewer. Replayed on the last 5 sessions: kernel-lut would have gone up at 11:52 instead of to fix; the other 4 move as they did.', kind: 'ok' }
+      ],
+      patch: {
+        requires: { t3: ['reviewer.verdict == fail or qa.verdict == fail', 'rounds.review < 2'], t5: ['rounds.review >= 2'] },
+        labels: { t3: 'a fail, < 2', t5: 'rounds ≥ 2' },
+        manages: { review: [{ persona: 'Security auditor', workflow: 'security audit', start: 'auto', when: 'the PR touches hubd/auth', max: 1, reuse: 'fresh', on_exit: 'stop', returns: 'findings by severity' }] },
+        add: [{ id: 't14', from: 'review', to: 'escalated', by: 'fact', label: 'HIGH', when: '', requires: ['security.findings has HIGH'], on: ['managed session ended'], move: 'auto', approve: 'none' }],
+        order: { review: ['t14', 't3', 't4', 't5'] },
+        edges: { t14: ['M470 108H740V250', 740, 160] }
+      },
+      marks: { states: { review: 'changed' }, edges: { t3: 'changed', t5: 'changed', t14: 'changed' } },
+      checks: [
+        { kind: 'ok', title: 'The exits of review don’t overlap', body: '→ escalated on HIGH first, then → fix below 2 rounds, → merge-ready, → escalated from 2.' },
+        { kind: 'ok', title: 'Every state can be reached, and every state but the final ones has an exit', body: '' },
+        { kind: 'ok', title: 'Every loop is bounded by a counter', body: 'review ⇄ fix by rounds.review.' },
+        { kind: 'ok', title: 'Every requires names a fact the hub knows', body: 'security.findings comes from the Security auditor’s report.' },
+        { kind: 'ok', title: 'No sensitive item is granted', body: 'The auditor reads; it can’t push, comment or approve.' }
+      ]
+    }
   }
 };
 
 /* The helpers the hub would run: effective grants (a parent's grant applies to its children), the grant
    comparison that tells a widening move, a definition with a draft applied, and its text form. */
 (function (M) {
+  /* A draft is the definition with a patch on top. A patch names: grants to add per state, requires,
+     labels, sessions a state runs (manages), new transitions, the order of a state's exits and the
+     layout of new edges. */
+  M.apply = function (d, p, version) {
+    const s = {};
+    Object.keys(d.states).forEach((k) => {
+      const g = {}; Object.keys(d.states[k].grant || {}).forEach((x) => { g[x] = d.states[k].grant[x].slice(); });
+      Object.keys(((p.grants || {})[k] || {})).forEach((x) => { g[x] = (g[x] || []).concat(p.grants[k][x]); });
+      s[k] = { ...d.states[k], grant: g, manages: (d.states[k].manages || []).concat(((p.manages || {})[k]) || []) };
+    });
+    let ts = d.transitions.map((t) => ({ ...t, ...((p.requires || {})[t.id] ? { requires: p.requires[t.id] } : {}), ...((p.labels || {})[t.id] ? { label: p.labels[t.id] } : {}) })).concat(p.add || []);
+    const froms = []; ts.forEach((t) => { if (froms.indexOf(t.from) < 0) froms.push(t.from); });
+    ts = [].concat(...froms.map((f) => { const own = ts.filter((t) => t.from === f), o = (p.order || {})[f]; return o ? o.map((id) => own.find((t) => t.id === id)) : own; }));
+    const layout = p.edges ? { ...d.layout, edges: { ...d.layout.edges, ...p.edges } } : d.layout;
+    return { ...d, version: version || d.version + 1, draft: true, states: s, transitions: ts, layout };
+  };
   /* fixed: also apply the fix the check offers for the overlap (→ fix becomes rounds.review < 2). */
   M.def = function (name, draft, fixed) {
     const d = M.defs[name];
     if (!draft || name !== M.change.workflow) return d;
-    const p = { ...M.change.patch, requires: { ...M.change.patch.requires, ...(fixed ? M.change.fix.requires : {}) } }, s = {};
-    Object.keys(d.states).forEach((k) => {
-      const g = {}; Object.keys(d.states[k].grant || {}).forEach((x) => { g[x] = d.states[k].grant[x].slice(); });
-      Object.keys((p.grants[k] || {})).forEach((x) => { g[x] = (g[x] || []).concat(p.grants[k][x]); });
-      s[k] = { ...d.states[k], grant: g };
+    const c = M.change, p = { ...c.patch, requires: { ...c.patch.requires, ...(fixed ? c.fix.requires : {}) }, labels: { t5: 'rounds ≥ 2', ...(fixed ? c.fix.labels : {}) } };
+    return M.apply(d, p, c.to);
+  };
+  /* What a change request's draft makes of its workflow. */
+  M.requested = function (id) { const r = M.requests[id]; return M.apply(M.defs[r.workflow], r.patch, r.to); };
+  /* The outline of a definition as rows: each state, then its exits in order (a parent's after its
+     states'). With a second definition, the rows of both, each marked same, added, removed, changed
+     or moved; grants and sessions a state runs show only where they differ. */
+  M.outlineDiff = function (a, b) {
+    const G = { judge: '≈', fact: '=', counter: '#', hand: '' };
+    const why = (t) => (G[t.by] ? G[t.by] + ' ' : '') + (t.when ? '“' + t.when + '”' + (t.requires.length ? ' · requires ' + t.requires.join(', ') : '') : t.requires.length ? t.requires.join(', ') : 'by hand') + (t.approve !== 'none' ? ' · approve: ' + t.approve : '');
+    const rowsOf = (d) => {
+      const out = [], kids = (k) => Object.keys(d.states).filter((c) => d.states[c].parent === k);
+      const visit = (k, depth) => {
+        const st = d.states[k];
+        out.push({ key: 's:' + k, kind: 'state', depth, name: k, tag: st.kind === 'parent' ? 'parent' + (st.history ? ' · H' : '') : st.kind === 'final' ? 'final' : '' });
+        Object.entries(st.grant || {}).forEach(([g, xs]) => xs.forEach((x) => out.push({ key: 'g:' + k + ':' + g + ':' + x, kind: 'grant', depth: depth + 1, text: g + ': ' + x, item: x })));
+        (st.manages || []).forEach((m) => out.push({ key: 'm:' + k + ':' + m.persona, kind: 'manages', depth: depth + 1, text: 'runs ' + m.persona + ' (' + m.workflow + (m.when ? ', when ' + m.when : '') + ')' }));
+        kids(k).forEach((c) => visit(c, depth + 1));
+        M.exitsOf(d, k).forEach((t, i) => out.push({ key: 't:' + t.id, kind: 'exit', depth: depth + 1, n: st.kind === 'parent' ? 'then' : String(i + 1), to: t.to + (t.enter === 'history' ? ' (where it was)' : ''), why: why(t) }));
+      };
+      Object.keys(d.states).filter((k) => !d.states[k].parent).forEach((k) => visit(k, 0));
+      return out;
+    };
+    const A = rowsOf(a), B = b ? rowsOf(b) : A, ka = {}, kb = {};
+    A.forEach((r) => { ka[r.key] = r; }); B.forEach((r) => { kb[r.key] = r; });
+    const res = [];
+    const mark = (x, y) => {
+      if (!x) return 'added'; if (!y) return 'removed';
+      if (x.kind === 'exit') { if (x.to !== y.to || x.why !== y.why) return 'changed'; if (x.n !== y.n) return 'moved'; }
+      return 'same';
+    };
+    let ia = 0;
+    B.forEach((r) => {
+      /* Rows of the old outline that are gone come in where they stood, before the next row both share. */
+      if (ka[r.key]) { const at = A.indexOf(ka[r.key]); for (; ia < at; ia++) if (!kb[A[ia].key]) res.push({ ...A[ia], change: 'removed', before: A[ia], after: null }); ia = Math.max(ia, at + 1); }
+      res.push({ ...r, change: mark(ka[r.key], r), before: ka[r.key] || null, after: r });
     });
-    return { ...d, version: M.change.to, draft: true, states: s, transitions: d.transitions.map((t) => p.requires[t.id] ? { ...t, requires: p.requires[t.id], label: (M.change.fix.labels[t.id] && fixed) ? M.change.fix.labels[t.id] : t.id === 't5' ? 'rounds ≥ 2' : t.label } : t) };
+    for (; ia < A.length; ia++) if (!kb[A[ia].key]) res.push({ ...A[ia], change: 'removed', before: A[ia], after: null });
+    /* A state holds a change when one of its rows does. */
+    res.forEach((r, i) => { if (r.kind === 'state') { let j = i + 1, any = false; while (j < res.length && !(res[j].kind === 'state' && res[j].depth <= r.depth)) { if (res[j].change !== 'same') any = true; j++; } r.holds = any; } });
+    return res.filter((r) => r.kind === 'state' || r.kind === 'exit' || r.change !== 'same');
   };
   M.chain = function (d, id) { const out = []; let k = id; while (k) { out.unshift(k); k = (d.states[k] || {}).parent; } return out; };
   M.effective = function (d, id) {
@@ -618,7 +759,7 @@ window.HUB.machine = {
         L.push('move = "' + t.move + '"' + (t.approve !== 'none' ? '\napprove = "' + t.approve + '"' : ''));
       });
     });
-    L.push(''); L.push('[[transition]]   # from any state'); L.push('to = "abandoned"'); L.push('move = "by hand"');
+    d.transitions.filter((t) => t.from === '*').forEach((t) => { L.push(''); L.push('[[transition]]   # from any state'); L.push('to = "' + t.to + '"'); L.push('move = "by hand"'); });
     return L.join('\n').split('\n');
   };
 })(window.HUB.machine);

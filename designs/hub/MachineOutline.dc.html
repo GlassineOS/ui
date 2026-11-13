@@ -29,7 +29,7 @@
   </ul>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"workflow":{"editor":"enum","options":["implement"],"default":"implement"},"sid":{"editor":"enum","options":["kernel-lut",""],"default":"kernel-lut"},"draft":{"editor":"boolean","default":false},"selected":{"editor":null},"def":{"editor":null},"onSelect":{"editor":null},"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":640,"height":1100}}'>
+<script type="text/x-dc" data-dc-script data-props='{"workflow":{"editor":"enum","options":["implement","workflow-change"],"default":"implement"},"sid":{"editor":"enum","options":["kernel-lut","author-implement",""],"default":"kernel-lut"},"draft":{"editor":"boolean","default":false},"selected":{"editor":null},"def":{"editor":null},"onSelect":{"editor":null},"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":640,"height":1100}}'>
 class Component extends DCLogic {
   renderVals() {
     const P = this.props, M = window.HUB.machine, wf = P.workflow || 'implement', d = P.def || M.def(wf, !!P.draft);

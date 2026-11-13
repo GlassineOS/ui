@@ -509,7 +509,7 @@
    "x": 2800,
    "y": 2600,
    "w": 1000,
-   "h": 2760,
+   "h": 3660,
    "title": "Needs you · a workflow definition change: the machine, the diff, the checks",
    "page": "components",
    "is_interactive": true
@@ -546,7 +546,7 @@
    "x": 3290,
    "y": 14810,
    "w": 390,
-   "h": 5100,
+   "h": 7540,
    "title": "Phone · Needs you: workflow change, look at the design",
    "page": "screens",
    "is_interactive": true
@@ -573,7 +573,7 @@
    "x": 5920,
    "y": 5220,
    "w": 1440,
-   "h": 2580,
+   "h": 2700,
    "title": "Workflows · the editor: diagram, outline, text, inspector, checks",
    "page": "screens",
    "expand": "fill",
@@ -585,6 +585,42 @@
    "w": 390,
    "h": 5980,
    "title": "Phone · the workflow editor (outline and inspector)",
+   "page": "screens",
+   "is_interactive": true
+  },
+  "MachineOutlineDiff.dc.html": {
+   "x": 3880,
+   "y": 5920,
+   "w": 1000,
+   "h": 1580,
+   "title": "MachineOutlineDiff · a workflow before and after, state by state and exit by exit",
+   "page": "components",
+   "is_interactive": true
+  },
+  "WorkflowAsk.dc.html": {
+   "x": 7440,
+   "y": 5220,
+   "w": 1200,
+   "h": 600,
+   "title": "Workflows · ask the Workflow author for a change, in words",
+   "page": "screens",
+   "is_interactive": true
+  },
+  "WorkflowChangeRequest.dc.html": {
+   "x": 7440,
+   "y": 5900,
+   "w": 1200,
+   "h": 2780,
+   "title": "Needs you · a change you asked for: before and after, how the draft got here, the checks",
+   "page": "screens",
+   "is_interactive": true
+  },
+  "PhoneWorkflowChange.dc.html": {
+   "x": 4230,
+   "y": 14810,
+   "w": 390,
+   "h": 3600,
+   "title": "Phone · a change you asked for (one-column outline diff)",
    "page": "screens",
    "is_interactive": true
   }
@@ -645,11 +681,15 @@
   "DesignSpike.dc.html",
   "MachineDiagram.dc.html",
   "MachineOutline.dc.html",
+  "MachineOutlineDiff.dc.html",
   "SessionMachine.dc.html",
   "WorkflowEditor.dc.html",
+  "WorkflowAsk.dc.html",
+  "WorkflowChangeRequest.dc.html",
   "PhoneMachine.dc.html",
   "PhoneDecisions.dc.html",
-  "PhoneWorkflowEditor.dc.html"
+  "PhoneWorkflowEditor.dc.html",
+  "PhoneWorkflowChange.dc.html"
  ],
  "notes": {
   "s1": {

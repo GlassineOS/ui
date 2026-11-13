@@ -214,11 +214,11 @@ html, body { margin: 0; }
 
 /* ---------- Workflow editor ---------- */
 .wf-ed { container-type: inline-size; }
-.wf-ed__grid { display: grid; grid-template-columns: minmax(0, 1fr) 24rem; grid-template-areas: "view insp" "checks insp" "other insp"; gap: var(--space-5); align-items: start; }
+.wf-ed__grid { display: grid; grid-template-columns: minmax(0, 1fr) 24rem; grid-template-areas: "view insp" "checks insp" "other insp"; grid-template-rows: auto auto 1fr; gap: var(--space-5); align-items: start; }
 .wf-ed__view { grid-area: view; } .wf-ed__checks { grid-area: checks; } .wf-ed__other { grid-area: other; } .wf-ed__insp { grid-area: insp; }
 .wf-ed__other:empty { display: none; }
 /* Narrow: the inspector follows the machine, so a selection opens next to it; the checks come after. */
-@container (max-width: 1100px) { .wf-ed__grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "view" "insp" "checks" "other"; } }
+@container (max-width: 1100px) { .wf-ed__grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "view" "insp" "checks" "other"; grid-template-rows: none; } }
 .wf-ed__nav .wf-ed__list { flex-direction: row; flex-wrap: wrap; }
 .wf-ed__nav .wf-ed__list > li { flex: 0 1 11rem; }
 .wf-ed__new .wf-mono { font-weight: 400; }
@@ -253,3 +253,38 @@ html, body { margin: 0; }
 .wf-radio input { width: 18px; height: 18px; accent-color: var(--ink); margin: 0; }
 .wf-ed__foot { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); padding-top: var(--space-4); border-top: var(--v-row-rule); }
 @media (max-width: 560px) { .wf-ed__foot .il-btn, .wf-seg .il-btn { flex: 1 1 100%; justify-content: center; } }
+
+/* ---------- Outline diff: a workflow before and after, state by state and exit by exit ---------- */
+.wf-od { container-type: inline-size; display: flex; flex-direction: column; }
+.wf-od__head, .wf-od__row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: var(--space-4); }
+.wf-od__head { padding-bottom: var(--space-2); border-bottom: 1.5px solid var(--ink); }
+.wf-od__row[data-kind="state"][data-depth="0"] { border-top: var(--v-row-rule); }
+.wf-od__row[data-kind="state"][data-depth="0"]:nth-child(2) { border-top: 0; }
+.wf-od__cell { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: var(--space-2) var(--space-3) var(--space-2) calc(var(--depth, 0) * var(--space-5) + var(--space-3)); color: var(--ink); }
+.wf-od__title { font-family: var(--font-mono); font-size: calc(var(--v-body) - 2px); }
+.wf-od__row[data-kind="state"] .wf-od__title { font-weight: 600; font-size: calc(var(--v-body) - 1px); }
+.wf-od__sub { font-size: calc(var(--v-body) - 3px); color: var(--ink-soft); overflow-wrap: anywhere; }
+.wf-od__tag { font-family: var(--font-mono); font-size: 11.5px; font-weight: 700; letter-spacing: 0.02em; color: var(--ink); }
+/* Added and the new side of a change: a solid bar and bold. Removed and the old side: a dashed bar and
+   struck through. Moved: a dotted bar. The tag says it in words as well. */
+.wf-od__cell[data-mark="add"] { box-shadow: inset 4px 0 0 var(--ink); background: var(--sheet); }
+.wf-od__cell[data-mark="add"] .wf-od__title, .wf-od__cell[data-mark="add"] .wf-od__sub { font-weight: 600; color: var(--ink); }
+.wf-od__cell[data-mark="del"] { border-left: 3px dashed var(--ink); padding-left: calc(var(--depth, 0) * var(--space-5) + var(--space-3) - 3px); }
+.wf-od__cell[data-mark="del"] .wf-od__title, .wf-od__cell[data-mark="del"] .wf-od__sub { text-decoration: line-through; text-decoration-thickness: 1.5px; color: var(--ink-soft); }
+.wf-od__cell[data-mark="old"] { border-left: 3px dashed var(--ink); padding-left: calc(var(--depth, 0) * var(--space-5) + var(--space-3) - 3px); }
+.wf-od__cell[data-mark="old"] .wf-od__title, .wf-od__cell[data-mark="old"] .wf-od__sub { color: var(--ink-soft); }
+.wf-od__cell[data-mark="old"][data-t="x"] .wf-od__title, .wf-od__cell[data-mark="old"][data-s="x"] .wf-od__sub { text-decoration: line-through; text-decoration-thickness: 1.5px; }
+.wf-od__cell[data-mark="moved"] { border-left: 3px dotted var(--ink); padding-left: calc(var(--depth, 0) * var(--space-5) + var(--space-3) - 3px); }
+.wf-od__cell[data-mark="none"] { visibility: hidden; }
+.wf-od__fold { grid-column: 1 / -1; padding: var(--space-2) var(--space-3); font-size: calc(var(--v-body) - 3px); color: var(--ink-soft); border-top: var(--v-row-rule); }
+.wf-od__one { display: flex; flex-direction: column; }
+.wf-od__one > .wf-od__row { grid-template-columns: minmax(0, 1fr); }
+/* Split needs room: in a narrow box the one-column form stands in for it. */
+.wf-od__fallback { display: none; }
+@container (max-width: 640px) { .wf-od__split { display: none; } .wf-od__fallback { display: flex; } }
+.wf-ask { min-height: 7em; padding: var(--space-2) var(--space-3); border: 0; border-radius: var(--v-ui-radius); background: var(--paper); color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--ink); font: inherit; width: 100%; box-sizing: border-box; resize: vertical; }
+[data-theme^="editorial"] .wf-ask { box-shadow: inset 0 0 0 1px var(--ink); }
+[data-theme^="stationery"] .wf-ask { box-shadow: 0 0 0 1px var(--gilt), inset 0 1px 0 var(--shade); }
+.wf-decision textarea:not(.wf-ask) { min-height: 4.5em; padding: var(--space-2) var(--space-3); border: 0; border-radius: var(--v-ui-radius); background: var(--paper); color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--ink); font: inherit; width: 100%; box-sizing: border-box; }
+.wf-checklist > li[data-kind="run"] { box-shadow: none; outline: 2.5px dashed var(--ink); outline-offset: -2.5px; }
+.wf-checklist > li[data-kind="wait"] { box-shadow: none; background: transparent; padding-block: var(--space-1); color: var(--ink-soft); }

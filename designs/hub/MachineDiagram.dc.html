@@ -52,17 +52,18 @@
   </sc-if>
 </figure>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"workflow":{"editor":"enum","options":["implement"],"default":"implement"},"sid":{"editor":"enum","options":["kernel-lut",""],"default":"kernel-lut"},"draft":{"editor":"boolean","default":false},"marks":{"editor":"boolean","default":false},"fixed":{"editor":"boolean","default":false},"selected":{"editor":null},"def":{"editor":null},"onSelect":{"editor":null},"legend":{"editor":"boolean","default":true},"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":1000,"height":680}}'>
+<script type="text/x-dc" data-dc-script data-props='{"workflow":{"editor":"enum","options":["implement","workflow-change"],"default":"implement"},"sid":{"editor":"enum","options":["kernel-lut","author-implement",""],"default":"kernel-lut"},"draft":{"editor":"boolean","default":false},"marks":{"editor":null},"tag":{"editor":null},"fixed":{"editor":"boolean","default":false},"selected":{"editor":null},"def":{"editor":null},"onSelect":{"editor":null},"legend":{"editor":"boolean","default":true},"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":1000,"height":680}}'>
 class Component extends DCLogic {
   renderVals() {
     const P = this.props, M = window.HUB.machine, wf = P.workflow || 'implement';
     const d = P.def || M.def(wf, !!P.draft, !!P.fixed), L = d.layout, sid = P.sid === undefined ? 'kernel-lut' : P.sid;
     const inst = sid && M.sessions[sid] && M.sessions[sid].workflow === wf ? M.sessions[sid] : null, pn = inst ? M.panel[sid] : null;
-    const marks = P.marks ? { states: M.change.marks.states, edges: { ...M.change.marks.edges, ...(P.fixed ? M.change.fix.edges : {}) } } : { states: {}, edges: {} }, sel = P.selected || '';
+    const marks = P.marks && typeof P.marks === 'object' ? { states: P.marks.states || {}, edges: P.marks.edges || {} } : P.marks ? { states: M.change.marks.states, edges: { ...M.change.marks.edges, ...(P.fixed ? M.change.fix.edges : {}) } } : { states: {}, edges: {} }, sel = P.selected || '';
     const pick = (id) => () => { if (P.onSelect) P.onSelect(id); };
     const atOf = (k) => inst && inst.state === k ? 'now' : inst && inst.to === k ? 'next' : pn && pn.visited.indexOf(k) >= 0 ? 'visited' : 'other';
     const glyph = { judge: '≈ ', fact: '= ', counter: '# ', hand: '' };
-    const subOf = (s) => (s.manages || []).length ? 'runs ' + s.manages.map((m) => ({ 'Code reviewer': 'reviewer', 'QA engineer': 'QA' })[m.persona] || m.persona.toLowerCase()).join(', ') : s.kind === 'final' ? 'final' : '';
+    /* The sub-line fits the box: past 20 characters it counts the sessions instead of naming them. */
+    const subOf = (s) => { const ms = s.manages || []; if (!ms.length) return s.kind === 'final' ? 'final' : ''; const t = 'runs ' + ms.map((m) => ({ 'Code reviewer': 'reviewer', 'QA engineer': 'QA', 'Security auditor': 'auditor' })[m.persona] || m.persona.toLowerCase()).join(', '); return t.length > 20 ? 'runs ' + ms.length + ' sessions' : t; };
     const parents = [], states = [];
     Object.entries(d.states).forEach(([k, s]) => {
       const [x, y, w, h] = L.states[k];
@@ -84,7 +85,7 @@ class Component extends DCLogic {
     });
     const [hx, hy] = L.history, [sx, sy] = L.start;
     return {
-      theme: (P.voice || 'white') + '-' + (P.scheme || 'paper'), pen: P.pen || '1', viewBox: '0 0 ' + L.w + ' ' + L.h, arrowId: 'arr-' + wf + (P.draft ? '-d' : '') + (P.marks ? '-m' : '') + (P.fixed ? '-f' : ''),
+      theme: (P.voice || 'white') + '-' + (P.scheme || 'paper'), pen: P.pen || '1', viewBox: '0 0 ' + L.w + ' ' + L.h, arrowId: 'arr-' + wf + (P.draft ? '-d' : '') + (P.marks ? '-m' : '') + (P.fixed ? '-f' : '') + (P.def ? '-v' + d.version : '') + (P.tag ? '-' + P.tag : ''),
       aria: 'Statechart of ' + wf + ' v' + d.version + (inst ? ', ' + sid + ' is in ' + inst.state : ''),
       parents, states, edges, hist: { x: hx, y: hy, tx: hx - 5, ty: hy + 5 }, start: { x: sx, y: sy, d: 'M' + (sx + 6) + ' ' + sy + 'H70' },
       legend: P.legend !== false

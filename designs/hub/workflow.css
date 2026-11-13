@@ -1,0 +1,132 @@
+/* The hub's workflow parts (state chip, machine panel, confirm, decisions): layout and the parts
+   Interleaf doesn't have. Colours, type and edges come only from the web form (ds/web/tokens.css)
+   and the voice variables of bundle.css (--v-*), so every part follows the voice, scheme and pen.
+   State is carried by shape and words, never colour alone; no motion. */
+
+html, body { margin: 0; }
+.wf { box-sizing: border-box; }
+.wf *, .wf *::before, .wf *::after { box-sizing: border-box; }
+:where(.wf) :where(p, h2, h3, ul, ol, dl, dd, figure) { margin: 0; }
+:where(.wf) :where(ul, ol) { padding: 0; list-style: none; }
+.wf-pad { padding: var(--space-6) max(var(--space-4), 2vw); }
+.wf-stack { display: flex; flex-direction: column; gap: var(--space-3); }
+.wf-stack--wide { gap: var(--space-5); }
+.wf-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); }
+.wf-soft { color: var(--ink-soft); }
+.wf-small { font-size: calc(var(--v-body) - 3px); line-height: 1.45; }
+.wf-mono { font-family: var(--font-mono); font-size: 0.82em; overflow-wrap: anywhere; }
+.wf-h2 { font-family: var(--v-head); font-size: calc(var(--v-h2) * 0.72); font-weight: var(--v-h2-w); font-variant: var(--v-h2-variant); letter-spacing: var(--v-h2-ls); line-height: 1.25; text-wrap: balance; }
+.wf-h3 { font-family: var(--v-head); font-size: calc(var(--v-body) + 1px); font-weight: 600; line-height: 1.3; }
+[data-theme^="stationery"] .wf-h3 { font-weight: 500; font-style: italic; }
+.wf-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- Cards ---------- */
+.wf-card { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-5); border-radius: var(--v-card-radius); background: var(--paper); color: var(--ink); box-shadow: var(--v-card-edge); }
+[data-theme^="stationery"] .wf-card { box-shadow: var(--card-stack); border-radius: var(--radius-paper); }
+.wf-box { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3) var(--space-4); border-radius: var(--v-ui-radius); background: var(--sheet); color: var(--ink); box-shadow: inset 0 0 0 1px var(--rule); }
+.wf-section { display: flex; flex-direction: column; gap: var(--space-3); padding-top: var(--space-4); border-top: var(--v-row-rule); }
+
+/* ---------- The state path: every state of the workflow, the current one marked ---------- */
+.wf-path { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.wf-path li { display: inline-flex; align-items: center; gap: var(--space-2); }
+.wf-path li + li::before { content: "→"; color: var(--ink-soft); font-family: var(--font-mono); }
+.wf-path__state { display: inline-flex; align-items: center; min-height: 32px; padding: 0 var(--space-3); border-radius: var(--v-ui-radius); box-shadow: inset 0 0 0 1px var(--rule); font-family: var(--font-mono); font-size: 13px; color: var(--ink-soft); }
+.wf-path [data-at="now"] .wf-path__state { color: var(--ink); font-weight: 600; box-shadow: inset 0 0 0 3px var(--ink); }
+.wf-path [data-at="next"] .wf-path__state { color: var(--ink); box-shadow: none; outline: 1.5px dashed var(--ink); outline-offset: -1.5px; }
+[data-theme^="editorial"] .wf-path__state, [data-theme^="stationery"] .wf-path__state { font-family: var(--v-text); font-size: calc(var(--v-body) - 3px); }
+.wf-path__tag { font-family: var(--v-label); font-size: var(--v-label-size); font-weight: var(--v-label-w); text-transform: var(--v-label-case); font-variant: var(--v-label-variant); letter-spacing: var(--v-label-ls); color: var(--ink-soft); }
+
+/* ---------- Facts and counters ---------- */
+.wf-kv { display: grid; grid-template-columns: minmax(7em, max-content) minmax(0, 1fr); gap: var(--space-1) var(--space-4); }
+.wf-kv dt { font-family: var(--v-label); font-size: var(--v-label-size); font-weight: var(--v-label-w); text-transform: var(--v-label-case); font-variant: var(--v-label-variant); letter-spacing: var(--v-label-ls); color: var(--ink-soft); padding-top: 3px; }
+.wf-kv dd { margin: 0; overflow-wrap: anywhere; }
+.wf-checks li { display: flex; gap: var(--space-2); align-items: baseline; }
+.wf-check { flex: none; width: 1.2em; font-family: var(--font-mono); font-weight: 600; }
+.wf-quote { padding-left: var(--space-3); box-shadow: inset 3px 0 0 var(--ink-soft); font-style: italic; }
+
+/* ---------- History: one row per evaluation or move, newest first ---------- */
+.wf-hist { display: flex; flex-direction: column; }
+.wf-hist > li { display: grid; grid-template-columns: 4.2em 22px minmax(0, 1fr); column-gap: var(--space-3); padding: var(--space-3) 0; border-bottom: var(--v-row-rule); }
+.wf-hist > li:last-child { border-bottom: 0; }
+.wf-hist__at { font-family: var(--font-mono); font-size: 13px; color: var(--ink-soft); padding-top: 3px; }
+.wf-hist__dot { width: 14px; height: 14px; margin-top: 6px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--ink); background: var(--paper); }
+.wf-hist [data-kind="waits"] .wf-hist__dot { background: var(--highlight); box-shadow: inset 0 0 0 3.5px var(--ink); }
+.wf-hist [data-kind="hand"] .wf-hist__dot { border-radius: 2px; background: var(--ink); }
+.wf-hist__body { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
+.wf-hist details > summary { display: inline-flex; align-items: center; min-height: 44px; cursor: pointer; color: var(--ink); font-size: calc(var(--v-body) - 3px); text-decoration: underline; text-underline-offset: 3px; }
+.wf-by { font-family: var(--v-label); font-size: var(--v-label-size); font-weight: var(--v-label-w); text-transform: var(--v-label-case); font-variant: var(--v-label-variant); letter-spacing: var(--v-label-ls); color: var(--ink-soft); }
+
+/* ---------- Grants: what a state adds, keeps and takes away ---------- */
+.wf-grant { display: flex; flex-direction: column; }
+.wf-grant > li { display: grid; grid-template-columns: 1.4em 9.5em minmax(0, 1fr); column-gap: var(--space-3); align-items: baseline; padding: var(--space-2) 0; border-bottom: var(--v-row-rule); }
+.wf-grant > li:last-child { border-bottom: 0; }
+.wf-grant__sign { font-family: var(--font-mono); font-weight: 600; font-size: 18px; line-height: 1; }
+.wf-grant__kind { font-family: var(--v-label); font-size: var(--v-label-size); font-weight: var(--v-label-w); text-transform: var(--v-label-case); font-variant: var(--v-label-variant); letter-spacing: var(--v-label-ls); color: var(--ink-soft); }
+.wf-grant__what { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.wf-grant [data-sign="add"] .wf-grant__what > strong { font-weight: 600; }
+.wf-grant [data-sign="del"] .wf-grant__what > strong { font-weight: 400; text-decoration: line-through; color: var(--ink-soft); }
+@media (max-width: 560px) {
+  .wf-grant > li { grid-template-columns: 1.4em minmax(0, 1fr); }
+  .wf-grant__kind { grid-column: 2; }
+  .wf-grant__what { grid-column: 2; }
+  .wf-kv { grid-template-columns: minmax(0, 1fr); }
+  .wf-kv dd { margin-bottom: var(--space-2); }
+}
+
+/* ---------- Sensitive items: stand out, add no rule ---------- */
+.wf-sens { display: inline-flex; align-items: center; gap: var(--space-1); padding: 0 var(--space-2); border: 2.5px solid var(--ink); border-radius: var(--radius-chip); background: var(--highlight); color: var(--ink); font-family: var(--font-mono); font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; line-height: 1.5; }
+.wf-sens::before { content: "!"; display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; background: var(--ink); color: var(--paper); font-size: 11px; }
+[data-theme^="editorial"] .wf-sens { border-radius: var(--radius-none); border-width: 2px; font-family: var(--font-serif); font-size: 15px; text-transform: lowercase; font-variant: small-caps; letter-spacing: 0.08em; }
+[data-theme^="stationery"] .wf-sens { border-width: 2px; font-family: var(--font-garamond); font-size: 16px; text-transform: lowercase; font-variant: small-caps; letter-spacing: 0.1em; }
+[data-theme^="stationery"] .wf-sens::before { background: var(--wax); color: var(--on-accent); }
+.il-code .add.wf-code-sens { box-shadow: inset 8px 0 0 var(--ink); background: var(--highlight); }
+.wf-code-flag { display: inline-block; margin-left: var(--space-3); padding: 0 6px; border: 2px solid var(--ink); border-radius: 4px; background: var(--paper); color: var(--ink); font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; text-decoration: none; white-space: nowrap; }
+
+/* ---------- Fields ---------- */
+.wf-field { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
+.wf-field > span { font-family: var(--v-label); font-size: var(--v-label-size); font-weight: var(--v-label-w); text-transform: var(--v-label-case); font-variant: var(--v-label-variant); letter-spacing: var(--v-label-ls); color: var(--ink-soft); }
+.wf-field select, .wf-field input { min-height: 44px; padding: 0 var(--space-3); border: 0; border-radius: var(--v-ui-radius); background: var(--paper); color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--ink); font: inherit; font-size: calc(var(--v-body) - 2px); width: 100%; }
+[data-theme^="editorial"] .wf-field select, [data-theme^="editorial"] .wf-field input { box-shadow: inset 0 0 0 1px var(--ink); }
+[data-theme^="stationery"] .wf-field select, [data-theme^="stationery"] .wf-field input { box-shadow: 0 0 0 1px var(--gilt), inset 0 1px 0 var(--shade); }
+.wf-field input::placeholder { color: var(--ink-soft); opacity: 1; }
+.wf-override { display: grid; grid-template-columns: minmax(10em, 14em) minmax(0, 1fr) auto; gap: var(--space-3); align-items: end; }
+@media (max-width: 720px) { .wf-override { grid-template-columns: minmax(0, 1fr); } }
+.wf-actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+@media (max-width: 560px) { .wf-actions { flex-direction: column; align-items: stretch; } .wf-actions .il-btn { justify-content: center; } }
+
+/* ---------- Session strip: the session's head on the workflow boards ---------- */
+.wf-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); padding: var(--space-4) max(var(--space-4), 2vw); border-bottom: var(--v-bar-rule); background: var(--v-bar-bg); color: var(--v-bar-fg); }
+.wf-head__name { font-family: var(--font-mono); font-size: 17px; font-weight: 600; }
+[data-theme^="stationery"] .wf-head .il-chip { background: var(--paper); color: var(--ink); }
+[data-theme^="stationery"] .wf-head .wf-head__sub { color: var(--on-accent-soft); }
+[data-theme^="stationery"] .wf-head :focus-visible { outline-color: var(--focus-on-leather); }
+
+/* ---------- The decision cards in Needs you ---------- */
+.wf-decision { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-5); border-radius: var(--v-card-radius); background: var(--paper); color: var(--ink); box-shadow: inset 0 0 0 2px var(--ink), var(--keycap); max-width: 900px; }
+[data-theme^="editorial"] .wf-decision { box-shadow: inset 0 0 0 1px var(--ink), var(--offset); }
+[data-theme^="stationery"] .wf-decision { border-radius: var(--radius-paper); box-shadow: var(--card-stack); }
+.wf-decision__head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); padding-bottom: var(--space-3); border-bottom: var(--v-title-rule); }
+.wf-boards > li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-1) var(--space-3); align-items: center; padding: var(--space-3) 0; border-bottom: var(--v-row-rule); }
+.wf-boards > li:last-child { border-bottom: 0; }
+@media (max-width: 560px) { .wf-boards > li { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---------- Phone frame for the 390px boards ---------- */
+.wf-phone { max-width: 430px; margin: 0 auto; }
+
+/* ---------- Machine panel: two columns when it has the room ---------- */
+.wf-panel { container-type: inline-size; position: relative; }
+.wf-cols { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: var(--space-6); align-items: start; }
+@container (max-width: 760px) { .wf-cols { grid-template-columns: minmax(0, 1fr); } }
+.wf-next { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-4); border-radius: var(--v-ui-radius); background: var(--paper); color: var(--ink); box-shadow: inset 0 0 0 2.5px var(--ink); }
+.wf-next[data-kind="moving"] { box-shadow: none; outline: 2px dashed var(--ink); outline-offset: -2px; }
+[data-theme^="editorial"] .wf-next { box-shadow: inset 0 0 0 2px var(--ink); }
+[data-theme^="stationery"] .wf-next { border-radius: var(--radius-paper); box-shadow: inset 0 0 0 2px var(--ink); }
+
+/* A link that looks like a button keeps the button's text. */
+.wf a.il-btn { text-decoration: none; }
+/* The diff in a decision is read, not copied: on a phone its lines wrap so a sensitive line's flag
+   stays in sight instead of scrolling out of the block. */
+@media (max-width: 560px) {
+  .wf-decision .il-code pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .wf-decision .il-code pre > span { padding-right: var(--space-3); }
+}

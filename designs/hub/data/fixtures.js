@@ -373,3 +373,104 @@ window.HUB.diffs = {
 window.HUB.logs = {
   'build-image #1184': ['##[group]Run sudo debootstrap --arch=arm64 --foreign bookworm rootfs', 'I: Retrieving InRelease', 'I: Validating Packages', 'I: Extracting base-files…', 'I: Running second stage', 'chroot: failed to run command ‘/debootstrap/debootstrap’: Exec format error', '##[error]Process completed with exit code 1.']
 };
+
+/* Workflows: a state machine held by each session (a proposal). A state grants what its session may do;
+   a move between states is proposed by a judge or a fact and checked by the hub. Named HUB.machine so it
+   is not taken for GitHub Actions workflows (HUB.workflows above).
+   kind = how the state chip draws: holds, moving, waits, up, over. */
+window.HUB.personas['Designer'] = { family: 'write', icon: 'M12 3l7 7-7 11-7-11zM12 3v8M10 13a2 2 0 1 0 4 0 2 2 0 1 0-4 0' };
+window.HUB.machine = {
+  grantKinds: ['GitHub', 'Shell', 'Web', 'Hub tools', 'Sessions', 'Permission mode'],
+  sensitive: ['merge to main', 'approve runs from forks', 'make a repository public', 'delete a repository'],
+  defs: {
+    implement: { title: 'implement', version: 7, scope: 'organisation default', path: ['implement', 'review', 'fix', 'merge-ready'],
+      states: {
+        'implement': { grant: { 'GitHub': ['read issues and PRs', 'comment', 'push to its branch', 'open a draft PR'], 'Shell': ['run in its checkout', 'edit files in its checkout'], 'Web': ['search', 'fetch'], 'Hub tools': ['docs search', 'notes', 'code search'], 'Sessions': ['Engineer · at most 1'], 'Permission mode': ['accept edits'] } },
+        'review': { grant: { 'GitHub': ['read issues and PRs', 'comment', 're-run checks'], 'Shell': ['run in its checkout'], 'Web': ['search', 'fetch'], 'Hub tools': ['docs search', 'notes', 'code search'], 'Sessions': ['Code reviewer · at most 1', 'QA engineer · at most 1'], 'Permission mode': ['plan · read-only'] } },
+        'fix': { grant: { 'GitHub': ['read issues and PRs', 'comment', 're-run checks', 'push to its branch'], 'Shell': ['run in its checkout', 'edit files in its checkout'], 'Web': ['search', 'fetch'], 'Hub tools': ['docs search', 'notes', 'code search'], 'Sessions': ['Engineer · at most 1'], 'Permission mode': ['accept edits'] } },
+        'merge-ready': { grant: { 'GitHub': ['read issues and PRs', 'comment', 'mark ready for review'], 'Shell': ['run in its checkout'], 'Web': ['search', 'fetch'], 'Hub tools': ['docs search', 'notes'], 'Sessions': [], 'Permission mode': ['plan · read-only'] } }
+      } }
+  },
+  /* One machine per session. Sessions without one (plain shells) show no chip. */
+  sessions: {
+    'steward': { workflow: 'steward', state: 'align', kind: 'holds', note: 'organisation' },
+    'kernel-lut': { workflow: 'implement', state: 'review', to: 'fix', kind: 'waits', note: 'waits for you', round: 'review 2 of 3', owner: 'steward', since: '3 min' },
+    'review-kernel-212': { workflow: 'review', state: 'ended', kind: 'over', note: 'returned fail', owner: 'kernel-lut' },
+    'docs-edl': { workflow: 'docs', state: 'draft', to: 'publish', kind: 'moving', note: 'checking', owner: 'steward' },
+    'review-docs-88': { workflow: 'review', state: 'reading', kind: 'holds', owner: 'docs-edl' },
+    'investigate-1184': { workflow: 'investigate', state: 'investigate', kind: 'up', note: 'sent up to the Steward', owner: 'steward', oneState: true },
+    'audit-hub': { workflow: 'security audit', state: 'done', kind: 'over', oneState: true },
+    'arch-kernel': { workflow: 'architecture audit', state: 'audit', kind: 'holds', oneState: true },
+    'triage-weekly': { workflow: 'triage', state: 'done', kind: 'over', oneState: true },
+    'shell-brightness': { workflow: 'implement', state: 'design', kind: 'waits', note: 'waits for ui#31', owner: 'steward' },
+    'design-brightness': { workflow: 'design spike', state: 'draft', kind: 'waits', note: 'waits for you', owner: 'shell-brightness' }
+  },
+  /* The machine panel of kernel-lut. Newest first. by: judge, fact, you, hub. */
+  panel: {
+    'kernel-lut': {
+      counters: [['Rounds', 'review 2 of 3 · fix 1 of 3'], ['In this state', '3 min'], ['Since start', '2 h 40 min'], ['Judge calls', '6, 1 set aside by you'], ['Tokens', '412 k']],
+      next: { from: 'review', to: 'fix', widens: true, signal: 'review-kernel-212 ended', by: 'fact',
+        evidence: [['fact', 'review-kernel-212 returned verdict = fail, 3 findings'], ['quote', '“epd_lut.c:142 still leaks the buffer when the header check fails.”']],
+        checks: [['reviewer verdict is fail', true], ['rounds.review < 3 (2)', true], ['branch pushed', true]], approve: 'you · it widens the grant' },
+      history: [
+        { at: '11:52', from: 'review', to: 'fix', what: 'proposed', by: 'fact', signal: 'review-kernel-212 ended', evidence: 'verdict = fail, 3 findings', checks: 'reviewer verdict is fail ✓ · rounds.review < 3 ✓', result: 'waits for you: it widens the grant', kind: 'waits' },
+        { at: '11:20', from: 'fix', to: 'review', what: 'moved', by: 'judge', signal: 'Stop', evidence: '“Every review thread has a fixup commit and the checks pass.”', checks: 'checks pass ✓ · PR open ✓', result: 'narrowed in the session: push and edits taken away', kind: 'holds', judge: 'small model · high' },
+        { at: '11:05', from: 'fix', to: 'review', what: 'set aside', by: 'you', signal: 'Stop', evidence: 'judge: “The fixups are in.” You: “dt-validate still fails on the binding example.”', checks: '—', result: 'stayed in fix', kind: 'hand' },
+        { at: '10:31', from: 'review', to: 'fix', what: 'moved', by: 'you', signal: 'review-kernel-212 ended', evidence: 'verdict = fail, 3 findings', checks: 'reviewer verdict is fail ✓ · rounds.review < 3 ✓', result: 'widened: you confirmed · resumed the same conversation under launch 2', kind: 'holds' },
+        { at: '10:05', from: 'implement', to: 'review', what: 'moved', by: 'judge', signal: 'Stop · checks changed', evidence: '“All three cases in kernel#204 are handled and the tests pass.”', checks: 'branch pushed ✓ · PR open ✓ (kernel#212)', result: 'narrowed in the session · started review-kernel-212', kind: 'holds', judge: 'small model · high' },
+        { at: '09:12', from: '', to: 'implement', what: 'started', by: 'hub', signal: 'the Steward’s suggestion, accepted by you', evidence: 'covers kernel#204, kernel#219', checks: '—', result: 'launch 1', kind: 'holds' }
+      ]
+    }
+  },
+  /* What a move adds, per pair of states: the confirm modal shows these. */
+  widen: {
+    'kernel-lut': { detail: { 'push to its branch': 'agent/kernel-lut only', 'edit files in its checkout': '~/hub-worktrees/kernel/agent-kernel-lut', 'Engineer · at most 1': 'its grant is capped at this session’s', 'Code reviewer · at most 1': 'stopped when it leaves review', 'QA engineer · at most 1': 'stopped when it leaves review' },
+      how: 'The hub stops kernel-lut at the end of its turn and resumes the same conversation under a new launch with the new grant. Nothing it has done is lost.' },
+    'docs-edl': { from: 'draft', to: 'publish', adds: [['GitHub', 'push to its branch', 'agent/docs-edl only'], ['GitHub', 'merge to main', 'docs only, after your approved merge decision']],
+      removes: [], keeps: ['read issues and PRs', 'comment', 'edit files in its checkout', 'docs search', 'notes'],
+      how: 'The hub stops docs-edl at the end of its turn and resumes the same conversation under a new launch with the grant of publish.' }
+  },
+  /* What the hub does to tell a widening move: compare the two states' grants. */
+  compare: function (workflow, from, to) {
+    const d = this.defs[workflow], a = d.states[from].grant, b = d.states[to].grant, out = { adds: [], removes: [], keeps: [] };
+    this.grantKinds.forEach((k) => {
+      (b[k] || []).forEach((x) => { if ((a[k] || []).indexOf(x) < 0) out.adds.push([k, x]); else out.keeps.push(x); });
+      (a[k] || []).forEach((x) => { if ((b[k] || []).indexOf(x) < 0) out.removes.push([k, x]); });
+    });
+    return out;
+  },
+  /* A definition change the Steward proposes; it reaches you as a decision in Needs you. */
+  change: {
+    id: 'd1', workflow: 'implement', from: 7, to: 8, scope: 'organisation default', by: 'steward', reviewer: 'review-wf-8', verdict: 'pass, 2 notes', waited: '25 min',
+    title: 'implement v7 → v8: QA rounds, fork runs, merging',
+    why: 'Two of the last five pieces of work ran three QA rounds without a new finding after the second. Contributors’ fixes from forks wait on a person to approve their runs. Merges wait on a person twice: the merge decision and the merge itself.',
+    notes: ['The fork-run grant is per repository in effect: only repositories whose rulesets require an approving review are reached.', 'merge-ready still needs your approved merge decision: approve = "me" is unchanged.'],
+    diff: [
+      ['', '[state.review]'],
+      ['del', 'counters.max_rounds = 3'],
+      ['add', 'counters.max_rounds = 2'],
+      ['', '[state.review.grant]'],
+      ['del', 'github = ["read", "comment", "rerun checks"]'],
+      ['add', 'github = ["read", "comment", "rerun checks", "approve runs from forks"]', 'approve runs from forks'],
+      ['', '[state.merge-ready.grant]'],
+      ['del', 'github = ["read", "comment", "mark ready"]'],
+      ['add', 'github = ["read", "comment", "mark ready", "merge to main"]', 'merge to main'],
+      ['', '[[state.merge-ready.transition]]'],
+      ['', 'to = "merged"'],
+      ['', 'approve = "me"']
+    ],
+    warnings: [
+      { item: 'approve runs from forks', where: 'state review', what: 'Sessions in review could approve GitHub Actions runs on pull requests from forks, so code from outside the organisation runs on its runners.' },
+      { item: 'merge to main', where: 'state merge-ready', what: 'Sessions in merge-ready could merge to main themselves once you have approved the merge decision for the PR head.' }
+    ],
+    affects: '4 sessions run implement now; they take v8 at their next move.'
+  },
+  /* A design spike: a state started a Designer session for a question no accepted board answers. */
+  spike: {
+    id: 'd2', owner: 'shell-brightness', ownerPersona: 'Engineer', ownerState: 'design', designer: 'design-brightness', item: 'shell#288', pr: 'ui#31', waited: '8 min',
+    question: 'How does the brightness slider show the panel’s 16 steps, so each touch moves exactly one?',
+    raisedAt: 'implement, after 1 round', why: 'No accepted board covers the slider’s steps. The Designer has a draft with two boards.',
+    boards: [['shell', 'QuickSettings.dc.html', 'changed', 'the slider in quick settings, 16 marked steps'], ['shell', 'BrightnessSlider.dc.html', 'new', 'the slider on its own: drag, tap, keys']],
+    requires: 'ui#31 merged', after: 'shell-brightness goes back to implement with the accepted boards as context.'
+  }
+};

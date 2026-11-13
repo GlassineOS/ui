@@ -124,9 +124,132 @@ html, body { margin: 0; }
 
 /* A link that looks like a button keeps the button's text. */
 .wf a.il-btn { text-decoration: none; }
-/* The diff in a decision is read, not copied: on a phone its lines wrap so a sensitive line's flag
+/* The diff in a decision is read, not copied: its lines wrap at any width so a sensitive line's flag
    stays in sight instead of scrolling out of the block. */
-@media (max-width: 560px) {
-  .wf-decision .il-code pre { white-space: pre-wrap; overflow-wrap: anywhere; }
-  .wf-decision .il-code pre > span { padding-right: var(--space-3); }
-}
+.wf-decision .il-code pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+.wf-decision .il-code pre > span { padding-right: var(--space-3); }
+
+/* ---------- The statechart (MachineDiagram) ----------
+   Boxes and arrows in ink; what is current is told by weight and a mark, the path taken by solid
+   arrows, a proposed move by a heavy dashed arrow, so it reads on the ladder. */
+.wf-dg { display: block; width: 100%; height: auto; overflow: visible; }
+.wf-dg text { font-family: var(--font-mono); font-size: 13px; fill: var(--ink); }
+.wf-dg .wf-dg-name { font-family: var(--v-text); font-size: 16px; font-weight: 600; }
+[data-theme^="stationery"] .wf-dg .wf-dg-name { font-weight: 500; font-style: italic; font-size: 18px; }
+.wf-dg .wf-dg-sub { font-size: 11.5px; fill: var(--ink-soft); }
+.wf-dg .wf-dg-pa > rect { fill: var(--sheet); stroke: var(--ink); stroke-width: 1.5; rx: 14px; }
+.wf-dg .wf-dg-st > rect { fill: var(--paper); stroke: var(--ink); stroke-width: 1.25; rx: 10px; }
+[data-theme^="editorial"] .wf-dg :is(.wf-dg-pa, .wf-dg-st) > rect { rx: 0; }
+[data-theme^="stationery"] .wf-dg :is(.wf-dg-pa, .wf-dg-st) > rect { rx: 4px; }
+.wf-dg .wf-dg-st > rect.wf-dg-inner { fill: none; stroke-width: 1.25; rx: 7px; }
+.wf-dg [data-at="visited"] > rect:first-child { stroke-width: 2; }
+.wf-dg [data-at="now"] > rect:first-child { stroke-width: 4; fill: var(--highlight); }
+.wf-dg [data-at="next"] > rect:first-child { stroke-width: 2.5; stroke-dasharray: 7 4; }
+.wf-dg [data-mark="changed"] > rect:first-child { stroke-width: 3; stroke-dasharray: 2 3; }
+.wf-dg [data-sel="true"] > rect:first-child { stroke: var(--focus); stroke-width: 4; }
+.wf-dg .wf-dg-tag rect { fill: var(--ink); }
+.wf-dg .wf-dg-tag text { fill: var(--paper); font-size: 11px; font-weight: 600; letter-spacing: 0.06em; }
+.wf-dg .wf-dg-ed path { fill: none; stroke: var(--ink); stroke-width: 1.25; }
+.wf-dg .wf-dg-ed[data-at="taken"] path { stroke-width: 2.5; }
+.wf-dg .wf-dg-ed[data-at="pending"] path { stroke-width: 3.5; stroke-dasharray: 8 5; }
+.wf-dg .wf-dg-ed[data-by="hand"] path { stroke-dasharray: 2 4; }
+.wf-dg .wf-dg-lab rect { fill: var(--paper); stroke: var(--rule); stroke-width: 1; rx: 4px; }
+.wf-dg .wf-dg-ed[data-at="taken"] .wf-dg-lab rect { stroke: var(--ink); stroke-width: 1.5; }
+.wf-dg .wf-dg-ed[data-at="pending"] .wf-dg-lab rect { stroke: var(--ink); stroke-width: 2.5; fill: var(--highlight); }
+.wf-dg .wf-dg-ed[data-mark="changed"] .wf-dg-lab rect { stroke: var(--ink); stroke-width: 3; stroke-dasharray: 2 3; }
+.wf-dg .wf-dg-ed[data-sel="true"] .wf-dg-lab rect { stroke: var(--focus); stroke-width: 3; }
+.wf-dg .wf-dg-arrow { fill: var(--ink); stroke: none; }
+.wf-dg .wf-dg-dot { fill: var(--ink); }
+.wf-dg .wf-dg-h circle { fill: var(--paper); stroke: var(--ink); stroke-width: 1.5; }
+.wf-dg .wf-dg-h text { font-weight: 600; }
+.wf-dg [role="button"] { cursor: pointer; }
+.wf-dg [role="button"]:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.wf-legend { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); font-size: calc(var(--v-body) - 4px); color: var(--ink-soft); }
+.wf-legend b { color: var(--ink); font-family: var(--font-mono); font-weight: 600; }
+
+/* ---------- The outline (MachineOutline): the same machine as an indented list ---------- */
+.wf-tree { display: flex; flex-direction: column; }
+.wf-tree > li { display: flex; flex-direction: column; gap: 2px; margin-left: calc(var(--depth, 0) * var(--space-6)); padding: var(--space-2) 0 var(--space-2) var(--space-3); box-shadow: inset 1.5px 0 0 var(--rule); }
+.wf-tree > li[data-row="state"] { padding-top: var(--space-3); }
+.wf-tree > li[data-row="state"][data-depth="0"] { box-shadow: none; padding-left: 0; border-top: var(--v-row-rule); }
+.wf-tree > li[data-row="state"][data-depth="0"]:first-child { border-top: 0; }
+.wf-tree > li[data-at="now"] { box-shadow: inset 4px 0 0 var(--ink); }
+.wf-tree__name { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 36px; padding: 0 var(--space-2); margin-left: calc(-1 * var(--space-2)); border: 0; border-radius: var(--v-ui-radius); background: none; color: var(--ink); font: inherit; font-family: var(--font-mono); font-weight: 600; font-size: calc(var(--v-body) - 1px); cursor: pointer; text-align: left; }
+.wf-tree__name[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--focus); }
+.wf-tree [data-at="now"] > .wf-row > .wf-tree__name { background: var(--highlight); }
+.wf-tree__exit { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--space-2); min-height: 32px; padding: 2px var(--space-2); margin-left: calc(-1 * var(--space-2)); border: 0; border-radius: var(--v-ui-radius); background: none; color: var(--ink); font: inherit; font-size: calc(var(--v-body) - 3px); cursor: pointer; text-align: left; }
+.wf-tree__exit[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--focus); }
+.wf-tree__n { font-family: var(--font-mono); font-weight: 600; }
+.wf-tree__to { font-family: var(--font-mono); font-weight: 600; }
+.wf-tree__why { color: var(--ink-soft); }
+.wf-tree__holds { font-family: var(--font-mono); font-size: 12px; font-weight: 600; }
+
+/* ---------- Machine panel: the diagram when there is room, the outline when not ---------- */
+.wf-only-narrow { display: none; }
+@container (max-width: 760px) { .wf-only-wide { display: none; } .wf-only-narrow { display: block; } }
+.wf-exits { display: flex; flex-direction: column; gap: var(--space-3); }
+.wf-exit { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3) var(--space-4); border-radius: var(--v-ui-radius); background: var(--paper); color: var(--ink); box-shadow: inset 0 0 0 1px var(--rule); }
+.wf-exit[data-holds="true"] { box-shadow: inset 0 0 0 2.5px var(--ink); }
+.wf-exit[data-holds="true"][data-waits="true"] { box-shadow: none; outline: 3px dashed var(--ink); outline-offset: -3px; }
+[data-theme^="editorial"] .wf-exit, [data-theme^="stationery"] .wf-exit { border-radius: var(--radius-paper); }
+.wf-exit__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-3); }
+.wf-exit__n { font-family: var(--font-mono); font-weight: 600; font-size: 13px; color: var(--ink-soft); }
+.wf-exit__to { font-family: var(--font-mono); font-weight: 600; }
+.wf-subm > li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-1) var(--space-3); align-items: center; padding: var(--space-3) 0; border-bottom: var(--v-row-rule); }
+.wf-subm > li:last-child { border-bottom: 0; }
+.wf-subm__path { display: flex; flex-wrap: wrap; gap: var(--space-1); font-family: var(--font-mono); font-size: 12.5px; color: var(--ink-soft); }
+.wf-subm__path [data-at="now"] { color: var(--ink); font-weight: 600; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+@media (max-width: 560px) { .wf-subm > li { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---------- Checks: what the hub finds in a workflow definition ---------- */
+.wf-checklist { display: flex; flex-direction: column; gap: var(--space-2); }
+.wf-checklist > li { display: grid; grid-template-columns: 2em minmax(0, 1fr); gap: var(--space-1) var(--space-2); padding: var(--space-3); border-radius: var(--v-ui-radius); box-shadow: inset 0 0 0 1px var(--rule); background: var(--paper); color: var(--ink); }
+.wf-checklist > li[data-kind="problem"] { box-shadow: inset 0 0 0 2.5px var(--ink); }
+.wf-checklist > li[data-kind="ok"] { box-shadow: none; background: transparent; padding-block: var(--space-1); }
+.wf-checklist__mark { font-family: var(--font-mono); font-weight: 700; text-align: center; }
+.wf-checklist > li[data-kind="problem"] .wf-checklist__mark { background: var(--ink); color: var(--paper); border-radius: var(--radius-chip); height: 1.6em; line-height: 1.6em; }
+.wf-checklist__body { display: flex; flex-direction: column; gap: var(--space-1); }
+.wf-wide-only { display: block; }
+@media (max-width: 560px) { .wf-wide-only { display: none; } }
+
+/* ---------- Workflow editor ---------- */
+.wf-ed { container-type: inline-size; }
+.wf-ed__grid { display: grid; grid-template-columns: minmax(0, 1fr) 24rem; grid-template-areas: "view insp" "checks insp" "other insp"; gap: var(--space-5); align-items: start; }
+.wf-ed__view { grid-area: view; } .wf-ed__checks { grid-area: checks; } .wf-ed__other { grid-area: other; } .wf-ed__insp { grid-area: insp; }
+.wf-ed__other:empty { display: none; }
+/* Narrow: the inspector follows the machine, so a selection opens next to it; the checks come after. */
+@container (max-width: 1100px) { .wf-ed__grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "view" "insp" "checks" "other"; } }
+.wf-ed__nav .wf-ed__list { flex-direction: row; flex-wrap: wrap; }
+.wf-ed__nav .wf-ed__list > li { flex: 0 1 11rem; }
+.wf-ed__new .wf-mono { font-weight: 400; }
+@media (max-width: 560px) { .wf-ed__nav .wf-ed__list > li { flex: 1 1 40%; } }
+@container (max-width: 720px) { .wf-ed__grid { grid-template-columns: minmax(0, 1fr); } .wf-ed__wide { display: none; } }
+@container (min-width: 721px) { .wf-ed__narrow { display: none; } }
+.wf-ed__bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-4); padding-bottom: var(--space-4); border-bottom: var(--v-row-rule); }
+.wf-ed__list { display: flex; flex-direction: column; gap: var(--space-1); }
+.wf-ed__list button { all: unset; box-sizing: border-box; display: flex; flex-direction: column; gap: 2px; width: 100%; min-height: 44px; padding: var(--space-2) var(--space-3); border-radius: var(--v-ui-radius); cursor: pointer; color: var(--ink); }
+.wf-ed__list button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.wf-ed__list button[aria-current="true"] { box-shadow: inset 0 0 0 2px var(--ink); background: var(--paper); }
+.wf-ed__list button[aria-current="true"] .wf-mono { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.wf-ed__list .wf-mono { font-weight: 600; }
+.wf-seg { display: inline-flex; flex-wrap: wrap; gap: var(--space-1); }
+.wf-tools { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.wf-insp { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); border-radius: var(--v-card-radius); box-shadow: var(--v-card-edge); background: var(--paper); color: var(--ink); }
+.wf-insp textarea { min-height: 5.5em; padding: var(--space-2) var(--space-3); border: 0; border-radius: var(--v-ui-radius); background: var(--paper); color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--ink); font: inherit; font-size: calc(var(--v-body) - 2px); width: 100%; resize: vertical; box-sizing: border-box; }
+[data-theme^="editorial"] .wf-insp textarea { box-shadow: inset 0 0 0 1px var(--ink); }
+[data-theme^="stationery"] .wf-insp textarea { box-shadow: 0 0 0 1px var(--gilt), inset 0 1px 0 var(--shade); }
+.wf-pick { display: flex; flex-direction: column; gap: 0; }
+.wf-pick > li { display: grid; grid-template-columns: 1.6em minmax(0, 1fr) auto; gap: var(--space-2); align-items: center; min-height: 36px; border-bottom: var(--v-row-rule); }
+.wf-pick > li:last-child { border-bottom: 0; }
+.wf-pick input { width: 18px; height: 18px; accent-color: var(--ink); margin: 0; }
+.wf-pick__from { font-family: var(--font-mono); font-size: 12px; color: var(--ink-soft); }
+.wf-order > li { display: grid; grid-template-columns: 1.6em minmax(0, 1fr) auto; gap: var(--space-2); align-items: center; padding: var(--space-2) 0; border-bottom: var(--v-row-rule); }
+.wf-order > li:last-child { border-bottom: 0; }
+.wf-order__btns { display: inline-flex; gap: var(--space-1); }
+.wf-order__btns .il-btn { min-width: 44px; padding: 0; justify-content: center; }
+.wf-tags { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+.wf-radio { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); }
+.wf-radio label { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 36px; }
+.wf-radio input { width: 18px; height: 18px; accent-color: var(--ink); margin: 0; }
+.wf-ed__foot { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); padding-top: var(--space-4); border-top: var(--v-row-rule); }
+@media (max-width: 560px) { .wf-ed__foot .il-btn, .wf-seg .il-btn { flex: 1 1 100%; justify-content: center; } }

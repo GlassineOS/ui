@@ -288,3 +288,26 @@ html, body { margin: 0; }
 .wf-decision textarea:not(.wf-ask) { min-height: 4.5em; padding: var(--space-2) var(--space-3); border: 0; border-radius: var(--v-ui-radius); background: var(--paper); color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--ink); font: inherit; width: 100%; box-sizing: border-box; }
 .wf-checklist > li[data-kind="run"] { box-shadow: none; outline: 2.5px dashed var(--ink); outline-offset: -2.5px; }
 .wf-checklist > li[data-kind="wait"] { box-shadow: none; background: transparent; padding-block: var(--space-1); color: var(--ink-soft); }
+
+/* ---------- Starts: how a workflow begins on an item (editor section) ---------- */
+.wf-starts { container-type: inline-size; }
+.wf-ed__starts { min-width: 0; padding-top: var(--space-4); border-top: var(--v-row-rule); }
+.wf-starts__grid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: var(--space-5); align-items: start; }
+@container (max-width: 760px) { .wf-starts__grid { grid-template-columns: minmax(0, 1fr); } }
+.wf-starts__list { display: flex; flex-direction: column; gap: var(--space-1); }
+.wf-starts__list button { all: unset; box-sizing: border-box; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px var(--space-3); width: 100%; min-height: 44px; padding: var(--space-2) var(--space-3); border-radius: var(--v-ui-radius); cursor: pointer; color: var(--ink); box-shadow: inset 0 0 0 1px var(--rule); }
+.wf-starts__list button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.wf-starts__list button[aria-current="true"] { box-shadow: inset 0 0 0 2.5px var(--ink); background: var(--paper); }
+.wf-starts__list .wf-starts__sub { grid-column: 1 / -1; }
+.wf-starts__tag { font-family: var(--v-label); font-size: var(--v-label-size); font-weight: var(--v-label-w); text-transform: var(--v-label-case); letter-spacing: var(--v-label-ls); padding: 0 var(--space-2); border-radius: var(--radius-chip); box-shadow: inset 0 0 0 1.5px var(--ink); align-self: center; }
+.wf-starts textarea { min-height: 7em; padding: var(--space-2) var(--space-3); border: 0; border-radius: var(--v-ui-radius); background: var(--paper); color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--ink); font: inherit; font-size: calc(var(--v-body) - 2px); line-height: 1.5; resize: vertical; }
+[data-theme^="editorial"] .wf-starts textarea { box-shadow: inset 0 0 0 1px var(--ink); }
+[data-theme^="stationery"] .wf-starts textarea { box-shadow: 0 0 0 1px var(--gilt), inset 0 1px 0 var(--shade); }
+.wf-starts textarea:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+/* What the session receives: the prompt, then the item's details fenced as data. */
+.wf-receives { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-4); border-radius: var(--v-ui-radius); background: var(--sheet); color: var(--ink); box-shadow: inset 0 0 0 1px var(--rule); }
+.wf-receives__prompt { white-space: pre-wrap; font-size: calc(var(--v-body) - 2px); }
+.wf-data { display: flex; flex-direction: column; gap: var(--space-1); padding: var(--space-3); border-radius: var(--v-ui-radius); background: var(--paper); outline: 1.5px dashed var(--ink); outline-offset: -1.5px; }
+.wf-data dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 2px var(--space-3); margin: 0; font-family: var(--font-mono); font-size: 13px; }
+.wf-data dt { color: var(--ink-soft); }
+.wf-data dd { margin: 0; overflow-wrap: anywhere; }

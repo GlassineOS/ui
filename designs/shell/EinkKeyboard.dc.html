@@ -40,7 +40,7 @@
 </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview": {"width": 712, "height": 348}, "theme": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "scheme": {"editor": "enum", "options": ["eink", "paper", "night"], "default": "eink"}, "pen": {"editor": "enum", "options": ["1", "2", "3"], "default": "1"}, "layout": {"editor": "enum", "options": ["en", "de"], "default": "en"}, "layer": {"editor": "enum", "options": ["main", "special"], "default": "main"}, "purpose": {"editor": "enum", "options": ["normal", "number", "phone", "pin", "email", "url", "password"], "default": "normal"}, "private": {"editor": "enum", "options": ["off", "on"], "default": "off"}, "strip": {"editor": "enum", "options": ["on", "off"], "default": "on"}, "words": {"editor": "string", "default": ""}, "ask": {"editor": "string", "default": ""}, "note": {"editor": "string", "default": ""}, "height": {"editor": "string", "default": "300"}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview": {"width": 712, "height": 352}, "theme": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "scheme": {"editor": "enum", "options": ["eink", "paper", "night"], "default": "eink"}, "pen": {"editor": "enum", "options": ["1", "2", "3"], "default": "1"}, "layout": {"editor": "enum", "options": ["en", "de"], "default": "en"}, "layer": {"editor": "enum", "options": ["main", "special"], "default": "main"}, "purpose": {"editor": "enum", "options": ["normal", "number", "phone", "pin", "email", "url", "password"], "default": "normal"}, "private": {"editor": "enum", "options": ["off", "on"], "default": "off"}, "strip": {"editor": "enum", "options": ["on", "off"], "default": "on"}, "words": {"editor": "string", "default": ""}, "ask": {"editor": "string", "default": ""}, "note": {"editor": "string", "default": ""}, "height": {"editor": "string", "default": "300"}}'>
 // The on-screen keyboard (wvkbd-glassine): the layers the images ship, the long-press
 // alternates in each key's corner, the suggestion strip, the handwriting and hide keys.
 // Reuse: <dc-import name="EinkKeyboard" theme scheme pen layout layer purpose private strip words
@@ -151,7 +151,9 @@ class Component extends DCLogic {
     const list = priv ? [] : String(p.words || '').split('|').map(x => x.trim()).filter(Boolean).slice(0, 3);
     const askW = priv ? '' : String(p.ask || ''), noteT = priv || askW ? '' : String(p.note || '');
     const order = list.length === 3 ? [list[1], list[0], list[2]] : list;
-    const stripOn = p.strip !== 'off', stripH = 46, keysH = Number(p.height) || 300;
+    // the strip is as tall as one key row of the letters: the keys' height over their rows
+    const keysH = Number(p.height) || 300, stripOn = p.strip !== 'off';
+    const stripH = Math.floor(keysH / this.layers(layout, purpose).main.length);
     const penOn = !!p.handwriting && !priv;
     return {
       ilv: this.ilVars(voice, p.scheme, p.pen), k, rows,

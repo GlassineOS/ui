@@ -662,6 +662,24 @@
    "x": 2408,
    "y": 1660
   },
+  "settings.keyboard.languages.dc.html": {
+   "h": 1540,
+   "is_interactive": true,
+   "page": "settings",
+   "title": "settings.keyboard.languages · Languages",
+   "w": 1124,
+   "x": 1204,
+   "y": 8300
+  },
+  "settings.keyboard.layout-dictionary.dc.html": {
+   "h": 1540,
+   "is_interactive": true,
+   "page": "settings",
+   "title": "settings.keyboard.layout-dictionary · Layout without a dictionary",
+   "w": 1124,
+   "x": 2408,
+   "y": 8300
+  },
   "settings.keyboard.words.dc.html": {
    "h": 1540,
    "is_interactive": true,
@@ -1096,6 +1114,8 @@
   "settings.power.dc.html",
   "settings.keyboard.dc.html",
   "settings.keyboard.words.dc.html",
+  "settings.keyboard.languages.dc.html",
+  "settings.keyboard.layout-dictionary.dc.html",
   "settings.apps.dc.html",
   "settings.app.dc.html",
   "settings.app.eink.dc.html",

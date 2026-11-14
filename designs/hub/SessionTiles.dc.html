@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Session tiles</title>
+<script src="./support.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="workflow.css">
+<link rel="stylesheet" href="sessions.css">
+</helmet>
+<section class="wf il-page tl" data-theme="{{ theme }}" data-pen="{{ pen }}" aria-label="Open sessions" style="{{ frameStyle }}">
+  <div class="tl-tabs">
+    <div class="tl-tablist" role="tablist" aria-label="Open sessions">
+      <sc-for list="{{ groups }}" as="g" hint-placeholder-count="2">
+        <div class="tl-grp" role="presentation">
+          <span class="tl-grp__label">{{ g.label }}</span>
+          <div class="tl-grp__tabs" role="presentation">
+            <sc-for list="{{ g.tabs }}" as="t" hint-placeholder-count="3">
+              <span role="tab" class="tl-tab" id="{{ t.dom }}" aria-selected="{{ t.on }}" aria-controls="{{ t.panel }}" tabindex="{{ t.tab }}" title="{{ t.tip }}" onClick="{{ t.pick }}" onKeyDown="{{ tabKey }}">
+                <sc-if value="{{ t.pinned }}" hint-placeholder-val="{{ false }}"><svg viewBox="0 0 12 12" aria-hidden="true" style="fill: var(--ink); stroke: none"><path d="M4 1h4v1L7 3v3l2 2v1H6.5v2.5L6 12l-.5-.5V9H3V8l2-2V3L4 2z"></path></svg><span class="wf-sr">pinned,</span></sc-if>
+                <sc-if value="{{ t.tiled }}" hint-placeholder-val="{{ true }}"><span class="tl-tab__n">{{ t.n }}</span></sc-if>
+                <span>{{ t.name }}</span><span class="sn-live" data-live="{{ t.live }}"><span class="wf-sr">{{ t.live }}</span></span>
+                <span class="tl-tab__x" aria-label="Close {{ t.name }}" role="button" onClick="{{ t.close }}"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 3l6 6M9 3L3 9"></path></svg></span>
+              </span>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    <div class="tl-bar">
+      <span class="il-label">Tiles</span>
+      <span class="tl-seg" role="group" aria-label="How many tiles side by side"><sc-for list="{{ counts }}" as="c" hint-placeholder-count="3"><button type="button" aria-pressed="{{ c.on }}" onClick="{{ c.pick }}">{{ c.n }}</button></sc-for></span>
+    </div>
+  </div>
+  <sc-if value="{{ hasSync }}" hint-placeholder-val="{{ false }}"><p class="tl-sync">{{ sync }}</p></sc-if>
+  <div class="tl-tiles" ref="{{ boxRef }}" style="min-height: {{ minH }}">
+    <sc-for list="{{ tiles }}" as="x" hint-placeholder-count="3">
+      <sc-if value="{{ x.gutter }}" hint-placeholder-val="{{ false }}"><div class="tl-gut" role="separator" aria-orientation="vertical" aria-label="Resize {{ x.left }} and {{ x.right }}" aria-valuemin="15" aria-valuemax="85" aria-valuenow="{{ x.value }}" tabindex="0" data-active="{{ x.active }}" onKeyDown="{{ x.key }}" onPointerDown="{{ x.drag }}"></div></sc-if>
+      <sc-if value="{{ x.isTile }}" hint-placeholder-val="{{ true }}">
+      <article class="tl-tile" role="tabpanel" id="{{ x.panel }}" aria-labelledby="{{ x.tabDom }}" data-focus="{{ x.focus }}" style="--grow: {{ x.grow }}; background: var(--paper)" onClick="{{ x.pick }}">
+        <header class="tl-head">
+          <span class="tl-line"><dc-import name="PersonaBadge" persona="{{ x.persona }}" size="s" hint-size="26px,26px"></dc-import><span class="tl-name">{{ x.name }}</span><span class="sn-live" data-live="{{ x.live }}">{{ x.liveWord }}</span><sc-if value="{{ x.hasAsks }}" hint-placeholder-val="{{ false }}"><span class="sn-asks">{{ x.asks }} for you</span></sc-if><sc-if value="{{ x.focusB }}" hint-placeholder-val="{{ false }}"><span class="tl-kb">keyboard</span></sc-if><sc-if value="{{ x.pinned }}" hint-placeholder-val="{{ false }}"><span class="tl-pin"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M4 1h4v1L7 3v3l2 2v1H6.5v2.5L6 12l-.5-.5V9H3V8l2-2V3L4 2z"></path></svg>pinned</span></sc-if><sc-if value="{{ x.changed }}" hint-placeholder-val="{{ false }}"><span class="sn-mark-new">changed</span></sc-if></span>
+          <span class="tl-line"><sc-if value="{{ x.hasChip }}" hint-placeholder-val="{{ true }}"><span class="{{ x.chipCls }}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="{{ x.glyph }}"></path></svg><span class="wf-sr">Workflow state:</span>{{ x.chipLabel }}<sc-if value="{{ x.hasChipSub }}" hint-placeholder-val="{{ false }}"><span class="il-chip__sub">· {{ x.chipSub }}</span></sc-if></span></sc-if><sc-for list="{{ x.items }}" as="it" hint-placeholder-count="1"><span class="sn-item" data-kind="{{ it.kind }}" data-state="{{ it.state }}" data-checks="{{ it.checks }}" title="{{ it.tip }}"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="{{ it.glyph }}"></path></svg><span class="sn-item__ref">{{ it.ref }}</span><sc-for list="{{ it.words }}" as="w" hint-placeholder-count="1"><span class="sn-item__st"><span class="sn-item__ck" data-ck="{{ w.ck }}">{{ w.text }}</span></span></sc-for></span></sc-for></span>
+          <span class="tl-line wf-small">
+            <sc-if value="{{ x.hasOwner }}" hint-placeholder-val="{{ true }}"><button type="button" class="tl-link" onClick="{{ x.toOwner }}" title="Open its owner">↑ under <b>{{ x.owner }}</b></button><span class="wf-soft">{{ x.entryLine }}</span></sc-if>
+            <sc-if value="{{ x.hasKids }}" hint-placeholder-val="{{ false }}"><button type="button" class="tl-link" onClick="{{ x.toKids }}" title="Open the sessions it runs as tiles">↓ <b>{{ x.kids }}</b> under it</button></sc-if>
+            <sc-if value="{{ x.hasMeta }}" hint-placeholder-val="{{ true }}"><span class="wf-soft">{{ x.meta }}</span></sc-if>
+          </span>
+        </header>
+        <sc-if value="{{ x.hasCard }}" hint-placeholder-val="{{ false }}">
+          <div class="tl-card" role="group" aria-label="Waits for you: {{ x.card.title }}">
+            <span class="il-label">Waits for you · {{ x.card.from }}</span>
+            <strong>{{ x.card.title }}</strong>
+            <span class="wf-small">{{ x.card.body }}</span>
+            <div class="wf-actions"><button type="button" class="il-btn il-btn--primary">Merge</button><button type="button" class="il-btn">Not yet</button></div>
+          </div>
+        </sc-if>
+        <div class="tl-term" role="log" aria-label="Terminal of {{ x.name }}" data-ended="{{ x.ended }}" style="min-height: {{ termH }}">
+          <sc-for list="{{ x.lines }}" as="l" hint-placeholder-count="4"><span data-k="{{ l.k }}">{{ l.t }}</span></sc-for>
+          <sc-if value="{{ x.live2 }}" hint-placeholder-val="{{ true }}"><span>❯ <span style="display: inline-block; width: 7px; height: 14px; background: var(--ink); vertical-align: text-bottom"></span></span></sc-if>
+        </div>
+        <sc-if value="{{ x.isLive }}" hint-placeholder-val="{{ true }}">
+          <dl class="tl-strip" aria-label="Its workflow">
+            <dt>State</dt><dd><ol class="wf-path" aria-label="Where it is"><sc-for list="{{ x.path }}" as="p" hint-placeholder-count="2"><li data-at="{{ p.at }}"><span class="wf-path__state">{{ p.name }}</span></li></sc-for></ol></dd>
+            <dt>Waits for</dt><dd>{{ x.waitsFor }}</dd>
+            <sc-if value="{{ x.hasNext }}" hint-placeholder-val="{{ true }}"><dt>Next</dt><dd>{{ x.next }}</dd></sc-if>
+          </dl>
+          <div class="tl-acts">
+            <label style="display: contents"><span class="wf-sr">Message {{ x.name }}</span><input type="text" placeholder="Message {{ x.name }}"></label>
+            <button type="button" class="il-btn">Stop</button>
+            <a class="il-btn" href="SessionMachine.dc.html">Machine</a>
+            <button type="button" class="il-btn" onClick="{{ x.togglePin }}" aria-pressed="{{ x.pinA }}">{{ x.pinLabel }}</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ x.isOver }}" hint-placeholder-val="{{ false }}">
+          <div class="tl-ended"><span class="il-label">{{ x.overLabel }}</span> <span>{{ x.overLine }}</span></div>
+          <div class="tl-acts"><a class="il-btn" href="History.dc.html">Transcript</a><button type="button" class="il-btn" onClick="{{ x.close }}">Close tile</button></div>
+        </sc-if>
+      </article>
+      </sc-if>
+    </sc-for>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tabs":{"editor":"text","default":"implementor-epd-8,engineer-epd-8,reviewer-epd-8-1,kernel-lut,steward"},"tiles":{"editor":"text","default":"implementor-epd-8,engineer-epd-8,reviewer-epd-8-1"},"focus":{"editor":"text","default":"engineer-epd-8"},"pinned":{"editor":"text","default":"steward"},"sizes":{"editor":"text","default":"36,34,30"},"frame":{"editor":"enum","options":["","implement","fix","review","merge-ready"],"default":""},"sync":{"editor":"boolean","default":false},"termH":{"editor":"text","default":"220px"},"onFocus":{"editor":null},"onTiles":{"editor":null},"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":1100,"height":760}}'>
+class Component extends DCLogic {
+  constructor(p) {
+    super(p);
+    Component.n = (Component.n || 0) + 1; this.uid = 'tl' + Component.n;
+    const L = (s, d) => (s === undefined ? d : s).split(',').filter(Boolean);
+    this.state = { tabs: L(p.tabs, 'implementor-epd-8,engineer-epd-8,reviewer-epd-8-1,kernel-lut,steward'), tiles: L(p.tiles, 'implementor-epd-8,engineer-epd-8,reviewer-epd-8-1'),
+      focus: p.focus === undefined ? 'engineer-epd-8' : p.focus, pinned: L(p.pinned, 'steward'), sizes: L(p.sizes, '36,34,30').map(Number), drag: -1 };
+    this.box = null;
+  }
+  componentDidUpdate(prev) {
+    /* A parent that drives the tiles (the tree's selection) wins over what was clicked here. */
+    const P = this.props;
+    if (prev.focus !== P.focus && P.focus !== undefined && P.focus !== this.state.focus) this.setState({ focus: P.focus });
+    if (prev.tiles !== P.tiles && P.tiles !== undefined) this.setState({ tiles: P.tiles.split(',').filter(Boolean), sizes: P.sizes ? P.sizes.split(',').map(Number) : this.state.sizes });
+    if (prev.tabs !== P.tabs && P.tabs !== undefined) this.setState({ tabs: P.tabs.split(',').filter(Boolean) });
+  }
+  renderVals() {
+    const P = this.props, H = window.HUB, T = H.tree, M = H.machine, S = this.state;
+    const v = T.view(P.frame || ''), N = v.nodes, ch = v.changed || [];
+    const theme = (P.voice || 'white') + '-' + (P.scheme || 'paper');
+    const tabs = S.pinned.filter((s) => S.tabs.indexOf(s) >= 0).concat(S.tabs.filter((s) => S.pinned.indexOf(s) < 0)).filter((s) => N[s]);
+    const tiles = S.tiles.filter((s) => N[s]);
+    const focus = tiles.indexOf(S.focus) >= 0 ? S.focus : tiles[0];
+    const setFocus = (sid) => { this.setState({ focus: sid }); if (P.onFocus) P.onFocus(sid); };
+    /* A tab's group: the multi-state instance it belongs to (itself or its nearest owner on one). */
+    const top = (sid) => { let k = sid, out = sid; while (k && N[k]) { if (M.defs[N[k].wf] && M.defs[N[k].wf].states && N[k].wf !== 'workflow-change') out = k; k = N[k].owner; if (k && N[k] && !(M.defs[N[k].wf] && M.defs[N[k].wf].states)) break; } return out; };
+    const groups = [];
+    tabs.forEach((sid) => {
+      const g = S.pinned.indexOf(sid) >= 0 ? '★' : top(sid);
+      let G = groups.find((x) => x.key === g);
+      if (!G) { const n = N[g] || {}; G = { key: g, label: g === '★' ? 'pinned' : (g === sid && !(n.wf === 'implement') ? n.wf || 'session' : g + ' · ' + ((n.items || [])[0] || n.wf)), tabs: [] }; groups.push(G); }
+      const t = tiles.indexOf(sid);
+      G.tabs.push({ name: sid, dom: this.uid + '-t-' + sid, panel: this.uid + '-p-' + sid, on: sid === focus ? 'true' : 'false', tab: sid === focus ? '0' : '-1', tiled: t >= 0, n: String(t + 1), live: N[sid].live, pinned: S.pinned.indexOf(sid) >= 0,
+        tip: sid + (t >= 0 ? ' · tile ' + (t + 1) : ' · not tiled') + (S.pinned.indexOf(sid) >= 0 ? ' · pinned' : ''),
+        pick: () => { if (t >= 0) setFocus(sid); else { const nt = tiles.slice(); const i = nt.indexOf(focus); const slot = S.pinned.indexOf(focus) >= 0 ? nt.length - 1 : i; nt[slot < 0 ? 0 : slot] = sid; this.setState({ tiles: nt }); setFocus(sid); } },
+        close: (ev) => { if (ev && ev.stopPropagation) ev.stopPropagation(); this.setState({ tabs: S.tabs.filter((x) => x !== sid), tiles: tiles.filter((x) => x !== sid) }); } });
+    });
+    const CG = { holds: 'M12 8a4 4 0 1 0 0 8 4 4 0 1 0 0-8z', moving: 'M4 12h12M12 7l5 5-5 5', waits: 'M12 3a9 9 0 1 0 0 18 9 9 0 1 0 0-18zM12 7v5l3 2', up: 'M12 19V6M6 11l6-6 6 6', over: 'M5 12l4 4 10-10' };
+    const IG = { issue: 'M8 2a6 6 0 1 0 0 12A6 6 0 1 0 8 2zM8 6.6a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 1 0 0-2.8z', pr: 'M4 4.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 1 0 0 3zM4 4.5v7M4 14.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 1 0 0 3zM12 14.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 1 0 0 3zM12 11.5V7a3 3 0 0 0-3-3H7', run: 'M2.5 2.5h11v11h-11zM6.5 5.5l4 2.5-4 2.5z', repo: 'M3 2.5h10v11H3zM3 10.5h10M6 13.5v2', workflow: 'M2 2.5h5v4H2zM9 9.5h5v4H9zM7 4.5h4.5v5' };
+    const LW = { working: 'working', idle: 'idle', waits: 'waits for you', stopped: 'stopped', ended: 'ended' };
+    const itemOf = (ref) => { const it = v.items[ref] || { kind: 'issue' }; const w = [];
+      if (it.kind === 'pr') { w.push({ text: it.state, ck: '' }); if (it.checks) w.push({ text: (it.checks === 'pass' ? '✓' : it.checks === 'fail' ? '✕' : '…') + ' checks', ck: it.checks }); if (it.verdict) w.push({ text: 'review ' + it.verdict, ck: '' }); }
+      else if (it.state) w.push({ text: it.state, ck: it.state === 'failed' ? 'fail' : '' });
+      return { ref: it.kind === 'repo' ? ref.slice(5) : ref, kind: it.kind, state: it.state || '', checks: it.checks || '', glyph: IG[it.kind] || IG.issue, words: w, tip: ref + (it.title ? ' — ' + it.title : '') }; };
+    const kidsOf = (sid) => [].concat(...T.entries(v, sid).map((e) => e.sessions.filter((k) => N[k])));
+    const sizes = tiles.map((_, i) => S.sizes[i] || 30);
+    const out = [];
+    tiles.forEach((sid, i) => {
+      if (i > 0) {
+        const j = i - 1, total = sizes[j] + sizes[i];
+        const nudge = (d) => { const s = sizes.slice(); s[j] = Math.max(total * 0.15, Math.min(total * 0.85, s[j] + d)); s[i] = total - s[j]; this.setState({ sizes: s }); };
+        out.push({ gutter: true, isTile: false, left: tiles[j], right: sid, value: String(Math.round(100 * sizes[j] / total)), active: S.drag === j ? 'true' : 'false',
+          key: (ev) => { if (ev.key === 'ArrowLeft') { ev.preventDefault(); nudge(-total * 0.05); } else if (ev.key === 'ArrowRight') { ev.preventDefault(); nudge(total * 0.05); } },
+          drag: (ev) => {
+            const box = this.box; if (!box) return; const W = box.getBoundingClientRect().width, x0 = ev.clientX, s0 = sizes.slice(), sum = s0.reduce((a, b) => a + b, 0);
+            this.setState({ drag: j });
+            const mv = (e) => { const d = (e.clientX - x0) / W * sum; const s = s0.slice(); s[j] = Math.max(total * 0.15, Math.min(total * 0.85, s0[j] + d)); s[i] = total - s[j]; this.setState({ sizes: s }); };
+            const up = () => { window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); this.setState({ drag: -1 }); };
+            window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
+          } });
+      }
+      const n = N[sid], d = M.defs[n.wf], ended = n.live === 'ended';
+      const chain = d && d.states && d.states[n.path[n.path.length - 1]] ? M.chain(d, n.path[n.path.length - 1]) : (n.path || []);
+      const path = chain.map((s, k) => ({ name: s, at: k === chain.length - 1 ? 'now' : '' })).concat(n.to ? [{ name: '→ ' + n.to, at: 'next' }] : []);
+      const kids = kidsOf(sid).filter((k) => N[k].live !== 'ended' || (N[k].returned && true));
+      const e = n.owner && N[n.owner] ? T.entries(v, n.owner).find((x) => x.name === n.entry) : null;
+      const owner = n.owner && n.owner !== 'you' ? n.owner : '';
+      const pinned = S.pinned.indexOf(sid) >= 0;
+      const card = v.frame && v.frame.card && sid === 'implementor-epd-8' ? v.frame.card : null;
+      const meta = [n.resumed ? 'resumed · served ' + (n.served || []).map((x) => x[0]).join(' → ') + ' (round ' + ((n.served || []).slice(-1)[0] || [0, ''])[1] + ')' : '', n.quick || '', n.owner === 'you' ? 'started by you' : '', n.round && typeof n.round === 'string' ? n.round : '', [n.time, n.cost].filter(Boolean).join(' · ')].filter(Boolean).join(' · ');
+      const lines = (n.lines || ((H.sessions[sid] || {}).lines) || [['dim', '  no output yet']]).map(([k, t]) => ({ k, t }));
+      out.push({ isTile: true, gutter: false, name: sid, panel: this.uid + '-p-' + sid, tabDom: this.uid + '-t-' + sid, persona: n.persona, live: n.live, liveWord: LW[n.live] || n.live, focus: sid === focus ? 'true' : 'false', focusB: sid === focus,
+        grow: String(sizes[i]), hasAsks: T.asks(sid) > 0, asks: String(T.asks(sid)), pinned, pinA: pinned ? 'true' : 'false', pinLabel: pinned ? 'Unpin' : 'Pin', changed: ch.some((c) => c.indexOf(sid + ':') === 0),
+        togglePin: () => this.setState({ pinned: pinned ? S.pinned.filter((x) => x !== sid) : S.pinned.concat([sid]) }),
+        hasChip: !n.plain, chipCls: 'il-chip' + ((n.chip || 'holds') === 'holds' ? '' : ' il-chip--' + n.chip), glyph: CG[n.chip] || CG.holds, chipLabel: (n.path || []).join(' › ') + (n.to ? ' → ' + n.to : ''), hasChipSub: !!n.chipNote, chipSub: n.chipNote || '',
+        items: (n.items || []).concat(n.holds || []).map(itemOf),
+        hasOwner: !!owner, owner, entryLine: e ? 'entry ' + e.name + ' · ' + (e.reuse === 'resume' ? 'resume' : 'fresh each round') + (n.round && typeof n.round === 'number' ? ' · round ' + n.round : '') : '',
+        toOwner: (ev) => { if (ev && ev.stopPropagation) ev.stopPropagation(); const nt = tiles.indexOf(owner) >= 0 ? tiles : tiles.map((x) => (x === sid ? owner : x)); this.setState({ tiles: nt, tabs: S.tabs.indexOf(owner) >= 0 ? S.tabs : S.tabs.concat([owner]) }); setFocus(owner); },
+        hasKids: kids.length > 0, kids: kids.length + ' session' + (kids.length > 1 ? 's' : ''),
+        toKids: (ev) => { if (ev && ev.stopPropagation) ev.stopPropagation(); const nt = [sid].concat(kids).slice(0, 3); this.setState({ tiles: nt, tabs: S.tabs.concat(nt.filter((x) => S.tabs.indexOf(x) < 0)), sizes: nt.map(() => 33) }); if (P.onTiles) P.onTiles(nt); },
+        hasMeta: !!meta, meta,
+        hasCard: !!card, card: card || { title: '', body: '', from: '' },
+        lines, ended: ended ? 'true' : 'false', live2: !ended && n.live !== 'stopped',
+        isLive: !ended, path, waitsFor: n.waitsFor || '—', hasNext: !!n.next, next: n.next || '',
+        isOver: ended, overLabel: 'Ended', overLine: (n.returned ? 'returned ' + n.returned : 'ended') + (n.round ? ' · round ' + n.round : '') + ' · read-only',
+        close: (ev) => { if (ev && ev.stopPropagation) ev.stopPropagation(); this.setState({ tiles: tiles.filter((x) => x !== sid) }); },
+        pick: () => { if (sid !== focus) setFocus(sid); } });
+    });
+    const tabKey = (ev) => {
+      const flat = [].concat(...groups.map((g) => g.tabs)); const i = flat.findIndex((t) => t.on === 'true');
+      const go = (j) => { ev.preventDefault(); const t = flat[(j + flat.length) % flat.length]; t.pick(); setTimeout(() => { const el = document.getElementById(t.dom); if (el) el.focus(); }, 0); };
+      if (ev.key === 'ArrowRight') go(i + 1); else if (ev.key === 'ArrowLeft') go(i - 1);
+    };
+    return { theme, pen: P.pen || '1', groups, tiles: out, tabKey, termH: P.termH || '220px', minH: '0',
+      boxRef: (el) => { this.box = el; },
+      frameStyle: 'min-width: 0; background: var(--paper)',
+      counts: [1, 2, 3].map((k) => ({ n: String(k), on: tiles.length === k ? 'true' : 'false', pick: () => { const pool = [focus].concat(tiles.filter((x) => x !== focus), tabs.filter((x) => tiles.indexOf(x) < 0)); const nt = tiles.slice(0, k).concat(pool.filter((x) => tiles.slice(0, k).indexOf(x) < 0)).slice(0, k); this.setState({ tiles: nt, sizes: nt.map(() => 33) }); } })),
+      hasSync: !!P.sync, sync: 'Selected in the tree ↔ focused tile: ' + focus + '. Keys go to the tile with the heavy edge; Ctrl+] and Ctrl+[ move between tiles, Ctrl+↑ opens the owner.' };
+  }
+}
+</script>
+</body>
+</html>

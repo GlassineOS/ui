@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Flow · a workflow, live</title>
+<script src="./support.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="workflow.css">
+<link rel="stylesheet" href="sessions.css">
+</helmet>
+<div class="wf il-page wf-pad wf-stack wf-stack--wide" data-theme="{{ theme }}" data-pen="{{ pen }}" style="min-height: 100vh">
+  <header class="wf-stack" style="gap: var(--space-2); max-width: 90ch">
+    <span class="il-label">Flow · live updates in the tree and the tiles</span>
+    <h1 class="wf-h2">One run of implementor-epd-8, four moves</h1>
+    <p class="wf-small">The same SessionTree and SessionTiles, pinned to a frame of the epd#8 run. Nothing moves on the screen: a row keeps its place, its words and marks change, and a “changed” tag stays on what changed until you look at it. The tree shows the run from implementor-epd-8 down; above it, its owners.</p>
+  </header>
+  <sc-for list="{{ frames }}" as="f" hint-placeholder-count="4">
+    <section class="wf-stack" aria-labelledby="{{ f.hid }}" style="padding-top: var(--space-5); border-top: var(--v-title-rule)">
+      <div class="wf-row" style="align-items: baseline"><span class="sx-step" aria-hidden="true">{{ f.n }}</span><h2 class="wf-h3" id="{{ f.hid }}">{{ f.title }}</h2><span class="wf-small wf-soft" style="flex: 1 1 30ch">{{ f.note }}</span></div>
+      <div class="sx-split">
+        <div class="wf-stack" style="gap: var(--space-2)">
+          <dc-import name="SessionTree" root="implementor-epd-8" frame="{{ f.id }}" bar="{{ no }}" selected="{{ f.focus }}" open="{{ f.tiles }}" focus-tile="{{ f.focus }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,640px"></dc-import>
+        </div>
+        <div class="wf-stack" style="gap: var(--space-3); min-width: 0">
+          <dc-import name="SessionTiles" frame="{{ f.id }}" tabs="{{ f.tiles }}" tiles="{{ f.tiles }}" focus="{{ f.focus }}" pinned="" sizes="{{ f.sizes }}" term-h="150px" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,560px"></dc-import>
+          <div class="wf-box"><span class="il-label">What changed</span><ul class="sx-changes"><sc-for list="{{ f.says }}" as="s" hint-placeholder-count="3"><li>{{ s }}</li></sc-for></ul></div>
+        </div>
+      </div>
+    </section>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":1440,"height":3600}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const P = this.props, F = window.HUB.tree.frames;
+    const pins = { implement: ['implementor-epd-8,engineer-epd-8', 'engineer-epd-8', '50,50'], fix: ['implementor-epd-8,engineer-epd-8,reviewer-epd-8-1', 'engineer-epd-8', '36,36,28'],
+      review: ['implementor-epd-8,reviewer-epd-8-2,engineer-epd-8', 'reviewer-epd-8-2', '34,36,30'], 'merge-ready': ['implementor-epd-8,reviewer-epd-8-2', 'implementor-epd-8', '60,40'] };
+    const frames = Object.keys(pins).map((id, i) => ({ id, n: String(i + 1), hid: 'fl-' + i, title: (i + 1) + ' · ' + F[id].title, note: F[id].note, says: F[id].says, tiles: pins[id][0], focus: pins[id][1], sizes: pins[id][2] }));
+    return { theme: (P.voice || 'white') + '-' + (P.scheme || 'paper'), pen: P.pen || '1', voice: P.voice || 'white', scheme: P.scheme || 'paper', no: false, frames };
+  }
+}
+</script>
+</body>
+</html>

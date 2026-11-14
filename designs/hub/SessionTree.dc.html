@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Session tree</title>
+<script src="./support.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="workflow.css">
+<link rel="stylesheet" href="sessions.css">
+</helmet>
+<nav class="wf il-page sn" data-theme="{{ theme }}" data-pen="{{ pen }}" aria-label="Sessions by workflow" style="{{ frame }}">
+  <sc-if value="{{ showBar }}" hint-placeholder-val="{{ true }}">
+    <div class="sn-bar">
+      <label class="sn-search"><span class="wf-sr">Find a session or item</span><input type="search" value="{{ query }}" placeholder="Find a session, issue or PR" onInput="{{ setQuery }}"></label>
+      <div class="sn-filters" role="group" aria-label="Show">
+        <sc-for list="{{ filters }}" as="f" hint-placeholder-count="3"><button type="button" class="sn-f" aria-pressed="{{ f.on }}" onClick="{{ f.pick }}">{{ f.label }}<span class="sn-f__n">{{ f.n }}</span></button></sc-for>
+        <label class="sn-f"><span class="wf-sr">Repository</span><select onChange="{{ setRepo }}"><sc-for list="{{ repos }}" as="o" hint-placeholder-count="4"><option value="{{ o.v }}" selected="{{ o.on }}">{{ o.label }}</option></sc-for></select></label>
+      </div>
+      <div class="sn-tools">
+        <label><input type="checkbox" checked="{{ ended }}" onChange="{{ toggleEnded }}">Ended ({{ endedN }})</label>
+        <button type="button" onClick="{{ expandAll }}">Expand all</button>
+        <button type="button" onClick="{{ collapseAll }}">Collapse all</button>
+      </div>
+      <p class="sn-sum" aria-live="polite"><span><b>{{ sum.live }}</b> live</span><span><b>{{ sum.working }}</b> working</span><span><b>{{ sum.cards }}</b> cards for you</span><sc-if value="{{ sum.hasHidden }}" hint-placeholder-val="{{ true }}"><span>{{ sum.hidden }}</span></sc-if></p>
+    </div>
+  </sc-if>
+  <sc-if value="{{ hasCrumb }}" hint-placeholder-val="{{ false }}"><p class="sn-sum">{{ crumb }}</p></sc-if>
+
+  <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+    <div class="sn-empty">
+      <strong>{{ empty.title }}</strong>
+      <span class="wf-small wf-soft">{{ empty.body }}</span>
+      <sc-if value="{{ empty.canClear }}" hint-placeholder-val="{{ false }}"><div class="wf-actions"><button type="button" class="il-btn" onClick="{{ clear }}">Clear the filters</button></div></sc-if>
+      <sc-if value="{{ empty.canStart }}" hint-placeholder-val="{{ true }}"><div class="wf-actions"><a class="il-btn" href="Work.dc.html">Find work to start</a><a class="il-btn" href="History.dc.html">Resume a past session</a></div></sc-if>
+    </div>
+  </sc-if>
+
+  <ul class="sn-tree" role="tree" aria-label="{{ treeLabel }}" onKeyDown="{{ onKey }}">
+    <sc-for list="{{ rows }}" as="r" hint-placeholder-count="12">
+      <li class="sn-row" role="treeitem" id="{{ r.dom }}" data-row="{{ r.kind }}" data-indent="{{ r.indent }}" data-dim="{{ r.dim }}" data-force="{{ r.force }}" data-focus="{{ r.ring }}" style="--indent: {{ r.indent }}" aria-level="{{ r.level }}" aria-setsize="{{ r.setsize }}" aria-posinset="{{ r.pos }}" aria-expanded="{{ r.expanded }}" aria-selected="{{ r.selected }}" aria-label="{{ r.aria }}" tabindex="{{ r.tab }}" title="{{ r.tip }}" onClick="{{ r.click }}">
+        <span class="sn-tw" data-open="{{ r.open }}" aria-hidden="true" onClick="{{ r.twist }}"><sc-if value="{{ r.canOpen }}" hint-placeholder-val="{{ true }}"><svg viewBox="0 0 12 12"><path d="M4 2l4 4-4 4"></path></svg></sc-if></span>
+        <span class="sn-body">
+          <sc-if value="{{ r.isSession }}" hint-placeholder-val="{{ true }}">
+            <span class="sn-line"><dc-import name="PersonaBadge" persona="{{ r.persona }}" size="s" hint-size="26px,26px"></dc-import><span class="sn-name">{{ r.name }}</span><span class="sn-live" data-live="{{ r.live }}">{{ r.liveWord }}</span><sc-if value="{{ r.hasAsks }}" hint-placeholder-val="{{ false }}"><span class="sn-asks">{{ r.asks }} for you</span></sc-if><sc-if value="{{ r.isTile }}" hint-placeholder-val="{{ false }}"><span class="sn-tile" data-focus="{{ r.tileFocus }}">{{ r.tileText }}</span></sc-if><sc-if value="{{ r.changed }}" hint-placeholder-val="{{ false }}"><span class="sn-mark-new">changed</span></sc-if></span>
+            <span class="sn-line"><sc-if value="{{ r.hasChip }}" hint-placeholder-val="{{ true }}"><span class="{{ r.chipCls }}" title="{{ r.chipTip }}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="{{ r.glyph }}"></path></svg><span class="wf-sr">Workflow state:</span>{{ r.chipLabel }}<sc-if value="{{ r.hasChipSub }}" hint-placeholder-val="{{ false }}"><span class="il-chip__sub">· {{ r.chipSub }}</span></sc-if></span></sc-if><sc-for list="{{ r.items }}" as="it" hint-placeholder-count="1"><span class="sn-item" data-kind="{{ it.kind }}" data-state="{{ it.state }}" data-checks="{{ it.checks }}" title="{{ it.tip }}"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="{{ it.glyph }}"></path></svg><span class="sn-item__ref">{{ it.ref }}</span><sc-for list="{{ it.words }}" as="w" hint-placeholder-count="1"><span class="sn-item__st"><span class="sn-item__ck" data-ck="{{ w.ck }}">{{ w.text }}</span></span></sc-for><sc-if value="{{ it.changed }}" hint-placeholder-val="{{ false }}"><span class="sn-mark-new">changed</span></sc-if></span></sc-for></span>
+            <sc-if value="{{ r.hasSub }}" hint-placeholder-val="{{ true }}"><span class="sn-sub" data-opt="{{ r.subOpt }}">{{ r.sub }}</span></sc-if>
+            <span class="sn-act"><button type="button" onClick="{{ r.openTile }}">{{ r.openLabel }}</button><sc-if value="{{ r.hasKids }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ r.openTree }}">Open this workflow</button></sc-if></span>
+          </sc-if>
+          <sc-if value="{{ r.isEntry }}" hint-placeholder-val="{{ false }}">
+            <span class="sn-entry">{{ r.name }}<span class="sn-entry__cfg">{{ r.cfg }}</span><sc-if value="{{ r.hasOff }}" hint-placeholder-val="{{ false }}"><span class="sn-entry__off">{{ r.off }}</span></sc-if></span>
+            <sc-if value="{{ r.hasSub }}" hint-placeholder-val="{{ false }}"><span class="sn-note">{{ r.sub }}</span></sc-if>
+          </sc-if>
+          <sc-if value="{{ r.isFold }}" hint-placeholder-val="{{ false }}"><span class="sn-fold">{{ r.name }}</span></sc-if>
+          <sc-if value="{{ r.isPast }}" hint-placeholder-val="{{ false }}">
+            <span class="sn-line"><span class="sn-name" style="font-weight: 500">{{ r.name }}</span><span class="sn-live" data-live="ended">round {{ r.round }}</span></span>
+            <span class="sn-sub">returned <b>{{ r.returned }}</b> · {{ r.sub }}</span>
+          </sc-if>
+          <sc-if value="{{ r.isGroup }}" hint-placeholder-val="{{ false }}"><span class="sn-group">{{ r.name }}</span></sc-if>
+          <sc-if value="{{ r.isItem }}" hint-placeholder-val="{{ false }}"><span class="sn-line"><span class="sn-item" data-kind="{{ r.it.kind }}" data-state="{{ r.it.state }}" data-checks="{{ r.it.checks }}" title="{{ r.it.tip }}"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="{{ r.it.glyph }}"></path></svg><span class="sn-item__ref">{{ r.it.ref }}</span><sc-for list="{{ r.it.words }}" as="w" hint-placeholder-count="1"><span class="sn-item__st"><span class="sn-item__ck" data-ck="{{ w.ck }}">{{ w.text }}</span></span></sc-for></span><span class="sn-note">{{ r.sub }}</span></span></sc-if>
+        </span>
+      </li>
+    </sc-for>
+  </ul>
+</nav>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"selected":{"editor":"enum","options":["implementor-epd-8","engineer-epd-8","kernel-lut","steward","design-brightness","review-ink-57"],"default":"implementor-epd-8"},"filter":{"editor":"enum","options":["all","needs","working"],"default":"all"},"query":{"editor":"text","default":""},"repo":{"editor":"text","default":""},"ended":{"editor":"boolean","default":false},"scale":{"editor":"enum","options":["normal","empty","large"],"default":"normal"},"frame":{"editor":"enum","options":["","implement","fix","review","merge-ready"],"default":""},"root":{"editor":"text","default":""},"open":{"editor":"text","default":"implementor-epd-8,engineer-epd-8,reviewer-epd-8-1"},"focusTile":{"editor":"text","default":"engineer-epd-8"},"ring":{"editor":"text","default":""},"collapsed":{"editor":"text","default":""},"bar":{"editor":"boolean","default":true},"onPick":{"editor":null},"onOpen":{"editor":null},"onOpenTree":{"editor":null},"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":380,"height":1800}}'>
+class Component extends DCLogic {
+  constructor(p) {
+    super(p);
+    Component.n = (Component.n || 0) + 1;
+    this.uid = 'sn' + Component.n;
+    const shut = {}; (p.collapsed || '').split(',').filter(Boolean).forEach((k) => { shut[k] = false; });
+    this.state = { sel: p.selected === undefined ? 'implementor-epd-8' : p.selected, filter: p.filter || 'all', query: p.query || '', repo: p.repo || '', ended: !!p.ended, exp: shut, focus: '', moveFocus: false };
+  }
+  componentDidUpdate(prev) {
+    /* The focused tile drives the selection: follow it, and open the rows above it. */
+    const P = this.props;
+    if (prev.selected !== P.selected && P.selected !== undefined && P.selected !== this.state.sel) {
+      const N = window.HUB.tree.nodes, exp = { ...this.state.exp }; let k = P.selected;
+      while (k && N[k]) { exp['n:' + k] = exp['n:' + k] === false ? true : exp['n:' + k]; if (N[k].owner && N[k].entry) exp['e:' + N[k].owner + ':' + N[k].entry] = true; k = N[k].owner; }
+      Object.keys(exp).forEach((x) => { if (exp[x] === undefined) delete exp[x]; });
+      this.setState({ sel: P.selected, focus: 'n:' + P.selected, exp });
+      return;
+    }
+    if (!this.state.moveFocus) return;
+    const el = document.getElementById(this.dom(this.state.focus));
+    if (el) el.focus();
+    this.setState({ moveFocus: false });
+  }
+  dom(id) { return this.uid + '-' + String(id).replace(/[^a-zA-Z0-9_-]/g, '_'); }
+  renderVals() {
+    const P = this.props, H = window.HUB, T = H.tree, M = H.machine, S = this.state;
+    const scale = P.scale || 'normal';
+    const v = scale === 'large' ? T.large() : T.view(P.frame || '');
+    if (scale === 'empty') { v.nodes = {}; v.roots = []; v.quick = []; v.shells = []; }
+    const N = v.nodes, ch = v.changed || [];
+    const open = (P.open === undefined ? 'implementor-epd-8,engineer-epd-8,reviewer-epd-8-1' : P.open).split(',').filter(Boolean);
+    const focusTile = P.focusTile === undefined ? 'engineer-epd-8' : P.focusTile;
+    const asks = (sid) => (scale === 'large' && !T.nodes[sid]) ? 0 : T.asks(sid);
+    const repoOf = (ref) => { const it = v.items[ref] || {}; if (it.repo) return it.repo; if (/^repo /.test(ref)) return ref.slice(5); return ref.split('#')[0].split(' ')[0]; };
+    const repos = {};
+    Object.values(N).forEach((n) => (n.items || []).concat(n.holds || []).forEach((r) => { const x = repoOf(r); if (x && v.items[r] && v.items[r].kind !== 'workflow') repos[x] = 1; }));
+    /* Which sessions show: the filters, then the ended rule (an ended session stays while it has a card,
+       or while its verdict is the current round's and its owner lives). */
+    const ownerLive = (n) => n.owner && N[n.owner] && N[n.owner].live !== 'ended';
+    const keepEnded = (sid) => { const n = N[sid]; return asks(sid) > 0 || (ownerLive(n) && !!n.returned && n.entry && (((v.runs[n.owner] || {})[n.entry] || {}).sessions || []).indexOf(sid) >= 0 && !/^implementor/.test(sid)); };
+    const q = S.query.trim().toLowerCase();
+    const matches = (sid) => {
+      const n = N[sid]; if (!n) return false;
+      if (n.live === 'ended' && !S.ended && !keepEnded(sid)) return false;
+      if (S.filter === 'needs' && !(asks(sid) > 0 || n.live === 'waits' || n.chip === 'waits')) return false;
+      if (S.filter === 'working' && n.live !== 'working') return false;
+      const refs = (n.items || []).concat(n.holds || []);
+      if (S.repo && !refs.some((r) => repoOf(r) === S.repo)) return false;
+      if (q && !(sid.toLowerCase().indexOf(q) >= 0 || (n.persona || '').toLowerCase().indexOf(q) >= 0 || refs.some((r) => r.toLowerCase().indexOf(q) >= 0 || ((v.items[r] || {}).title || '').toLowerCase().indexOf(q) >= 0))) return false;
+      return true;
+    };
+    const filtering = S.filter !== 'all' || !!q || !!S.repo;
+    /* The children of a session: its entries, each with this round's sessions. */
+    const entriesOf = (sid) => T.entries(v, sid);
+    const kidsOf = (sid) => [].concat(...entriesOf(sid).map((e) => e.sessions.filter((k) => N[k])));
+    const shows = {};
+    const visit = (sid) => { let any = matches(sid); kidsOf(sid).forEach((k) => { if (visit(k)) any = true; }); shows[sid] = any; return any; };
+    let roots = v.roots.slice();
+    if (P.root) roots = [P.root];
+    roots.forEach(visit);
+    v.quick.forEach(([, ss]) => ss.forEach(visit));
+    v.shells.forEach((s) => { shows[s] = !filtering && matches(s); });
+    /* Expansion: what the user set, else open along the selection and wherever a session runs. */
+    const isOpen = (id, dflt) => (S.exp[id] !== undefined ? S.exp[id] : (filtering ? true : dflt));
+    const rows = [];
+    const words = (it, ref) => {
+      const w = [];
+      if (it.kind === 'pr') { w.push({ text: it.state, ck: '' }); if (it.checks) w.push({ text: (it.checks === 'pass' ? '✓' : it.checks === 'fail' ? '✕' : '…') + ' checks', ck: it.checks }); if (it.verdict) w.push({ text: 'review ' + it.verdict, ck: '' }); }
+      else if (it.kind === 'issue' || it.kind === 'run') w.push({ text: it.state, ck: it.state === 'failed' ? 'fail' : '' });
+      else if (it.kind === 'workflow') w.push({ text: it.state, ck: '' });
+      return w;
+    };
+    const G = { issue: 'M8 2a6 6 0 1 0 0 12A6 6 0 1 0 8 2zM8 6.6a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 1 0 0-2.8z', pr: 'M4 4.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 1 0 0 3zM4 4.5v7M4 14.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 1 0 0 3zM12 14.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 1 0 0 3zM12 11.5V7a3 3 0 0 0-3-3H7', run: 'M2.5 2.5h11v11h-11zM6.5 5.5l4 2.5-4 2.5z', repo: 'M3 2.5h10v11H3zM3 10.5h10M6 13.5v2', workflow: 'M2 2.5h5v4H2zM9 9.5h5v4H9zM7 4.5h4.5v5' };
+    const itemOf = (ref) => { const it = v.items[ref] || { kind: 'issue', state: '' }; const label = it.kind === 'repo' ? ref.slice(5) : ref; return { ref: label, kind: it.kind, state: it.state || '', checks: it.checks || '', glyph: G[it.kind] || G.issue, words: words(it, ref), changed: ch.some((c) => c.indexOf(ref + ':') === 0), tip: label + (it.title ? ' — ' + it.title : '') + (it.state ? ' · ' + it.state : '') + (it.checks ? ' · checks ' + it.checks : '') + (it.verdict ? ' · review ' + it.verdict : '') + (it.by ? ' · opened by ' + it.by : '') }; };
+    const CG = { holds: 'M12 8a4 4 0 1 0 0 8 4 4 0 1 0 0-8z', moving: 'M4 12h12M12 7l5 5-5 5', waits: 'M12 3a9 9 0 1 0 0 18 9 9 0 1 0 0-18zM12 7v5l3 2', up: 'M12 19V6M6 11l6-6 6 6', over: 'M5 12l4 4 10-10' };
+    const LW = { working: 'working', idle: 'idle', waits: 'waits for you', stopped: 'stopped', ended: 'ended' };
+    const served = (n) => (n.served || []).map(([st, r]) => st).join(' → ') + (n.served && n.served.length ? ' (round ' + n.served[n.served.length - 1][1] + ')' : '');
+    const push = (r) => { rows.push(r); return r; };
+    const sessionRow = (sid, indent, level, parentId) => {
+      const n = N[sid], id = 'n:' + sid, kids = entriesOf(sid), hasKids = kids.some((e) => e.sessions.some((k) => shows[k])) || (!filtering && n.live !== 'ended' && kids.length > 0);
+      const opened = hasKids && isOpen(id, true);
+      const a = asks(sid), t = open.indexOf(sid);
+      const chipKind = n.chip || 'holds', label = (n.path || []).join(' › ') + (n.to ? ' → ' + n.to : '');
+      const subBits = [];
+      if (n.resumed) subBits.push('resumed · served ' + served(n));
+      else if (n.served) subBits.push('served ' + served(n));
+      if (n.quick) subBits.push(n.quick);
+      if (n.round && typeof n.round === 'string') subBits.push(n.round);
+      if (n.returned) subBits.push('returned ' + n.returned);
+      if (n.owner === 'you') subBits.push('started by you');
+      if (n.plain) subBits.push('plain shell');
+      if (hasKids && !opened) { const under = []; const walk = (k) => kidsOf(k).forEach((x) => { under.push(x); walk(x); }); walk(sid); const w = under.filter((x) => N[x].live === 'working').length; subBits.push('▸ ' + under.length + ' under it' + (w ? ', ' + w + ' working' : '')); }
+      subBits.push([n.time, n.cost].filter(Boolean).join(' · '));
+      push({ id, kind: 'session', parentId, indent, level, isSession: true, persona: n.persona, name: sid, live: n.live, liveWord: LW[n.live] || n.live,
+        hasAsks: a > 0, asks: String(a), isTile: t >= 0, tileText: t >= 0 ? (sid === focusTile ? '▣ tile ' + (t + 1) + ' · focus' : '▣ tile ' + (t + 1)) : '', tileFocus: sid === focusTile ? 'true' : 'false',
+        changed: ch.some((c) => c.indexOf(sid + ':') === 0),
+        hasChip: !n.plain, chipCls: 'il-chip' + (chipKind === 'holds' ? '' : ' il-chip--' + chipKind), glyph: CG[chipKind] || CG.holds, chipLabel: label, hasChipSub: !!n.chipNote, chipSub: n.chipNote || '',
+        chipTip: 'Workflow ' + n.wf + ' · state ' + label + (n.chipNote ? ' · ' + n.chipNote : ''),
+        items: (n.items || []).concat(n.holds || []).map(itemOf), hasSub: true, sub: subBits.filter(Boolean).join(' · '), subOpt: 'false',
+        dim: filtering && !matches(sid) ? 'true' : 'false', canOpen: hasKids, open: opened ? 'true' : 'false', expanded: hasKids ? (opened ? 'true' : 'false') : null,
+        hasKids: kids.some((e) => e.sessions.length), openLabel: t >= 0 ? 'Focus its tile' : 'Open in a tile',
+        aria: sid + ', ' + n.persona + ', ' + (LW[n.live] || n.live) + (label ? ', in ' + label : '') + (a ? ', ' + a + ' cards for you' : '') + (t >= 0 ? ', open in tile ' + (t + 1) : ''),
+        tip: sid + ' · ' + n.persona + (n.owner && n.owner !== 'you' ? ' · under ' + n.owner + (n.entry ? ' (entry ' + n.entry + ')' : '') : '') + (n.waitsFor ? ' · waits for ' + n.waitsFor : '') + (n.cost ? ' · cost ' + n.cost : '') });
+      if (!opened) return;
+      const es = kids.filter((e) => (!filtering || e.sessions.some((k) => shows[k])) && (n.live !== 'ended' || e.sessions.length + e.earlier.length > 0));
+      es.forEach((e, i) => entryRow(sid, e, indent + 1, level + 1, id, i + 1, es.length));
+    };
+    const cfgOf = (e) => {
+      const live = e.sessions.filter((k) => N[k] && N[k].live !== 'ended' && N[k].live !== 'stopped').length;
+      const bits = [e.reuse === 'resume' ? 'resume' : 'fresh each round'];
+      bits.push(e.start === 'auto' ? (e.when ? 'when ' + e.when : 'auto') : 'on request');
+      if (e.round) bits.push('round ' + e.round);
+      bits.push(typeof e.max === 'number' ? live + '/' + e.max : e.max);
+      if (e.on_exit !== 'stop') bits.push(e.on_exit === 'keep' ? 'kept on exit' : 'handed over on exit');
+      return bits.join(' · ');
+    };
+    const entryRow = (owner, e, indent, level, parentId, pos, size) => {
+      const id = 'e:' + owner + ':' + e.name, has = e.sessions.length + e.earlier.length > 0;
+      const opened = has && isOpen(id, true);
+      const notStarted = !e.sessions.length && !e.earlier.length;
+      push({ id, kind: 'entry', parentId, indent, level, isEntry: true, name: e.name, cfg: cfgOf(e), force: e.inForce ? 'true' : 'false',
+        hasOff: !e.inForce, off: 'runs in ' + e.states.join(', '), hasSub: !!e.note || notStarted, sub: e.note || (e.inForce ? 'not started' : 'not started this round'),
+        canOpen: has, open: opened ? 'true' : 'false', expanded: has ? (opened ? 'true' : 'false') : null, setsize: String(size), pos: String(pos), dim: 'false',
+        aria: 'Entry ' + e.name + ': ' + e.persona + ', ' + cfgOf(e) + (e.inForce ? '' : ', runs in ' + e.states.join(', ')) + (e.note ? '. ' + e.note : ''),
+        tip: e.persona + ' · workflow ' + e.workflow + ' · start ' + e.start + (e.when ? ' when ' + e.when : '') + ' · max ' + e.max + ' · reuse ' + e.reuse + ' · on_exit ' + e.on_exit });
+      if (!opened) return;
+      const live = e.sessions.filter((k) => shows[k]);
+      live.forEach((k) => sessionRow(k, indent, level + 1, id));
+      if (e.earlier.length && !filtering) {
+        const fid = 'f:' + owner + ':' + e.name, fo = isOpen(fid, false);
+        const ret = e.earlier.map((k) => (N[k] || T.earlier[k] || {}).returned || '').filter(Boolean);
+        const vs = ret.map((x) => x.split(' · ')[0]);
+        push({ id: fid, kind: 'fold', parentId: id, indent, level: level + 1, isFold: true, canOpen: true, open: fo ? 'true' : 'false', expanded: fo ? 'true' : 'false', dim: 'false',
+          name: e.earlier.length + ' earlier ' + e.name + (e.earlier.length > 1 ? 's' : '') + ' · ' + (/^(pass|fail)$/.test(vs[0]) ? 'verdict' + (vs.length > 1 ? 's ' : ' ') : '') + vs.join(', '),
+          aria: e.earlier.length + ' earlier sessions of ' + e.name + ', ' + ret.join('; ') });
+        if (fo) e.earlier.forEach((k) => { const x = N[k] || T.earlier[k] || {}; push({ id: 'h:' + k, kind: 'past', parentId: fid, indent: indent + 1, level: level + 2, isPast: true, name: k, round: String(x.round || ''), returned: x.returned || '—', sub: [x.time, x.cost].filter(Boolean).join(' · '), dim: 'false', aria: k + ', round ' + x.round + ', returned ' + x.returned }); });
+      }
+    };
+    roots.forEach((sid) => { if (shows[sid] && N[sid]) sessionRow(sid, 0, 1, ''); });
+    const qs = v.quick.filter(([, ss]) => ss.some((s) => shows[s]));
+    if (qs.length && !P.root) {
+      const gid = 'g:quick', go = isOpen(gid, true);
+      push({ id: gid, kind: 'group', parentId: '', indent: 0, level: 1, isGroup: true, name: 'Quick tasks · one state, on an item', canOpen: true, open: go ? 'true' : 'false', expanded: go ? 'true' : 'false', dim: 'false', aria: 'Quick tasks' });
+      if (go) qs.forEach(([ref, ss]) => {
+        const iid = 'q:' + ref, io = isOpen(iid, true), vis = ss.filter((s) => shows[s]);
+        push({ id: iid, kind: 'item', parentId: gid, indent: 1, level: 2, isItem: true, it: itemOf(ref), sub: vis.length + ' task' + (vis.length > 1 ? 's' : ''), canOpen: true, open: io ? 'true' : 'false', expanded: io ? 'true' : 'false', dim: 'false', aria: 'On ' + ref });
+        if (io) vis.forEach((s) => sessionRow(s, 2, 3, iid));
+      });
+    }
+    const sh = v.shells.filter((s) => shows[s]);
+    if (sh.length && !P.root) {
+      const gid = 'g:shells', go = isOpen(gid, true);
+      push({ id: gid, kind: 'group', parentId: '', indent: 0, level: 1, isGroup: true, name: 'Plain shells · no workflow', canOpen: true, open: go ? 'true' : 'false', expanded: go ? 'true' : 'false', dim: 'false', aria: 'Plain shells' });
+      if (go) sh.forEach((s) => sessionRow(s, 1, 2, gid));
+    }
+    /* Roving focus: one row is in the tab order; arrows move it (WAI-ARIA tree view). */
+    const sel = S.sel, foc = S.focus || ('n:' + sel);
+    const focusId = rows.some((r) => r.id === foc) ? foc : (rows[0] || {}).id;
+    const pick = (r) => { if (r.kind === 'session') { this.setState({ sel: r.name, focus: r.id }); if (P.onPick) P.onPick(r.name); } else if (r.canOpen) this.setState({ focus: r.id, exp: { ...S.exp, [r.id]: r.open !== 'true' } }); };
+    rows.forEach((r, i) => {
+      const sibs = rows.filter((x) => x.parentId === r.parentId);
+      if (!r.setsize) { r.setsize = String(sibs.length); r.pos = String(sibs.indexOf(r) + 1); }
+      r.level = String(r.level); r.indent = String(r.indent); r.dom = this.dom(r.id);
+      r.selected = r.kind === 'session' ? (r.name === sel ? 'true' : 'false') : null;
+      r.tab = r.id === focusId ? '0' : '-1';
+      r.ring = P.ring && r.id === 'n:' + P.ring ? 'true' : 'false';
+      r.force = r.force || 'true';
+      ['isSession', 'isEntry', 'isFold', 'isPast', 'isGroup', 'isItem', 'canOpen', 'hasSub', 'hasKids', 'hasAsks', 'isTile', 'changed', 'hasChip', 'hasChipSub', 'hasOff'].forEach((k) => { r[k] = !!r[k]; });
+      r.click = (ev) => { if (ev && ev.target && ev.target.closest && ev.target.closest('button, .sn-tw')) return; pick(r); };
+      r.twist = () => { if (r.canOpen) this.setState({ focus: r.id, exp: { ...S.exp, [r.id]: r.open !== 'true' } }); };
+      r.openTile = () => { this.setState({ sel: r.name }); if (P.onOpen) P.onOpen(r.name); else if (P.onPick) P.onPick(r.name); };
+      r.openTree = () => { if (P.onOpenTree) P.onOpenTree(r.name); };
+    });
+    const onKey = (ev) => {
+      const k = ev.key, i = rows.findIndex((r) => r.id === focusId); if (i < 0) return;
+      const r = rows[i], go = (j) => { if (j >= 0 && j < rows.length) { ev.preventDefault(); this.setState({ focus: rows[j].id, moveFocus: true }); } };
+      if (k === 'ArrowDown') go(i + 1);
+      else if (k === 'ArrowUp') go(i - 1);
+      else if (k === 'Home') go(0);
+      else if (k === 'End') go(rows.length - 1);
+      else if (k === 'ArrowRight') { ev.preventDefault(); if (r.canOpen && r.open !== 'true') this.setState({ exp: { ...S.exp, [r.id]: true } }); else if (r.canOpen) go(i + 1); }
+      else if (k === 'ArrowLeft') { ev.preventDefault(); if (r.canOpen && r.open === 'true') this.setState({ exp: { ...S.exp, [r.id]: false } }); else { const p = rows.findIndex((x) => x.id === r.parentId); if (p >= 0) go(p); } }
+      else if (k === 'Enter' || k === ' ') { ev.preventDefault(); pick(r); if (k === 'Enter' && r.kind === 'session' && P.onOpen) P.onOpen(r.name); }
+    };
+    const all = Object.keys(N).filter((k) => !N[k].plain);
+    const liveN = all.filter((k) => N[k].live !== 'ended').length, workN = all.filter((k) => N[k].live === 'working').length;
+    const cards = all.reduce((a, k) => a + asks(k), 0);
+    const placed = {}; roots.concat(...v.quick.map(([, ss]) => ss)).forEach((k) => { placed[k] = 1; });
+    Object.keys(N).forEach((k) => entriesOf(k).forEach((e) => e.sessions.forEach((x) => { placed[x] = 1; })));
+    const endedHidden = all.filter((k) => placed[k] && N[k].live === 'ended' && !keepEnded(k)).length;
+    const exps = {}; rows.forEach((r) => { if (r.canOpen) exps[r.id] = true; });
+    const theme = (P.voice || 'white') + '-' + (P.scheme || 'paper');
+    const F = [['all', 'All', String(liveN)], ['needs', 'Needs you', String(cards)], ['working', 'Working', String(workN)]];
+    const empty = scale === 'empty'
+      ? { title: 'No sessions running', body: 'Start work from an item’s page or ask the Steward. Sessions you start show here under the workflow that runs them.', canClear: false, canStart: true }
+      : { title: 'Nothing matches', body: 'No session ' + (S.filter === 'needs' ? 'waits for you' : S.filter === 'working' ? 'is working' : 'matches') + (q ? ' with “' + S.query + '”' : '') + (S.repo ? ' in ' + S.repo : '') + (S.ended ? '' : '. Ended sessions are hidden.'), canClear: true, canStart: false };
+    const crumbOwner = P.root && N[P.root] && N[P.root].owner ? N[P.root].owner : '';
+    const chainUp = (sid) => { const out = []; let k = N[sid] && N[sid].owner; while (k && N[k]) { out.unshift(k); k = N[k].owner; } return out; };
+    return {
+      theme, pen: P.pen || '1', rows, onKey, query: S.query, ended: S.ended, endedN: String(endedHidden + (S.ended ? 0 : 0)),
+      showBar: P.bar !== false, hasCrumb: !!crumbOwner, crumb: crumbOwner ? 'under ' + chainUp(P.root).join(' › ') : '',
+      treeLabel: P.root ? 'The workflow of ' + P.root : 'Sessions by workflow and owner',
+      isEmpty: rows.length === 0, empty, clear: () => this.setState({ filter: 'all', query: '', repo: '' }),
+      frame: P.root ? 'background: transparent' : 'background: transparent; padding: 0',
+      filters: F.map(([id, label, n]) => ({ label, n, on: S.filter === id ? 'true' : 'false', pick: () => this.setState({ filter: id }) })),
+      repos: [{ v: '', label: 'Every repository', on: !S.repo }].concat(Object.keys(repos).sort().map((r) => ({ v: r, label: r, on: S.repo === r }))),
+      setRepo: (ev) => this.setState({ repo: ev.target.value }), setQuery: (ev) => this.setState({ query: ev.target.value }),
+      toggleEnded: () => this.setState({ ended: !S.ended }),
+      expandAll: () => { const e = { ...S.exp }; Object.keys(e).forEach((k) => { e[k] = true; }); rows.forEach((r) => { if (r.canOpen) e[r.id] = true; }); this.setState({ exp: e }); },
+      collapseAll: () => { const e = {}; rows.forEach((r) => { if (r.canOpen) e[r.id] = false; }); this.setState({ exp: e }); },
+      sum: { live: String(liveN), working: String(workN), cards: String(cards), hasHidden: !S.ended && endedHidden > 0, hidden: endedHidden + ' ended hidden' }
+    };
+  }
+}
+</script>
+</body>
+</html>

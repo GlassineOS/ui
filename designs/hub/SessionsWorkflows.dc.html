@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sessions by workflow</title>
+<script src="./support.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Kalam&amp;display=swap">
+<style>body{margin:0;background:#ffffff} @media (max-width: 1100px){ .sw-row{flex-direction:column !important} .sw-tree{width:100% !important;position:static !important;max-height:none !important} }</style>
+</helmet>
+<div style="position: relative; min-height: 100vh; display: flex; flex-direction: column; background: #ffffff; color: #111111; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 15px; line-height: 1.5">
+  <dc-import style="position: static" name="Header" active="sessions" layer="absolute" hint-size="100%,66px"></dc-import>
+  <div style="flex: 1; display: flex; align-items: stretch">
+    <main style="flex: 1; min-width: 0; padding: 20px 28px 48px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px">
+      <dc-import name="SessionsTabs" active="running" hint-size="100%,50px"></dc-import>
+      <div class="sw-row" style="display: flex; gap: 20px; align-items: flex-start">
+        <aside class="sw-tree" style="flex: none; width: 372px; max-height: 1180px; overflow-y: auto; position: sticky; top: 12px; box-sizing: border-box; padding: 14px; border-radius: 16px; background: #ffffff; box-shadow: 0 0 0 1.5px #111111, 0 3px 0 #b4b4b4">
+          <dc-import name="SessionTree" selected="{{ sel }}" open="{{ tilesCsv }}" focus-tile="{{ focus }}" on-pick="{{ pick }}" on-open="{{ openOne }}" on-open-tree="{{ openTree }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,1600px"></dc-import>
+        </aside>
+        <div style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 10px; background: transparent">
+          <dc-import name="SessionTiles" tabs="{{ tabsCsv }}" tiles="{{ tilesCsv }}" focus="{{ focus }}" pinned="steward" sizes="{{ sizes }}" sync="{{ yes }}" term-h="300px" on-focus="{{ pick }}" on-tiles="{{ setTiles }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,760px"></dc-import>
+        </div>
+      </div>
+    </main>
+    <dc-import style="display: flex; flex: none; position: static" name="Steward" context="Sessions · Running" collapsed="{{ yes }}" layer="absolute" hint-size="64px,100%"></dc-import>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"selected":{"editor":"enum","options":["engineer-epd-8","implementor-epd-8","kernel-lut","design-brightness"],"default":"engineer-epd-8"},"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":1440,"height":1900}}'>
+class Component extends DCLogic {
+  constructor(p) {
+    super(p);
+    this.state = { sel: p.selected || 'engineer-epd-8', tiles: ['implementor-epd-8', 'engineer-epd-8', 'reviewer-epd-8-1'], tabs: ['steward', 'implementor-epd-8', 'engineer-epd-8', 'reviewer-epd-8-1', 'kernel-lut'], sizes: '36,34,30' };
+  }
+  renderVals() {
+    const P = this.props, S = this.state, T = window.HUB.tree, v = T.view('');
+    /* The tree and the tiles stay in step: picking a node focuses its tile, or opens it in the focused
+       tile's place (a pinned tile keeps its place); focusing a tile selects its node. */
+    const pick = (sid) => {
+      if (S.tiles.indexOf(sid) >= 0) { this.setState({ sel: sid }); return; }
+      const nt = S.tiles.slice(), at = nt.indexOf(S.sel);
+      nt[at >= 0 && S.sel !== 'steward' ? at : nt.length - 1] = sid;
+      this.setState({ sel: sid, tiles: nt, tabs: S.tabs.indexOf(sid) >= 0 ? S.tabs : S.tabs.concat([sid]) });
+    };
+    const openTree = (sid) => {
+      const kids = [].concat(...T.entries(v, sid).map((e) => e.sessions)).filter((k) => v.nodes[k] && v.nodes[k].live !== 'ended');
+      const nt = [sid].concat(kids).slice(0, 3);
+      this.setState({ sel: sid, tiles: nt, tabs: S.tabs.concat(nt.filter((x) => S.tabs.indexOf(x) < 0)), sizes: nt.map(() => 33).join(',') });
+    };
+    return { yes: true, sel: S.sel, focus: S.sel, tilesCsv: S.tiles.join(','), tabsCsv: S.tabs.join(','), sizes: S.sizes, pick, openOne: pick, openTree,
+      setTiles: (nt) => this.setState({ tiles: nt, tabs: S.tabs.concat(nt.filter((x) => S.tabs.indexOf(x) < 0)) }),
+      voice: P.voice || 'white', scheme: P.scheme || 'paper', pen: P.pen || '1' };
+  }
+}
+</script>
+</body>
+</html>

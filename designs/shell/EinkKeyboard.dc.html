@@ -12,8 +12,11 @@
 
 <sc-if value="{{ hasStrip }}" hint-placeholder-val="{{ true }}">
 <div style="height:{{ stripH }}px;flex:none;box-sizing:border-box;display:flex;align-items:stretch;gap:{{ k.gap }}px;padding:{{ k.gap }}px {{ k.gap }}px 0;background:{{ k.bg }}">
-<div role="button" aria-label="{{ penLabel }}" aria-pressed="{{ penOn }}" onPointerDown="{{ penKey }}" style="width:{{ unitW }};flex:none;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border-radius:{{ k.r }}px;background:{{ pen.bg }};color:{{ pen.fg }};box-shadow:{{ pen.sh }};cursor:pointer"><span style="font:400 22px/1 'Material Symbols Outlined'">stylus</span></div>
-<div role="listbox" aria-label="Suggestions" style="flex:1;min-width:0;display:flex;gap:{{ k.gap }}px">
+<div role="button" aria-label="{{ penLabel }}" aria-pressed="{{ penOn }}" aria-hidden="{{ penHidden }}" onPointerDown="{{ penKey }}" style="visibility:{{ penVis }};width:{{ unitW }};flex:none;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border-radius:{{ k.r }}px;background:{{ pen.bg }};color:{{ pen.fg }};box-shadow:{{ pen.sh }};cursor:pointer"><span style="font:400 22px/1 'Material Symbols Outlined'">stylus</span></div>
+<sc-if value="{{ priv }}" hint-placeholder-val="{{ false }}">
+<div role="status" style="flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:8px;color:{{ k.noteC }};font:{{ k.noteFont }}"><span style="font:400 18px/1 'Material Symbols Outlined'">lock</span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Private field · nothing is suggested or learned</span></div>
+</sc-if>
+<div role="listbox" aria-label="Suggestions" style="flex:{{ wordsFlex }};min-width:0;display:flex;gap:{{ k.gap }}px">
 <sc-for list="{{ words }}" as="w" hint-placeholder-count="3"><div role="option" aria-selected="{{ w.sel }}" onPointerDown="{{ w.on }}" style="flex:1;min-width:0;display:flex;align-items:center;justify-content:center;border-radius:{{ k.r }}px;background:{{ w.bg }};color:{{ w.fg }};box-shadow:{{ w.sh }};font:{{ w.font }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer">{{ w.l }}</div></sc-for>
 </div>
 <div role="button" aria-label="Hide the keyboard" onPointerDown="{{ hideKey }}" style="width:{{ unitW }};flex:none;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border-radius:{{ k.r }}px;background:{{ k.keySp }};color:{{ k.text }};box-shadow:{{ k.spSh }};cursor:pointer"><span style="font:400 22px/1 'Material Symbols Outlined'">keyboard_hide</span></div>
@@ -27,12 +30,16 @@
 </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview": {"width": 712, "height": 348}, "theme": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "scheme": {"editor": "enum", "options": ["eink", "paper", "night"], "default": "eink"}, "pen": {"editor": "enum", "options": ["1", "2", "3"], "default": "1"}, "layout": {"editor": "enum", "options": ["en", "de"], "default": "en"}, "layer": {"editor": "enum", "options": ["main", "special"], "default": "main"}, "strip": {"editor": "enum", "options": ["on", "off"], "default": "on"}, "words": {"editor": "string", "default": ""}, "height": {"editor": "string", "default": "300"}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview": {"width": 712, "height": 348}, "theme": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "scheme": {"editor": "enum", "options": ["eink", "paper", "night"], "default": "eink"}, "pen": {"editor": "enum", "options": ["1", "2", "3"], "default": "1"}, "layout": {"editor": "enum", "options": ["en", "de"], "default": "en"}, "layer": {"editor": "enum", "options": ["main", "special"], "default": "main"}, "purpose": {"editor": "enum", "options": ["normal", "number", "phone", "pin", "email", "url", "password"], "default": "normal"}, "private": {"editor": "enum", "options": ["off", "on"], "default": "off"}, "strip": {"editor": "enum", "options": ["on", "off"], "default": "on"}, "words": {"editor": "string", "default": ""}, "height": {"editor": "string", "default": "300"}}'>
 // The on-screen keyboard (wvkbd-glassine): the layers the images ship, the long-press
 // alternates in each key's corner, the suggestion strip, the handwriting and hide keys.
-// Reuse: <dc-import name="EinkKeyboard" theme scheme pen layout layer strip words height
+// Reuse: <dc-import name="EinkKeyboard" theme scheme pen layout layer purpose private strip words
+// height handwriting
 // on-key="{{ fn }}">; fn gets { text } for a character, a picked word ({ text, word: true })
 // or a space, or { key } for backspace, enter, tab, esc, arrows, hide and handwriting.
+// purpose is the field's (text-input content purpose): number, phone and pin open a keypad,
+// email and url change the bottom row; pin, password and private="on" make a private field:
+// no suggestions (a note says so), no pen key.
 // The look per voice is voices/voices.json apps.wvkbd (font, radius, gap, key and special
 // key colours), taken here through Interleaf's colours so the paper and night schemes work.
 class Component extends DCLogic {
@@ -42,13 +49,17 @@ class Component extends DCLogic {
 
   // One key: [label, shifted label, width, action, hold alternate]. An action is a string to
   // type (the label when left out) or ':name' for a special key.
-  layers(layout) {
+  layers(layout, purpose) {
     const nav = [['Esc', 'Esc', 1, ':esc'], ['Ctr', 'Ctr', 1, ':ctrl'], ['↑', '↑', 1, ':up'], ['↓', '↓', 1, ':down'], ['←', '←', 1, ':left'], ['→', '→', 1, ':right'],
       ["'", '"'], ['-', '_'], ['/', '>'], ['Tab', 'Ins', 1, ':tab']];
     const num = [['1', '!'], ['2', '@'], ['3', '#'], ['4', '$'], ['5', '%'], ['6', '^'], ['7', '&'], ['8', '*'], ['9', '('], ['0', ')']];
     const L = (s, holds) => [...s].map((c, i) => [c, c === 'ß' ? 'ẞ' : c.toUpperCase(), 1, null, holds[i]]);
-    const bottom = [['⌨', '⌨', 1.5, ':layer'], ['Cmp', 'Cmp', 1, ':compose'], [',', "'", 1, null, ';'], ['', 'Tab', 4, ' '], ['.', '?', 1, null, ':'], ['Enter', 'Enter', 1.5, ':enter']];
+    const bottom0 = [['⌨', '⌨', 1.5, ':layer'], ['Cmp', 'Cmp', 1, ':compose'], [',', "'", 1, null, ';'], ['', 'Tab', 4, ' '], ['.', '?', 1, null, ':'], ['Enter', 'Enter', 1.5, ':enter']];
     const shiftK = ['⇧', '⇫', 1.5, ':shift'], bsK = ['⌫', '⌫', 1.5, ':backspace'];
+    const space = w => ['', 'Tab', w, ' '], lay = ['⌨', '⌨', 1.5, ':layer'], ent = ['Enter', 'Enter', 1.5, ':enter'];
+    const bottom = purpose === 'email' ? [lay, ['@', '@'], space(3), ['.', '.'], ['-', '_'], ent]
+      : purpose === 'url' ? [lay, ['/', '/'], space(2.5), ['.', '.'], ['.com', '.com', 1.5, '.com'], ent]
+      : bottom0;
     const main = layout === 'de'
       ? [nav, num, L('qwertzuiopü', ['!', '"', '€', '&', '(', ')', '/', '=', '?', '+', '*']), L('asdfghjklöä', ['@', '#', '$', '%', '-', '_', "'", '~', '|', '<', '>']),
         [shiftK, ...L('yxcvbnmß', ['`', '^', '{', '}', '[', ']', '\\', '§']), bsK], bottom]
@@ -61,7 +72,16 @@ class Component extends DCLogic {
       [['⇧', '⇫', 2, ':shift'], [';', ':'], ['/', '>'], ['<', '«'], ['>', '»'], ['¡', '¿'], ['🙂', '🙂'], ['AGr', 'AGr', 1, ':altgr'], ['⌫', '⌫', 1, ':backspace']],
       [['Abc', 'Abc', 1, ':back'], ['⌨', '⌨', 1, ':layer'], [',', "'"], ['', 'Tab', 4, ' '], ['.', '?'], ['Enter', 'Enter', 2, ':enter']]
     ];
-    return { main, special };
+    // The keypads for number, phone and PIN fields: digits in a 3 × 3 grid with 0 below, the
+    // field's few extra keys in a fourth column, Abc back to the letters (not in a PIN pad).
+    const D = c => [c, c];
+    const abc = ['Abc', 'Abc', 1, ':abc'], bs = ['⌫', '⌫', 1, ':backspace'], ok = ['Enter', 'Enter', 1, ':enter'];
+    const pads = {
+      number: [[D('1'), D('2'), D('3'), D('-')], [D('4'), D('5'), D('6'), D(',')], [D('7'), D('8'), D('9'), D('.')], [abc, D('0'), bs, ok]],
+      phone: [[D('1'), D('2'), D('3'), D('+')], [D('4'), D('5'), D('6'), D('*')], [D('7'), D('8'), D('9'), D('#')], [abc, D('0'), bs, ok]],
+      pin: [[D('1'), D('2'), D('3')], [D('4'), D('5'), D('6')], [D('7'), D('8'), D('9')], [bs, D('0'), ok]]
+    };
+    return { main, special, pad: pads[purpose] || pads.number };
   }
 
   look(voice) {
@@ -78,20 +98,23 @@ class Component extends DCLogic {
     const p = this.props, s = this.state, u = q => this.setState(q);
     const voice = ['white', 'editorial', 'stationery'].includes(p.theme) ? p.theme : 'white';
     const V = this.look(voice), layout = p.layout === 'de' ? 'de' : 'en';
-    const layer = s.layer || (p.layer === 'special' ? 'special' : 'main'), shift = !!s.shift;
+    const purpose = ['number', 'phone', 'pin', 'email', 'url', 'password'].includes(p.purpose) ? p.purpose : 'normal';
+    const padP = ['number', 'phone', 'pin'].includes(purpose), priv = p.private === 'on' || purpose === 'pin' || purpose === 'password';
+    const layer = s.layer || (padP ? 'pad' : p.layer === 'special' ? 'special' : 'main'), shift = !!s.shift;
     const emit = o => { if (p.onKey) p.onKey(o); };
     const fam = V.font.replace(/^\S+ \S+ /, '');
-    const k = { ...V, text: ink(), spSh: 'inset 0 0 0 1px ' + V.strokeSp, hintFont: "400 12px " + fam };
+    const k = { ...V, text: ink(), spSh: 'inset 0 0 0 1px ' + V.strokeSp, hintFont: "400 12px " + fam,
+      noteFont: '400 15px ' + fam, noteC: voice === 'stationery' ? 'var(--il-paper)' : 'var(--il-ink-soft)' };
     function ink() { return 'var(--il-ink)'; }
     const act = a => {
       if (a === ':shift') return u({ shift: !shift });
       if (a === ':layer') return u({ layer: layer === 'main' ? 'special' : 'main', shift: false });
-      if (a === ':back') return u({ layer: 'main', shift: false });
+      if (a === ':back' || a === ':abc') return u({ layer: 'main', shift: false });
       if (a && a[0] === ':' && a.length > 1) return emit({ key: a.slice(1) });
       emit({ text: a });
       if (shift) u({ shift: false });
     };
-    const rows = this.layers(layout)[layer].map((row, ri) => ({ keys: row.map(([l, sl, w, a, hold], ci) => {
+    const rows = this.layers(layout, purpose)[layer].map((row, ri) => ({ keys: row.map(([l, sl, w, a, hold], ci) => {
       const id = layer + ri + '.' + ci, special = !!(a && a[0] === ':' && a.length > 1), label = shift ? sl : l;
       const isShift = a === ':shift' && shift, down = s.down === id || isShift;
       const txt = a == null ? label : a;
@@ -100,7 +123,7 @@ class Component extends DCLogic {
         bg: down ? 'var(--il-ink)' : special ? V.keySp : V.key, fg: down ? 'var(--il-paper)' : 'var(--il-ink)',
         hintC: down ? 'var(--il-paper)' : 'var(--il-ink-soft)',
         sh: 'inset 0 0 0 1px ' + (special ? V.strokeSp : V.stroke),
-        font: special && label.length > 1 ? V.font.replace(/\d+px/, '15px') : V.font,
+        font: special && label.length > 1 ? V.font.replace(/\d+px/, '15px') : layer === 'pad' ? V.font.replace(/\d+px/, '28px') : V.font,
         pd: e => {
           e.preventDefault();
           if (e.currentTarget.setPointerCapture) e.currentTarget.setPointerCapture(e.pointerId);
@@ -112,10 +135,10 @@ class Component extends DCLogic {
         pc: () => { clearTimeout(this.ht); if (this.state.down === id) u({ down: null }); }
       };
     }) }));
-    const list = String(p.words || '').split('|').map(x => x.trim()).filter(Boolean).slice(0, 3);
+    const list = priv ? [] : String(p.words || '').split('|').map(x => x.trim()).filter(Boolean).slice(0, 3);
     const order = list.length === 3 ? [list[1], list[0], list[2]] : list;
     const stripOn = p.strip !== 'off', stripH = 46, keysH = Number(p.height) || 300;
-    const penOn = !!p.handwriting;
+    const penOn = !!p.handwriting && !priv;
     return {
       ilv: this.ilVars(voice, p.scheme, p.pen), k, rows,
       hasStrip: stripOn, stripH, keysH, totalH: (stripOn ? stripH : 0) + keysH,
@@ -124,7 +147,8 @@ class Component extends DCLogic {
       unitW: 'calc((100% - ' + (9 * V.gap) + 'px) / 10)',
       words: order.map(w => { const best = w === list[0]; return { l: w, sel: String(best), bg: V.key, fg: 'var(--il-ink)', sh: 'inset 0 0 0 1px ' + V.stroke,
         font: V.font.replace(/^\d+/, best ? '600' : '400').replace(/\d+px/, '17px'), on: e => { e.preventDefault(); emit({ text: w + ' ', word: true }); } }; }),
-      penOn: String(penOn), penLabel: 'Write with the pen',
+      penOn: String(penOn), penLabel: 'Write with the pen', priv, wordsFlex: priv ? '0' : '1',
+      penVis: priv ? 'hidden' : 'visible', penHidden: String(priv),
       pen: { bg: penOn ? 'var(--il-ink)' : V.keySp, fg: penOn ? 'var(--il-paper)' : 'var(--il-ink)', sh: 'inset 0 0 0 1px ' + V.strokeSp },
       penKey: e => { e.preventDefault(); emit({ key: 'handwriting' }); },
       hideKey: e => { e.preventDefault(); emit({ key: 'hide' }); }

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>On-screen keyboard: private fields</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}a{color:#1b1b1b}a:hover{color:#4a4a4a}</style>
+</helmet>
+<div data-spec-id="shell.keyboard.private" style="width:1560px;height:894px;box-sizing:border-box;padding:28px 32px;display:flex;flex-direction:column;gap:18px;background:#e6e6e6;color:#1b1b1b;font-family:'IBM Plex Sans',sans-serif">
+<div style="display:flex;flex-direction:column;gap:6px">
+<span style="font:500 13px/1.2 'IBM Plex Mono',monospace;color:#3d3d3d">shell.keyboard.private</span>
+<h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">On-screen keyboard: private fields</h1>
+<p style="margin:0;max-width:1100px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">Password and PIN fields, and any field the app marks as sensitive, are private: the strip shows a lock and says nothing is suggested or learned, the pen key is gone (no handwriting there), and nothing typed is kept anywhere. A PIN gets a plain keypad without letters. The strip keeps its place, so the keys don’t move when the field changes.</p>
+</div>
+<div style="width:760px"><dc-import name="ThemeBar" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" on-pick="{{ pick }}" hint-size="100%,112px"></dc-import></div>
+<div style="display:flex;flex-wrap:wrap;gap:24px">
+<sc-for list="{{ cells }}" as="c" hint-placeholder-count="2">
+<div style="width:736px;background:#262626;border-radius:24px;padding:12px;box-sizing:border-box">
+<div style="width:712px;display:flex;flex-direction:column;background:#ffffff">
+<div style="height:200px;box-sizing:border-box;padding:22px 24px;display:flex;flex-direction:column;gap:10px;font-family:'IBM Plex Sans',sans-serif;color:#111111">
+<span style="font:500 11px/1 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:#4a4a4a">{{ c.purposeTag }}</span>
+<span style="font:600 17px 'IBM Plex Sans',sans-serif">{{ c.label }}</span>
+<div style="height:48px;box-sizing:border-box;border:1.5px solid #111111;border-radius:8px;padding:0 14px;display:flex;align-items:center;font:400 18px 'IBM Plex Sans',sans-serif;white-space:nowrap;overflow:hidden"><span>{{ c.shown }}</span><span style="display:inline-block;width:2px;height:24px;margin-left:1px;background:#111111"></span></div>
+<span style="font:400 13px/1.4 'IBM Plex Sans',sans-serif;color:#4a4a4a">{{ c.note }}</span>
+</div>
+<dc-import name="EinkKeyboard" theme="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" layout="en" purpose="{{ c.purpose }}" words="{{ c.words }}" handwriting="{{ no }}" on-key="{{ c.onKey }}" style="width:100%" hint-size="100%,346px"></dc-import>
+</div>
+</div>
+</sc-for>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "$preview": {"width": 1560, "height": 894}}'>
+class Component extends DCLogic {
+  state = {};
+  cellsDef() {
+    return [
+          {
+                "id": "pw",
+                "purpose": "password",
+                "purposeTag": "purpose: password",
+                "label": "Password",
+                "value": "reading",
+                "mask": true,
+                "note": "Letters as usual; no suggestions, no learning, no pen."
+          },
+          {
+                "id": "pin",
+                "purpose": "pin",
+                "purposeTag": "purpose: pin",
+                "label": "SIM PIN",
+                "value": "12",
+                "mask": true,
+                "note": "Keypad: digits, Backspace and Enter only."
+          }
+    ];
+  }
+  renderVals() {
+    const s = this.state, p = this.props, u = q => this.setState(q);
+    const vals = s.vals || {};
+    const cells = this.cellsDef().map(d => {
+      const v = vals[d.id] ?? d.value;
+      return { ...d, shown: d.mask ? '•'.repeat(v.length) : v, words: d.words || '',
+        onKey: o => u(st => {
+          const all = { ...(st.vals || {}) }, t = all[d.id] ?? d.value;
+          // a picked word completes what is being typed: the part after @ in an email address,
+          // the whole address in a web address, else the word
+          if (o.word) all[d.id] = d.purpose === 'email' ? t.replace(/[^@\s]*$/, o.text.trim()) : d.purpose === 'url' ? o.text.trim() : t.replace(/\S*$/, o.text);
+          else if (o.text != null) all[d.id] = t + o.text;
+          else if (o.key === 'backspace') all[d.id] = t.slice(0, -1);
+          else return null;
+          return { vals: all };
+        }) };
+    });
+    return { voice: s.voice ?? p.voice ?? 'white', scheme: s.scheme ?? 'eink', pen: s.pen ?? '1', no: false, cells,
+      pick: (k, v) => this.setState({ [k]: v }) };
+  }
+}
+</script>
+</body>
+</html>

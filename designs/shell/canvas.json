@@ -869,6 +869,24 @@
    "x": 2712,
    "y": 6160
   },
+  "shell.keyboard.private.dc.html": {
+   "h": 894,
+   "is_interactive": true,
+   "page": "shell",
+   "title": "shell.keyboard.private · Private fields",
+   "w": 1560,
+   "x": 1640,
+   "y": 7700
+  },
+  "shell.keyboard.purpose.dc.html": {
+   "h": 1488,
+   "is_interactive": true,
+   "page": "shell",
+   "title": "shell.keyboard.purpose · The field decides the keys",
+   "w": 1560,
+   "x": 0,
+   "y": 7700
+  },
   "shell.landscape.dc.html": {
    "h": 1120,
    "is_interactive": true,
@@ -1035,6 +1053,8 @@
   "shell.divider.quad.dc.html",
   "shell.sleep.dc.html",
   "shell.keyboard.dc.html",
+  "shell.keyboard.purpose.dc.html",
+  "shell.keyboard.private.dc.html",
   "shell.write.dc.html",
   "shell.write.pending.dc.html",
   "shell.write.correct.dc.html",

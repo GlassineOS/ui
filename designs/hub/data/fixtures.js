@@ -879,3 +879,250 @@ window.HUB.items['boot-test #77'] = { kind: 'run', title: 'kernel · boot-test (
     return L;
   };
 })(window.HUB.machine);
+
+/* The session tree (a proposal): every instance with its owner, the manages entry it runs under, the
+   rounds it served, its liveness and the items it covers or holds. Kept apart from HUB.sessions, so the
+   boards that list those stay as they are. live: working, idle, waits (for you), stopped, ended.
+   chip: how the state chip draws (holds, moving, waits, up, over); waits is only for the maintainer.
+   The base is the epd#8 run in fix, round 2; frames move that one run on (the live sequence). */
+window.HUB.personas['Repository maintainer'] = { family: 'organise', icon: 'M4 21V9l8-6 8 6v12M9 21v-6h6v6' };
+/* Workflow decision cards in Needs you: a move's confirm, a design to look at, a proposed
+   workflow change. They count in the Header's badge beside the interactions. */
+window.HUB.decisions = [
+  { id: 'd1', kind: 'move', session: 'kernel-lut', title: 'Confirm kernel-lut → fix: it widens the grant (push, edits)' },
+  { id: 'd2', kind: 'design', session: 'design-brightness', title: 'Look at the brightness boards in ui#31' },
+  { id: 'd3', kind: 'change', session: 'author-implement', title: 'Save, ask again or discard the change to implement' }
+];
+window.HUB.tree = {
+  /* Item states as the tree's badges show them. kind: issue, pr, run, repo, workflow. checks: pass, fail,
+     pending. verdict: the last review's (pass, fail). */
+  items: {
+    'epd#8': { kind: 'issue', title: 'Panel temperature read on every refresh', state: 'open' },
+    'epd#14': { kind: 'pr', title: 'epd: cache the panel temperature for 30 s', state: 'draft', checks: 'fail', verdict: 'fail', by: 'engineer-epd-8' },
+    'kernel#204': { kind: 'issue', title: 'Waveform LUT loader', state: 'open' },
+    'kernel#219': { kind: 'issue', title: 'Temperature compensation for LUT selection', state: 'open' },
+    'kernel#212': { kind: 'pr', title: 'drm/epd: add waveform LUT loader', state: 'open', checks: 'pending', verdict: 'fail', by: 'kernel-lut' },
+    'hub#47': { kind: 'issue', title: 'EDL recovery path, documented', state: 'open' },
+    'docs#91': { kind: 'issue', title: 'Verify Note Air partition table', state: 'open' },
+    'docs#88': { kind: 'pr', title: 'Guide: recover a Note Air over EDL', state: 'draft', checks: 'pass', verdict: '', by: 'docs-edl' },
+    'build-image #1184': { kind: 'run', title: 'image-builder · build-image', state: 'failed', repo: 'image-builder' },
+    'image-builder#37': { kind: 'issue', title: 'rootfs step fails on arm64 runners', state: 'open' },
+    'image-builder#40': { kind: 'pr', title: 'Add binfmt setup for aarch64 rootfs', state: 'open', checks: 'fail', verdict: '', by: 'investigate-1184' },
+    'shell#288': { kind: 'issue', title: 'Quick settings: brightness slider skips steps', state: 'open' },
+    'reader#20': { kind: 'issue', title: 'Crash on PDFs with JBIG2 images', state: 'open' },
+    'ui#31': { kind: 'pr', title: 'Brightness slider: 16 marked steps', state: 'draft', checks: 'pass', verdict: '', by: 'design-brightness' },
+    'ink-input#57': { kind: 'pr', title: 'Predictive smoothing for pen strokes', state: 'open', checks: 'pass', verdict: '' },
+    'repo epd': { kind: 'repo', title: 'GlassineOS/epd' },
+    'repo hub': { kind: 'repo', title: 'GlassineOS/hub' },
+    'repo kernel': { kind: 'repo', title: 'GlassineOS/kernel' },
+    'implement v8': { kind: 'workflow', title: 'a draft of implement', state: 'draft' },
+    'epd#6': { kind: 'issue', title: 'Partial refresh leaves ghosting at the edges', state: 'closed' },
+    'epd#12': { kind: 'pr', title: 'epd: clear the edge rows on partial refresh', state: 'merged', checks: 'pass', verdict: 'pass' }
+  },
+  /* What each one-state or unlisted workflow runs under it (multi-state ones read HUB.machine.defs). */
+  defs: {
+    steward: { states: { align: [
+      { name: 'maintainer', persona: 'Repository maintainer', workflow: 'maintain', start: 'on-request', when: '', max: '1 per repository', reuse: 'resume', on_exit: 'keep' },
+      { name: 'implementor', persona: 'Implementor', workflow: 'implement', start: 'on-request', when: '', max: 4, reuse: 'fresh', on_exit: 'keep' },
+      { name: 'writer', persona: 'Docs writer', workflow: 'docs', start: 'on-request', when: '', max: 2, reuse: 'fresh', on_exit: 'keep' },
+      { name: 'investigator', persona: 'CI investigator', workflow: 'investigate', start: 'on-request', when: '', max: 2, reuse: 'fresh', on_exit: 'keep' },
+      { name: 'triage', persona: 'Triage', workflow: 'triage', start: 'auto', when: 'a week since the last triage', max: 1, reuse: 'fresh', on_exit: 'stop' }] } },
+    maintain: { states: { watch: [
+      { name: 'implementor', persona: 'Implementor', workflow: 'implement', start: 'on-request', when: '', max: 2, reuse: 'fresh', on_exit: 'keep' },
+      { name: 'triage', persona: 'Triage', workflow: 'triage', start: 'auto', when: 'a new issue arrives', max: 1, reuse: 'fresh', on_exit: 'stop' }] } },
+    docs: { states: { draft: [
+      { name: 'reviewer', persona: 'Code reviewer', workflow: 'review', start: 'auto', when: '', max: 1, reuse: 'fresh', on_exit: 'stop' }] } }
+  },
+  /* The entry names of implement's manages lists (the definition has none yet). */
+  names: { 'Engineer': 'engineer', 'Code reviewer': 'reviewer', 'QA engineer': 'qa', 'Designer': 'designer' },
+  nodes: {
+    'steward': { persona: 'Steward', wf: 'steward', path: ['align'], chip: 'holds', live: 'waits', model: 'Sonnet', time: 'on for 6 h', cost: '$2.80 today', items: [],
+      waitsFor: 'your answers to 4 cards', next: 'stays in align (one state)',
+      lines: [['you', '› where does hub#44 stand?'], ['tool', '● hub.search_issues("Part of GlassineOS/hub#44")'], ['out', 'kernel#212 has the loader; temperature compensation needs an issue.'], ['ask', '◆ asked to create kernel#219 — waiting for you']] },
+    'maintainer-epd': { persona: 'Repository maintainer', wf: 'maintain', path: ['watch'], chip: 'holds', live: 'idle', owner: 'steward', entry: 'maintainer', model: 'Sonnet', time: '3 h', cost: '$0.40', items: ['repo epd'],
+      waitsFor: 'a new issue in epd, or a hand-back from implementor-epd-8', next: 'stays in watch (one state)',
+      lines: [['tool', '● hub.list_issues(repo="epd", open) → 5'], ['out', '● epd#8 is ready: started implementor-epd-8'], ['dim', '  idle at its prompt']] },
+    'implementor-epd-8': { persona: 'Implementor', wf: 'implement', path: ['work', 'fix'], chip: 'holds', live: 'working', owner: 'maintainer-epd', entry: 'implementor', model: 'Opus', round: 'fix 1 · review 1 of 3', time: '48 min', cost: '$1.90', items: ['epd#8'], holds: ['epd#14'],
+      waitsFor: 'the engineer’s fixups, then a reply on every finding', next: '→ review when every finding has a fixup or a reply (judge) · requires checks pass, branch pushed',
+      lines: [['dim', '# workflow moved: now in work › fix (reviewer returned fail, 3 findings)'], ['tool', '● hub.managed_status() → engineer: engineer-epd-8 resumed'], ['out', '● Asked the engineer for fixups on epd_temp.c:41 and :77'], ['tool', '● gh pr view epd#14 --checks → boot-test failed'], ['dim', '  waiting for the engineer…']] },
+    'engineer-epd-8': { persona: 'Engineer', wf: 'engineer', path: ['build'], chip: 'holds', live: 'working', owner: 'implementor-epd-8', entry: 'engineer', model: 'Opus', resumed: true, served: [['implement', 1], ['fix', 2]], time: '31 min', cost: '$1.10', items: ['epd#14'],
+      waitsFor: 'nothing: building', next: '→ hand back when the fixups are pushed',
+      lines: [['dim', '# resumed by the hub for round 2 (fix) · same conversation'], ['tool', '● Read drivers/epd/epd_temp.c'], ['out', '● Finding 1: the cache isn’t cleared on resume. Fixup commit 3 of 3…'], ['tool', '● make -C tests epd_temp'], ['dim', '  running tests… 2 min']] },
+    'implementor-epd-6': { persona: 'Implementor', wf: 'implement', path: ['merged'], chip: 'over', live: 'ended', owner: 'maintainer-epd', entry: 'implementor', returned: 'merged epd#12', time: '2 h 10 min', cost: '$3.10', items: ['epd#6'], holds: ['epd#12'],
+      lines: [['dim', '# workflow moved: now in merged'], ['done', '✓ epd#12 merged · ended']] },
+    'reviewer-epd-8-1': { persona: 'Code reviewer', wf: 'review', path: ['verdict'], chip: 'over', live: 'ended', owner: 'implementor-epd-8', entry: 'reviewer', round: 1, returned: 'fail · 3 findings', time: '14 min', cost: '$0.35', items: ['epd#14'],
+      lines: [['tool', '● gh pr diff epd#14'], ['out', '● 3 findings: cache not cleared on resume, no test for −20 °C, boot-test fails'], ['done', '✓ returned verdict = fail · 14 min']] },
+    'kernel-lut': { persona: 'Kernel engineer', wf: 'implement', path: ['work', 'review'], to: 'fix', chip: 'waits', chipNote: 'waits for you', live: 'waits', owner: 'steward', entry: 'implementor', model: 'Opus', round: 'review 2 of 3', time: '2 h 40 min', cost: '$4.60', items: ['kernel#204', 'kernel#219'], holds: ['kernel#212'],
+      waitsFor: 'your confirm: → fix widens the grant (push, edits)', next: '→ fix holds (a fail, round 2 of 3)',
+      lines: [['tool', '● hub.get_pr(kernel#212) · 3 review threads'], ['out', '● Fixing thread epd_lut.c:88 — reject version 0'], ['ask', '? waiting for permission to edit epd_lut.c']] },
+    'review-kernel-212': { persona: 'Code reviewer', wf: 'review', path: ['verdict'], chip: 'over', live: 'ended', owner: 'kernel-lut', entry: 'reviewer', round: 2, returned: 'fail · 3 findings', time: '18 min', cost: '$0.40', items: ['kernel#212'],
+      lines: [['tool', '● hub.get_pr(kernel#212)'], ['out', '● Posted 3 review threads and a summary'], ['dim', '  finished after 18 min']] },
+    'review-kernel-212-r1': { persona: 'Code reviewer', wf: 'review', path: ['verdict'], chip: 'over', live: 'ended', owner: 'kernel-lut', entry: 'reviewer', round: 1, returned: 'fail · 4 findings', time: '22 min', cost: '$0.45', items: ['kernel#212'] },
+    'qa-kernel-212': { persona: 'QA engineer', wf: 'qa-audit', path: ['report'], chip: 'over', live: 'idle', owner: 'kernel-lut', entry: 'qa', resumed: true, served: [['review', 1], ['review', 2]], returned: 'pass · 1 finding', time: '26 min', cost: '$0.70', items: ['kernel#212'],
+      waitsFor: 'the next review round (kept: on_exit keep)', next: 'resumed when review is entered again',
+      lines: [['tool', '● make -C tests epd'], ['out', '● 41 passed · 1 slow test noted'], ['done', '✓ returned verdict = pass']] },
+    'shell-brightness': { persona: 'Engineer', wf: 'implement', path: ['design'], chip: 'waits', chipNote: 'waits for ui#31', live: 'idle', owner: 'steward', entry: 'implementor', model: 'Opus', time: '1 h 05 min', cost: '$0.90', items: ['shell#288'],
+      waitsFor: 'ui#31 merged (the design PR)', next: '→ work, where it left off, when ui#31 is merged',
+      lines: [['out', '● No accepted board covers the slider’s steps'], ['tool', '● hub.start_managed("designer")'], ['dim', '  waiting for the design…']] },
+    'design-brightness': { persona: 'Designer', wf: 'design-spike', path: ['look'], chip: 'waits', chipNote: 'waits for you', live: 'waits', owner: 'shell-brightness', entry: 'designer', model: 'Opus', time: '40 min', cost: '$0.80', items: ['ui#31'],
+      waitsFor: 'you to look at the boards in ui#31', next: '→ revise or → accepted, by your answer',
+      lines: [['out', '● Two boards drafted: QuickSettings (changed), BrightnessSlider (new)'], ['ask', '◆ asked you to look at the design — waiting for you']] },
+    'docs-edl': { persona: 'Docs writer', wf: 'docs', path: ['draft'], to: 'publish', chip: 'moving', chipNote: 'checking', live: 'waits', owner: 'steward', entry: 'writer', model: 'Opus', time: '1 h 20 min', cost: '$1.30', items: ['hub#47', 'docs#91'], holds: ['docs#88'],
+      waitsFor: 'your permission to git push', next: '→ publish once the reviewer passes',
+      lines: [['tool', '● hub.search("enter EDL mode Note Air") → 6 passages'], ['out', '● mkdocs build --strict passed'], ['ask', '? waiting for permission to git push']] },
+    'review-docs-88': { persona: 'Code reviewer', wf: 'review', path: ['read'], chip: 'holds', live: 'working', owner: 'docs-edl', entry: 'reviewer', round: 1, time: '9 min', cost: '$0.20', items: ['docs#88'],
+      waitsFor: 'nothing: reading', next: '→ comment',
+      lines: [['tool', '● hub.get_pr(docs#88) · +214 −3'], ['out', '● Step 3 cites offsets that docs#91 has not verified yet'], ['out', '● Drafting the summary comment…']] },
+    'investigate-1184': { persona: 'CI investigator', wf: 'investigate', path: ['investigate'], chip: 'up', chipNote: 'sent up to the Steward', live: 'waits', owner: 'steward', entry: 'investigator', model: 'Opus', time: '41 min', cost: '$0.60', items: ['build-image #1184', 'image-builder#37'], holds: ['image-builder#40'],
+      waitsFor: 'your answer: which fix image-builder#40 uses', next: 'stays (one state); hands back on your answer',
+      lines: [['out', '● binfmt_misc has no qemu-aarch64 entry'], ['out', '● Opened image-builder#40'], ['ask', '? asks which fix to use']] },
+    'triage-weekly': { persona: 'Triage', wf: 'triage', path: ['done'], chip: 'over', live: 'ended', owner: 'steward', entry: 'triage', round: 1, returned: '5 label changes', time: '4 min', cost: '$0.05', items: ['shell#288', 'reader#20'],
+      lines: [['tool', '● hub.list_issues(untriaged, 7 days) → 6'], ['done', '✓ 5 label changes ready']] },
+    'author-implement': { persona: 'Workflow author', wf: 'workflow-change', path: ['propose'], chip: 'waits', chipNote: 'waits for you', live: 'waits', owner: 'you', model: 'Opus', time: '6 min', cost: '$0.30', items: ['implement v8'],
+      waitsFor: 'you to save, ask again or discard the draft', next: '→ applied when you save it',
+      lines: [['out', '● Draft 2: the checks pass; replayed on 5 sessions'], ['ask', '◆ the before and after are in Needs you']] },
+    'implementor-reader-20': { persona: 'Implementor', wf: 'implement', path: ['work', 'implement'], chip: 'holds', live: 'working', owner: 'you', quick: 'Work on this, from reader#20', model: 'Opus', round: 'implement 1', time: '9 min', cost: '$0.25', items: ['reader#20'],
+      waitsFor: 'nothing: building', next: '→ review when the change is complete (judge) · requires branch pushed, PR open',
+      lines: [['dim', '# hub started implementor-reader-20 · covers reader#20 · started by you'], ['tool', '● Read src/pdf/jbig2.c'], ['dim', '  reproducing the crash…']] },
+    'audit-hub': { persona: 'Security auditor', wf: 'security audit', path: ['done'], chip: 'over', live: 'ended', quick: 'Security audit', model: 'Fable', time: '31 min', cost: '$1.70', items: ['repo hub'],
+      lines: [['find', '◆ HIGH · session token compared with =='], ['done', '✓ 4 drafts ready · 31 min']] },
+    'arch-kernel': { persona: 'Architect', wf: 'architecture audit', path: ['audit'], chip: 'holds', live: 'working', quick: 'Architecture audit', model: 'Opus', time: '12 min', cost: '$0.50', items: ['repo kernel'],
+      waitsFor: 'nothing: mapping module boundaries', next: 'ends with drafts (one state)',
+      lines: [['tool', '● Read decisions/ · 9 records'], ['dim', '  mapping module boundaries… 12 min']] },
+    'review-ink-57': { persona: 'Code reviewer', wf: 'review', path: ['comment'], chip: 'holds', live: 'working', quick: 'Review this PR', model: 'Opus', time: '7 min', cost: '$0.15', items: ['ink-input#57'],
+      waitsFor: 'nothing: writing the summary', next: '→ verdict',
+      lines: [['tool', '● gh pr diff ink-input#57'], ['out', '● Drafting the summary comment…']] },
+    'maintainer': { persona: 'Shell', plain: true, live: 'idle', time: 'on for 2 h', items: [], lines: [['you', '$ python -m pytest -q'], ['out', '133 passed, 2 skipped']] }
+  },
+  /* Per owner and entry: the sessions of this round, the earlier rounds' sessions, and a note. */
+  runs: {
+    'steward': { maintainer: { sessions: ['maintainer-epd'] }, implementor: { sessions: ['kernel-lut', 'shell-brightness'] }, writer: { sessions: ['docs-edl'] }, investigator: { sessions: ['investigate-1184'] }, triage: { sessions: ['triage-weekly'], note: 'ended; its results wait for you' } },
+    'maintainer-epd': { implementor: { sessions: ['implementor-epd-8', 'implementor-epd-6'] }, triage: { earlier: ['triage-epd-1', 'triage-epd-2', 'triage-epd-3'], note: 'starts when a new issue arrives' } },
+    'implementor-epd-8': {
+      engineer: { sessions: ['engineer-epd-8'], round: 2 },
+      reviewer: { earlier: ['reviewer-epd-8-1'], round: 1, note: 'a fresh one starts when fix → review' },
+      qa: { note: 'judged no in round 1: epd#8 isn’t user-facing' },
+      designer: { note: 'only in design; never entered' } },
+    'kernel-lut': {
+      engineer: { note: 'on request; none in this round' },
+      reviewer: { sessions: ['review-kernel-212'], earlier: ['review-kernel-212-r1'], round: 2 },
+      qa: { sessions: ['qa-kernel-212'], round: 2 },
+      designer: { note: 'only in design; never entered' } },
+    'shell-brightness': { engineer: { note: 'only in implement and fix' }, reviewer: { note: 'only in review; never entered' }, qa: { note: 'only in review' }, designer: { sessions: ['design-brightness'], round: 1 } },
+    'docs-edl': { reviewer: { sessions: ['review-docs-88'], round: 1 } },
+    'implementor-reader-20': { engineer: { note: 'on request; none yet' }, reviewer: { note: 'starts fresh on → review' }, qa: { note: 'judged on entering review' }, designer: { note: 'only in design; never entered' } }
+  },
+  /* Sessions that ran in earlier rounds, folded under their entry. */
+  earlier: {
+    'triage-epd-1': { persona: 'Triage', returned: '2 labels', round: 1, time: '3 min', cost: '$0.04' },
+    'triage-epd-2': { persona: 'Triage', returned: '1 label', round: 2, time: '2 min', cost: '$0.03' },
+    'triage-epd-3': { persona: 'Triage', returned: 'no change', round: 3, time: '2 min', cost: '$0.03' }
+  },
+  /* Top level: instances nothing owns, quick tasks by their item, plain shells. */
+  roots: ['steward', 'implementor-reader-20', 'author-implement'],
+  quick: [['repo hub', ['audit-hub']], ['repo kernel', ['arch-kernel']], ['ink-input#57', ['review-ink-57']]],
+  shells: ['maintainer'],
+  /* The epd#8 run, moved on one step at a time. Each frame replaces fields of nodes, runs and items;
+     changed names what moved since the frame before (node:field). The merge card is the frame's own. */
+  frames: {
+    implement: { title: 'implement', note: 'The implementor asked for an engineer; it builds on its branch and opened the draft PR.',
+      nodes: { 'implementor-epd-8': { path: ['work', 'implement'], live: 'idle', round: 'implement 1', time: '22 min', cost: '$0.60', waitsFor: 'the engineer’s commits', next: '→ review when the change is complete (judge) · requires branch pushed, PR open',
+          lines: [['dim', '# hub started implementor-epd-8 · covers epd#8'], ['tool', '● hub.start_managed("engineer") → engineer-epd-8'], ['dim', '  waiting for the engineer…']] },
+        'engineer-epd-8': { served: [['implement', 1]], resumed: false, time: '18 min', cost: '$0.50', waitsFor: 'nothing: building', next: '→ hand back when the commits are pushed',
+          lines: [['dim', '# hub started engineer-epd-8 · under implementor-epd-8'], ['tool', '● Edit drivers/epd/epd_temp.c'], ['out', '● Opened draft PR epd#14'], ['dim', '  running tests…']] } },
+      runs: { 'implementor-epd-8': { reviewer: { earlier: [], note: 'starts fresh on → review' }, engineer: { sessions: ['engineer-epd-8'], round: 1 }, qa: { note: 'judged on entering review' } } },
+      items: { 'epd#14': { state: 'draft', checks: 'pending', verdict: '' } },
+      changed: ['engineer-epd-8:live', 'epd#14:state'],
+      says: ['implementor-epd-8 enters work › implement; its engineer entry (resume, on request, 1/1) gets engineer-epd-8, working.', 'epd#14 appears as a draft PR, held by the implementor (its engineer opened it); checks pending.', 'reviewer and qa show as entries of review, not started yet.'] },
+    fix: { title: 'fix', note: 'The reviewer returned fail; the hub moved to fix and resumed the same engineer for round 2. The check on epd#14 failed.',
+      nodes: {}, runs: {}, items: {}, changed: ['implementor-epd-8:path', 'engineer-epd-8:served', 'reviewer-epd-8-1:live', 'epd#14:checks'],
+      says: ['The state chip reads work › fix; the round counter fix 1 · review 1 of 3.', 'The same engineer-epd-8 row stays in place, now “resumed · served implement → fix (round 2)”; no new row.', 'reviewer-epd-8-1 ended (fresh entry): it folds into “1 earlier reviewer · verdict fail”.', 'epd#14’s badge turns heavy with ✕ checks: the boot test failed.'] },
+    review: { title: 'review', note: 'Fixups in: the engineer stopped (on_exit stop), a fresh reviewer read round 2 and returned pass. QA was judged not to apply.',
+      nodes: { 'implementor-epd-8': { path: ['work', 'review'], live: 'idle', round: 'review 2 of 3 · fix 1', time: '1 h 05 min', cost: '$2.30', waitsFor: 'the reviewer’s verdict, checks', next: '→ merge-ready holds once the verdict is in (both pass)',
+          lines: [['dim', '# workflow moved: now in work › review (fixups in)'], ['tool', '● hub.managed_status() → reviewer: reviewer-epd-8-2'], ['dim', '  waiting for the reviewer…']] },
+        'engineer-epd-8': { live: 'stopped', time: '38 min', cost: '$1.30', waitsFor: 'stopped when fix was left; resumed in the next fix', next: '' },
+        'reviewer-epd-8-2': { persona: 'Code reviewer', wf: 'review', path: ['verdict'], chip: 'over', live: 'ended', owner: 'implementor-epd-8', entry: 'reviewer', round: 2, returned: 'pass · 1 note', time: '11 min', cost: '$0.30', items: ['epd#14'],
+          lines: [['tool', '● gh pr diff epd#14 (since round 1)'], ['out', '● All 3 findings answered; one note on naming'], ['done', '✓ returned verdict = pass · 11 min']] } },
+      runs: { 'implementor-epd-8': { engineer: { sessions: ['engineer-epd-8'], round: 2, note: 'stopped; resumed in the next fix' }, reviewer: { sessions: ['reviewer-epd-8-2'], earlier: ['reviewer-epd-8-1'], round: 2 }, qa: { note: 'judged no in round 2: not user-facing' } } },
+      items: { 'epd#14': { state: 'draft', checks: 'pass', verdict: 'pass' } },
+      changed: ['implementor-epd-8:path', 'engineer-epd-8:live', 'reviewer-epd-8-2:live', 'epd#14:checks', 'epd#14:verdict'],
+      says: ['work › review: the engineer stops (on_exit stop) and keeps its row, stopped, for the next fix.', 'A fresh reviewer-epd-8-2 starts for round 2 under the reviewer entry; round 1 stays folded.', 'It returns pass: epd#14 reads ✓ checks · review pass. qa is judged not to apply (not user-facing).', 'Its tile opens beside the implementor’s; the engineer’s tile keeps its place, read-only while stopped.'] },
+    'merge-ready': { title: 'merge-ready', note: 'Both pass: the implementor marked epd#14 ready and asks for the merge decision. That card waits for you.',
+      nodes: { 'implementor-epd-8': { path: ['merge-ready'], chip: 'waits', chipNote: 'waits for you', live: 'waits', round: 'review 2 · fix 1', time: '1 h 08 min', cost: '$2.40', waitsFor: 'your merge decision on epd#14', next: '→ merged when you merge (approve: me)',
+          lines: [['dim', '# workflow moved: now in merge-ready'], ['tool', '● gh pr ready epd#14'], ['ask', '◆ asks for the merge decision — waiting for you']] },
+        'engineer-epd-8': { live: 'stopped', time: '38 min', cost: '$1.30', waitsFor: 'stopped; merge-ready runs nothing', next: '' },
+        'reviewer-epd-8-2': { persona: 'Code reviewer', wf: 'review', path: ['verdict'], chip: 'over', live: 'ended', owner: 'implementor-epd-8', entry: 'reviewer', round: 2, returned: 'pass · 1 note', time: '11 min', cost: '$0.30', items: ['epd#14'],
+          lines: [['tool', '● gh pr diff epd#14 (since round 1)'], ['out', '● All 3 findings answered; one note on naming'], ['done', '✓ returned verdict = pass · 11 min']] } },
+      runs: { 'implementor-epd-8': { engineer: { sessions: ['engineer-epd-8'], round: 2, note: 'stopped; merge-ready runs nothing' }, reviewer: { sessions: ['reviewer-epd-8-2'], earlier: ['reviewer-epd-8-1'], round: 2 }, qa: { note: 'judged no in round 2: not user-facing' } } },
+      items: { 'epd#14': { state: 'open', checks: 'pass', verdict: 'pass' } },
+      card: { title: 'Merge epd#14?', body: 'epd: cache the panel temperature for 30 s · checks pass · reviewer passed round 2 · closes epd#8', from: 'implementor-epd-8 · merge-ready' },
+      changed: ['implementor-epd-8:path', 'implementor-epd-8:live', 'epd#14:state'],
+      says: ['merge-ready runs nothing: every entry is out of force; the reviewer’s pass is what moved it.', 'epd#14 is open (ready for review). The implementor waits for you: its chip, its row and its tile turn yellow.', 'The merge card sits in the implementor’s tile and in Needs you; it is the only yellow in this workflow.'] }
+  }
+};
+/* The tree's helpers: a frame applied, the entries an owner runs (in force or not), and a large tree. */
+(function (T) {
+  const H = window.HUB, M = H.machine;
+  T.view = function (frame) {
+    const f = T.frames[frame] || { nodes: {}, runs: {}, items: {}, changed: [] };
+    const nodes = {}, runs = {}, items = {};
+    Object.keys(T.nodes).forEach((k) => { nodes[k] = { ...T.nodes[k], ...((f.nodes || {})[k] || {}) }; });
+    Object.keys(f.nodes || {}).forEach((k) => { if (!nodes[k]) nodes[k] = { ...f.nodes[k] }; });
+    Object.keys(T.runs).forEach((k) => { runs[k] = { ...T.runs[k], ...((f.runs || {})[k] || {}) }; });
+    Object.keys(T.items).forEach((k) => { items[k] = { ...T.items[k], ...((f.items || {})[k] || {}) }; });
+    return { nodes, runs, items, frame: f, changed: f.changed || [], roots: T.roots, quick: T.quick, shells: T.shells };
+  };
+  /* Every entry of the owner's workflow: config from the definition, whether it is in force where the
+     owner is now (its state or a parent of it), and this instance's sessions. */
+  T.entries = function (v, sid) {
+    const n = v.nodes[sid]; if (!n || n.plain) return [];
+    const d = M.defs[n.wf], out = [], seen = {};
+    const here = d && d.states ? M.chain(d, n.path[n.path.length - 1]) : n.path;
+    const add = (e, st) => {
+      const name = e.name || T.names[e.persona] || e.persona.toLowerCase();
+      if (seen[name]) { if (seen[name].states.indexOf(st) < 0) seen[name].states.push(st); if (here.indexOf(st) >= 0) seen[name].inForce = true; return; }
+      const r = ((v.runs[sid] || {})[name]) || {};
+      seen[name] = { ...e, name, states: [st], inForce: here.indexOf(st) >= 0, sessions: r.sessions || [], earlier: r.earlier || [], round: r.round || 0, note: r.note || '' };
+      out.push(seen[name]);
+    };
+    if (d && d.states) Object.entries(d.states).forEach(([st, s]) => (s.manages || []).forEach((e) => add(e, st)));
+    else if (T.defs[n.wf]) Object.entries(T.defs[n.wf].states).forEach(([st, es]) => es.forEach((e) => add(e, st)));
+    return out;
+  };
+  /* An ended session stays in view while it has a card, or while it is this round's returner of an
+     entry that counts rounds under an owner still running. */
+  T.keepEnded = function (v, sid) {
+    const n = v.nodes[sid]; if (!n) return false;
+    if (T.asks(sid) > 0) return true;
+    const o = n.owner && v.nodes[n.owner], r = o ? ((v.runs[n.owner] || {})[n.entry] || {}) : {};
+    return !!(o && o.live !== 'ended' && n.returned && r.round && (r.sessions || []).indexOf(sid) >= 0);
+  };
+  /* The open Needs-you cards of a session (the Header's count is the sum of these). */
+  T.asks = function (sid) { return H.interactions.concat(H.decisions || []).filter((x) => x.session === sid).length; };
+  /* A large tree (21 sessions): a second maintainer with two implementors, their engineers and a reviewer. */
+  T.large = function () {
+    const v = T.view('');
+    const repos = [['shell', ['shell#290', 'shell#294']]];
+    const S = ['working', 'idle', 'working', 'stopped', 'working', 'idle'];
+    let i = 0;
+    v.runs.steward = { ...v.runs.steward, maintainer: { sessions: ['maintainer-epd'] } };
+    repos.forEach(([repo, refs]) => {
+      const m = 'maintainer-' + repo; v.runs.steward.maintainer.sessions.push(m);
+      v.nodes[m] = { persona: 'Repository maintainer', wf: 'maintain', path: ['watch'], chip: 'holds', live: 'idle', owner: 'steward', entry: 'maintainer', time: '2 h', cost: '$0.30', items: ['repo ' + repo] };
+      v.items['repo ' + repo] = { kind: 'repo', title: 'GlassineOS/' + repo };
+      v.runs[m] = { implementor: { sessions: [] }, triage: { note: 'starts when a new issue arrives' } };
+      refs.forEach((ref) => {
+        const num = ref.split('#')[1], im = 'implementor-' + repo + '-' + num, en = 'engineer-' + repo + '-' + num, rv = 'reviewer-' + repo + '-' + num;
+        const inReview = i % 2 === 1;
+        v.runs[m].implementor.sessions.push(im);
+        v.items[ref] = { kind: 'issue', title: 'Issue ' + ref, state: 'open' };
+        v.nodes[im] = { persona: 'Implementor', wf: 'implement', path: inReview ? ['work', 'review'] : ['work', 'implement'], chip: 'holds', live: inReview ? 'idle' : 'working', owner: m, entry: 'implementor', round: inReview ? 'review 1 of 3' : 'implement 1', time: (20 + i * 7) + ' min', cost: '$' + (0.5 + i * 0.3).toFixed(2), items: [ref] };
+        v.nodes[en] = { persona: 'Engineer', wf: 'engineer', path: ['build'], chip: 'holds', live: inReview ? 'stopped' : S[i % S.length], owner: im, entry: 'engineer', served: [['implement', 1]], time: (12 + i * 4) + ' min', cost: '$' + (0.3 + i * 0.2).toFixed(2), items: [] };
+        v.runs[im] = { engineer: { sessions: [en], round: 1 }, qa: { note: 'judged on entering review' }, designer: { note: 'only in design; never entered' } };
+        if (inReview) { v.nodes[rv] = { persona: 'Code reviewer', wf: 'review', path: ['read'], chip: 'holds', live: 'working', owner: im, entry: 'reviewer', round: 1, time: '6 min', cost: '$0.10', items: [] }; v.runs[im].reviewer = { sessions: [rv], round: 1 }; }
+        i++;
+      });
+    });
+    return v;
+  };
+})(window.HUB.tree);

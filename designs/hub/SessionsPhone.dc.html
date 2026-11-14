@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sessions on a phone</title>
+<script src="./support.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="workflow.css">
+<link rel="stylesheet" href="sessions.css">
+</helmet>
+<div class="wf il-page sp" data-theme="{{ theme }}" data-pen="{{ pen }}" style="min-height: 100vh">
+  <div class="sp-top">
+    <sc-if value="{{ hasBack }}" hint-placeholder-val="{{ true }}"><button type="button" class="sp-back" onClick="{{ back }}" aria-label="Back to {{ backTo }}"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M9 2L4 7l5 5"></path></svg>{{ backTo }}</button></sc-if>
+    <strong style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--font-mono); font-size: 14px">{{ title }}</strong>
+    <sc-if value="{{ hasCards }}" hint-placeholder-val="{{ true }}"><span class="sn-asks">{{ cards }} for you</span></sc-if>
+  </div>
+  <sc-if value="{{ hasCrumbs }}" hint-placeholder-val="{{ true }}"><p class="sp-crumbs" aria-label="Owners">{{ crumbs }}</p></sc-if>
+
+  <sc-if value="{{ isList }}" hint-placeholder-val="{{ true }}">
+    <div class="sn-filters" role="group" aria-label="Show" style="padding: var(--space-2) var(--space-3) 0"><sc-for list="{{ filters }}" as="f" hint-placeholder-count="3"><button type="button" class="sn-f" aria-pressed="{{ f.on }}" onClick="{{ f.pick }}">{{ f.label }}<span class="sn-f__n">{{ f.n }}</span></button></sc-for></div>
+    <sc-for list="{{ secs }}" as="s" hint-placeholder-count="3">
+      <section class="sp-sec" aria-label="{{ s.label }}">
+        <div class="sp-sec__h"><span class="sn-entry">{{ s.label }}<span class="sn-entry__cfg">{{ s.cfg }}</span><sc-if value="{{ s.hasOff }}" hint-placeholder-val="{{ false }}"><span class="sn-entry__off">{{ s.off }}</span></sc-if></span><sc-if value="{{ s.hasNote }}" hint-placeholder-val="{{ false }}"><span class="sn-note" style="flex-basis: 100%">{{ s.note }}</span></sc-if></div>
+        <sc-for list="{{ s.rows }}" as="r" hint-placeholder-count="2">
+          <button type="button" class="sp-row" onClick="{{ r.go }}" aria-label="{{ r.aria }}">
+            <dc-import name="PersonaBadge" persona="{{ r.persona }}" size="s" hint-size="26px,26px"></dc-import>
+            <span class="sn-body">
+              <span class="sn-line"><span class="sn-name">{{ r.name }}</span><span class="sn-live" data-live="{{ r.live }}">{{ r.liveWord }}</span><sc-if value="{{ r.hasAsks }}" hint-placeholder-val="{{ false }}"><span class="sn-asks">{{ r.asks }}</span></sc-if></span>
+              <span class="sn-line"><sc-if value="{{ r.hasChip }}" hint-placeholder-val="{{ true }}"><span class="{{ r.chipCls }}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="{{ r.glyph }}"></path></svg>{{ r.chip }}</span></sc-if><sc-for list="{{ r.items }}" as="it" hint-placeholder-count="1"><span class="sn-item" data-kind="{{ it.kind }}" data-state="{{ it.state }}" data-checks="{{ it.checks }}"><span class="sn-item__ref">{{ it.ref }}</span><sc-for list="{{ it.words }}" as="w" hint-placeholder-count="1"><span class="sn-item__st"><span class="sn-item__ck" data-ck="{{ w.ck }}">{{ w.text }}</span></span></sc-for></span></sc-for></span>
+              <span class="sn-sub">{{ r.sub }}</span>
+            </span>
+            <svg class="sp-go" viewBox="0 0 14 14" aria-hidden="true"><path d="{{ r.arrow }}"></path></svg>
+          </button>
+        </sc-for>
+        <sc-if value="{{ s.hasFold }}" hint-placeholder-val="{{ false }}"><p class="sn-fold" style="padding: var(--space-2) var(--space-3)">{{ s.fold }}</p></sc-if>
+      </section>
+    </sc-for>
+  </sc-if>
+
+  <sc-if value="{{ isPanel }}" hint-placeholder-val="{{ false }}">
+    <nav class="sp-sw" aria-label="Switch within this workflow"><sc-for list="{{ sw }}" as="w" hint-placeholder-count="3"><button type="button" aria-current="{{ w.cur }}" onClick="{{ w.go }}">{{ w.label }}</button></sc-for></nav>
+    <div class="tl-head" style="background: var(--paper)">
+      <span class="tl-line"><dc-import name="PersonaBadge" persona="{{ p.persona }}" size="s" hint-size="26px,26px"></dc-import><span class="tl-name">{{ p.name }}</span><span class="sn-live" data-live="{{ p.live }}">{{ p.liveWord }}</span></span>
+      <span class="tl-line"><span class="{{ p.chipCls }}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="{{ p.glyph }}"></path></svg>{{ p.chip }}</span><sc-for list="{{ p.items }}" as="it" hint-placeholder-count="1"><span class="sn-item" data-kind="{{ it.kind }}" data-state="{{ it.state }}" data-checks="{{ it.checks }}"><span class="sn-item__ref">{{ it.ref }}</span><sc-for list="{{ it.words }}" as="w" hint-placeholder-count="1"><span class="sn-item__st"><span class="sn-item__ck" data-ck="{{ w.ck }}">{{ w.text }}</span></span></sc-for></span></sc-for></span>
+      <span class="wf-small wf-soft">{{ p.meta }}</span>
+    </div>
+    <div class="tl-term" role="log" aria-label="Terminal of {{ p.name }}"><sc-for list="{{ p.lines }}" as="l" hint-placeholder-count="4"><span data-k="{{ l.k }}">{{ l.t }}</span></sc-for></div>
+    <dl class="tl-strip" style="background: var(--paper)"><dt>State</dt><dd>{{ p.chip }}</dd><dt>Waits for</dt><dd>{{ p.waitsFor }}</dd><dt>Next</dt><dd>{{ p.next }}</dd></dl>
+    <div class="tl-acts" style="background: var(--paper)"><label style="display: contents"><span class="wf-sr">Message {{ p.name }}</span><input type="text" placeholder="Message {{ p.name }}"></label><button type="button" class="il-btn">Stop</button><a class="il-btn" href="PhoneMachine.dc.html">Machine</a></div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"at":{"editor":"text","default":""},"panel":{"editor":"text","default":""},"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { at: p.at || '', panel: p.panel || '', filter: 'all' }; }
+  renderVals() {
+    const P = this.props, H = window.HUB, T = H.tree, S = this.state, v = T.view(''), N = v.nodes;
+    const CG = { holds: 'M12 8a4 4 0 1 0 0 8 4 4 0 1 0 0-8z', moving: 'M4 12h12M12 7l5 5-5 5', waits: 'M12 3a9 9 0 1 0 0 18 9 9 0 1 0 0-18zM12 7v5l3 2', up: 'M12 19V6M6 11l6-6 6 6', over: 'M5 12l4 4 10-10' };
+    const LW = { working: 'working', idle: 'idle', waits: 'waits for you', stopped: 'stopped', ended: 'ended' };
+    const kids = (sid) => [].concat(...T.entries(v, sid).map((e) => e.sessions)).filter((k) => N[k]);
+    const all = (sid) => { const o = []; const w = (k) => kids(k).forEach((x) => { o.push(x); w(x); }); w(sid); return o; };
+    const item = (ref) => { const it = v.items[ref] || {}; const w = []; if (it.kind === 'pr') { w.push({ text: it.state, ck: '' }); if (it.checks) w.push({ text: (it.checks === 'pass' ? '✓' : it.checks === 'fail' ? '✕' : '…') + ' checks', ck: it.checks }); } else if (it.state) w.push({ text: it.state, ck: it.state === 'failed' ? 'fail' : '' }); return { ref: it.kind === 'repo' ? ref.slice(5) : ref, kind: it.kind, state: it.state || '', checks: it.checks || '', words: w }; };
+    const chipOf = (n) => (n.path || []).join(' › ') + (n.to ? ' → ' + n.to : '') + (n.chipNote ? ' · ' + n.chipNote : '');
+    const row = (sid) => {
+      const n = N[sid], under = all(sid), a = T.asks(sid);
+      return { name: sid, persona: n.persona, live: n.live, liveWord: LW[n.live], hasAsks: a > 0, asks: a + ' for you', hasChip: !n.plain, chipCls: 'il-chip' + ((n.chip || 'holds') === 'holds' ? '' : ' il-chip--' + n.chip), glyph: CG[n.chip] || CG.holds, chip: chipOf(n),
+        items: (n.items || []).concat(n.holds || []).slice(0, 2).map(item),
+        sub: [under.length ? under.length + ' under it' + (under.reduce((x, k) => x + T.asks(k), 0) ? ', ' + under.reduce((x, k) => x + T.asks(k), 0) + ' cards for you below' : '') : '', n.resumed ? 'resumed · round ' + n.served.slice(-1)[0][1] : '', [n.time, n.cost].filter(Boolean).join(' · ')].filter(Boolean).join(' · '),
+        arrow: under.length ? 'M5 2l5 5-5 5' : 'M2 7h9M7 3l4 4-4 4', aria: sid + ', ' + n.persona + ', ' + LW[n.live] + (under.length ? ', ' + under.length + ' sessions under it, opens them' : ', opens it'),
+        go: () => this.setState(under.length ? { at: sid, panel: '' } : { panel: sid }) };
+    };
+    const keep = (sid) => { const n = N[sid]; if (!n) return false; if (n.live === 'ended' && !T.keepEnded(v, sid)) return false;
+      if (S.filter === 'needs') return T.asks(sid) > 0 || n.live === 'waits' || all(sid).some((k) => T.asks(k) > 0 || N[k].live === 'waits');
+      if (S.filter === 'working') return n.live === 'working' || all(sid).some((k) => N[k].live === 'working'); return true; };
+    const chain = (sid) => { const o = []; let k = N[sid] && N[sid].owner; while (k && N[k]) { o.unshift(k); k = N[k].owner; } return o; };
+    let secs = [], title = 'Sessions', back = null, backTo = '', crumbs = '';
+    if (!S.panel && !S.at) {
+      secs.push({ label: 'Workflows', cfg: 'nothing above them', rows: v.roots.filter(keep).map(row) });
+      secs.push({ label: 'Quick tasks', cfg: 'one state, on an item', rows: [].concat(...v.quick.map(([, ss]) => ss)).filter(keep).map(row) });
+      if (S.filter === 'all') secs.push({ label: 'Plain shells', cfg: 'no workflow', rows: v.shells.map(row) });
+    } else if (!S.panel) {
+      const n = N[S.at]; title = S.at; const up = chain(S.at); backTo = up.length ? up[up.length - 1] : 'Sessions'; back = () => this.setState({ at: up.length ? up[up.length - 1] : '' });
+      crumbs = up.concat([S.at]).join(' › ');
+      secs.push({ label: 'This session', cfg: n.persona, rows: [{ ...row(S.at), sub: (n.round && typeof n.round === 'string' ? n.round + ' · ' : '') + [n.time, n.cost].filter(Boolean).join(' · '), arrow: 'M2 7h9M7 3l4 4-4 4', go: () => this.setState({ panel: S.at }) }] });
+      T.entries(v, S.at).forEach((e) => {
+        const live = e.sessions.filter((k) => N[k] && N[k].live !== 'ended' && N[k].live !== 'stopped').length;
+        const ret = e.earlier.map((k) => ((N[k] || T.earlier[k] || {}).returned || '').split(' · ')[0]);
+        secs.push({ label: e.name, cfg: [e.reuse === 'resume' ? 'resume' : 'fresh each round', e.start === 'auto' ? (e.when ? 'when ' + e.when : 'auto') : 'on request', e.round ? 'round ' + e.round : '', typeof e.max === 'number' ? live + '/' + e.max : e.max].filter(Boolean).join(' · '),
+          hasOff: !e.inForce, off: 'runs in ' + e.states.join(', '), hasNote: !!e.note || !e.sessions.length, note: e.note || 'not started',
+          rows: e.sessions.filter(keep).map(row), hasFold: e.earlier.length > 0, fold: e.earlier.length + ' earlier · ' + ret.join(', ') });
+      });
+    } else {
+      title = S.panel; const n = N[S.panel], up = chain(S.panel);
+      backTo = n.owner && N[n.owner] ? n.owner : 'Sessions'; back = () => this.setState({ panel: '', at: n.owner && N[n.owner] ? n.owner : (all(S.panel).length ? S.panel : '') });
+      crumbs = up.concat([S.panel]).join(' › ');
+    }
+    const n = S.panel ? N[S.panel] : null;
+    const sw = n ? [].concat(n.owner && N[n.owner] ? [{ label: '↑ ' + n.owner, cur: 'false', go: () => this.setState({ panel: n.owner }) }] : [], [{ label: S.panel, cur: 'true', go: () => {} }],
+      kids(S.panel).map((k) => ({ label: '↓ ' + k, cur: 'false', go: () => this.setState({ panel: k }) })),
+      n.owner && N[n.owner] ? kids(n.owner).filter((k) => k !== S.panel && N[k].live !== 'ended').map((k) => ({ label: '⇄ ' + k, cur: 'false', go: () => this.setState({ panel: k }) })) : []) : [];
+    const cards = Object.keys(N).reduce((a, k) => a + T.asks(k), 0);
+    return { theme: (P.voice || 'white') + '-' + (P.scheme || 'paper'), pen: P.pen || '1', title, hasBack: !!back, back: back || (() => {}), backTo,
+      hasCrumbs: !!crumbs, crumbs, hasCards: !S.at && !S.panel, cards: String(cards),
+      isList: !S.panel, isPanel: !!S.panel, secs: secs.filter((s) => s.rows.length || S.at).map((s) => ({ hasOff: false, off: '', hasNote: false, note: '', hasFold: false, fold: '', ...s })),
+      filters: [['all', 'All'], ['needs', 'Needs you'], ['working', 'Working']].map(([id, label]) => ({ label, n: id === 'needs' ? String(cards) : '', on: S.filter === id ? 'true' : 'false', pick: () => this.setState({ filter: id }) })),
+      sw, p: n ? { name: S.panel, persona: n.persona, live: n.live, liveWord: LW[n.live], chipCls: 'il-chip' + ((n.chip || 'holds') === 'holds' ? '' : ' il-chip--' + n.chip), glyph: CG[n.chip] || CG.holds, chip: chipOf(n),
+        items: (n.items || []).concat(n.holds || []).map(item), meta: [n.entry ? 'entry ' + n.entry : '', n.resumed ? 'resumed · served ' + n.served.map((x) => x[0]).join(' → ') + ' (round ' + n.served.slice(-1)[0][1] + ')' : '', [n.time, n.cost].filter(Boolean).join(' · ')].filter(Boolean).join(' · '),
+        lines: (n.lines || []).map(([k, t]) => ({ k, t })), waitsFor: n.waitsFor || '—', next: n.next || '—' } : { items: [], lines: [] } };
+  }
+}
+</script>
+</body>
+</html>

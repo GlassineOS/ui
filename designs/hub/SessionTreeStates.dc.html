@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Session tree states</title>
+<script src="./support.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="workflow.css">
+<link rel="stylesheet" href="sessions.css">
+</helmet>
+<div class="wf il-page wf-pad wf-stack wf-stack--wide" data-theme="{{ theme }}" data-pen="{{ pen }}" style="min-height: 100vh">
+  <header class="wf-stack" style="gap: var(--space-2); max-width: 96ch">
+    <span class="il-label">SessionTree · every state</span>
+    <h1 class="wf-h2">Filters, ended sessions, empty, 21 sessions, the keyboard</h1>
+    <p class="wf-small">The same component with its props pinned. A filter keeps the owners above a match, dimmed, so every match still says whose it is and under which entry. An ended session stays while it has a card for you or while its verdict is this round’s; the rest show with Ended.</p>
+  </header>
+  <div class="sx-frames">
+    <sc-for list="{{ cases }}" as="c" hint-placeholder-count="6">
+      <section class="wf-stack" style="gap: var(--space-2)" aria-labelledby="{{ c.hid }}">
+        <h2 class="wf-h3" id="{{ c.hid }}">{{ c.title }}</h2>
+        <p class="wf-small wf-soft">{{ c.note }}</p>
+        <div class="wf-box" style="background: var(--paper)">
+          <dc-import name="SessionTree" scale="{{ c.scale }}" filter="{{ c.filter }}" query="{{ c.query }}" ended="{{ c.ended }}" selected="{{ c.sel }}" ring="{{ c.ring }}" collapsed="{{ c.collapsed }}" open="" focus-tile="" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,900px"></dc-import>
+        </div>
+      </section>
+    </sc-for>
+  </div>
+  <section class="wf-box" aria-labelledby="ks-h" style="max-width: 96ch">
+    <h2 class="wf-h3" id="ks-h">The keyboard (role tree, one row in the tab order)</h2>
+    <dl class="wf-kv wf-small">
+      <dt>↑ ↓</dt><dd>the row above or below, sessions, entries and folds alike; Home and End the first and last</dd>
+      <dt>→</dt><dd>opens a closed row, else goes to its first child</dd>
+      <dt>←</dt><dd>closes an open row, else goes to its parent: an engineer’s ← lands on its entry, then on its owner</dd>
+      <dt>Enter</dt><dd>selects a session and opens it in a tile (or focuses its tile); Space selects only</dd>
+      <dt>Aria</dt><dd>each row a treeitem with aria-level, aria-setsize, aria-posinset and aria-expanded; its label says persona, liveness, state, cards and tile</dd>
+    </dl>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":1440,"height":3000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const P = this.props;
+    const C = [
+      ['Needs you', 'Filter: the sessions with a card or a state that waits for you. The count is the Header’s 9.', { filter: 'needs', sel: 'kernel-lut' }],
+      ['Working, one repository typed', 'Search epd: the epd#8 run and its owners; the rest is gone.', { filter: 'working', query: 'epd', sel: 'engineer-epd-8' }],
+      ['Ended shown, folds closed', 'With Ended on, implementor-epd-6 (merged) is back under its entry. Rows were collapsed by hand.', { ended: true, sel: 'maintainer-epd', collapsed: 'n:implementor-epd-8,e:steward:implementor,e:steward:writer,e:steward:investigator,e:steward:triage,n:author-implement,g:quick,g:shells' }],
+      ['Keyboard focus', 'The ring (focus colour) is on the row in the tab order; the heavy edge is the selection. Here it is on engineer-epd-8; ← moves it to its entry, ← again to its owner.', { sel: 'engineer-epd-8', ring: 'engineer-epd-8', collapsed: 'e:steward:implementor,e:steward:writer,e:steward:investigator,e:steward:triage,n:author-implement,g:quick,g:shells,e:maintainer-epd:triage,e:implementor-epd-8:qa,e:implementor-epd-8:designer' }],
+      ['21 sessions', 'A second maintainer with two implementors. Owners other than the selection’s are collapsed by hand; a closed owner’s line counts what runs under it.', { scale: 'large', sel: 'implementor-shell-294', collapsed: 'n:maintainer-epd,e:steward:implementor,e:steward:writer,e:steward:investigator,e:steward:triage,n:author-implement,g:quick,g:shells' }],
+      ['Nothing running', 'No sessions at all: where to start.', { scale: 'empty', sel: '' }],
+      ['Nothing matches', 'A filter with no match says which filter, and clears in one press.', { filter: 'working', query: 'reader', sel: '' }]
+    ];
+    const cases = C.map(([title, note, o], i) => ({ title, note, hid: 'ts-' + i, scale: o.scale || 'normal', filter: o.filter || 'all', query: o.query || '', ended: !!o.ended, sel: o.sel, ring: o.ring || '', collapsed: o.collapsed || '' }));
+    return { theme: (P.voice || 'white') + '-' + (P.scheme || 'paper'), pen: P.pen || '1', voice: P.voice || 'white', scheme: P.scheme || 'paper', cases };
+  }
+}
+</script>
+</body>
+</html>

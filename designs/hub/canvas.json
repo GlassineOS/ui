@@ -102,8 +102,8 @@
    "x": 1520,
    "y": 5780,
    "w": 1440,
-   "h": 1800,
-   "title": "Sessions › Running",
+   "h": 1400,
+   "title": "Sessions › Running · workflows as a tree, sessions as tabbed tiles",
    "page": "screens",
    "expand": "fill",
    "is_interactive": true
@@ -678,6 +678,86 @@
    "title": "WorkflowStarts · the checks refuse a writing start set to run beside",
    "page": "components",
    "is_interactive": true
+  },
+  "PhoneSessions.dc.html": {
+   "x": 1520,
+   "y": 23900,
+   "w": 390,
+   "h": 844,
+   "title": "Phone · Sessions, workflows as a drill-down list",
+   "page": "screens",
+   "is_interactive": true
+  },
+  "PhoneSessionsOwner.dc.html": {
+   "x": 1990,
+   "y": 23900,
+   "w": 390,
+   "h": 844,
+   "title": "Phone · inside implementor-epd-8: its entries and sessions",
+   "page": "screens",
+   "is_interactive": true
+  },
+  "PhoneSessionPanel.dc.html": {
+   "x": 2460,
+   "y": 23900,
+   "w": 390,
+   "h": 844,
+   "title": "Phone · one session; owner, children and siblings a tap away",
+   "page": "screens",
+   "is_interactive": true
+  },
+  "SessionTree.dc.html": {
+   "x": 0,
+   "y": 7900,
+   "w": 380,
+   "h": 4500,
+   "title": "SessionTree · instances by owner and manages entry, live, keyboard",
+   "page": "components",
+   "is_interactive": true
+  },
+  "SessionTiles.dc.html": {
+   "x": 460,
+   "y": 7900,
+   "w": 1100,
+   "h": 720,
+   "title": "SessionTiles · tabs grouped by workflow, 1–3 tiles, focus, pin, resize",
+   "page": "components",
+   "is_interactive": true
+  },
+  "SessionTreeStates.dc.html": {
+   "x": 1640,
+   "y": 7900,
+   "w": 1440,
+   "h": 6240,
+   "title": "SessionTree · needs you, search, ended, keyboard focus, 21 sessions, empty",
+   "page": "components",
+   "is_interactive": true
+  },
+  "SessionsData.dc.html": {
+   "x": 460,
+   "y": 8740,
+   "w": 1100,
+   "h": 2560,
+   "title": "Design note · what the tree needs from hubd, per node and entry (spec for the hub)",
+   "page": "components"
+  },
+  "FlowSessionsLive.dc.html": {
+   "x": 6832,
+   "y": 0,
+   "w": 1440,
+   "h": 3840,
+   "title": "Flow · implementor-epd-8 live: implement → fix → review → merge-ready",
+   "page": "flows",
+   "is_interactive": true
+  },
+  "SessionsPhone.dc.html": {
+   "x": 3160,
+   "y": 7900,
+   "w": 390,
+   "h": 844,
+   "title": "SessionsPhone · the tree as a drill-down list, one panel at a time (props: at, panel)",
+   "page": "components",
+   "is_interactive": true
   }
  },
  "order": [
@@ -750,7 +830,16 @@
   "Starts.dc.html",
   "StartRows.dc.html",
   "WorkflowStarts.dc.html",
-  "WorkflowStartsRefused.dc.html"
+  "WorkflowStartsRefused.dc.html",
+  "PhoneSessions.dc.html",
+  "PhoneSessionsOwner.dc.html",
+  "PhoneSessionPanel.dc.html",
+  "SessionTree.dc.html",
+  "SessionTiles.dc.html",
+  "SessionTreeStates.dc.html",
+  "SessionsData.dc.html",
+  "FlowSessionsLive.dc.html",
+  "SessionsPhone.dc.html"
  ],
  "notes": {
   "s1": {
@@ -888,6 +977,31 @@
    "size": "m",
    "page": "components",
    "text": "A start is how a workflow begins on an item: kind of item, label, summary, starting state, lead flag, models and efforts, prompt. Its persona and ceiling come from its starting state.\n\nWhile an instance holds the item, each start runs beside it (read-only only), asks the owner, or is hidden. Asking goes to the owner session, so its grants, caps and approvals apply."
+  },
+  "s8": {
+   "x": 0,
+   "y": 23600,
+   "text": "Sessions on a phone — the workflow tree as a drill-down list",
+   "kind": "title1",
+   "maxW": 2900,
+   "page": "screens"
+  },
+  "s9": {
+   "x": 2940,
+   "y": 23900,
+   "w": 520,
+   "fill": "orange",
+   "size": "m",
+   "page": "screens",
+   "text": "Running is the tree: every session under its owner and the manages entry it runs under (reuse, start, round, count), earlier rounds folded, one row for a resumed session with the rounds it served. Picking a row focuses its tile; focusing a tile selects its row. Ctrl+] and Ctrl+[ move between tiles, Ctrl+↑ opens the owner. Workflow decision cards count in the Needs-you badge. Yellow only where you must act. Data: SessionsData on Components."
+  },
+  "sw1": {
+   "x": 0,
+   "y": 7600,
+   "text": "Sessions as workflows — tree, tiles, the data they need",
+   "kind": "title1",
+   "maxW": 3080,
+   "page": "components"
   }
  }
 }

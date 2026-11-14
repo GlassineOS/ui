@@ -914,6 +914,15 @@
    "x": 1808,
    "y": 3080
   },
+  "shell.write.correct.dc.html": {
+   "h": 1420,
+   "is_interactive": true,
+   "page": "shell",
+   "title": "shell.write.correct · Writing on paper: correcting what it read",
+   "w": 824,
+   "x": 1808,
+   "y": 6160
+  },
   "shell.write.dc.html": {
    "h": 1420,
    "is_interactive": true,
@@ -1009,6 +1018,7 @@
   "shell.sleep.dc.html",
   "shell.write.dc.html",
   "shell.write.pending.dc.html",
+  "shell.write.correct.dc.html",
   "shell.change-running.dc.html",
   "shell.landscape.dc.html",
   "home.screen.dc.html",

@@ -16,8 +16,18 @@
 <sc-if value="{{ priv }}" hint-placeholder-val="{{ false }}">
 <div role="status" style="flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:8px;color:{{ k.noteC }};font:{{ k.noteFont }}"><span style="font:400 18px/1 'Material Symbols Outlined'">lock</span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Private field · nothing is suggested or learned</span></div>
 </sc-if>
+<sc-if value="{{ asking }}" hint-placeholder-val="{{ false }}">
+<div role="alertdialog" aria-label="{{ askLabel }}" style="flex:1;min-width:0;display:flex;align-items:stretch;gap:{{ k.gap }}px">
+<span style="flex:1;min-width:0;align-self:center;padding:0 6px;color:var(--il-ink);font:{{ k.noteFont }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ askLabel }}</span>
+<div role="button" aria-label="Keep" onPointerDown="{{ keepKey }}" style="flex:none;width:104px;display:flex;align-items:center;justify-content:center;border-radius:{{ k.r }}px;background:{{ k.keySp }};color:var(--il-ink);box-shadow:{{ k.spSh }};font:{{ k.noteFont }};cursor:pointer">Keep</div>
+<div role="button" aria-label="Remove" onPointerDown="{{ removeKey }}" style="flex:none;width:104px;display:flex;align-items:center;justify-content:center;border-radius:{{ k.r }}px;background:var(--il-ink);color:var(--il-paper);font:{{ k.noteFont }};cursor:pointer">Remove</div>
+</div>
+</sc-if>
+<sc-if value="{{ noting }}" hint-placeholder-val="{{ false }}">
+<div role="status" style="flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:8px;color:{{ k.noteC }};font:{{ k.noteFont }}"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ noteText }}</span></div>
+</sc-if>
 <div role="listbox" aria-label="Suggestions" style="flex:{{ wordsFlex }};min-width:0;display:flex;gap:{{ k.gap }}px">
-<sc-for list="{{ words }}" as="w" hint-placeholder-count="3"><div role="option" aria-selected="{{ w.sel }}" onPointerDown="{{ w.on }}" style="flex:1;min-width:0;display:flex;align-items:center;justify-content:center;border-radius:{{ k.r }}px;background:{{ w.bg }};color:{{ w.fg }};box-shadow:{{ w.sh }};font:{{ w.font }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer">{{ w.l }}</div></sc-for>
+<sc-for list="{{ words }}" as="w" hint-placeholder-count="3"><div role="option" aria-selected="{{ w.sel }}" onPointerDown="{{ w.on }}" onPointerUp="{{ w.up }}" onPointerLeave="{{ w.cancel }}" onPointerCancel="{{ w.cancel }}" style="flex:1;min-width:0;display:flex;align-items:center;justify-content:center;border-radius:{{ k.r }}px;background:{{ w.bg }};color:{{ w.fg }};box-shadow:{{ w.sh }};font:{{ w.font }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer">{{ w.l }}</div></sc-for>
 </div>
 <div role="button" aria-label="Hide the keyboard" onPointerDown="{{ hideKey }}" style="width:{{ unitW }};flex:none;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border-radius:{{ k.r }}px;background:{{ k.keySp }};color:{{ k.text }};box-shadow:{{ k.spSh }};cursor:pointer"><span style="font:400 22px/1 'Material Symbols Outlined'">keyboard_hide</span></div>
 </div>
@@ -30,13 +40,16 @@
 </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview": {"width": 712, "height": 348}, "theme": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "scheme": {"editor": "enum", "options": ["eink", "paper", "night"], "default": "eink"}, "pen": {"editor": "enum", "options": ["1", "2", "3"], "default": "1"}, "layout": {"editor": "enum", "options": ["en", "de"], "default": "en"}, "layer": {"editor": "enum", "options": ["main", "special"], "default": "main"}, "purpose": {"editor": "enum", "options": ["normal", "number", "phone", "pin", "email", "url", "password"], "default": "normal"}, "private": {"editor": "enum", "options": ["off", "on"], "default": "off"}, "strip": {"editor": "enum", "options": ["on", "off"], "default": "on"}, "words": {"editor": "string", "default": ""}, "height": {"editor": "string", "default": "300"}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview": {"width": 712, "height": 348}, "theme": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "scheme": {"editor": "enum", "options": ["eink", "paper", "night"], "default": "eink"}, "pen": {"editor": "enum", "options": ["1", "2", "3"], "default": "1"}, "layout": {"editor": "enum", "options": ["en", "de"], "default": "en"}, "layer": {"editor": "enum", "options": ["main", "special"], "default": "main"}, "purpose": {"editor": "enum", "options": ["normal", "number", "phone", "pin", "email", "url", "password"], "default": "normal"}, "private": {"editor": "enum", "options": ["off", "on"], "default": "off"}, "strip": {"editor": "enum", "options": ["on", "off"], "default": "on"}, "words": {"editor": "string", "default": ""}, "ask": {"editor": "string", "default": ""}, "note": {"editor": "string", "default": ""}, "height": {"editor": "string", "default": "300"}}'>
 // The on-screen keyboard (wvkbd-glassine): the layers the images ship, the long-press
 // alternates in each key's corner, the suggestion strip, the handwriting and hide keys.
 // Reuse: <dc-import name="EinkKeyboard" theme scheme pen layout layer purpose private strip words
 // height handwriting
 // on-key="{{ fn }}">; fn gets { text } for a character, a picked word ({ text, word: true })
 // or a space, or { key } for backspace, enter, tab, esc, arrows, hide and handwriting.
+// Holding a suggestion 0.5 s gives { hold: word } instead of the pick; with ask="word" the
+// strip asks in place whether to remove it and gives { key: 'remove' | 'keep', word };
+// note="…" shows a short message in place of the words.
 // purpose is the field's (text-input content purpose): number, phone and pin open a keypad,
 // email and url change the bottom row; pin, password and private="on" make a private field:
 // no suggestions (a note says so), no pen key.
@@ -45,7 +58,7 @@
 class Component extends DCLogic {
   state = {};
 
-  componentWillUnmount() { clearTimeout(this.ht); }
+  componentWillUnmount() { clearTimeout(this.ht); clearTimeout(this.wt); }
 
   // One key: [label, shifted label, width, action, hold alternate]. An action is a string to
   // type (the label when left out) or ':name' for a special key.
@@ -136,6 +149,7 @@ class Component extends DCLogic {
       };
     }) }));
     const list = priv ? [] : String(p.words || '').split('|').map(x => x.trim()).filter(Boolean).slice(0, 3);
+    const askW = priv ? '' : String(p.ask || ''), noteT = priv || askW ? '' : String(p.note || '');
     const order = list.length === 3 ? [list[1], list[0], list[2]] : list;
     const stripOn = p.strip !== 'off', stripH = 46, keysH = Number(p.height) || 300;
     const penOn = !!p.handwriting && !priv;
@@ -145,9 +159,15 @@ class Component extends DCLogic {
       rowH: Math.floor((keysH - V.gap * (rows.length + 1)) / rows.length),
       // one key column of a ten-key row, so the pen and hide keys line up with Esc and Tab
       unitW: 'calc((100% - ' + (9 * V.gap) + 'px) / 10)',
-      words: order.map(w => { const best = w === list[0]; return { l: w, sel: String(best), bg: V.key, fg: 'var(--il-ink)', sh: 'inset 0 0 0 1px ' + V.stroke,
-        font: V.font.replace(/^\d+/, best ? '600' : '400').replace(/\d+px/, '17px'), on: e => { e.preventDefault(); emit({ text: w + ' ', word: true }); } }; }),
-      penOn: String(penOn), penLabel: 'Write with the pen', priv, wordsFlex: priv ? '0' : '1',
+      words: (askW || noteT ? [] : order).map(w => { const best = w === list[0]; return { l: w, sel: String(best), bg: V.key, fg: 'var(--il-ink)', sh: 'inset 0 0 0 1px ' + V.stroke,
+        font: V.font.replace(/^\d+/, best ? '600' : '400').replace(/\d+px/, '17px'), on: e => { e.preventDefault(); clearTimeout(this.wt); this.wheld = false; this.wdown = w;
+          this.wt = setTimeout(() => { this.wheld = true; emit({ hold: w }); }, 500); },
+        up: e => { e.preventDefault(); clearTimeout(this.wt); if (this.wdown === w && !this.wheld) emit({ text: w + ' ', word: true }); this.wdown = null; },
+        cancel: () => { clearTimeout(this.wt); this.wdown = null; } }; }),
+      asking: !!askW, askLabel: 'Remove “' + askW + '” from suggestions?', noting: !!noteT, noteText: noteT,
+      keepKey: e => { e.preventDefault(); emit({ key: 'keep', word: askW }); },
+      removeKey: e => { e.preventDefault(); emit({ key: 'remove', word: askW }); },
+      penOn: String(penOn), penLabel: 'Write with the pen', priv, wordsFlex: priv || askW || noteT ? '0' : '1',
       penVis: priv ? 'hidden' : 'visible', penHidden: String(priv),
       pen: { bg: penOn ? 'var(--il-ink)' : V.keySp, fg: penOn ? 'var(--il-paper)' : 'var(--il-ink)', sh: 'inset 0 0 0 1px ' + V.strokeSp },
       penKey: e => { e.preventDefault(); emit({ key: 'handwriting' }); },

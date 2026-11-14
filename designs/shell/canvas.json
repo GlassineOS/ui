@@ -46,6 +46,15 @@
    "x": 840,
    "y": 0
   },
+  "EinkWrite.dc.html": {
+   "h": 1060,
+   "is_interactive": true,
+   "page": "foundations",
+   "title": "Component · EinkWrite",
+   "w": 760,
+   "x": 5000,
+   "y": 0
+  },
   "Main.dc.html": {
    "h": 1640,
    "page": "start",
@@ -904,6 +913,24 @@
    "w": 824,
    "x": 1808,
    "y": 3080
+  },
+  "shell.write.dc.html": {
+   "h": 1420,
+   "is_interactive": true,
+   "page": "shell",
+   "title": "shell.write · Writing on paper",
+   "w": 824,
+   "x": 0,
+   "y": 6160
+  },
+  "shell.write.pending.dc.html": {
+   "h": 1420,
+   "is_interactive": true,
+   "page": "shell",
+   "title": "shell.write.pending · Writing on paper: the text it read",
+   "w": 824,
+   "x": 904,
+   "y": 6160
   }
  },
  "launch": {
@@ -980,6 +1007,8 @@
   "shell.divider.tiled.dc.html",
   "shell.divider.quad.dc.html",
   "shell.sleep.dc.html",
+  "shell.write.dc.html",
+  "shell.write.pending.dc.html",
   "shell.change-running.dc.html",
   "shell.landscape.dc.html",
   "home.screen.dc.html",

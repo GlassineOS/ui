@@ -720,7 +720,7 @@
    "x": 0,
    "y": 7900,
    "w": 380,
-   "h": 4120,
+   "h": 4500,
    "title": "SessionTree · instances by owner and manages entry, live, keyboard",
    "page": "components",
    "is_interactive": true
@@ -738,8 +738,8 @@
    "x": 1640,
    "y": 7900,
    "w": 1440,
-   "h": 5340,
-   "title": "SessionTree · needs you, search, ended, keyboard focus, 20 sessions, empty",
+   "h": 6240,
+   "title": "SessionTree · needs you, search, ended, keyboard focus, 21 sessions, empty",
    "page": "components",
    "is_interactive": true
   },

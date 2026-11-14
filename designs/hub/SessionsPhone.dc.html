@@ -75,7 +75,7 @@ class Component extends DCLogic {
         arrow: under.length ? 'M5 2l5 5-5 5' : 'M2 7h9M7 3l4 4-4 4', aria: sid + ', ' + n.persona + ', ' + LW[n.live] + (under.length ? ', ' + under.length + ' sessions under it, opens them' : ', opens it'),
         go: () => this.setState(under.length ? { at: sid, panel: '' } : { panel: sid }) };
     };
-    const keep = (sid) => { const n = N[sid]; if (!n) return false; if (n.live === 'ended' && !T.asks(sid) && !n.returned) return false; if (n.live === 'ended' && !T.asks(sid) && sid === 'implementor-epd-6') return false;
+    const keep = (sid) => { const n = N[sid]; if (!n) return false; if (n.live === 'ended' && !T.keepEnded(v, sid)) return false;
       if (S.filter === 'needs') return T.asks(sid) > 0 || n.live === 'waits' || all(sid).some((k) => T.asks(k) > 0 || N[k].live === 'waits');
       if (S.filter === 'working') return n.live === 'working' || all(sid).some((k) => N[k].live === 'working'); return true; };
     const chain = (sid) => { const o = []; let k = N[sid] && N[sid].owner; while (k && N[k]) { o.unshift(k); k = N[k].owner; } return o; };

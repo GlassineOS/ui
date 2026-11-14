@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>On-screen keyboard</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}a{color:#1b1b1b}a:hover{color:#4a4a4a}</style>
+</helmet>
+<div data-spec-id="shell.keyboard" style="width:824px;height:1090px;box-sizing:border-box;padding:28px 32px;display:flex;flex-direction:column;gap:18px;background:#e6e6e6;color:#1b1b1b;font-family:'IBM Plex Sans',sans-serif">
+<div style="display:flex;flex-direction:column;gap:6px">
+<span style="font:500 13px/1.2 'IBM Plex Mono',monospace;color:#3d3d3d">shell.keyboard</span>
+<h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">On-screen keyboard</h1>
+<p style="margin:0;max-width:760px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">The keys the images ship (wvkbd), with the voice's look: a nav row and a number row, the letters with their long-press alternate in the corner (hold 0.4 s), ⌨ for the symbols layer. Above the keys, the suggestion strip: three words for the text before the cursor, the likeliest in the middle; at its ends, the pen (switch to handwriting) and hide. A key that is down shows inverted, with no popup (one panel update less per key). Type here to try it (stand-in suggestions).</p>
+</div>
+<dc-import name="ThemeBar" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" on-pick="{{ pick }}" hint-size="100%,112px"></dc-import>
+<div role="group" aria-label="Layout" style="display:flex;align-items:center;gap:8px">
+<span style="font:500 11px/1 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:#3d3d3d;padding-right:4px">Layout</span>
+<sc-for list="{{ layouts }}" as="o" hint-placeholder-count="2"><button type="button" aria-pressed="{{ o.pressed }}" onClick="{{ o.on }}" style="height:34px;box-sizing:border-box;padding:0 14px;border-radius:9px;border:1.5px solid #1b1b1b;background:{{ o.bg }};color:{{ o.fg }};font:500 14px 'IBM Plex Sans',sans-serif;cursor:pointer">{{ o.l }}</button></sc-for>
+</div>
+<div style="width:760px;background:#262626;border-radius:28px;padding:24px;box-sizing:border-box">
+<div style="width:712px;display:flex;flex-direction:column;background:#ffffff">
+<div style="height:250px;box-sizing:border-box;padding:18px 20px;font:400 18px/28px 'IBM Plex Sans',sans-serif;color:#111111;white-space:pre-wrap;overflow:hidden"><span>{{ typed }}</span><span style="display:inline-block;width:2px;height:24px;vertical-align:-5px;background:#111111"></span></div>
+<dc-import name="EinkKeyboard" theme="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" layout="{{ layout }}" words="{{ words }}" handwriting="{{ hw }}" on-key="{{ onKey }}" style="width:100%" hint-size="100%,346px"></dc-import>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "$preview": {"width": 824, "height": 1090}}'>
+class Component extends DCLogic {
+  state = {};
+  // Stand-in suggestions: completions of the word being typed from a short list, else the
+  // commonest words to follow it. The real ones come from the predictor (shell spec 006).
+  suggest(text, layout) {
+    const W = layout === 'de'
+      ? ['ich', 'die', 'und', 'der', 'das', 'nicht', 'sie', 'ist', 'wir', 'mit', 'auf', 'für', 'heute', 'morgen', 'später', 'danke', 'gerne', 'genau', 'gut', 'schön', 'sehen', 'treffen', 'uns', 'um', 'acht']
+      : ['the', 'I', 'and', 'to', 'you', 'a', 'it', 'is', 'that', 'of', 'see', 'soon', 'so', 'sure', 'thanks', 'today', 'tomorrow', 'tonight', 'there', 'they', 'meet', 'at', 'eight', 'great', 'good'];
+    const m = /(\S*)$/.exec(text), part = (m && m[1] || '').toLowerCase();
+    const hits = part ? W.filter(w => w.toLowerCase().startsWith(part) && w.toLowerCase() !== part) : W;
+    return hits.slice(0, 3).join('|');
+  }
+  renderVals() {
+    const s = this.state, p = this.props, u = q => this.setState(q);
+    const layout = s.layout || 'en', typed = s.typed ?? '';
+    return { voice: s.voice ?? p.voice ?? 'white', scheme: s.scheme ?? 'eink', pen: s.pen ?? '1', layout, typed, hw: !!s.hw,
+      words: this.suggest(typed, layout),
+      layouts: [['en', 'English (QWERTY)'], ['de', 'German (QWERTZ)']].map(([id, l]) => ({ l, pressed: String(id === layout), bg: id === layout ? '#1b1b1b' : 'transparent', fg: id === layout ? '#ffffff' : '#1b1b1b', on: () => u({ layout: id }) })),
+      onKey: o => u(st => {
+        const t = st.typed ?? '';
+        if (o.word) { const part = /(\S*)$/.exec(t)[1], w = part && part[0] !== part[0].toLowerCase() ? o.text[0].toUpperCase() + o.text.slice(1) : o.text; return { typed: t.slice(0, t.length - part.length) + w }; }
+        if (o.text != null) return { typed: t + o.text };
+        if (o.key === 'backspace') return { typed: t.slice(0, -1) };
+        if (o.key === 'enter') return { typed: t + '\n' };
+        if (o.key === 'tab') return { typed: t + '\t' };
+        if (o.key === 'handwriting') return { hw: !st.hw };
+        return null;
+      }),
+      pick: (k, v) => this.setState({ [k]: v }) };
+  }
+}
+</script>
+</body>
+</html>

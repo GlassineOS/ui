@@ -10,6 +10,15 @@
    "x": 4200,
    "y": 0
   },
+  "EinkKeyboard.dc.html": {
+   "h": 348,
+   "is_interactive": true,
+   "page": "foundations",
+   "title": "Component · EinkKeyboard",
+   "w": 712,
+   "x": 5840,
+   "y": 0
+  },
   "EinkSettings.dc.html": {
    "h": 1140,
    "is_interactive": true,
@@ -44,6 +53,15 @@
    "title": "Component · EinkShell",
    "w": 760,
    "x": 840,
+   "y": 0
+  },
+  "EinkWrite.dc.html": {
+   "h": 1060,
+   "is_interactive": true,
+   "page": "foundations",
+   "title": "Component · EinkWrite",
+   "w": 760,
+   "x": 5000,
    "y": 0
   },
   "Main.dc.html": {
@@ -842,6 +860,15 @@
    "x": 904,
    "y": 1540
   },
+  "shell.keyboard.dc.html": {
+   "h": 1090,
+   "is_interactive": true,
+   "page": "shell",
+   "title": "shell.keyboard · On-screen keyboard",
+   "w": 824,
+   "x": 2712,
+   "y": 6160
+  },
   "shell.landscape.dc.html": {
    "h": 1120,
    "is_interactive": true,
@@ -904,6 +931,33 @@
    "w": 824,
    "x": 1808,
    "y": 3080
+  },
+  "shell.write.correct.dc.html": {
+   "h": 1420,
+   "is_interactive": true,
+   "page": "shell",
+   "title": "shell.write.correct · Writing on paper: correcting what it read",
+   "w": 824,
+   "x": 1808,
+   "y": 6160
+  },
+  "shell.write.dc.html": {
+   "h": 1420,
+   "is_interactive": true,
+   "page": "shell",
+   "title": "shell.write · Writing on paper",
+   "w": 824,
+   "x": 0,
+   "y": 6160
+  },
+  "shell.write.pending.dc.html": {
+   "h": 1420,
+   "is_interactive": true,
+   "page": "shell",
+   "title": "shell.write.pending · Writing on paper: the text it read",
+   "w": 824,
+   "x": 904,
+   "y": 6160
   }
  },
  "launch": {
@@ -980,6 +1034,10 @@
   "shell.divider.tiled.dc.html",
   "shell.divider.quad.dc.html",
   "shell.sleep.dc.html",
+  "shell.keyboard.dc.html",
+  "shell.write.dc.html",
+  "shell.write.pending.dc.html",
+  "shell.write.correct.dc.html",
   "shell.change-running.dc.html",
   "shell.landscape.dc.html",
   "home.screen.dc.html",

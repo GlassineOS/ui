@@ -10,6 +10,15 @@
    "x": 4200,
    "y": 0
   },
+  "EinkKeyboard.dc.html": {
+   "h": 348,
+   "is_interactive": true,
+   "page": "foundations",
+   "title": "Component · EinkKeyboard",
+   "w": 712,
+   "x": 5840,
+   "y": 0
+  },
   "EinkSettings.dc.html": {
    "h": 1140,
    "is_interactive": true,
@@ -851,6 +860,15 @@
    "x": 904,
    "y": 1540
   },
+  "shell.keyboard.dc.html": {
+   "h": 1090,
+   "is_interactive": true,
+   "page": "shell",
+   "title": "shell.keyboard · On-screen keyboard",
+   "w": 824,
+   "x": 2712,
+   "y": 6160
+  },
   "shell.landscape.dc.html": {
    "h": 1120,
    "is_interactive": true,
@@ -1016,6 +1034,7 @@
   "shell.divider.tiled.dc.html",
   "shell.divider.quad.dc.html",
   "shell.sleep.dc.html",
+  "shell.keyboard.dc.html",
   "shell.write.dc.html",
   "shell.write.pending.dc.html",
   "shell.write.correct.dc.html",

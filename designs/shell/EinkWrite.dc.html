@@ -55,10 +55,8 @@
 </div>
 </sc-if>
 <sc-if value="{{ fixing }}" hint-placeholder-val="{{ false }}">
-<div role="group" aria-label="On-screen keyboard" style="position:absolute;left:0;right:0;bottom:0;height:300px;box-sizing:border-box;padding:10px 8px 12px;display:flex;flex-direction:column;gap:8px;background:var(--il-paper);border-top:1.5px solid var(--il-ink);font-family:{{ v.font }}">
-<sc-for list="{{ kbRows }}" as="row" hint-placeholder-count="4"><div style="flex:1;display:flex;gap:6px;padding:0 {{ row.pad }}">
-<sc-for list="{{ row.keys }}" as="k" hint-placeholder-count="10"><div role="button" aria-label="{{ k.name }}" onPointerDown="{{ k.on }}" style="flex:{{ k.w }};min-width:0;display:flex;align-items:center;justify-content:center;border-radius:{{ kbR }};background:{{ k.bg }};color:{{ k.fg }};box-shadow:{{ k.sh }};font:{{ k.font }};cursor:pointer;user-select:none">{{ k.l }}</div></sc-for>
-</div></sc-for>
+<div style="position:absolute;left:0;right:0;bottom:0">
+<dc-import name="EinkKeyboard" theme="{{ voice }}" scheme="{{ scheme }}" pen="{{ penN }}" layout="en" words="{{ fixWords }}" on-key="{{ fixKb }}" style="width:100%" hint-size="100%,346px"></dc-import>
 </div>
 </sc-if>
 
@@ -126,7 +124,16 @@ class Component extends DCLogic {
       open: !!s.open, text: s.text || '', pending: s.pending ? (s.fix ? (s.fixText ?? best) : best) + ' ' : '',
       paperTop, paperH, baseY, inkD: inkD || 'M0 0', inkOp: s.pending ? '0.35' : '1',
       hasCands: !!s.pending && !s.fix, fixing: !!s.fix, inkPE: s.fix ? 'none' : 'auto',
-      kbRows: this.kbRows(v, !!s.shift, (t, sh) => u(st => ({ fixText: t(st.fixText ?? best), shift: sh })), () => commit((this.state.fixText || '').trim() || best, true)), kbR: v.chipR === '0' ? '0' : '6px', fixText: s.fixText ?? best,
+      voice, scheme: p.scheme ?? 'eink', penN: p.pen ?? '1', fixWords: [best, ...alts.filter(x => x !== best)].join('|'),
+      fixKb: o => {
+        if (o.key === 'enter') return commit((this.state.fixText || '').trim() || best, true);
+        if (o.key === 'hide' || o.key === 'handwriting') return u({ fix: false });
+        u(st => { const t = st.fixText ?? best;
+          if (o.word) return { fixText: o.text.trim() };
+          if (o.text != null) return { fixText: t + o.text };
+          if (o.key === 'backspace') return { fixText: t.slice(0, -1) };
+          return null; });
+      }, fixText: s.fixText ?? best,
       noted: !!s.noted, noteText: 'Noted. This paper learns your handwriting, on this device only.',
       toFix: e => { e.stopPropagation(); clearTimeout(this.tm); u({ fix: true, fixText: best }); },
       fixChange: e => u({ fixText: e.target.value }),
@@ -160,23 +167,6 @@ class Component extends DCLogic {
 
   // The paper is shell, not app: its edge, chips and type follow the voice (as EinkShell's
   // cards and segments do); the app under it keeps its own look.
-  // The on-screen keyboard as it comes up for a correction (a plain QWERTY; the real one
-  // follows the person's layout). Letters edit the correction field; Enter uses it.
-  kbRows(v, shift, edit, done) {
-    const key = (l, w, act, special) => ({ l, name: l, w: String(w),
-      bg: special ? 'color-mix(in srgb, var(--il-ink) 8%, var(--il-paper))' : 'var(--il-paper)', fg: 'var(--il-ink)', sh: v.chipSh,
-      font: (special ? "400 22px/1 'Material Symbols Outlined'" : '400 22px ' + v.font),
-      on: e => { e.preventDefault(); act(); } });
-    const ch = c => { const l = shift ? c.toUpperCase() : c; return key(l, 1, () => edit(t => t + l, false)); };
-    const icon = (name, label, w, act) => Object.assign(key(name, w, act, true), { name: label });
-    return [
-      { pad: '0', keys: [...'qwertyuiop'].map(ch) },
-      { pad: '22px', keys: [...'asdfghjkl'].map(ch) },
-      { pad: '0', keys: [icon('shift', 'Shift', 1.5, () => edit(t => t, !shift)), ...[...'zxcvbnm'].map(ch), icon('backspace', 'Backspace', 1.5, () => edit(t => t.slice(0, -1), shift))] },
-      { pad: '0', keys: [Object.assign(key(',', 1, () => edit(t => t + ',', false)), {}), Object.assign(key('space', 5, () => edit(t => t + ' ', false)), { font: '400 15px ' + v.font }), key('.', 1, () => edit(t => t + '.', false)), icon('keyboard_return', 'Enter', 1.5, done)] }
-    ];
-  }
-
   voiceLook(voice) {
     const ink = 'var(--il-ink)', acc = 'var(--il-accent)', on = 'var(--il-on-accent)';
     return {

@@ -33,6 +33,15 @@
         </aside>
       </sc-if>
 
+      <sc-if value="{{ refused }}" hint-placeholder-val="{{ false }}">
+        <aside class="il-admonition il-admonition--warning" id="refused">
+          <span class="il-admonition__label"><span class="il-admonition__seal" aria-hidden="true">G</span>The installation didn’t start</span>
+          <p class="il-admonition__title">The file didn’t work on {{ the }}</p>
+          <p>{{ sp.refused }} Nothing was read, and nothing on {{ the }} was changed.</p>
+          <p><strong>Way out:</strong> {{ sp.leave }} Then choose another file and back up again, or go back to the plan and choose to install without a backup.</p>
+        </aside>
+      </sc-if>
+
       <div class="ins-card">
         <span class="il-label">The backup goes to</span>
         <span class="ins-card__title">{{ where.chosen }}</span>
@@ -69,15 +78,16 @@
   </main>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"machine":{"editor":"enum","options":["device","pc"],"default":"device"},"state":{"editor":"enum","options":["saving","verifying","verified","failed"],"default":"saving"},"$preview":{"width":1280,"height":1500}}'>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"machine":{"editor":"enum","options":["device","pc"],"default":"device"},"state":{"editor":"enum","options":["saving","verifying","verified","failed","refused"],"default":"saving"},"$preview":{"width":1280,"height":1500}}'>
 class Component extends DCLogic {
   renderVals() {
     const p = this.props, I = window.INSTALLER, mk = p.machine ?? 'device', m = I.machines[mk], st = p.state ?? 'saving';
-    const n = m.backupItems.length, at = st === 'saving' ? m.backupAt : st === 'verifying' ? 2 : st === 'failed' ? 3 : n;
-    const reading = st !== 'saving';
+    const n = m.backupItems.length, at = st === 'saving' ? m.backupAt : st === 'verifying' ? 2 : st === 'failed' ? 3 : st === 'refused' ? -1 : n;
+    const reading = st !== 'saving' && st !== 'refused';
     const items = m.backupItems.map((it, i) => {
       let status, cls, tick = false, bar = false, tagCls = 'ins-tag';
       if (st === 'failed' && i === at) { status = 'Didn’t fit'; cls = 'ins-yn ins-yn--no'; tagCls = 'ins-tag ins-tag--heavy'; }
+      else if (st === 'refused') { status = 'Not read'; cls = 'ins-yn ins-yn--no'; tagCls = 'ins-tag ins-tag--soft'; }
       else if (i < at) { status = reading ? 'Read back · matches' : 'Saved'; cls = 'ins-yn ins-yn--yes'; tick = true; }
       else if (i === at && st !== 'verified') { status = reading ? 'Reading back' : 'Saving'; cls = 'ins-yn ins-yn--wait'; bar = st !== 'failed'; tagCls = 'ins-tag ins-tag--heavy'; }
       else { status = st === 'failed' ? 'Not checked' : reading ? 'Saved, to read back' : 'Waiting'; cls = 'ins-yn ins-yn--no'; tagCls = 'ins-tag ins-tag--soft'; }
@@ -88,18 +98,21 @@ class Component extends DCLogic {
       saving: ['Back up · step 1 of the plan', 'Backing up ' + m.the, (m.backupTotal ? 'A full copy of the whole device, compressed.' : 'The installer copies every part it will replace or change.') + ' Nothing on ' + m.the + ' is written yet.'],
       verifying: ['Back up · checking the copy', 'Reading the backup back', 'Each part is read back from the backup and compared with ' + m.the + ', before anything is written.'],
       verified: ['Back up · done', 'The backup is complete', 'It reads back the same as ' + m.the + '.'],
-      failed: ['Back up · stopped, nothing was written', 'The backup doesn’t fit', 'The installation didn’t start.']
+      failed: ['Back up · stopped, nothing was written', 'The backup doesn’t fit', 'The installation didn’t start.'],
+      refused: ['Back up · stopped, nothing was read', 'The programmer didn’t work', 'The installation didn’t start.']
     }[st];
     return { theme: window.INSTALLER_THEME(p.voice, p.scheme), voice: p.voice ?? 'white', scheme: p.scheme ?? 'paper', pen: p.pen ?? '1',
       mk, the: m.the, where: m.backupWhere, items, pct: st === 'saving' ? m.backupPct : 30,
       whereNote: 'Keep it: with it ' + m.the + ' can be repaired, or go back to stock. ' + m.keepConnected,
       total: m.backupTotal ? 'about 8.6 GB' : 'enough room', totalLine: m.backupTotal || '',
-      failed: st === 'failed', verified: st === 'verified', unchanged,
-      listTitle: reading ? 'Read back, part by part' : 'Saved, part by part',
+      failed: st === 'failed', refused: st === 'refused', sp: m.supply || {}, verified: st === 'verified', unchanged,
+      listTitle: st === 'refused' ? 'The parts the backup reads' : reading ? 'Read back, part by part' : 'Saved, part by part',
       eyebrow: T[0], title: T[1], lead: T[2],
-      next: st === 'failed' ? 'Nothing, until there is a backup that reads back.' : st === 'verified' ? 'The installation starts with step 2.' : 'When every part reads back, the installation starts by itself.',
-      out: st === 'failed' ? 'Stop here. ' + unchanged : 'Stop now. ' + unchanged + ' The backup stays where it is.',
-      buttons: st === 'failed'
+      next: st === 'refused' ? 'Nothing, until a programmer works on ' + m.the + '.' : st === 'failed' ? 'Nothing, until there is a backup that reads back.' : st === 'verified' ? 'The installation starts with step 2.' : 'When every part reads back, the installation starts by itself.',
+      out: st === 'failed' || st === 'refused' ? 'Stop here. ' + unchanged : 'Stop now. ' + unchanged + ' The backup stays where it is.',
+      buttons: st === 'refused'
+        ? [{ label: 'Choose another file', href: 'supply.device.dc.html', primary: true }, { label: 'Back to the plan', href: 'plan.device.dc.html' }, { label: 'Stop here', href: 'start.browser.dc.html', push: true }]
+        : st === 'failed'
         ? [{ label: 'Choose another place', href: 'backup.device.dc.html', primary: true }, { label: 'Back to the plan', href: 'plan.device.dc.html' }, { label: 'Stop here', href: 'start.browser.dc.html', push: true }]
         : st === 'verified' ? [{ label: 'Continue', href: mk === 'pc' ? 'install.pc.dc.html' : 'install.device.ponr.dc.html', primary: true }]
         : [{ label: 'Stop', href: 'start.browser.dc.html' }] };

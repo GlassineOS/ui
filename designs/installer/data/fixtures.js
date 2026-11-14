@@ -97,7 +97,7 @@ window.INSTALLER = {
       },
       steps: [
         { id: 'backup', title: 'Back up the whole device', body: 'The installer copies the whole device, every part and its partition table, compressed, to the place you choose, and reads the copy back to check it.',
-          escape: 'Nothing on the device has changed yet. It starts Android as before.', tech: 'every partition and the partition table (GPT): 29.5 GB raw, about 8.6 GB compressed (estimate)',
+          escape: 'Nothing on the device has changed yet. It starts Android as before.', tech: 'every partition and the partition table (GPT), read in the chip’s emergency mode through the programmer you provide: 29.5 GB raw, about 8.6 GB compressed (estimate)',
           noBackup: { title: 'Save the values unique to this device', body: 'Its calibration and the like, to the folder you choose. There is no backup: you chose to install without one.', tech: 'persist, onyxconfig, modemst1, modemst2, fsg, devinfo' } },
         { id: 'loader', title: 'Replace the boot loader', ponr: true, body: 'The device gets GlassineOS’s boot loader. It starts both systems; Android keeps working with it.',
           escape: 'The device starts only in its emergency mode. With the emergency cable, the installer puts the old boot loader back from the backup.', cable: true, tech: 'abl: GlassineOS boot loader, signed with the test keys the device accepts',
@@ -131,6 +131,26 @@ window.INSTALLER = {
       backupAt: 5, backupPct: 62,
       installAt: 3, installPct: 45,
       keepConnected: 'Keep the Note Air connected and this page open.',
+      /* A file the backup needs that only the person can provide (installer spec 004; description
+         [[supplied_files]], spec 002 FR-018b). No link and no search: the usual name is shown to copy. */
+      supply: {
+        noun: 'emergency programmer',
+        title: 'The Note Air’s emergency programmer',
+        what: 'A small program, signed by the chip’s maker, that the Note Air runs in its emergency mode. Through it the installer reads the whole device for the backup, before anything changes. It isn’t on the device, so the installer can’t read it from there.',
+        why: 'It belongs to the chip’s maker, and GlassineOS may not pass it on. You find it yourself, for your own device. It stays on this computer, is used only for this backup, and is never uploaded.',
+        matches: [['Chip', 'Qualcomm Snapdragon 636 (000cc0e1)'], ['Signing key', '7be49b72f9e43372…'], ['Kind', 'A Firehose programmer for eMMC storage']],
+        usualName: '000cc0e100000000_7be49b72f9e43372_',
+        nameNote: 'Files for Qualcomm’s emergency mode are named after the chip and its signing key. Search the web for a file whose name starts with this; the end of the name varies.',
+        risk: 'The Note Air runs any programmer that carries a test signature, and a programmer can read and change all of its storage. A changed file could damage the device or what is on it. A known file is the same, byte for byte, as one that has read Note Airs before.',
+        files: {
+          known: { name: '000cc0e100000000_7be49b72f9e43372_fhprg_bqx2_peek.bin', size: '620 KB', sum: 'b3e40955 8677f9b2 … 98d86c14 d41b', note: 'The same as a file that has read Note Airs in testing.' },
+          unknown: { name: 'prog_firehose_sdm636_emmc.elf', size: '612 KB', sum: '9f2a07c1 3e5b88d0 … 0b7e19aa 41c7', note: 'Made for this chip and its signing key, but not the same as any file known to work.' },
+          wrong: { name: '0014d0e100000000_d40eee56f3194665_FHPRG.bin', size: '588 KB', sum: '4410d2be 90ac7f13 … c25e8b04 7d91',
+            rows: [['Chip', 'Qualcomm Snapdragon 662 (0014d0e1)', 'Snapdragon 636 (000cc0e1)'], ['Signing key', 'd40eee56f3194665…', '7be49b72f9e43372…'], ['Storage', 'UFS', 'eMMC']] }
+        },
+        refused: 'The Note Air didn’t accept the programmer, or the programmer didn’t answer the installer.',
+        leave: 'Hold the power button for about 10 seconds: the Note Air leaves its emergency mode and starts Android.'
+      },
       restart: 'The Note Air restarts into GlassineOS',
       verifyWhere: 'Keep the Note Air connected. This page follows its start.',
       cutAt: 3,

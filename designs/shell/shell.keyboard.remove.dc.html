@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Removing a suggestion</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}a{color:#1b1b1b}a:hover{color:#4a4a4a}</style>
+</helmet>
+<div data-spec-id="shell.keyboard.remove" style="width:824px;height:1090px;box-sizing:border-box;padding:28px 32px;display:flex;flex-direction:column;gap:18px;background:#e6e6e6;color:#1b1b1b;font-family:'IBM Plex Sans',sans-serif">
+<div style="display:flex;flex-direction:column;gap:6px">
+<span style="font:500 13px/1.2 'IBM Plex Mono',monospace;color:#3d3d3d">shell.keyboard.remove</span>
+<h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">Removing a suggestion</h1>
+<p style="margin:0;max-width:760px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">Hold a word in the strip (0.5 s) and the strip asks, in its own row, whether to remove it: no popup, one strip update. Removed, the word is never suggested again and isn't learned again; typing it still works. Here the keyboard once learned the typo “teh”: hold it, then Remove. The settings list every learned and removed word (settings.keyboard.words).</p>
+</div>
+<dc-import name="ThemeBar" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" on-pick="{{ pick }}" hint-size="100%,112px"></dc-import>
+<div role="group" aria-label="Layout" style="display:flex;align-items:center;gap:8px">
+<span style="font:500 11px/1 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:#3d3d3d;padding-right:4px">Layout</span>
+<sc-for list="{{ layouts }}" as="o" hint-placeholder-count="2"><button type="button" aria-pressed="{{ o.pressed }}" onClick="{{ o.on }}" style="height:34px;box-sizing:border-box;padding:0 14px;border-radius:9px;border:1.5px solid #1b1b1b;background:{{ o.bg }};color:{{ o.fg }};font:500 14px 'IBM Plex Sans',sans-serif;cursor:pointer">{{ o.l }}</button></sc-for>
+</div>
+<div style="width:760px;background:#262626;border-radius:28px;padding:24px;box-sizing:border-box">
+<div style="width:712px;display:flex;flex-direction:column;background:#ffffff">
+<div style="height:250px;box-sizing:border-box;padding:18px 20px;font:400 18px/28px 'IBM Plex Sans',sans-serif;color:#111111;white-space:pre-wrap;overflow:hidden"><span>{{ typed }}</span><span style="display:inline-block;width:2px;height:24px;vertical-align:-5px;background:#111111"></span></div>
+<dc-import name="EinkKeyboard" theme="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" layout="{{ layout }}" words="{{ words }}" ask="{{ ask }}" note="{{ note }}" handwriting="{{ hw }}" on-key="{{ onKey }}" style="width:100%" hint-size="100%,346px"></dc-import>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "step": {"editor": "enum", "options": ["suggest", "ask", "removed"], "default": "suggest"}, "$preview": {"width": 824, "height": 1090}}'>
+class Component extends DCLogic {
+  state = {};
+  componentWillUnmount() { clearTimeout(this.nt); }
+  // Stand-in suggestions: completions of the word being typed from a short list, else the
+  // commonest words to follow it. The real ones come from the predictor (shell spec 006).
+  // "teh" is a learned typo; removed words drop out of the list.
+  suggest(text, layout, removed) {
+    const W = (layout === 'de'
+      ? ['ich', 'die', 'teh', 'und', 'der', 'das', 'nicht', 'sie', 'ist', 'wir', 'mit', 'auf', 'für', 'heute', 'morgen', 'später', 'danke', 'gerne', 'genau', 'gut', 'schön', 'sehen', 'treffen', 'uns', 'um', 'acht']
+      : ['the', 'teh', 'I', 'and', 'to', 'you', 'a', 'it', 'is', 'that', 'of', 'see', 'soon', 'so', 'sure', 'thanks', 'today', 'tomorrow', 'tonight', 'there', 'they', 'meet', 'at', 'eight', 'great', 'good'])
+      .filter(w => !removed.includes(w));
+    const m = /(\S*)$/.exec(text), part = (m && m[1] || '').toLowerCase();
+    const hits = part ? W.filter(w => w.toLowerCase().startsWith(part) && w.toLowerCase() !== part) : W;
+    return hits.slice(0, 3).join('|');
+  }
+  // The state a step prop starts from, so each step can be previewed without holding a word.
+  start() {
+    const step = this.props.step, gone = 'Removed “teh” · not suggested or learned again';
+    return { typed: 'Meet me at t', removed: step === 'removed' ? ['teh'] : [], ask: step === 'ask' ? 'teh' : '', note: step === 'removed' ? gone : '' };
+  }
+  key(st, o) {
+    const t = st.typed;
+    if (o.hold) return { ask: o.hold, note: '' };
+    if (o.key === 'keep') return { ask: '' };
+    if (o.key === 'remove') {
+      clearTimeout(this.nt); this.nt = setTimeout(() => this.setState(st => ({ kb: { ...(st.kb || this.start()), note: '' } })), 2600);
+      return { ask: '', removed: [...st.removed, o.word], note: 'Removed “' + o.word + '” · not suggested or learned again' };
+    }
+    if (o.word) { const part = /(\S*)$/.exec(t)[1], w = part && part[0] !== part[0].toLowerCase() ? o.text[0].toUpperCase() + o.text.slice(1) : o.text; return { typed: t.slice(0, t.length - part.length) + w, note: '' }; }
+    if (o.text != null) return { typed: t + o.text, note: '' };
+    if (o.key === 'backspace') return { typed: t.slice(0, -1), note: '' };
+    if (o.key === 'enter') return { typed: t + '\n' };
+    if (o.key === 'tab') return { typed: t + '\t' };
+    if (o.key === 'handwriting') return { hw: !st.hw };
+    return null;
+  }
+  renderVals() {
+    const s = this.state, p = this.props, u = q => this.setState(q);
+    const cur = s.kb || this.start(), layout = s.layout || 'en';
+    return { voice: s.voice ?? p.voice ?? 'white', scheme: s.scheme ?? 'eink', pen: s.pen ?? '1', layout, typed: cur.typed, hw: !!cur.hw,
+      words: this.suggest(cur.typed, layout, cur.removed), ask: cur.ask, note: cur.note,
+      layouts: [['en', 'English (QWERTY)'], ['de', 'German (QWERTZ)']].map(([id, l]) => ({ l, pressed: String(id === layout), bg: id === layout ? '#1b1b1b' : 'transparent', fg: id === layout ? '#ffffff' : '#1b1b1b', on: () => u({ layout: id }) })),
+      onKey: o => u(st => { const c = st.kb || this.start(), r = this.key(c, o); return r && { kb: { ...c, ...r } }; }),
+      pick: (k, v) => this.setState({ [k]: v }) };
+  }
+}
+</script>
+</body>
+</html>

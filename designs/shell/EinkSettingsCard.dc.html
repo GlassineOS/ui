@@ -88,7 +88,7 @@
 
 <sc-if value="{{ b.isBtn }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:center;gap:14px;padding:12px 0 14px">
 <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px"><span style="font:{{ k.row }}">{{ b.label }}</span><span style="display:{{ b.subD }};font:{{ k.sub }};color:{{ k.subC }};text-wrap:pretty">{{ b.sub }}</span></div>
-<div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ b.on }}" style="height:48px;flex:none;box-sizing:border-box;padding:0 26px;border:1.5px solid var(--il-ink,#111111);border-radius:999px;display:flex;align-items:center;font:{{ k.row }};color:{{ b.bFg }};cursor:pointer;box-shadow:{{ k.pillSh }}">{{ b.btn }}</div>
+<div tabindex="0" role="button" aria-label="{{ b.aria }}" onKeyDown="{{ ilKey }}" onClick="{{ b.on }}" style="height:48px;flex:none;box-sizing:border-box;padding:0 26px;border:1.5px solid var(--il-ink,#111111);border-radius:999px;display:flex;align-items:center;font:{{ k.row }};color:{{ b.bFg }};cursor:pointer;box-shadow:{{ k.pillSh }}">{{ b.btn }}</div>
 </div></sc-if>
 
 <sc-if value="{{ b.isSl }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;padding:14px 0 10px">
@@ -115,7 +115,7 @@
 <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;padding:4px;border:1.5px solid var(--il-ink,#111111);border-radius:{{ k.segR }}"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ b.autoOn }}" style="height:62px;box-sizing:border-box;border-radius:{{ k.segOnR }};border:{{ b.aBd }};background:{{ b.aBg }};color:{{ b.aFg }};box-shadow:{{ b.aSh }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer"><span style="font:400 24px/1 'Material Symbols Outlined'">screen_rotation</span><span style="font:{{ k.sub }};font-size:13px;line-height:1">Auto</span></div><sc-for list="{{ b.opts }}" as="o" hint-placeholder-count="4"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ o.on }}" style="height:62px;box-sizing:border-box;border-radius:{{ k.segOnR }};border:{{ o.bd }};background:{{ o.bg }};color:{{ o.fg }};box-shadow:{{ o.sh }};display:flex;align-items:center;justify-content:center;cursor:pointer"><div style="width:24px;height:33px;margin-bottom:5px;box-sizing:border-box;border:1.5px solid currentColor;border-style:{{ o.bs }};border-radius:4px;position:relative;display:flex;align-items:center;justify-content:center"><span style="font:700 14px/1 'IBM Plex Sans';transform:rotate({{ o.deg }})">T</span><div style="position:absolute;bottom:-6px;left:50%;width:9px;height:2.5px;margin-left:-4.5px;border-radius:1px;background:currentColor"></div></div></div></sc-for></div>
 </div></sc-if>
 
-<sc-if value="{{ b.isSearch }}" hint-placeholder-val="{{ false }}"><form role="search" onSubmit="{{ b.submit }}" style="margin:14px 0 14px;display:flex;align-items:center;gap:10px"><label style="flex:1;min-width:0;height:52px;box-sizing:border-box;padding:0 14px;display:flex;align-items:center;gap:10px;border:1.5px solid var(--il-ink,#111111);border-radius:{{ k.segR }};cursor:text"><span aria-hidden="true" style="font:400 22px/1 'Material Symbols Outlined'">search</span><input data-widget="text-field" data-osk="search" type="search" name="q" aria-label="Search packages" placeholder="Package name or words from its description" inputmode="search" enterkeyhint="search" autocomplete="off" autocapitalize="none" spellcheck="false" value="{{ b.q }}" onChange="{{ b.change }}" style="flex:1;min-width:0;height:100%;border:0;outline:none;background:transparent;padding:0;font:{{ k.row }};color:var(--il-ink,#111111)"></label><button type="submit" style="height:52px;flex:none;box-sizing:border-box;padding:0 20px;border:1.5px solid var(--il-ink,#111111);border-radius:{{ k.segR }};background:var(--il-paper,#ffffff);color:var(--il-ink,#111111);font:{{ k.row }};cursor:pointer">Search</button></form></sc-if>
+<sc-if value="{{ b.isSearch }}" hint-placeholder-val="{{ false }}"><form role="search" onSubmit="{{ b.submit }}" style="margin:14px 0 14px;display:flex;align-items:center;gap:10px"><label style="flex:1;min-width:0;height:52px;box-sizing:border-box;padding:0 14px;display:flex;align-items:center;gap:10px;border:1.5px solid var(--il-ink,#111111);border-radius:{{ k.segR }};cursor:text"><span aria-hidden="true" style="font:400 22px/1 'Material Symbols Outlined'">search</span><input data-widget="text-field" data-osk="search" type="search" name="q" aria-label="{{ b.ph }}" placeholder="{{ b.ph }}" inputmode="search" enterkeyhint="search" autocomplete="off" autocapitalize="none" spellcheck="false" value="{{ b.q }}" onChange="{{ b.change }}" style="flex:1;min-width:0;height:100%;border:0;outline:none;background:transparent;padding:0;font:{{ k.row }};color:var(--il-ink,#111111)"></label><button type="submit" style="height:52px;flex:none;box-sizing:border-box;padding:0 20px;border:1.5px solid var(--il-ink,#111111);border-radius:{{ k.segR }};background:var(--il-paper,#ffffff);color:var(--il-ink,#111111);font:{{ k.row }};cursor:pointer">Search</button></form></sc-if>
 
 <sc-if value="{{ b.isPkg }}" hint-placeholder-val="{{ false }}"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ b.on }}" style="display:flex;align-items:center;gap:14px;min-height:48px;padding:12px 0 13px;cursor:pointer">
 <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px">
@@ -180,6 +180,9 @@ class Component extends DCLogic {
     flu: 'Balanced', grad: true, idle: '1 s', dith: 'Blue', ag: true, rail: false, nextf: true, c2g: 'Natural', draw: 'GPU',
     tsize: 50, face: 'Serif', rotAuto: true, rot: 0, sensor: 0, pct: true, secs: false,
     osk: true, kbSize: 'Medium', kbFlash: false, kbSugg: true, kbHw: true, kbLearn: true, kbLearnedW: 214, kbLearnedH: 37,
+    // learned words, most used first (a sample of them; kbLearnedW is the total), and the removed ones
+    kbWordsL: [['okay', 96], ['gonna', 41], ['teh', 23], ['e-ink', 19], ['tmrw', 17], ['Glassine', 14], ['sourdough', 9], ['kerning', 7], ['brb', 6], ['Hokusai', 4], ['wanna', 3], ['refactor', 2]],
+    kbGone: [], kbQ: '',
     pkQ: '', pkSel: 'retroarch', pkFrom: 'pkgSearch', pkSheet: null, pkPlanPg: 0, pkRun: null, pkRes: null, pkAck: false, pkUpd: 'never',
     pkInst: ['libretro-mgba', 'htop', 'vim', 'sdl2', 'firefox', 'mesa'], pkAdded: ['htop', 'vim'], pkRemoved: ['nano'], pkNewer: ['firefox', 'mesa'],
     g: { '3left': 'Previous screen', '3right': 'Next screen', '3up': 'Full screen', '3down': 'Leave full screen', '4left': 'Back', '4right': 'Forward', '4up': 'Home', '4down': 'Refresh screen' }, edge: true,
@@ -583,7 +586,7 @@ class Component extends DCLogic {
       info: (label, val) => ({ k: 'info', label, val, h: 52 }),
       app: (name, icon, note, fn, badge, bIcon) => ({ k: 'app', label: name, icon, sub: note, h: 70, on: fn, badge: badge || '', bIcon: bIcon || '', badgeD: badge ? 'flex' : 'none' }),
       radio: (label, on, fn) => ({ k: 'radio', label, h: 54, on: fn, dot: on ? 'block' : 'none' }),
-      btn: (label, sub, btn, fn, enabled) => ({ k: 'button', label, sub, btn, h: 80, on: fn, bFg: enabled === false ? DIM : 'var(--il-ink,#111111)' })
+      btn: (label, sub, btn, fn, enabled) => ({ k: 'button', label, sub, btn, aria: btn + ' · ' + label, h: 80, on: fn, bFg: enabled === false ? DIM : 'var(--il-ink,#111111)' })
     };
 
     // Fluidity: four steps that describe how motion feels; the waveforms behind them are the daemon's business.
@@ -671,7 +674,7 @@ class Component extends DCLogic {
       appearance: () => [S('Theme', [W.seg('Theme', ['White', 'Editorial', 'Stationery'], cap1(themeId), o => u({ theme: o.toLowerCase() }))]), S('Text', [W.sl('Text size', s.tsize, set('tsize'), ' %'), W.seg('Typeface', ['Sans', 'Serif'], s.face, set('face'))]), S('Rotation', [rot]), S('Top bar', [W.tog('Battery percentage', null, s.pct, flip('pct')), W.tog('Seconds on the clock', null, s.secs, flip('secs'))])],
       gestures: () => [3, 4].map(n => S(n === 3 ? 'Three fingers' : 'Four fingers', DIRS.map(([d, ic, l]) => W.link(l, s.g[n + d], pickGo('g' + n + d), ic)))).concat([S('Edges', [W.tog('Swipe down from the top', 'Opens notifications', s.edge, flip('edge'))])]),
       power: () => [S('Battery', [W.info('Charge', '69 %'), W.info('Estimate', 'About 3 weeks of reading'), W.info('Health', 'Good')]), S('Saving', [W.tog('Battery saver', 'Slower refresh, no background sync', s.saver, flip('saver')), W.seg('Sleep after', ['2 min', '5 min', '10 min', '30 min'], s.sleepAfter, set('sleepAfter'))]), S('Sleep', [W.tog('Show the sleep notice', 'A small pill over the last page', s.pill, flip('pill'))])],
-      keyboard: () => [S('On-screen keyboard', [W.tog('Show when typing', 'Opens when a text field is selected', s.osk, flip('osk')), W.seg('Size', ['Small', 'Medium', 'Large'], s.kbSize, set('kbSize')), W.tog('Flash keys', 'Inverts each key briefly when tapped', s.kbFlash, flip('kbFlash'))]), S('Typing', [W.tog('Suggestions', 'Three words above the keys, from the text before the cursor', s.kbSugg, flip('kbSugg')), W.tog('Handwriting', 'A pen tap on an empty field lays a sheet of paper over it', s.kbHw, flip('kbHw')), W.tog('Learn as I go', 'New words and corrected handwriting, kept on this device only', s.kbLearn, flip('kbLearn')), W.btn('Erase what was learned', s.kbLearnedW || s.kbLearnedH ? s.kbLearnedW + ' words · ' + s.kbLearnedH + ' handwriting samples' : 'Nothing learned', 'Erase', () => u({ kbLearnedW: 0, kbLearnedH: 0 }), !!(s.kbLearnedW || s.kbLearnedH))]), S('Hardware', [W.link('Layout', 'English (UK)', () => {})])],
+      keyboard: () => [S('On-screen keyboard', [W.tog('Show when typing', 'Opens when a text field is selected', s.osk, flip('osk')), W.seg('Size', ['Small', 'Medium', 'Large'], s.kbSize, set('kbSize')), W.tog('Flash keys', 'Inverts each key briefly when tapped', s.kbFlash, flip('kbFlash'))]), S('Typing', [W.tog('Suggestions', 'Three words above the keys, from the text before the cursor', s.kbSugg, flip('kbSugg')), W.tog('Handwriting', 'A pen tap on an empty field lays a sheet of paper over it', s.kbHw, flip('kbHw')), W.tog('Learn as I go', 'New words and corrected handwriting, kept on this device only', s.kbLearn, flip('kbLearn')), W.link('Learned words', s.kbLearnedW ? s.kbLearnedW + ' words' + (s.kbGone.length ? ' · ' + s.kbGone.length + ' removed' : '') + ' · remove any of them' : s.kbGone.length ? s.kbGone.length + ' removed' : 'None yet', () => u({ topic: 'kbWords', sub: null, subPrev: null, pg: 0 }), 'menu_book'), W.btn('Erase what was learned', s.kbLearnedW || s.kbLearnedH || s.kbGone.length ? s.kbLearnedW + ' words · ' + s.kbLearnedH + ' handwriting samples' : 'Nothing learned', 'Erase', () => u({ kbLearnedW: 0, kbLearnedH: 0, kbWordsL: [], kbGone: [] }), !!(s.kbLearnedW || s.kbLearnedH || s.kbGone.length))]), S('Hardware', [W.link('Layout', 'English (UK)', () => {})])],
       time: () => [S('Clock', [W.tog('Set automatically', 'From the network', s.autoT, flip('autoT')), W.seg('Format', ['24-hour', '12-hour'], s.fmt, set('fmt'))]), S('Place', [W.link('Time zone', s.tz, pickGo('tz'), 'public'), W.info('Now', '20:11 · Mon 28 Sep')])],
       language: () => [S('Language', [W.link('System language', s.lang, pickGo('lang'), 'language')]), S('Formats', [W.info('Dates', '28/09/2026'), W.info('Numbers', '1,234.5')])],
       gallery: () => [S('Toggle', [W.tog('Gradual speed-up', GRAD_SUB, s.grad, flip('grad'))], { list: true }),
@@ -697,7 +700,7 @@ class Component extends DCLogic {
     const pkTo = id => () => u({ topic: id, sub: null, subPrev: null, pg: 0 });
     const pkAsk = (op, name) => running ? null : () => u(st => st.pkRun ? null : st.pkAck ? { pkSheet: { op, name }, pkPlanPg: 0 } : { pkSheet: { ack: true, op, name }, pkPlanPg: 0 });
     // A plain text field. Focus opens the system on-screen keyboard (the OSK daemon) with a Search enter key; Settings draws no keyboard.
-    W.search = () => ({ k: 'search', label: 'Search', h: 80, nosep: true, q: s.pkQ || '', change: e => u({ pkQ: e.target.value }),
+    W.search = () => ({ k: 'search', label: 'Search', ph: 'Package name or words from its description', h: 80, nosep: true, q: s.pkQ || '', change: e => u({ pkQ: e.target.value }),
       submit: e => { e.preventDefault(); if ((this.state.pkQ || '').trim()) u({ topic: 'pkgSearch', pg: 0 }); } });
     W.count = (label, n, sub, fn) => ({ ...W.link(label, sub || 'None', fn), val: String(n) });
     W.pkg = n => { const d = PKD[n] || {}; return { k: 'pkg', label: n, val: d.v || '', sub: d.d || '', instD: isInst(n) ? 'flex' : 'none', h: 80, on: pkOpen(n) }; };
@@ -707,6 +710,13 @@ class Component extends DCLogic {
     const ERR = 'ERROR: unable to select packages:\n  retroarch-1.21.0-r0:\n    conflicts: retroarch-git-1.21.0_git20261028-r0\n      [cmd:retroarch=1.21.0-r0]\n    satisfies: world[retroarch]';
     const ERR_FULL = ['fetch https://dl-cdn.alpinelinux.org/alpine/v3.21/main/aarch64/APKINDEX.tar.gz', 'fetch https://dl-cdn.alpinelinux.org/alpine/v3.21/community/aarch64/APKINDEX.tar.gz', 'fetch https://repo.glassine.org/v3.21/aarch64/APKINDEX.tar.gz', ...ERR.split('\n'), '  retroarch-git-1.21.0_git20261028-r0:', '    conflicts: retroarch-1.21.0-r0', '      [cmd:retroarch=1.21.0_git20261028-r0]', '    satisfies: world[retroarch-git]', '', 'apk add retroarch: exit status 1', 'Nothing was changed.'];
     const NEWER = { firefox: '142.0.1 · the system has 142.0', mesa: '24.2.8 · the system has 24.2.7' };
+    const kbRm = w => () => u(st => ({ kbWordsL: st.kbWordsL.filter(x => x[0] !== w), kbGone: [w, ...st.kbGone], kbLearnedW: Math.max(0, st.kbLearnedW - 1) }));
+    const kbBack = w => () => u(st => ({ kbGone: st.kbGone.filter(x => x !== w) }));
+    PAGES.kbWords = () => { const q = (s.kbQ || '').trim().toLowerCase(), hits = s.kbWordsL.filter(([w]) => !q || w.toLowerCase().includes(q));
+      return [S('', [W.note('Words the keyboard learned from your typing, kept on this device only. A removed word is never suggested or learned again; you can still type it.')]),
+        S('Search', [{ ...W.search(), ph: 'A learned word', q: s.kbQ || '', change: e => u({ kbQ: e.target.value, pg: 0 }), submit: e => e.preventDefault() }], { list: true }),
+        S(q ? hits.length + (hits.length === 1 ? ' match' : ' matches') : 'Most used first', hits.length ? hits.map(([w, n]) => W.btn(w, n === 1 ? 'Used once' : 'Used ' + n + ' times', 'Remove', kbRm(w))) : [W.note(q ? 'No learned word matches.' : 'Nothing learned yet.')], { list: true, right: s.kbLearnedW + ' words' }),
+        S('Removed', s.kbGone.length ? s.kbGone.map(w => W.btn(w, 'Not suggested or learned again', 'Put back', kbBack(w))) : [W.note('Nothing removed. You can also hold a word in the keyboard’s suggestions to remove it.')], { list: true })]; };
     Object.assign(PAGES, {
       packages: () => [pkStatus(),
         S('Search', [W.search(), W.note('Alpine packages, including software without a store page, such as RetroArch. Flatpaks are in Software.')]),
@@ -734,7 +744,7 @@ class Component extends DCLogic {
     });
     const PKT = { packages: ['Packages', 'Apps', 'apps'], pkgSearch: ['“' + (s.pkQ || '') + '”', 'Packages', 'packages'],
       pkg: [s.pkSel, s.pkFrom === 'pkgChanges' ? 'Your changes' : s.pkFrom === 'pkgSearch' ? 'Results' : 'Packages', s.pkFrom || 'pkgSearch'],
-      pkgChanges: ['Your changes', 'Packages', 'packages'], pkgUpdates: ['Updates', 'Packages', 'packages'], pkgOutput: ['apk output', s.pkSel, 'pkg'] };
+      pkgChanges: ['Your changes', 'Packages', 'packages'], pkgUpdates: ['Updates', 'Packages', 'packages'], pkgOutput: ['apk output', s.pkSel, 'pkg'], kbWords: ['Words', 'Keyboard', 'keyboard'] };
 
     // the sheet on the card: first-change note, plan, result
     let sh = { show: false };
@@ -818,7 +828,7 @@ class Component extends DCLogic {
       isHead: b.k === 'section-head', isTog: b.k === 'toggle', isSeg: b.k === 'segmented', isNote: b.k === 'note', isSl: b.k === 'slider', isRange: b.k === 'range', isLink: b.k === 'link', isInfo: b.k === 'info', isApp: b.k === 'app', isRadio: b.k === 'radio', isDith: b.k === 'dithering', isBars: b.k === 'bars', isAxis: b.k === 'axis', isOff: b.k === 'offset', isBtn: b.k === 'button', isRot: b.k === 'rotation', isSearch: b.k === 'search', isPkg: b.k === 'pkg', isStatus: b.k === 'status', isPara: b.k === 'para', isMono: b.k === 'mono', valD: b.k === 'link' && b.val ? 'block' : 'none', instD: b.instD || 'none',
       subD: b.sub ? 'block' : 'none', iconD: b.icon ? 'block' : 'none', rightD: b.right && cw > 380 ? 'block' : 'none' }; });
 
-    const active = topic === 'app' || PKT[topic] ? 'apps' : topic;
+    const active = topic === 'kbWords' ? 'keyboard' : topic === 'app' || PKT[topic] ? 'apps' : topic;
     const goTopic = id => () => u({ topic: id, sub: null, subPrev: null, pg: 0 });
     const mkTab = (label, icon, on, isOn, fill) => ({ label, icon, on, fill: fill ? 1 : 0, bg: isOn ? k.tabOnBg : 'var(--il-paper,#ffffff)', fg: isOn ? k.tabOnFg : 'var(--il-ink,#111111)', sh: isOn ? k.tabOnSh : k.tabSh, w: (isOn ? tabW + 12 : tabW) + 'px', ml: isOn ? '-4px' : '0', bl: isOn ? 'none' : '1.5px solid var(--il-ink,#111111)', extra: '', exD: 'none' });
     const slots = Math.floor((cardH - 15 + 5) / (tabH + 5));

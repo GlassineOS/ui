@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&amp;display=block" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&amp;display=swap" rel="stylesheet"></helmet>
+<div data-il-root="" role="group" aria-label="On-screen keyboard" style="{{ ilv }};width:100%;height:{{ totalH }}px;box-sizing:border-box;display:flex;flex-direction:column;background:{{ k.bg }};border-top:1.5px solid var(--il-ink);user-select:none;-webkit-user-select:none;touch-action:none">
+
+<sc-if value="{{ hasStrip }}" hint-placeholder-val="{{ true }}">
+<div style="height:{{ stripH }}px;flex:none;box-sizing:border-box;display:flex;align-items:center;gap:{{ k.gap }}px;padding:{{ k.gap }}px {{ k.gap }}px 0;background:{{ k.bg }}">
+<div role="button" aria-label="{{ penLabel }}" aria-pressed="{{ penOn }}" onPointerDown="{{ penKey }}" style="width:52px;height:100%;flex:none;display:flex;align-items:center;justify-content:center;border-radius:{{ k.r }}px;background:{{ pen.bg }};color:{{ pen.fg }};box-shadow:{{ pen.sh }};cursor:pointer"><span style="font:400 22px/1 'Material Symbols Outlined'">stylus</span></div>
+<div role="listbox" aria-label="Suggestions" style="flex:1;min-width:0;height:100%;display:flex;gap:{{ k.gap }}px">
+<sc-for list="{{ words }}" as="w" hint-placeholder-count="3"><div role="option" aria-selected="{{ w.sel }}" onPointerDown="{{ w.on }}" style="flex:1;min-width:0;display:flex;align-items:center;justify-content:center;border-radius:{{ k.r }}px;background:{{ w.bg }};color:{{ w.fg }};box-shadow:{{ w.sh }};font:{{ w.font }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer">{{ w.l }}</div></sc-for>
+</div>
+<div role="button" aria-label="Hide the keyboard" onPointerDown="{{ hideKey }}" style="width:52px;height:100%;flex:none;display:flex;align-items:center;justify-content:center;border-radius:{{ k.r }}px;background:{{ k.keySp }};color:{{ k.text }};box-shadow:{{ k.spSh }};cursor:pointer"><span style="font:400 22px/1 'Material Symbols Outlined'">keyboard_hide</span></div>
+</div>
+</sc-if>
+
+<div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:{{ k.gap }}px;padding:{{ k.gap }}px">
+<sc-for list="{{ rows }}" as="row" hint-placeholder-count="6"><div style="flex:1;min-height:0;display:flex;gap:{{ k.gap }}px">
+<sc-for list="{{ row.keys }}" as="key" hint-placeholder-count="10"><div role="button" aria-label="{{ key.name }}" aria-pressed="{{ key.down }}" onPointerDown="{{ key.pd }}" onPointerUp="{{ key.pu }}" onPointerLeave="{{ key.pc }}" onPointerCancel="{{ key.pc }}" style="flex:{{ key.w }};min-width:0;position:relative;display:flex;align-items:center;justify-content:center;border-radius:{{ k.r }}px;background:{{ key.bg }};color:{{ key.fg }};box-shadow:{{ key.sh }};font:{{ key.font }};cursor:pointer"><span>{{ key.l }}</span><span style="position:absolute;top:3px;right:5px;font:{{ k.hintFont }};color:{{ key.hintC }}">{{ key.hint }}</span></div></sc-for>
+</div></sc-for>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview": {"width": 712, "height": 348}, "theme": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "scheme": {"editor": "enum", "options": ["eink", "paper", "night"], "default": "eink"}, "pen": {"editor": "enum", "options": ["1", "2", "3"], "default": "1"}, "layout": {"editor": "enum", "options": ["en", "de"], "default": "en"}, "layer": {"editor": "enum", "options": ["main", "special"], "default": "main"}, "strip": {"editor": "enum", "options": ["on", "off"], "default": "on"}, "words": {"editor": "string", "default": ""}, "height": {"editor": "string", "default": "300"}}'>
+// The on-screen keyboard (wvkbd-glassine): the layers the images ship, the long-press
+// alternates in each key's corner, the suggestion strip, the handwriting and hide keys.
+// Reuse: <dc-import name="EinkKeyboard" theme scheme pen layout layer strip words height
+// on-key="{{ fn }}">; fn gets { text } for a character, a picked word ({ text, word: true })
+// or a space, or { key } for backspace, enter, tab, esc, arrows, hide and handwriting.
+// The look per voice is voices/voices.json apps.wvkbd (font, radius, gap, key and special
+// key colours), taken here through Interleaf's colours so the paper and night schemes work.
+class Component extends DCLogic {
+  state = {};
+
+  componentWillUnmount() { clearTimeout(this.ht); }
+
+  // One key: [label, shifted label, width, action, hold alternate]. An action is a string to
+  // type (the label when left out) or ':name' for a special key.
+  layers(layout) {
+    const nav = [['Esc', 'Esc', 1, ':esc'], ['Ctr', 'Ctr', 1, ':ctrl'], ['↑', '↑', 1, ':up'], ['↓', '↓', 1, ':down'], ['←', '←', 1, ':left'], ['→', '→', 1, ':right'],
+      ["'", '"'], ['-', '_'], ['/', '>'], ['Tab', 'Ins', 1, ':tab']];
+    const num = [['1', '!'], ['2', '@'], ['3', '#'], ['4', '$'], ['5', '%'], ['6', '^'], ['7', '&'], ['8', '*'], ['9', '('], ['0', ')']];
+    const L = (s, holds) => [...s].map((c, i) => [c, c === 'ß' ? 'ẞ' : c.toUpperCase(), 1, null, holds[i]]);
+    const bottom = [['⌨', '⌨', 1.5, ':layer'], ['Cmp', 'Cmp', 1, ':compose'], [',', "'", 1, null, ';'], ['', 'Tab', 4, ' '], ['.', '?', 1, null, ':'], ['Enter', 'Enter', 1.5, ':enter']];
+    const shiftK = ['⇧', '⇫', 1.5, ':shift'], bsK = ['⌫', '⌫', 1.5, ':backspace'];
+    const main = layout === 'de'
+      ? [nav, num, L('qwertzuiopü', ['!', '"', '€', '&', '(', ')', '/', '=', '?', '+', '*']), L('asdfghjklöä', ['@', '#', '$', '%', '-', '_', "'", '~', '|', '<', '>']),
+        [shiftK, ...L('yxcvbnmß', ['`', '^', '{', '}', '[', ']', '\\', '§']), bsK], bottom]
+      : [nav, num, L('qwertyuiop', ['!', '"', '€', '&', '(', ')', '/', '=', '?', '+']), L('asdfghjkl', ['@', '#', '$', '%', '-', '_', "'", '~', '|']),
+        [shiftK, ...L('zxcvbnm', ['`', '^', '{', '}', '[', ']', '\\']), bsK], bottom];
+    const special = [
+      [['Esc', 'Esc', 1, ':esc'], ['Alt', 'Alt', 1, ':alt'], ['↑', '↑', 1, ':up'], ['↓', '↓', 1, ':down'], ['←', '←', 1, ':left'], ['→', '→', 1, ':right'], ['⇈', '⇈', 1, ':pgup'], ['⇊', '⇊', 1, ':pgdn'], ['⇤', '⇤', 1, ':home'], ['⇥', '⇥', 1, ':end']],
+      num,
+      [['CpL', 'CpL', 1, ':caps'], ['Sup', 'Sup', 1, ':super'], ['`', '~'], ["'", '"'], ['-', '_'], ['=', '+'], ['[', '{'], [']', '}'], ['\\', '|'], ['Del', 'Del', 1, ':del']],
+      [['⇧', '⇫', 2, ':shift'], [';', ':'], ['/', '>'], ['<', '«'], ['>', '»'], ['¡', '¿'], ['🙂', '🙂'], ['AGr', 'AGr', 1, ':altgr'], ['⌫', '⌫', 1, ':backspace']],
+      [['Abc', 'Abc', 1, ':back'], ['⌨', '⌨', 1, ':layer'], [',', "'"], ['', 'Tab', 4, ' '], ['.', '?'], ['Enter', 'Enter', 2, ':enter']]
+    ];
+    return { main, special };
+  }
+
+  look(voice) {
+    const ink = 'var(--il-ink)', paper = 'var(--il-paper)';
+    const sp = n => 'color-mix(in srgb, ' + ink + ' ' + n + '%, ' + paper + ')';
+    return {
+      white: { font: "500 20px 'IBM Plex Sans',sans-serif", r: 6, gap: 3, bg: paper, key: paper, keySp: sp(7), stroke: ink, strokeSp: ink },
+      editorial: { font: "400 21px 'Source Serif 4',serif", r: 0, gap: 2, bg: paper, key: paper, keySp: sp(13), stroke: ink, strokeSp: ink },
+      stationery: { font: "500 23px 'EB Garamond',serif", r: 4, gap: 3, bg: 'var(--il-leather-dark,' + ink + ')', key: paper, keySp: sp(13), stroke: 'var(--il-shade)', strokeSp: 'var(--il-ink-soft)' }
+    }[voice];
+  }
+
+  renderVals() {
+    const p = this.props, s = this.state, u = q => this.setState(q);
+    const voice = ['white', 'editorial', 'stationery'].includes(p.theme) ? p.theme : 'white';
+    const V = this.look(voice), layout = p.layout === 'de' ? 'de' : 'en';
+    const layer = s.layer || (p.layer === 'special' ? 'special' : 'main'), shift = !!s.shift;
+    const emit = o => { if (p.onKey) p.onKey(o); };
+    const fam = V.font.replace(/^\S+ \S+ /, '');
+    const k = { ...V, text: ink(), spSh: 'inset 0 0 0 1px ' + V.strokeSp, hintFont: "400 12px " + fam };
+    function ink() { return 'var(--il-ink)'; }
+    const act = a => {
+      if (a === ':shift') return u({ shift: !shift });
+      if (a === ':layer') return u({ layer: layer === 'main' ? 'special' : 'main', shift: false });
+      if (a === ':back') return u({ layer: 'main', shift: false });
+      if (a && a[0] === ':' && a.length > 1) return emit({ key: a.slice(1) });
+      emit({ text: a });
+      if (shift) u({ shift: false });
+    };
+    const rows = this.layers(layout)[layer].map((row, ri) => ({ keys: row.map(([l, sl, w, a, hold], ci) => {
+      const id = layer + ri + '.' + ci, special = !!(a && a[0] === ':' && a.length > 1), label = shift ? sl : l;
+      const isShift = a === ':shift' && shift, down = s.down === id || isShift;
+      const txt = a == null ? label : a;
+      return {
+        l: label, name: special ? a.slice(1) : (label || 'space'), w: String(w || 1), down: String(down), hint: hold || '',
+        bg: down ? 'var(--il-ink)' : special ? V.keySp : V.key, fg: down ? 'var(--il-paper)' : 'var(--il-ink)',
+        hintC: down ? 'var(--il-paper)' : 'var(--il-ink-soft)',
+        sh: 'inset 0 0 0 1px ' + (special ? V.strokeSp : V.stroke),
+        font: special && label.length > 1 ? V.font.replace(/\d+px/, '15px') : V.font,
+        pd: e => {
+          e.preventDefault();
+          if (e.currentTarget.setPointerCapture) e.currentTarget.setPointerCapture(e.pointerId);
+          clearTimeout(this.ht); this.fired = false; u({ down: id });
+          if (hold) this.ht = setTimeout(() => { this.fired = true; emit({ text: hold }); u({ down: null, shift: false }); }, 400);
+          else act(txt);
+        },
+        pu: () => { clearTimeout(this.ht); if (this.state.down !== id) return; if (hold && !this.fired) act(txt); u({ down: null }); },
+        pc: () => { clearTimeout(this.ht); if (this.state.down === id) u({ down: null }); }
+      };
+    }) }));
+    const list = String(p.words || '').split('|').map(x => x.trim()).filter(Boolean).slice(0, 3);
+    const order = list.length === 3 ? [list[1], list[0], list[2]] : list;
+    const stripOn = p.strip !== 'off', stripH = 46, keysH = Number(p.height) || 300;
+    const penOn = !!p.handwriting;
+    return {
+      ilv: this.ilVars(voice, p.scheme, p.pen), k, rows,
+      hasStrip: stripOn, stripH, totalH: (stripOn ? stripH : 0) + keysH,
+      words: order.map(w => { const best = w === list[0]; return { l: w, sel: String(best), bg: V.key, fg: 'var(--il-ink)', sh: 'inset 0 0 0 1px ' + V.stroke,
+        font: V.font.replace(/^\d+/, best ? '600' : '400').replace(/\d+px/, '17px'), on: e => { e.preventDefault(); emit({ text: w + ' ', word: true }); } }; }),
+      penOn: String(penOn), penLabel: 'Write with the pen',
+      pen: { bg: penOn ? 'var(--il-ink)' : V.keySp, fg: penOn ? 'var(--il-paper)' : 'var(--il-ink)', sh: 'inset 0 0 0 1px ' + V.strokeSp },
+      penKey: e => { e.preventDefault(); emit({ key: 'handwriting' }); },
+      hideKey: e => { e.preventDefault(); emit({ key: 'hide' }); }
+    };
+  }
+
+  // Interleaf colours for a voice, scheme and pen (the same lookup as EinkShell).
+  ilVars(voice, scheme, pen) {
+    const V = ['white', 'editorial', 'stationery'].includes(voice) ? voice : 'white';
+    const S = scheme === 'night' || scheme === 'paper' ? scheme : 'eink';
+    const id = S === 'eink' ? (V === 'stationery' ? 'stationery-eink' : 'eink') : V + '-' + S;
+    const T = Component.ilTokens(this);
+    if (!T) return '--il-theme:' + id;
+    const i = ['1', '2', '3'].indexOf(String(pen ?? '1')), sfx = i > 0 ? '-' + (i + 1) : '';
+    const g = name => {
+      let x = T[name];
+      x = x && typeof x === 'object' ? x[id] : x;
+      if (x == null) return null;
+      const m = /^\{([a-z0-9-]+)\}$/.exec(x);
+      if (!m) return x;
+      return g(m[1] === 'accent' || m[1] === 'highlight' ? m[1] + sfx : m[1]);
+    };
+    const v = { paper: g('paper'), ink: g('ink'), 'ink-soft': g('ink-soft'), rule: g('rule'), shade: g('shade'), 'leather-dark': g('leather-dark') };
+    return Object.keys(v).filter(k => v[k]).map(k => '--il-' + k + ':' + v[k]).join(';') + ';--il-theme:' + id;
+  }
+
+  static ilTokens(c) {
+    const K = Component;
+    if (K._ilT !== undefined) return K._ilT;
+    if (!K._ilP) {
+      K._ilW = [];
+      K._ilP = fetch('ds/interleaf/tokens.json')
+        .then(r => (r.ok ? r.json() : null))
+        .then(j => {
+          const T = {};
+          if (j) for (const sec of [j.color, j.shadow]) for (const t of (sec && sec.tokens) || []) T[t.name] = t.value;
+          K._ilT = j ? T : null;
+        })
+        .catch(() => { K._ilT = null; })
+        .then(() => { const w = K._ilW; K._ilW = []; for (const x of w) { try { x.forceUpdate(); } catch (e) {} } });
+    }
+    if (c && K._ilW.indexOf(c) < 0) K._ilW.push(c);
+    return null;
+  }
+}
+</script>
+</body>
+</html>

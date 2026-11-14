@@ -15,7 +15,7 @@
 <div style="display:flex;flex-direction:column;gap:6px">
 <span style="font:500 13px/1.2 'IBM Plex Mono',monospace;color:#3d3d3d">settings.keyboard.words</span>
 <h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">Learned words</h1>
-<p style="margin:0;max-width:900px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">Keyboard → Learned words (shell spec 006, FR-008a): the words learned from typing, most used first, with a search and Remove per word; removed words are listed below and can be put back. A removed word is never suggested or learned again. Erase on the keyboard page clears both lists.</p>
+<p style="margin:0;max-width:900px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">Keyboard → Learned words (shell spec 006, FR-008a): counts, not the words — learned words per language and in all, removed words, the day a word was last learned. The folder that holds them opens in the file manager (without one: its path to copy; before the first word: no folder, a note). Forget clears the learned words and the removed list after a question. Words are removed from the suggestion strip (shell.keyboard.remove); the file can be edited by hand.</p>
 </div>
 <dc-import name="ThemeBar" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" show-win="{{ yes }}" win="{{ win }}" orient="{{ orient }}" on-pick="{{ pick }}" hint-size="100%,150px"></dc-import>
 <dc-import name="EinkSettings" theme="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" win="{{ win }}" orient="{{ orient }}" nav="folder" page="kbWords" hint-size="760px,1140px"></dc-import>

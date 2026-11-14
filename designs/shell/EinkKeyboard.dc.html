@@ -8,20 +8,20 @@
 <body>
 <x-dc>
 <helmet><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&amp;display=block" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&amp;display=swap" rel="stylesheet"></helmet>
-<div data-il-root="" role="group" aria-label="On-screen keyboard" style="{{ ilv }};width:100%;height:{{ totalH }}px;box-sizing:border-box;display:flex;flex-direction:column;background:{{ k.bg }};border-top:1.5px solid var(--il-ink);user-select:none;-webkit-user-select:none;touch-action:none">
+<div data-il-root="" role="group" aria-label="On-screen keyboard" style="{{ ilv }};width:100%;height:{{ totalH }}px;box-sizing:content-box;display:flex;flex-direction:column;overflow:hidden;background:{{ k.bg }};border-top:1.5px solid var(--il-ink);user-select:none;-webkit-user-select:none;touch-action:none">
 
 <sc-if value="{{ hasStrip }}" hint-placeholder-val="{{ true }}">
-<div style="height:{{ stripH }}px;flex:none;box-sizing:border-box;display:flex;align-items:center;gap:{{ k.gap }}px;padding:{{ k.gap }}px {{ k.gap }}px 0;background:{{ k.bg }}">
-<div role="button" aria-label="{{ penLabel }}" aria-pressed="{{ penOn }}" onPointerDown="{{ penKey }}" style="width:52px;height:100%;flex:none;display:flex;align-items:center;justify-content:center;border-radius:{{ k.r }}px;background:{{ pen.bg }};color:{{ pen.fg }};box-shadow:{{ pen.sh }};cursor:pointer"><span style="font:400 22px/1 'Material Symbols Outlined'">stylus</span></div>
-<div role="listbox" aria-label="Suggestions" style="flex:1;min-width:0;height:100%;display:flex;gap:{{ k.gap }}px">
+<div style="height:{{ stripH }}px;flex:none;box-sizing:border-box;display:flex;align-items:stretch;gap:{{ k.gap }}px;padding:{{ k.gap }}px {{ k.gap }}px 0;background:{{ k.bg }}">
+<div role="button" aria-label="{{ penLabel }}" aria-pressed="{{ penOn }}" onPointerDown="{{ penKey }}" style="width:{{ unitW }};flex:none;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border-radius:{{ k.r }}px;background:{{ pen.bg }};color:{{ pen.fg }};box-shadow:{{ pen.sh }};cursor:pointer"><span style="font:400 22px/1 'Material Symbols Outlined'">stylus</span></div>
+<div role="listbox" aria-label="Suggestions" style="flex:1;min-width:0;display:flex;gap:{{ k.gap }}px">
 <sc-for list="{{ words }}" as="w" hint-placeholder-count="3"><div role="option" aria-selected="{{ w.sel }}" onPointerDown="{{ w.on }}" style="flex:1;min-width:0;display:flex;align-items:center;justify-content:center;border-radius:{{ k.r }}px;background:{{ w.bg }};color:{{ w.fg }};box-shadow:{{ w.sh }};font:{{ w.font }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer">{{ w.l }}</div></sc-for>
 </div>
-<div role="button" aria-label="Hide the keyboard" onPointerDown="{{ hideKey }}" style="width:52px;height:100%;flex:none;display:flex;align-items:center;justify-content:center;border-radius:{{ k.r }}px;background:{{ k.keySp }};color:{{ k.text }};box-shadow:{{ k.spSh }};cursor:pointer"><span style="font:400 22px/1 'Material Symbols Outlined'">keyboard_hide</span></div>
+<div role="button" aria-label="Hide the keyboard" onPointerDown="{{ hideKey }}" style="width:{{ unitW }};flex:none;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border-radius:{{ k.r }}px;background:{{ k.keySp }};color:{{ k.text }};box-shadow:{{ k.spSh }};cursor:pointer"><span style="font:400 22px/1 'Material Symbols Outlined'">keyboard_hide</span></div>
 </div>
 </sc-if>
 
-<div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:{{ k.gap }}px;padding:{{ k.gap }}px">
-<sc-for list="{{ rows }}" as="row" hint-placeholder-count="6"><div style="flex:1;min-height:0;display:flex;gap:{{ k.gap }}px">
+<div style="height:{{ keysH }}px;flex:none;box-sizing:border-box;display:flex;flex-direction:column;gap:{{ k.gap }}px;padding:{{ k.gap }}px">
+<sc-for list="{{ rows }}" as="row" hint-placeholder-count="6"><div style="height:{{ rowH }}px;flex:none;display:flex;gap:{{ k.gap }}px">
 <sc-for list="{{ row.keys }}" as="key" hint-placeholder-count="10"><div role="button" aria-label="{{ key.name }}" aria-pressed="{{ key.down }}" onPointerDown="{{ key.pd }}" onPointerUp="{{ key.pu }}" onPointerLeave="{{ key.pc }}" onPointerCancel="{{ key.pc }}" style="flex:{{ key.w }};min-width:0;position:relative;display:flex;align-items:center;justify-content:center;border-radius:{{ k.r }}px;background:{{ key.bg }};color:{{ key.fg }};box-shadow:{{ key.sh }};font:{{ key.font }};cursor:pointer"><span>{{ key.l }}</span><span style="position:absolute;top:3px;right:5px;font:{{ k.hintFont }};color:{{ key.hintC }}">{{ key.hint }}</span></div></sc-for>
 </div></sc-for>
 </div>
@@ -118,7 +118,10 @@ class Component extends DCLogic {
     const penOn = !!p.handwriting;
     return {
       ilv: this.ilVars(voice, p.scheme, p.pen), k, rows,
-      hasStrip: stripOn, stripH, totalH: (stripOn ? stripH : 0) + keysH,
+      hasStrip: stripOn, stripH, keysH, totalH: (stripOn ? stripH : 0) + keysH,
+      rowH: Math.floor((keysH - V.gap * (rows.length + 1)) / rows.length),
+      // one key column of a ten-key row, so the pen and hide keys line up with Esc and Tab
+      unitW: 'calc((100% - ' + (9 * V.gap) + 'px) / 10)',
       words: order.map(w => { const best = w === list[0]; return { l: w, sel: String(best), bg: V.key, fg: 'var(--il-ink)', sh: 'inset 0 0 0 1px ' + V.stroke,
         font: V.font.replace(/^\d+/, best ? '600' : '400').replace(/\d+px/, '17px'), on: e => { e.preventDefault(); emit({ text: w + ' ', word: true }); } }; }),
       penOn: String(penOn), penLabel: 'Write with the pen',

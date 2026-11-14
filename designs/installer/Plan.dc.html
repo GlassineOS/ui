@@ -24,80 +24,6 @@
         <p class="il-lead">{{ lead }}</p>
       </div>
 
-      <sc-if value="{{ hasErase }}" hint-placeholder-val="{{ true }}">
-        <aside class="il-admonition il-admonition--danger" id="erase">
-          <span class="il-admonition__label"><span class="il-admonition__seal" aria-hidden="true">!</span>Erases your files</span>
-          <p class="il-admonition__title">{{ er.title }}</p>
-          <p>{{ er.body }}</p>
-          <sc-if value="{{ erBackupLine }}" hint-placeholder-val="{{ true }}"><p>{{ erBackupLine }}</p></sc-if>
-          <p><strong>Way out:</strong> {{ er.exit }}</p>
-        </aside>
-      </sc-if>
-
-      <section class="ins-stack ins-stack--wide">
-        <h2 class="ins-h2">Your choices</h2>
-        <sc-if value="{{ hasDisks }}" hint-placeholder-val="{{ false }}">
-          <fieldset class="ins-stack" style="border:0;margin:0;padding:0">
-            <legend class="il-label" style="margin-bottom:8px">Install on</legend>
-            <sc-for list="{{ disks }}" as="d" hint-placeholder-count="1">
-              <label class="ins-choice"><input type="radio" name="disk" checked="{{ d.checked }}"><span class="ins-choice__body"><span class="ins-choice__title">{{ d.name }}</span><span class="ins-small ins-soft">{{ d.body }}</span></span></label>
-            </sc-for>
-            <p class="ins-small ins-soft">No other disk was found. A disk connected later shows here.</p>
-          </fieldset>
-        </sc-if>
-        <sc-for list="{{ oses }}" as="o" hint-placeholder-count="1">
-          <fieldset class="ins-stack" style="border:0;margin:0;padding:0">
-            <legend class="il-label" style="margin-bottom:8px">{{ o.heading }}</legend>
-            <label class="ins-choice"><input type="radio" name="{{ o.group }}" checked="{{ o.isKeep }}" onChange="{{ o.pickKeep }}"><span class="ins-choice__body"><span class="ins-choice__title">{{ o.keep }}</span><span class="ins-small">{{ o.keepBody }}</span><span class="ins-small ins-soft">{{ o.pick }}</span></span></label>
-            <label class="ins-choice"><input type="radio" name="{{ o.group }}" checked="{{ o.isReplace }}" onChange="{{ o.pickReplace }}"><span class="ins-choice__body"><span class="ins-choice__title">{{ o.replace }}</span><span class="ins-small">{{ o.replaceBody }}</span></span></label>
-          </fieldset>
-        </sc-for>
-        <sc-if value="{{ replacing }}" hint-placeholder-val="{{ false }}">
-          <aside class="il-admonition il-admonition--danger">
-            <span class="il-admonition__label"><span class="il-admonition__seal" aria-hidden="true">!</span>Replaces a system</span>
-            <p class="il-admonition__title">{{ replaceTitle }}</p>
-            <p>{{ replaceNeeds }}</p>
-            <p><strong>Way out:</strong> choose “{{ keepLabel }}” above. Until you confirm, nothing changes.</p>
-          </aside>
-        </sc-if>
-        <sc-if value="{{ hasCable }}" hint-placeholder-val="{{ true }}">
-          <fieldset class="ins-stack" style="border:0;margin:0;padding:0">
-            <legend class="il-label" style="margin-bottom:8px">{{ cableFor }}</legend>
-            <p class="ins-card__title">{{ cb.question }}</p>
-            <p class="ins-small">{{ cb.what }} <a class="il-link" href="#">{{ cb.get }}</a></p>
-            <div class="ins-grid">
-              <label class="ins-choice"><input type="radio" name="cable" checked="{{ cableYes }}" onChange="{{ pickCableYes }}"><span class="ins-choice__body"><span class="ins-choice__title">{{ cb.yes }}</span></span></label>
-              <label class="ins-choice"><input type="radio" name="cable" checked="{{ cableNo }}" onChange="{{ pickCableNo }}"><span class="ins-choice__body"><span class="ins-choice__title">{{ cb.no }}</span></span></label>
-            </div>
-          </fieldset>
-        </sc-if>
-        <sc-if value="{{ hasBackup }}" hint-placeholder-val="{{ true }}">
-          <fieldset class="ins-stack" style="border:0;margin:0;padding:0" id="backup">
-            <legend class="il-label" style="margin-bottom:8px">The backup</legend>
-            <label class="ins-choice"><input type="radio" name="backup" checked="{{ backupOn }}" onChange="{{ pickBackupOn }}"><span class="ins-choice__body"><span class="ins-choice__title">{{ bk.on }} <span class="ins-tag ins-tag--soft">{{ bk.onTag }}</span></span><span class="ins-small">{{ bk.onBody }}</span><span class="ins-small"><strong>{{ bk.size }}.</strong> {{ bk.sizeNote }}</span><sc-if value="{{ bk.where }}" hint-placeholder-val="{{ true }}"><span class="ins-small ins-soft">{{ bk.where }}</span></sc-if></span></label>
-            <label class="ins-choice"><input type="radio" name="backup" checked="{{ backupOff }}" onChange="{{ pickBackupOff }}"><span class="ins-choice__body"><span class="ins-choice__title">{{ bk.off }}</span><span class="ins-small">{{ bk.offBody }}</span><span class="ins-small"><strong>{{ bk.offWhat }}</strong></span></span></label>
-            <sc-if value="{{ bk.always }}" hint-placeholder-val="{{ true }}"><p class="ins-small ins-soft">{{ bk.always }}</p></sc-if>
-          </fieldset>
-        </sc-if>
-        <sc-if value="{{ hasSupply }}" hint-placeholder-val="{{ true }}">
-          <fieldset class="ins-stack" style="border:0;margin:0;padding:0" id="supply">
-            <legend class="il-label" style="margin-bottom:8px">Needed for step 1</legend>
-            <div class="ins-card">
-              <div class="ins-row"><span class="ins-yn ins-yn--no ins-yn--small" aria-hidden="true"></span><span class="ins-card__title">{{ sp.title }}</span><span class="ins-tag ins-tag--dashed">Not chosen yet</span></div>
-              <p class="ins-small">The backup reads {{ the }} through a file only you can provide. The next screen says what it is and how to find it, and checks the one you choose.</p>
-            </div>
-          </fieldset>
-        </sc-if>
-        <sc-if value="{{ backupOff }}" hint-placeholder-val="{{ false }}">
-          <aside class="il-admonition il-admonition--danger" id="nobackup">
-            <span class="il-admonition__label"><span class="il-admonition__seal" aria-hidden="true">!</span>No backup</span>
-            <p class="il-admonition__title">You chose to install without a backup</p>
-            <p>{{ bk.offWhat }}</p>
-            <p><strong>Way out:</strong> choose “{{ bk.on }}” above. Until you confirm, nothing changes.</p>
-          </aside>
-        </sc-if>
-      </section>
-
       <sc-if value="{{ refused }}" hint-placeholder-val="{{ false }}">
         <aside class="il-admonition il-admonition--warning" id="refused">
           <span class="il-admonition__label"><span class="il-admonition__seal" aria-hidden="true">G</span>Can’t be installed</span>
@@ -108,16 +34,95 @@
       </sc-if>
 
       <sc-if value="{{ notRefused }}" hint-placeholder-val="{{ true }}">
-        <section class="ins-stack">
-          <h2 class="ins-h2">The steps, in order</h2>
-          <p class="ins-small ins-soft">Each step says where {{ the }} is if that step fails. Technical names are under Details.</p>
-          <dc-import name="Steps" machine="{{ mk }}" mode="plan" variant="{{ variant }}" backup="{{ backupState }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,1100px"></dc-import>
+        <section class="ins-card ins-card--strong" id="short">
+          <span class="il-label">In short</span>
+          <ul class="ins-caps">
+            <sc-for list="{{ inShort }}" as="x" hint-placeholder-count="3"><li><span class="{{ x.cls }}" aria-hidden="true"><sc-if value="{{ x.ok }}" hint-placeholder-val="{{ true }}"><svg width="12" height="12" viewBox="0 0 24 24" style="fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></sc-if><sc-if value="{{ x.warn }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 24 24" style="fill:none;stroke-width:3;stroke-linecap:round"><path d="M12 6v8M12 18v.5"></path></svg></sc-if></span><span class="ins-caps__text">{{ x.text }}</span></li></sc-for>
+          </ul>
         </section>
+      </sc-if>
+
+      <sc-if value="{{ hasErase }}" hint-placeholder-val="{{ true }}">
+        <aside class="il-admonition il-admonition--danger" id="erase">
+          <span class="il-admonition__label"><span class="il-admonition__seal" aria-hidden="true">!</span>Erases your files</span>
+          <p class="il-admonition__title">{{ er.title }}</p>
+          <sc-if value="{{ erBackupLine }}" hint-placeholder-val="{{ true }}"><p>{{ erBackupLine }}</p></sc-if>
+          <p><strong>Way out:</strong> {{ er.exit }}</p>
+        </aside>
+      </sc-if>
+      <sc-if value="{{ replacing }}" hint-placeholder-val="{{ false }}">
+        <aside class="il-admonition il-admonition--danger">
+          <span class="il-admonition__label"><span class="il-admonition__seal" aria-hidden="true">!</span>Replaces a system</span>
+          <p class="il-admonition__title">{{ replaceTitle }}</p>
+          <p>{{ replaceNeeds }}</p>
+          <p><strong>Way out:</strong> choose “{{ keepLabel }}” under Change the choices. Until you confirm, nothing changes.</p>
+        </aside>
+      </sc-if>
+      <sc-if value="{{ backupOff }}" hint-placeholder-val="{{ false }}">
+        <aside class="il-admonition il-admonition--danger" id="nobackup">
+          <span class="il-admonition__label"><span class="il-admonition__seal" aria-hidden="true">!</span>No backup</span>
+          <p class="il-admonition__title">You chose to install without a backup</p>
+          <p>{{ bk.offWhat }}</p>
+          <p><strong>Way out:</strong> choose “{{ bk.on }}” under Change the choices. Until you confirm, nothing changes.</p>
+        </aside>
+      </sc-if>
+
+      <section class="ins-stack" id="need">
+        <h2 class="ins-h2">What you need</h2>
+        <ul class="ins-caps">
+          <sc-for list="{{ needs }}" as="n" hint-placeholder-count="2"><li><span class="ins-caps__text"><span class="ins-caps__name">{{ n.0 }}</span><span class="ins-small">{{ n.1 }}</span></span></li></sc-for>
+          <sc-if value="{{ hasSupply }}" hint-placeholder-val="{{ true }}">
+            <li id="supply"><span class="ins-caps__text"><span class="ins-caps__name">{{ sp.title }} <span class="ins-tag ins-tag--dashed">Not chosen yet</span></span><span class="ins-small">A file only you can provide, for the backup. The next screen helps you find it.</span></span></li>
+          </sc-if>
+          <sc-if value="{{ hasCable }}" hint-placeholder-val="{{ true }}">
+            <li id="cable"><span class="ins-caps__text"><span class="ins-caps__name">{{ pl.cableNeed }}</span><span class="ins-small">{{ pl.cableNote }} <a class="il-link" href="#">{{ cb.get }}</a></span>
+              <span class="ins-grid" style="margin-top:8px">
+                <label class="ins-choice"><input type="radio" name="cable" checked="{{ cableYes }}" onChange="{{ pickCableYes }}"><span class="ins-choice__body"><span class="ins-choice__title">{{ cb.yes }}</span></span></label>
+                <label class="ins-choice"><input type="radio" name="cable" checked="{{ cableNo }}" onChange="{{ pickCableNo }}"><span class="ins-choice__body"><span class="ins-choice__title">{{ cb.no }}</span></span></label>
+              </span></span></li>
+          </sc-if>
+        </ul>
+      </section>
+
+      <sc-if value="{{ notRefused }}" hint-placeholder-val="{{ true }}">
         <section class="ins-stack">
-          <div class="il-table-wrap"><table class="il-table"><thead><tr><th>Space it needs</th><th></th></tr></thead><tbody>
-            <sc-for list="{{ space }}" as="s" hint-placeholder-count="2"><tr><td style="width:34%">{{ s.0 }}</td><td>{{ s.1 }}</td></tr></sc-for>
-          </tbody></table></div>
+          <h2 class="ins-h2">What happens</h2>
+          <dc-import name="Steps" machine="{{ mk }}" mode="summary" variant="{{ variant }}" backup="{{ backupState }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,420px"></dc-import>
+          <details class="il-details" id="ifwrong"><summary>If a step goes wrong</summary>
+            <p class="ins-small ins-soft">Each step, with where {{ the }} is if that step fails, and its technical names.</p>
+            <dc-import name="Steps" machine="{{ mk }}" mode="plan" variant="{{ variant }}" backup="{{ backupState }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,1100px"></dc-import>
+          </details>
         </section>
+      </sc-if>
+
+      <sc-if value="{{ hasChoices }}" hint-placeholder-val="{{ true }}">
+        <details class="il-details" id="choices" open="{{ choicesOpen }}"><summary>Change the choices · {{ choiceLine }}</summary>
+          <section class="ins-stack ins-stack--wide" style="margin-top:12px">
+            <sc-if value="{{ hasDisks }}" hint-placeholder-val="{{ false }}">
+              <fieldset class="ins-stack" style="border:0;margin:0;padding:0">
+                <legend class="il-label" style="margin-bottom:8px">Install on</legend>
+                <sc-for list="{{ disks }}" as="d" hint-placeholder-count="1">
+                  <label class="ins-choice"><input type="radio" name="disk" checked="{{ d.checked }}"><span class="ins-choice__body"><span class="ins-choice__title">{{ d.name }}</span><span class="ins-small ins-soft">{{ d.body }}</span></span></label>
+                </sc-for>
+              </fieldset>
+            </sc-if>
+            <sc-for list="{{ oses }}" as="o" hint-placeholder-count="1">
+              <fieldset class="ins-stack" style="border:0;margin:0;padding:0">
+                <legend class="il-label" style="margin-bottom:8px">{{ o.heading }}</legend>
+                <label class="ins-choice"><input type="radio" name="{{ o.group }}" checked="{{ o.isKeep }}" onChange="{{ o.pickKeep }}"><span class="ins-choice__body"><span class="ins-choice__title">{{ o.keep }} <span class="ins-tag ins-tag--soft">Recommended</span></span><span class="ins-small">{{ o.keepBody }}</span><span class="ins-small ins-soft">{{ o.pick }}</span></span></label>
+                <label class="ins-choice"><input type="radio" name="{{ o.group }}" checked="{{ o.isReplace }}" onChange="{{ o.pickReplace }}"><span class="ins-choice__body"><span class="ins-choice__title">{{ o.replace }}</span><span class="ins-small">{{ o.replaceBody }}</span></span></label>
+              </fieldset>
+            </sc-for>
+            <sc-if value="{{ hasBackup }}" hint-placeholder-val="{{ true }}">
+              <fieldset class="ins-stack" style="border:0;margin:0;padding:0" id="backup">
+                <legend class="il-label" style="margin-bottom:8px">The backup</legend>
+                <label class="ins-choice"><input type="radio" name="backup" checked="{{ backupOn }}" onChange="{{ pickBackupOn }}"><span class="ins-choice__body"><span class="ins-choice__title">{{ bk.on }} <span class="ins-tag ins-tag--soft">{{ bk.onTag }}</span></span><span class="ins-small">{{ bk.onBody }}</span></span></label>
+                <label class="ins-choice"><input type="radio" name="backup" checked="{{ backupOff }}" onChange="{{ pickBackupOff }}"><span class="ins-choice__body"><span class="ins-choice__title">{{ bk.off }}</span><span class="ins-small">{{ bk.offBody }}</span></span></label>
+                <sc-if value="{{ bk.always }}" hint-placeholder-val="{{ true }}"><p class="ins-small ins-soft">{{ bk.always }}</p></sc-if>
+              </fieldset>
+            </sc-if>
+          </section>
+        </details>
       </sc-if>
 
       <dc-import name="Actions" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" next="{{ next }}" out="{{ out }}" buttons="{{ buttons }}" hint-size="100%,140px"></dc-import>
@@ -125,7 +130,7 @@
   </main>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"machine":{"editor":"enum","options":["device","pc"],"default":"device"},"state":{"editor":"enum","options":["ready","nocable","replace","nobackup","replace-nobackup","stock"],"default":"ready"},"$preview":{"width":1280,"height":2900}}'>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"machine":{"editor":"enum","options":["device","pc"],"default":"device"},"state":{"editor":"enum","options":["ready","nocable","replace","nobackup","replace-nobackup","stock"],"default":"ready"},"$preview":{"width":1280,"height":2200}}'>
 class Component extends DCLogic {
   state = {};
   renderVals() {
@@ -141,11 +146,19 @@ class Component extends DCLogic {
     const replacing = replace;
     const off = backupState === 'off', bk = (replacing && m.backupReplace) || m.backup || {};
     const confirmHref = stock ? '#' : mk === 'pc' ? (replacing ? (off ? 'confirm.pc.replace.nobackup.dc.html' : 'confirm.pc.replace.dc.html') : 'confirm.pc.dc.html') : (off ? 'confirm.device.nobackup.dc.html' : 'confirm.device.dc.html');
+    const pl = m.plain || {}, hasSupply = !stock && !!m.supply && !off;
+    const short = (t, warn) => ({ text: t, ok: !warn, warn: !!warn, cls: 'ins-yn ins-yn--small ' + (warn ? 'ins-yn--no' : 'ins-yn--yes') });
+    const erTxt = '';  /* the erase box below says it, with its way out */
+    const inShort = stock ? [short(pl.stock)].concat(m.stockErase ? [short(m.stockErase.title, true)] : [])
+      : [short(replacing ? pl.replace : pl.keep, replacing)].concat(erTxt ? [short(erTxt, true)] : [], [off ? short(pl.noBackup, true) : short(replacing && pl.backupReplace ? pl.backupReplace : pl.backup)]);
+    const sp0 = replacing && m.spaceReplace ? m.spaceReplace : m.space;
+    const needs = (off ? sp0.filter(x => x[0] !== 'For the backup') : sp0).map(x => [x[0] === 'For the backup' ? 'Room for the backup' : x[0] === 'On the device' ? 'Room on ' + m.the : 'Room ' + x[0].toLowerCase(), x[1]]);
+    const choiceLine = (replacing ? list[0].replace : list[0].keep) + (m.backup ? ' · ' + (off ? bk.off : bk.on) : '');
     return { theme: window.INSTALLER_THEME(p.voice, p.scheme), voice: p.voice ?? 'white', scheme: p.scheme ?? 'paper', pen: p.pen ?? '1',
       mk, m, er: (stock ? m.stockErase : m.erase) || {}, cb: m.cable || {}, the: m.the, oses, hasDisks: !!m.disks && !stock, disks: m.disks || [], hasCable, hasErase: !!(stock ? m.stockErase : m.erase),
       cableYes: cable === 'yes', cableNo: cable === 'no',
       pickCableYes: () => this.setState({ cable: 'yes' }), pickCableNo: () => this.setState({ cable: 'no' }),
-      refused, notRefused: !refused, bk, hasSupply: !stock && !!m.supply && !off, sp: m.supply || {}, hasBackup: !stock && !!m.backup, backupOn: !off, backupOff: !stock && off, backupState,
+      refused, notRefused: !refused, bk, hasSupply, sp: m.supply || {}, pl, inShort, needs, choiceLine, hasChoices: !stock, choicesOpen: (replacing || off) ? true : undefined, hasBackup: !stock && !!m.backup, backupOn: !off, backupOff: !stock && off, backupState,
       pickBackupOn: () => this.setState({ backup: 'on' }), pickBackupOff: () => this.setState({ backup: 'off' }),
       erBackupLine: stock || !m.erase ? '' : off ? m.erase.withoutBackup : m.erase.withBackup,
       space: replacing && m.spaceReplace ? (off ? [m.spaceReplace[0]] : m.spaceReplace) : off ? m.space.filter(x => x[0] !== 'For the backup') : m.space, cableFor: stock ? 'Needed for step 4' : 'Needed for step 2', replacing, variant: stock ? 'stock' : replacing && mk === 'pc' ? 'replace' : 'normal',
@@ -153,7 +166,7 @@ class Component extends DCLogic {
       replaceNeeds: mk === 'pc' ? m.replaceNeeds : (off ? list[0].replaceBodyNoBackup : list[0].replaceBody) + ' On the next screen you confirm it by its name.',
       eyebrow: refused ? 'Plan · refused, nothing was changed' : 'Plan · nothing is written yet',
       title: stock ? 'The plan to go back to stock' : mk === 'pc' ? 'The plan for this PC' : 'The plan for your ' + m.short,
-      lead: refused ? 'One question decides whether ' + m.the + ' can be installed.' : 'What the installer will do, in this order. Choose what to keep, then confirm on the next screen. Until then nothing is written.',
+      lead: refused ? 'One question decides whether ' + m.the + ' can be installed.' : 'Read this once. The recommended choices are already made; nothing is written until you confirm.',
       next: refused ? 'Nothing more: the plan can’t go ahead without that step.' : !stock && m.supply && !off ? 'Provide the file the backup needs: the installer checks it, then you confirm the whole plan. Nothing is written before you confirm.' : (off ? 'Confirm: you see the whole plan once more, without a backup. Nothing is written before you confirm.' : 'Confirm: you see the whole plan once more and choose where the backup goes. Nothing is written before you confirm.'),
       out: 'Stop here: a dry run can end with this plan. Nothing was changed; ' + (mk === 'pc' ? 'the PC starts Windows as before.' : 'the device starts Android as before.'),
       buttons: [

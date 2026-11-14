@@ -32,6 +32,7 @@
 <sc-if value="{{ open }}" hint-placeholder-val="{{ true }}">
 <div data-write-paper="" role="region" aria-label="Writing area" style="position:absolute;left:14px;right:14px;top:{{ paperTop }}px;height:{{ paperH }}px;border-radius:{{ v.r }};background:color-mix(in srgb, var(--il-paper) 76%, transparent);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);box-shadow:{{ v.edge }};font-family:{{ v.font }}">
 <div style="position:absolute;left:28px;right:28px;top:{{ baseY }}px;border-top:{{ v.guide }}"></div>
+<svg width="100%" height="100%" style="position:absolute;inset:0;touch-action:none;cursor:crosshair;pointer-events:{{ inkPE }}" onPointerDown="{{ pd }}" onPointerMove="{{ pm }}" onPointerUp="{{ pu }}" onPointerCancel="{{ pu }}"><path d="{{ inkD }}" fill="none" stroke="var(--il-pen,var(--il-ink))" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="{{ inkOp }}"></path></svg>
 <sc-if value="{{ hasCands }}" hint-placeholder-val="{{ false }}">
 <div role="listbox" aria-label="Recognized text" style="position:absolute;left:12px;right:96px;top:10px;display:flex;gap:8px;justify-content:center;align-items:center">
 <sc-for list="{{ cands }}" as="c" hint-placeholder-count="3"><div role="option" tabindex="0" aria-selected="{{ c.sel }}" onPointerDown="{{ c.pick }}" style="height:38px;box-sizing:border-box;padding:0 14px;display:flex;align-items:center;border-radius:{{ v.chipR }};background:{{ c.bg }};color:{{ c.fg }};box-shadow:{{ c.sh }};font:{{ c.font }};white-space:nowrap;cursor:pointer">{{ c.l }}</div></sc-for>
@@ -47,11 +48,17 @@
 <sc-if value="{{ noted }}" hint-placeholder-val="{{ false }}">
 <div role="status" style="position:absolute;left:28px;right:28px;bottom:14px;font:{{ v.noteFont }};color:var(--il-ink-soft)">{{ noteText }}</div>
 </sc-if>
-<svg width="100%" height="100%" style="position:absolute;inset:0;touch-action:none;cursor:crosshair" onPointerDown="{{ pd }}" onPointerMove="{{ pm }}" onPointerUp="{{ pu }}" onPointerCancel="{{ pu }}"><path d="{{ inkD }}" fill="none" stroke="var(--il-pen,var(--il-ink))" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="{{ inkOp }}"></path></svg>
 <div style="position:absolute;right:8px;top:8px;display:flex;gap:2px">
 <div role="button" tabindex="0" aria-label="Type with keys" onPointerDown="{{ toKeys }}" style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;color:{{ v.ctrl }};cursor:pointer"><span style="font:400 22px/1 'Material Symbols Outlined'">keyboard</span></div>
 <div role="button" tabindex="0" aria-label="Put the paper away" onPointerDown="{{ close }}" style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;color:{{ v.ctrl }};cursor:pointer"><span style="font:400 22px/1 'Material Symbols Outlined'">close</span></div>
 </div>
+</div>
+</sc-if>
+<sc-if value="{{ fixing }}" hint-placeholder-val="{{ false }}">
+<div role="group" aria-label="On-screen keyboard" style="position:absolute;left:0;right:0;bottom:0;height:300px;box-sizing:border-box;padding:10px 8px 12px;display:flex;flex-direction:column;gap:8px;background:var(--il-paper);border-top:1.5px solid var(--il-ink);font-family:{{ v.font }}">
+<sc-for list="{{ kbRows }}" as="row" hint-placeholder-count="4"><div style="flex:1;display:flex;gap:6px;padding:0 {{ row.pad }}">
+<sc-for list="{{ row.keys }}" as="k" hint-placeholder-count="10"><div role="button" aria-label="{{ k.name }}" onPointerDown="{{ k.on }}" style="flex:{{ k.w }};min-width:0;display:flex;align-items:center;justify-content:center;border-radius:{{ kbR }};background:{{ k.bg }};color:{{ k.fg }};box-shadow:{{ k.sh }};font:{{ k.font }};cursor:pointer;user-select:none">{{ k.l }}</div></sc-for>
+</div></sc-for>
 </div>
 </sc-if>
 
@@ -116,9 +123,10 @@ class Component extends DCLogic {
     const inkD = (s.sample ? this.sampleInk(34, baseY, 18) : '') + (s.strokes || []).join(' ');
     return {
       ilv: this.ilVars(voice, p.scheme, p.pen), appFont, v,
-      open: !!s.open, text: s.text || '', pending: s.pending ? best + ' ' : '',
+      open: !!s.open, text: s.text || '', pending: s.pending ? (s.fix ? (s.fixText ?? best) : best) + ' ' : '',
       paperTop, paperH, baseY, inkD: inkD || 'M0 0', inkOp: s.pending ? '0.35' : '1',
-      hasCands: !!s.pending && !s.fix, fixing: !!s.fix, fixText: s.fixText ?? best,
+      hasCands: !!s.pending && !s.fix, fixing: !!s.fix, inkPE: s.fix ? 'none' : 'auto',
+      kbRows: this.kbRows(v, !!s.shift, (t, sh) => u(st => ({ fixText: t(st.fixText ?? best), shift: sh })), () => commit((this.state.fixText || '').trim() || best, true)), kbR: v.chipR === '0' ? '0' : '6px', fixText: s.fixText ?? best,
       noted: !!s.noted, noteText: 'Noted. This paper learns your handwriting, on this device only.',
       toFix: e => { e.stopPropagation(); clearTimeout(this.tm); u({ fix: true, fixText: best }); },
       fixChange: e => u({ fixText: e.target.value }),
@@ -152,6 +160,23 @@ class Component extends DCLogic {
 
   // The paper is shell, not app: its edge, chips and type follow the voice (as EinkShell's
   // cards and segments do); the app under it keeps its own look.
+  // The on-screen keyboard as it comes up for a correction (a plain QWERTY; the real one
+  // follows the person's layout). Letters edit the correction field; Enter uses it.
+  kbRows(v, shift, edit, done) {
+    const key = (l, w, act, special) => ({ l, name: l, w: String(w),
+      bg: special ? 'color-mix(in srgb, var(--il-ink) 8%, var(--il-paper))' : 'var(--il-paper)', fg: 'var(--il-ink)', sh: v.chipSh,
+      font: (special ? "400 22px/1 'Material Symbols Outlined'" : '400 22px ' + v.font),
+      on: e => { e.preventDefault(); act(); } });
+    const ch = c => { const l = shift ? c.toUpperCase() : c; return key(l, 1, () => edit(t => t + l, false)); };
+    const icon = (name, label, w, act) => Object.assign(key(name, w, act, true), { name: label });
+    return [
+      { pad: '0', keys: [...'qwertyuiop'].map(ch) },
+      { pad: '22px', keys: [...'asdfghjkl'].map(ch) },
+      { pad: '0', keys: [icon('shift', 'Shift', 1.5, () => edit(t => t, !shift)), ...[...'zxcvbnm'].map(ch), icon('backspace', 'Backspace', 1.5, () => edit(t => t.slice(0, -1), shift))] },
+      { pad: '0', keys: [Object.assign(key(',', 1, () => edit(t => t + ',', false)), {}), Object.assign(key('space', 5, () => edit(t => t + ' ', false)), { font: '400 15px ' + v.font }), key('.', 1, () => edit(t => t + '.', false)), icon('keyboard_return', 'Enter', 1.5, done)] }
+    ];
+  }
+
   voiceLook(voice) {
     const ink = 'var(--il-ink)', acc = 'var(--il-accent)', on = 'var(--il-on-accent)';
     return {

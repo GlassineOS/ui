@@ -102,8 +102,8 @@
    "x": 1520,
    "y": 5780,
    "w": 1440,
-   "h": 1800,
-   "title": "Sessions › Running",
+   "h": 1400,
+   "title": "Sessions › Running · workflows as a tree, sessions as tabbed tiles",
    "page": "screens",
    "expand": "fill",
    "is_interactive": true
@@ -679,16 +679,6 @@
    "page": "components",
    "is_interactive": true
   },
-  "SessionsWorkflows.dc.html": {
-   "x": 0,
-   "y": 23900,
-   "w": 1440,
-   "h": 1400,
-   "title": "Sessions › Running as workflows · tree sidebar, tabbed tiles (proposal)",
-   "page": "screens",
-   "expand": "fill",
-   "is_interactive": true
-  },
   "PhoneSessions.dc.html": {
    "x": 1520,
    "y": 23900,
@@ -841,7 +831,6 @@
   "StartRows.dc.html",
   "WorkflowStarts.dc.html",
   "WorkflowStartsRefused.dc.html",
-  "SessionsWorkflows.dc.html",
   "PhoneSessions.dc.html",
   "PhoneSessionsOwner.dc.html",
   "PhoneSessionPanel.dc.html",
@@ -992,7 +981,7 @@
   "s8": {
    "x": 0,
    "y": 23600,
-   "text": "Sessions as workflows — the tree, the tiles, the phone (proposal)",
+   "text": "Sessions on a phone — the workflow tree as a drill-down list",
    "kind": "title1",
    "maxW": 2900,
    "page": "screens"
@@ -1004,7 +993,7 @@
    "fill": "orange",
    "size": "m",
    "page": "screens",
-   "text": "A proposal beside Sessions › Running, not a replacement yet. The tree groups every session under its owner and the manages entry it runs under (reuse, start, round, count), folds earlier rounds, and keeps one row for a resumed session with the rounds it served. Picking a row focuses its tile; focusing a tile selects its row. Yellow only where you must act. Data: SessionsData on Components."
+   "text": "Running is the tree: every session under its owner and the manages entry it runs under (reuse, start, round, count), earlier rounds folded, one row for a resumed session with the rounds it served. Picking a row focuses its tile; focusing a tile selects its row. Ctrl+] and Ctrl+[ move between tiles, Ctrl+↑ opens the owner. Workflow decision cards count in the Needs-you badge. Yellow only where you must act. Data: SessionsData on Components."
   },
   "sw1": {
    "x": 0,

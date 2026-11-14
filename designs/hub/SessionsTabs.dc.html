@@ -23,7 +23,9 @@ class Component extends DCLogic {
   renderVals() {
     const H = window.HUB;
     const a = this.props.active || 'running';
-    const live = Object.values(H.sessions).filter((s) => s.state !== 'DONE').length;
+    /* Running counts the live sessions of the tree (plain shells aside), as its "live" line does. */
+    const N = H.tree ? H.tree.view('').nodes : {};
+    const live = Object.keys(N).filter((k) => !N[k].plain && N[k].live !== 'ended').length;
     const T = [['running', 'Running', 'Sessions.dc.html', live, false], ['history', 'History & cleanup', 'History.dc.html', 0, false]];
     return { tabs: T.map(([id, label, href, n, hi]) => ({ label, href, current: id === a ? 'page' : 'false', hasCount: n > 0, count: String(n),
       countStyle: 'margin-left: 8px; font-family: \'IBM Plex Mono\', monospace; font-size: 13px; padding: 1px 7px; border: 1.5px solid #111111; border-radius: 999px; background: ' + (hi ? '#ffd86b' : '#ffffff'),

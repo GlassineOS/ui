@@ -62,7 +62,7 @@ class Component extends DCLogic {
   renderVals() {
     const H = window.HUB;
     const active = this.props.active || 'overview';
-    const waiting = H.interactions.length;
+    const waiting = H.interactions.length + (H.decisions || []).length; /* workflow decision cards count too */
     const T = [['overview', 'Overview', 'Main.dc.html'], ['roadmap', 'Roadmap', 'Roadmap.dc.html'], ['work', 'Work', 'Work.dc.html'], ['knowledge', 'Knowledge', 'Knowledge.dc.html'], ['notes', 'Notes', 'Notes.dc.html'], ['sessions', 'Sessions', 'Sessions.dc.html'], ['workflows', 'Workflows', 'WorkflowEditor.dc.html'], ['apps', 'Apps', null]];
     const NAMES = { overview: 'Overview', roadmap: 'Roadmap', work: 'Work', knowledge: 'Knowledge', notes: 'Notes', sessions: 'Sessions', workflows: 'Workflows', apps: 'Apps' };
     return {

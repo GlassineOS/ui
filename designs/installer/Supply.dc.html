@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Provide a file</title>
+<script src="./support.js"></script>
+<script src="data/theme.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="installer.css">
+</helmet>
+<div class="ins il-page" data-theme="{{ theme }}" data-pen="{{ pen }}">
+  <dc-import name="Header" step="plan" machine="device" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,130px"></dc-import>
+  <main class="ins-desk il-desk">
+    <div class="il-sheet ins-sheet">
+      <div class="il-title-block">
+        <span class="il-label">{{ eyebrow }}</span>
+        <h1 class="il-h1">{{ title }}</h1>
+        <p class="il-lead">{{ lead }}</p>
+      </div>
+
+      <sc-if value="{{ isGuide }}" hint-placeholder-val="{{ true }}">
+        <section class="ins-stack">
+          <h2 class="ins-h2">What it is</h2>
+          <p>{{ s.what }}</p>
+          <h2 class="ins-h2">Why GlassineOS can’t provide it</h2>
+          <p>{{ s.why }}</p>
+        </section>
+        <section class="ins-stack">
+          <h2 class="ins-h2">What it must match</h2>
+          <div class="il-table-wrap"><table class="il-table"><tbody>
+            <sc-for list="{{ s.matches }}" as="r" hint-placeholder-count="3"><tr><td style="width:34%">{{ r.0 }}</td><td>{{ r.1 }}</td></tr></sc-for>
+          </tbody></table></div>
+        </section>
+        <section class="ins-stack">
+          <h2 class="ins-h2">How to find it</h2>
+          <div class="il-code" id="name">
+            <div class="il-code__head"><span class="il-label">Its name usually starts with</span><button class="il-btn" type="button" id="copy" onClick="{{ copy }}">{{ copyLabel }}</button></div>
+            <pre><span>{{ s.usualName }}</span></pre>
+          </div>
+          <p class="ins-small">{{ s.nameNote }}</p>
+          <p class="ins-small ins-soft">The installer checks whatever file you choose before it sends anything to {{ the }}.</p>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ isNoFile }}" hint-placeholder-val="{{ false }}">
+        <section class="ins-stack ins-stack--wide">
+          <h2 class="ins-h2">Without it, two ways on</h2>
+          <div class="ins-card">
+            <span class="ins-card__title">Come back with the file</span>
+            <p class="ins-small">Stop here. Nothing has changed: {{ the }} starts Android as before. When you have the file, start the installer again; the check and the plan take a minute.</p>
+          </div>
+          <div class="ins-card">
+            <span class="ins-card__title">Install without a backup</span>
+            <p class="ins-small">{{ noBackup }}</p>
+            <p class="ins-small ins-soft">The plan states what that means before you confirm it.</p>
+          </div>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ showFile }}" hint-placeholder-val="{{ true }}">
+      <section class="ins-stack">
+        <h2 class="ins-h2">The file</h2>
+        <div class="{{ fileCls }}" id="file">
+          <sc-if value="{{ hasFile }}" hint-placeholder-val="{{ false }}">
+            <div class="ins-row"><span class="{{ markCls }}" aria-hidden="true"><sc-if value="{{ isKnown }}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" style="fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></sc-if><sc-if value="{{ notKnown }}" hint-placeholder-val="{{ true }}"><svg width="12" height="12" viewBox="0 0 24 24" style="fill:none;stroke-width:3;stroke-linecap:round"><path d="M12 6v8M12 18v.5"></path></svg></sc-if></span><span class="ins-card__title">{{ verdict }}</span></div>
+            <p class="ins-small" style="font-family: var(--font-mono); font-size: 13.5px; overflow-wrap: anywhere">{{ f.name }}</p>
+            <p class="ins-small ins-soft">{{ f.size }} · checksum <span style="font-family: var(--font-mono); font-size: 13.5px">{{ f.sum }}</span></p>
+            <p class="ins-small">{{ f.note }}</p>
+          </sc-if>
+          <sc-if value="{{ noFile }}" hint-placeholder-val="{{ true }}">
+            <span class="ins-card__title">No file chosen</span>
+            <p class="ins-small ins-soft">Your browser opens a window to choose it on this computer. It isn’t uploaded anywhere.</p>
+          </sc-if>
+          <div class="ins-row"><a class="il-btn" href="supply.device.known.dc.html" id="choose">{{ chooseLabel }}</a></div>
+        </div>
+      </section>
+      </sc-if>
+
+      <sc-if value="{{ isWrong }}" hint-placeholder-val="{{ false }}">
+        <aside class="il-admonition il-admonition--warning" id="wrong">
+          <span class="il-admonition__label"><span class="il-admonition__seal" aria-hidden="true">G</span>Not sent</span>
+          <p class="il-admonition__title">This file is for another device</p>
+          <div class="il-table-wrap"><table class="il-table ins-small"><thead><tr><th></th><th>The file is for</th><th>{{ m.short }} needs</th></tr></thead><tbody>
+            <sc-for list="{{ f.rows }}" as="r" hint-placeholder-count="3"><tr><td>{{ r.0 }}</td><td>{{ r.1 }}</td><td>{{ r.2 }}</td></tr></sc-for>
+          </tbody></table></div>
+          <p><strong>Way out:</strong> choose another file. Nothing was sent; {{ the }} hasn’t changed.</p>
+        </aside>
+      </sc-if>
+
+      <sc-if value="{{ isUnknown }}" hint-placeholder-val="{{ false }}">
+        <aside class="il-admonition il-admonition--danger" id="unknown">
+          <span class="il-admonition__label"><span class="il-admonition__seal" aria-hidden="true">!</span>Not a known file</span>
+          <p class="il-admonition__title">It fits, but nobody has tried this exact file</p>
+          <p>{{ s.risk }}</p>
+          <label class="ins-check"><input type="checkbox" id="trust" checked="{{ trusted }}" onChange="{{ toggleTrust }}"><span>I trust where this file comes from. Send it to {{ the }} anyway.</span></label>
+          <p><strong>Way out:</strong> choose another file, such as one whose checksum is known. Until you tick the box, nothing is sent.</p>
+        </aside>
+      </sc-if>
+
+      <dc-import name="Actions" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" next="{{ next }}" out="{{ out }}" buttons="{{ buttons }}" hint-size="100%,140px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"state":{"editor":"enum","options":["guide","known","unknown","wrong","nofile"],"default":"guide"},"$preview":{"width":1280,"height":1900}}'>
+class Component extends DCLogic {
+  state = {};
+  renderVals() {
+    const p = this.props, I = window.INSTALLER, m = I.machines.device, s = m.supply, st = p.state ?? 'guide';
+    const f = s.files[st] || {}, hasFile = !!s.files[st];
+    const known = st === 'known', unknown = st === 'unknown', wrong = st === 'wrong';
+    const trusted = !!this.state.trusted;
+    const unchanged = 'Nothing has changed: ' + m.the + ' starts Android as before.';
+    const T = {
+      guide: ['Plan · needed for the backup', s.title, 'The backup reads ' + m.the + ' in its emergency mode, and that needs one file only you can provide. Nothing is sent until the installer has checked it.'],
+      known: ['Plan · the file is checked', 'A known ' + s.noun, 'This exact file has worked on ' + m.the + ' before. It is used for the backup, then forgotten.'],
+      unknown: ['Plan · the file is checked', 'This ' + s.noun + ' fits, but isn’t known', 'It is made for ' + m.the + '’s chip and signing key, but it isn’t one of the files known to work.'],
+      wrong: ['Plan · the file is checked', 'This file doesn’t fit ' + m.the, 'The installer sends only a file made for this chip and its signing key.'],
+      nofile: ['Plan · needed for the backup', 'Without the ' + s.noun, 'The backup can’t be made without it. You decide how to go on.']
+    }[st];
+    const chooseLabel = hasFile ? 'Choose another file…' : 'Choose the file…';
+    const toConfirm = { label: known ? 'Continue to confirm' : 'Use this file', href: 'confirm.device.dc.html', primary: true };
+    const buttons = known ? [toConfirm, { label: 'Back to the plan', href: 'plan.device.dc.html' }, { label: 'Stop here', href: 'start.browser.dc.html', push: true }]
+      : unknown ? [{ ...toConfirm, disabled: !trusted }, { label: 'Choose another file', href: 'supply.device.dc.html' }, { label: 'Stop here', href: 'start.browser.dc.html', push: true }]
+      : wrong ? [{ label: 'Choose another file', href: 'supply.device.dc.html', primary: true }, { label: 'Back to the plan', href: 'plan.device.dc.html' }, { label: 'Stop here', href: 'start.browser.dc.html', push: true }]
+      : st === 'nofile' ? [{ label: 'Stop here', href: 'start.browser.dc.html', primary: true }, { label: 'Install without a backup', href: 'plan.device.nobackup.dc.html' }, { label: 'I found it: choose the file', href: 'supply.device.dc.html' }]
+      : [{ label: 'Choose the file…', href: 'supply.device.known.dc.html', primary: true }, { label: 'I don’t have it', href: 'supply.device.nofile.dc.html' }, { label: 'Back to the plan', href: 'plan.device.dc.html' }, { label: 'Stop here', href: 'start.browser.dc.html', push: true }];
+    return { theme: window.INSTALLER_THEME(p.voice, p.scheme), voice: p.voice ?? 'white', scheme: p.scheme ?? 'paper', pen: p.pen ?? '1',
+      m, s, f, the: m.the, eyebrow: T[0], title: T[1], lead: T[2],
+      isGuide: st === 'guide', isNoFile: st === 'nofile', showFile: st !== 'nofile', isKnown: known, notKnown: !known, isUnknown: unknown, isWrong: wrong,
+      hasFile, noFile: !hasFile, chooseLabel,
+      fileCls: known ? 'ins-card ins-card--strong' : hasFile ? 'ins-card ins-card--warn' : 'ins-card',
+      markCls: known ? 'ins-yn ins-yn--yes' : 'ins-yn ins-yn--no',
+      verdict: known ? 'Known: it has worked on ' + m.the : unknown ? 'Fits, but not a known file' : 'Made for another device',
+      copyLabel: this.state.copied ? 'Copied' : 'Copy', copy: () => this.setState({ copied: true }),
+      trusted, toggleTrust: () => this.setState({ trusted: !trusted }),
+      noBackup: m.backup.offWhat + ' The values unique to ' + m.the + ' are saved in any case.',
+      next: known ? 'Confirm: you see the whole plan once more. The file is sent only when the backup starts.'
+        : unknown ? (trusted ? 'Confirm: you see the whole plan once more, with this file.' : 'Nothing, until you tick the box or choose another file.')
+        : wrong ? 'Nothing, until you choose a file that fits.'
+        : st === 'nofile' ? 'Nothing: the installation can’t go on with a backup until you have the file.'
+        : 'Choose the file: the installer checks it on this computer and shows the result.',
+      out: 'Stop here. ' + unchanged,
+      buttons };
+  }
+}
+</script>
+</body>
+</html>

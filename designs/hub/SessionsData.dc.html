@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sessions tree · what hubd sends</title>
+<script src="./support.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="workflow.css">
+<link rel="stylesheet" href="sessions.css">
+</helmet>
+<div class="wf il-page wf-pad wf-stack wf-stack--wide" data-theme="{{ theme }}" data-pen="{{ pen }}" style="min-height: 100vh">
+  <header class="wf-stack" style="gap: var(--space-2); max-width: 96ch">
+    <span class="il-label">Design note · the tree and the tiles</span>
+    <h1 class="wf-h2">What the UI needs from hubd, per node</h1>
+    <p class="wf-small">One list of nodes, each a session, and the entries of its owner’s workflow; the UI builds the tree from owner and entry alone. Marked <span class="sx-src">hubd</span> where hubd already holds it (and where), <span class="sx-src" data-new="true">new</span> where it doesn’t yet, <span class="sx-src" data-kind="confirm">to confirm</span> where the hub docs don’t say. Every field is live: a change is one event with the node’s id and the fields that changed, never a reload of the tree.</p>
+  </header>
+  <sc-for list="{{ tables }}" as="t" hint-placeholder-count="3">
+    <section class="wf-stack" aria-labelledby="{{ t.hid }}">
+      <h2 class="wf-h3" id="{{ t.hid }}">{{ t.title }}</h2>
+      <p class="wf-small wf-soft">{{ t.note }}</p>
+      <div style="overflow-x: auto">
+        <table class="sx-table">
+          <thead><tr><th scope="col">Field</th><th scope="col">Example</th><th scope="col">Source</th><th scope="col">Notes</th></tr></thead>
+          <tbody>
+            <sc-for list="{{ t.rows }}" as="r" hint-placeholder-count="6"><tr><td>{{ r.f }}</td><td class="wf-mono">{{ r.ex }}</td><td><span class="sx-src" data-new="{{ r.isNew }}" data-kind="{{ r.kind }}">{{ r.src }}</span></td><td>{{ r.note }}</td></tr></sc-for>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </sc-for>
+  <section class="wf-box wf-stack" aria-labelledby="sd-r" style="max-width: 96ch">
+    <h2 class="wf-h3" id="sd-r">Rules the boards follow</h2>
+    <ul class="sx-changes wf-small">
+      <sc-for list="{{ rules }}" as="x" hint-placeholder-count="5"><li>{{ x }}</li></sc-for>
+    </ul>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":1100,"height":2800}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const P = this.props;
+    const R = (f, ex, src, note) => { const k = /^new/.test(src) ? 'new' : /^confirm/.test(src) ? 'confirm' : 'hubd'; return { f, ex, src: k === 'new' ? 'new' : k === 'confirm' ? 'to confirm' : src, isNew: k === 'new' ? 'true' : 'false', kind: k, note: k === 'new' ? src.slice(5) + (note ? ' ' + note : '') : k === 'confirm' ? src.slice(9) + (note ? ' · ' + note : '') : note }; };
+    const tables = [
+      { title: 'A session (one node)', note: 'What each row and tile shows.', rows: [
+        R('id', 'engineer-epd-8', 'confirm: hubd · its session records', 'The tmux window name; stable across resumes and fresh contexts.'),
+        R('persona, model', 'Engineer · Opus', 'confirm: hubd · its session records', ''),
+        R('owner', 'implementor-epd-8', 'hubd · managed_status', 'The session that manages it; “you” for one you started; none for the Steward and quick tasks. The chain upward is owner of owner.'),
+        R('entry', 'engineer', 'hubd · the manages entry’s name', 'The name is the fact prefix (managed.<entry>.*); the tree groups by it. The UI needs it on the child, not only on the owner’s entries.'),
+        R('workflow, version', 'engineer v2', 'hubd · machine', ''),
+        R('path, pending move', 'work › fix → review', 'hubd · machine', 'The current state with its parents, and a move waiting for a confirm or an approval.'),
+        R('chip kind, note', 'waits · waits for you', 'hubd · machine', 'waits only when a person must act; a wait for a reviewer or checks is holds.'),
+        R('counters', 'fix 1 · review 1 of 3', 'hubd · machine counters', 'rounds.<state>, and the bound when an exit names one.'),
+        R('liveness', 'working | idle | waits | stopped | ended', 'confirm: hubd · tmux, hooks, Needs you', 'working = a turn is running; idle = at its prompt; waits = a card of its own is open; stopped = ended by on_exit stop, resumable; ended = gone.'),
+        R('rounds served', '[implement 1, fix 2]', 'new: from the machine log’s starts and resumes,', 'one pair per round this conversation served. A resumed session keeps one node.'),
+        R('resumed', 'true', 'hubd · machine log', 'The log records each resume (“resumed the same conversation under launch 2”); the UI needs it as a field on the node.'),
+        R('returned', 'fail · 3 findings', 'hubd · managed.<entry>.<field>', 'The last return_result, cleared when a new round starts.'),
+        R('items', 'covers epd#8 · holds epd#14', 'hubd · covers, owner’s PR', 'covers = the items it was started on; holds = PRs its managed sessions opened, carried as its own.'),
+        R('needs-you cards', '1', 'hubd · Needs you', 'The count of open cards whose session is this one. The Header badge is their sum.'),
+        R('waits for, next', 'the engineer’s fixups · → review when …', 'new: from the exits and their requires, in words,', 'as the machine panel shows them; one line each for the tile strip.'),
+        R('time, cost', '31 min · $1.10', 'hubd · machine.costs (login only)', 'Absent without a login: the row shows time only, the owner’s total is hidden, nothing says $0.'),
+        R('terminal tail', 'last 6 lines', 'confirm: hubd · tmux capture', 'Only for open tiles; a collapsed row never asks for it.') ] },
+      { title: 'An entry of the owner’s workflow', note: 'Config from the definition, the rest per instance. Sent with the owner, for every entry of its workflow, in force or not.', rows: [
+        R('name, persona, workflow', 'reviewer · Code reviewer · review', 'hubd · workflow file', ''),
+        R('start, when, max', 'auto · when user-facing · 1', 'hubd · workflow file', 'max may be per repository (the maintainer).'),
+        R('reuse, on_exit', 'fresh · stop', 'hubd · workflow file', ''),
+        R('in force', 'false · runs in review', 'hubd · the owner’s state chain', 'An entry of a parent state is in force in every state under it.'),
+        R('round', '2', 'hubd · rounds.<state>', 'The owner’s round of the state the entry runs in.'),
+        R('sessions this round', '[reviewer-epd-8-2]', 'hubd · managed_status', 'Including on_exit keep ones still running.'),
+        R('earlier sessions', '[reviewer-epd-8-1: round 1, fail]', 'new: managed_status has this conversation only;', 'the UI needs every earlier round’s session with its round and return, for the fold.'),
+        R('status note', 'judged no in round 1 · waits for approval · at the cap · start can’t happen', 'hubd · managed_status note', 'Verbatim from the note managed_status already writes.') ] },
+      { title: 'Events that change the tree', note: 'Each one names the node and the fields; the UI marks them “changed” until the row or tile is looked at.', rows: [
+        R('move', 'implementor-epd-8: path, counters, chip', 'hubd · machine log', 'Also re-sends its entries’ in force and round.'),
+        R('managed start / resume / stop / end', 'engineer-epd-8: liveness, served', 'hubd · managed lifecycle', 'A resume updates the existing node; a fresh start adds one; an end of an earlier round moves it into the fold.'),
+        R('return', 'reviewer-epd-8-1: returned', 'hubd · hub:managed.return', ''),
+        R('item state', 'epd#14: checks fail', 'hubd · change feed', 'Fans out to every node that covers or holds the item.'),
+        R('card opened / answered', 'kernel-lut: cards', 'hubd · Needs you', ''),
+        R('turn start / end', 'engineer-epd-8: working ↔ idle', 'confirm: hubd · hooks (Stop)', 'Debounced; it is the liveness word only.') ] }
+    ].map((t, i) => ({ ...t, hid: 'sd-' + i }));
+    const rules = [
+      'Yellow is only for what waits for you: a card, a confirm, an approval, the merge. A session waiting on a reviewer or checks never turns yellow.',
+      'State is told by words and shape: dashed ring working, ring idle, heavy ring waits, bars stopped, filled square ended; a failing check is a heavy edge and a black ✕, never colour alone.',
+      'An ended session stays visible while a card of it is open, or while its return is this round’s and its owner lives; earlier rounds fold under their entry; Ended shows the rest.',
+      'A filter keeps the owners above a match, dimmed, so every match still shows its owner chain and entry.',
+      'The tree and the tiles share one selection: picking a row focuses its tile, or opens it in the focused tile’s place (a pinned tile keeps its place); focusing a tile selects its row and opens the rows above it.',
+      'Below 820 px the tiles collapse to the focused one; on a phone the tree is a drill-down list and the panel switches to the owner (↑), its children (↓) and siblings (⇄).'
+    ];
+    return { theme: (P.voice || 'white') + '-' + (P.scheme || 'paper'), pen: P.pen || '1', tables, rules };
+  }
+}
+</script>
+</body>
+</html>

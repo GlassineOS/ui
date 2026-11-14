@@ -886,6 +886,13 @@ window.HUB.items['boot-test #77'] = { kind: 'run', title: 'kernel · boot-test (
    chip: how the state chip draws (holds, moving, waits, up, over); waits is only for the maintainer.
    The base is the epd#8 run in fix, round 2; frames move that one run on (the live sequence). */
 window.HUB.personas['Repository maintainer'] = { family: 'organise', icon: 'M4 21V9l8-6 8 6v12M9 21v-6h6v6' };
+/* Workflow decision cards in Needs you: a move's confirm, a design to look at, a proposed
+   workflow change. They count in the Header's badge beside the interactions. */
+window.HUB.decisions = [
+  { id: 'd1', kind: 'move', session: 'kernel-lut', title: 'Confirm kernel-lut → fix: it widens the grant (push, edits)' },
+  { id: 'd2', kind: 'design', session: 'design-brightness', title: 'Look at the brightness boards in ui#31' },
+  { id: 'd3', kind: 'change', session: 'author-implement', title: 'Save, ask again or discard the change to implement' }
+];
 window.HUB.tree = {
   /* Item states as the tree's badges show them. kind: issue, pr, run, repo, workflow. checks: pass, fail,
      pending. verdict: the last review's (pass, fail). */
@@ -1091,7 +1098,7 @@ window.HUB.tree = {
     return !!(o && o.live !== 'ended' && n.returned && r.round && (r.sessions || []).indexOf(sid) >= 0);
   };
   /* The open Needs-you cards of a session (the Header's count is the sum of these). */
-  T.asks = function (sid) { return H.interactions.filter((x) => x.session === sid).length; };
+  T.asks = function (sid) { return H.interactions.concat(H.decisions || []).filter((x) => x.session === sid).length; };
   /* A large tree (21 sessions): a second maintainer with two implementors, their engineers and a reviewer. */
   T.large = function () {
     const v = T.view('');

@@ -109,7 +109,7 @@ class Component extends DCLogic {
     /* Which sessions show: the filters, then the ended rule (an ended session stays while it has a card,
        or while its verdict is the current round's and its owner lives). */
     const ownerLive = (n) => n.owner && N[n.owner] && N[n.owner].live !== 'ended';
-    const keepEnded = (sid) => { const n = N[sid]; return asks(sid) > 0 || (ownerLive(n) && !!n.returned && n.entry && (((v.runs[n.owner] || {})[n.entry] || {}).sessions || []).indexOf(sid) >= 0 && !/^implementor/.test(sid)); };
+    const keepEnded = (sid) => T.keepEnded(v, sid);
     const q = S.query.trim().toLowerCase();
     const matches = (sid) => {
       const n = N[sid]; if (!n) return false;

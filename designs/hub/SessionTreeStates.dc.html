@@ -17,7 +17,7 @@
 <div class="wf il-page wf-pad wf-stack wf-stack--wide" data-theme="{{ theme }}" data-pen="{{ pen }}" style="min-height: 100vh">
   <header class="wf-stack" style="gap: var(--space-2); max-width: 96ch">
     <span class="il-label">SessionTree · every state</span>
-    <h1 class="wf-h2">Filters, ended sessions, empty, 20 sessions, the keyboard</h1>
+    <h1 class="wf-h2">Filters, ended sessions, empty, 21 sessions, the keyboard</h1>
     <p class="wf-small">The same component with its props pinned. A filter keeps the owners above a match, dimmed, so every match still says whose it is and under which entry. An ended session stays while it has a card for you or while its verdict is this round’s; the rest show with Ended.</p>
   </header>
   <div class="sx-frames">
@@ -52,7 +52,7 @@ class Component extends DCLogic {
       ['Working, one repository typed', 'Search epd: the epd#8 run and its owners; the rest is gone.', { filter: 'working', query: 'epd', sel: 'engineer-epd-8' }],
       ['Ended shown, folds closed', 'With Ended on, implementor-epd-6 (merged) is back under its entry. Rows were collapsed by hand.', { ended: true, sel: 'maintainer-epd', collapsed: 'n:implementor-epd-8,e:steward:implementor,e:steward:writer,e:steward:investigator,e:steward:triage,n:author-implement,g:quick,g:shells' }],
       ['Keyboard focus', 'The ring (focus colour) is on the row in the tab order; the heavy edge is the selection. Here it is on engineer-epd-8; ← moves it to its entry, ← again to its owner.', { sel: 'engineer-epd-8', ring: 'engineer-epd-8', collapsed: 'e:steward:implementor,e:steward:writer,e:steward:investigator,e:steward:triage,n:author-implement,g:quick,g:shells,e:maintainer-epd:triage,e:implementor-epd-8:qa,e:implementor-epd-8:designer' }],
-      ['20 sessions', 'A second maintainer with two implementors. Owners other than the selection’s are collapsed by hand; a closed owner’s line counts what runs under it.', { scale: 'large', sel: 'implementor-shell-294', collapsed: 'n:maintainer-epd,e:steward:implementor,e:steward:writer,e:steward:investigator,e:steward:triage,n:author-implement,g:quick,g:shells' }],
+      ['21 sessions', 'A second maintainer with two implementors. Owners other than the selection’s are collapsed by hand; a closed owner’s line counts what runs under it.', { scale: 'large', sel: 'implementor-shell-294', collapsed: 'n:maintainer-epd,e:steward:implementor,e:steward:writer,e:steward:investigator,e:steward:triage,n:author-implement,g:quick,g:shells' }],
       ['Nothing running', 'No sessions at all: where to start.', { scale: 'empty', sel: '' }],
       ['Nothing matches', 'A filter with no match says which filter, and clears in one press.', { filter: 'working', query: 'reader', sel: '' }]
     ];

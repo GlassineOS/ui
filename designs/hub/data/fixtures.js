@@ -974,6 +974,9 @@ window.HUB.tree = {
     'author-implement': { persona: 'Workflow author', wf: 'workflow-change', path: ['propose'], chip: 'waits', chipNote: 'waits for you', live: 'waits', owner: 'you', model: 'Opus', time: '6 min', cost: '$0.30', items: ['implement v8'],
       waitsFor: 'you to save, ask again or discard the draft', next: '→ applied when you save it',
       lines: [['out', '● Draft 2: the checks pass; replayed on 5 sessions'], ['ask', '◆ the before and after are in Needs you']] },
+    'implementor-reader-20': { persona: 'Implementor', wf: 'implement', path: ['work', 'implement'], chip: 'holds', live: 'working', owner: 'you', quick: 'Work on this, from reader#20', model: 'Opus', round: 'implement 1', time: '9 min', cost: '$0.25', items: ['reader#20'],
+      waitsFor: 'nothing: building', next: '→ review when the change is complete (judge) · requires branch pushed, PR open',
+      lines: [['dim', '# hub started implementor-reader-20 · covers reader#20 · started by you'], ['tool', '● Read src/pdf/jbig2.c'], ['dim', '  reproducing the crash…']] },
     'audit-hub': { persona: 'Security auditor', wf: 'security audit', path: ['done'], chip: 'over', live: 'ended', quick: 'Security audit', model: 'Fable', time: '31 min', cost: '$1.70', items: ['repo hub'],
       lines: [['find', '◆ HIGH · session token compared with =='], ['done', '✓ 4 drafts ready · 31 min']] },
     'arch-kernel': { persona: 'Architect', wf: 'architecture audit', path: ['audit'], chip: 'holds', live: 'working', quick: 'Architecture audit', model: 'Opus', time: '12 min', cost: '$0.50', items: ['repo kernel'],
@@ -999,7 +1002,8 @@ window.HUB.tree = {
       qa: { sessions: ['qa-kernel-212'], round: 2 },
       designer: { note: 'only in design; never entered' } },
     'shell-brightness': { engineer: { note: 'only in implement and fix' }, reviewer: { note: 'only in review; never entered' }, qa: { note: 'only in review' }, designer: { sessions: ['design-brightness'], round: 1 } },
-    'docs-edl': { reviewer: { sessions: ['review-docs-88'], round: 1 } }
+    'docs-edl': { reviewer: { sessions: ['review-docs-88'], round: 1 } },
+    'implementor-reader-20': { engineer: { note: 'on request; none yet' }, reviewer: { note: 'starts fresh on → review' }, qa: { note: 'judged on entering review' }, designer: { note: 'only in design; never entered' } }
   },
   /* Sessions that ran in earlier rounds, folded under their entry. */
   earlier: {
@@ -1008,7 +1012,7 @@ window.HUB.tree = {
     'triage-epd-3': { persona: 'Triage', returned: 'no change', round: 3, time: '2 min', cost: '$0.03' }
   },
   /* Top level: instances nothing owns, quick tasks by their item, plain shells. */
-  roots: ['steward', 'author-implement'],
+  roots: ['steward', 'implementor-reader-20', 'author-implement'],
   quick: [['repo hub', ['audit-hub']], ['repo kernel', ['arch-kernel']], ['ink-input#57', ['review-ink-57']]],
   shells: ['maintainer'],
   /* The epd#8 run, moved on one step at a time. Each frame replaces fields of nodes, runs and items;
@@ -1078,9 +1082,17 @@ window.HUB.tree = {
     else if (T.defs[n.wf]) Object.entries(T.defs[n.wf].states).forEach(([st, es]) => es.forEach((e) => add(e, st)));
     return out;
   };
+  /* An ended session stays in view while it has a card, or while it is this round's returner of an
+     entry that counts rounds under an owner still running. */
+  T.keepEnded = function (v, sid) {
+    const n = v.nodes[sid]; if (!n) return false;
+    if (T.asks(sid) > 0) return true;
+    const o = n.owner && v.nodes[n.owner], r = o ? ((v.runs[n.owner] || {})[n.entry] || {}) : {};
+    return !!(o && o.live !== 'ended' && n.returned && r.round && (r.sessions || []).indexOf(sid) >= 0);
+  };
   /* The open Needs-you cards of a session (the Header's count is the sum of these). */
   T.asks = function (sid) { return H.interactions.filter((x) => x.session === sid).length; };
-  /* A large tree (20 sessions): a second maintainer with two implementors, their engineers and a reviewer. */
+  /* A large tree (21 sessions): a second maintainer with two implementors, their engineers and a reviewer. */
   T.large = function () {
     const v = T.view('');
     const repos = [['shell', ['shell#290', 'shell#294']]];

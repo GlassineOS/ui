@@ -112,6 +112,7 @@ class Component extends DCLogic {
     const tabs = S.pinned.filter((s) => S.tabs.indexOf(s) >= 0).concat(S.tabs.filter((s) => S.pinned.indexOf(s) < 0)).filter((s) => N[s]);
     const tiles = S.tiles.filter((s) => N[s]);
     const focus = tiles.indexOf(S.focus) >= 0 ? S.focus : tiles[0];
+    const put = (o) => { this.setState(o); if (o.tiles && P.onTiles) P.onTiles(o.tiles); };
     const setFocus = (sid) => { this.setState({ focus: sid }); if (P.onFocus) P.onFocus(sid); };
     /* A tab's group: the multi-state instance it belongs to (itself or its nearest owner on one). */
     const top = (sid) => { let k = sid, out = sid; while (k && N[k]) { if (M.defs[N[k].wf] && M.defs[N[k].wf].states && N[k].wf !== 'workflow-change') out = k; k = N[k].owner; if (k && N[k] && !(M.defs[N[k].wf] && M.defs[N[k].wf].states)) break; } return out; };
@@ -123,8 +124,8 @@ class Component extends DCLogic {
       const t = tiles.indexOf(sid);
       G.tabs.push({ name: sid, dom: this.uid + '-t-' + sid, panel: this.uid + '-p-' + sid, on: sid === focus ? 'true' : 'false', tab: sid === focus ? '0' : '-1', tiled: t >= 0, n: String(t + 1), live: N[sid].live, pinned: S.pinned.indexOf(sid) >= 0,
         tip: sid + (t >= 0 ? ' · tile ' + (t + 1) : ' · not tiled') + (S.pinned.indexOf(sid) >= 0 ? ' · pinned' : ''),
-        pick: () => { if (t >= 0) setFocus(sid); else { const nt = tiles.slice(); const i = nt.indexOf(focus); const slot = S.pinned.indexOf(focus) >= 0 ? nt.length - 1 : i; nt[slot < 0 ? 0 : slot] = sid; this.setState({ tiles: nt }); setFocus(sid); } },
-        close: (ev) => { if (ev && ev.stopPropagation) ev.stopPropagation(); this.setState({ tabs: S.tabs.filter((x) => x !== sid), tiles: tiles.filter((x) => x !== sid) }); } });
+        pick: () => { if (t >= 0) setFocus(sid); else { const nt = tiles.slice(); const i = nt.indexOf(focus); const slot = S.pinned.indexOf(focus) >= 0 ? nt.length - 1 : i; nt[slot < 0 ? 0 : slot] = sid; put({ tiles: nt }); setFocus(sid); } },
+        close: (ev) => { if (ev && ev.stopPropagation) ev.stopPropagation(); put({ tiles: tiles.filter((x) => x !== sid), tabs: S.tabs.filter((x) => x !== sid) }); } });
     });
     const CG = { holds: 'M12 8a4 4 0 1 0 0 8 4 4 0 1 0 0-8z', moving: 'M4 12h12M12 7l5 5-5 5', waits: 'M12 3a9 9 0 1 0 0 18 9 9 0 1 0 0-18zM12 7v5l3 2', up: 'M12 19V6M6 11l6-6 6 6', over: 'M5 12l4 4 10-10' };
     const IG = { issue: 'M8 2a6 6 0 1 0 0 12A6 6 0 1 0 8 2zM8 6.6a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 1 0 0-2.8z', pr: 'M4 4.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 1 0 0 3zM4 4.5v7M4 14.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 1 0 0 3zM12 14.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 1 0 0 3zM12 11.5V7a3 3 0 0 0-3-3H7', run: 'M2.5 2.5h11v11h-11zM6.5 5.5l4 2.5-4 2.5z', repo: 'M3 2.5h10v11H3zM3 10.5h10M6 13.5v2', workflow: 'M2 2.5h5v4H2zM9 9.5h5v4H9zM7 4.5h4.5v5' };
@@ -166,15 +167,15 @@ class Component extends DCLogic {
         hasChip: !n.plain, chipCls: 'il-chip' + ((n.chip || 'holds') === 'holds' ? '' : ' il-chip--' + n.chip), glyph: CG[n.chip] || CG.holds, chipLabel: (n.path || []).join(' › ') + (n.to ? ' → ' + n.to : ''), hasChipSub: !!n.chipNote, chipSub: n.chipNote || '',
         items: (n.items || []).concat(n.holds || []).map(itemOf),
         hasOwner: !!owner, owner, entryLine: e ? 'entry ' + e.name + ' · ' + (e.reuse === 'resume' ? 'resume' : 'fresh each round') + (n.round && typeof n.round === 'number' ? ' · round ' + n.round : '') : '',
-        toOwner: (ev) => { if (ev && ev.stopPropagation) ev.stopPropagation(); const nt = tiles.indexOf(owner) >= 0 ? tiles : tiles.map((x) => (x === sid ? owner : x)); this.setState({ tiles: nt, tabs: S.tabs.indexOf(owner) >= 0 ? S.tabs : S.tabs.concat([owner]) }); setFocus(owner); },
+        toOwner: (ev) => { if (ev && ev.stopPropagation) ev.stopPropagation(); const nt = tiles.indexOf(owner) >= 0 ? tiles : tiles.map((x) => (x === sid ? owner : x)); put({ tiles: nt, tabs: S.tabs.indexOf(owner) >= 0 ? S.tabs : S.tabs.concat([owner]) }); setFocus(owner); },
         hasKids: kids.length > 0, kids: kids.length + ' session' + (kids.length > 1 ? 's' : ''),
-        toKids: (ev) => { if (ev && ev.stopPropagation) ev.stopPropagation(); const nt = [sid].concat(kids).slice(0, 3); this.setState({ tiles: nt, tabs: S.tabs.concat(nt.filter((x) => S.tabs.indexOf(x) < 0)), sizes: nt.map(() => 33) }); if (P.onTiles) P.onTiles(nt); },
+        toKids: (ev) => { if (ev && ev.stopPropagation) ev.stopPropagation(); const nt = [sid].concat(kids).slice(0, 3); put({ tiles: nt, tabs: S.tabs.concat(nt.filter((x) => S.tabs.indexOf(x) < 0)), sizes: nt.map(() => 33) }); },
         hasMeta: !!meta, meta,
         hasCard: !!card, card: card || { title: '', body: '', from: '' },
         lines, ended: ended ? 'true' : 'false', live2: !ended && n.live !== 'stopped',
         isLive: !ended, path, waitsFor: n.waitsFor || '—', hasNext: !!n.next, next: n.next || '',
         isOver: ended, overLabel: 'Ended', overLine: (n.returned ? 'returned ' + n.returned : 'ended') + (n.round ? ' · round ' + n.round : '') + ' · read-only',
-        close: (ev) => { if (ev && ev.stopPropagation) ev.stopPropagation(); this.setState({ tiles: tiles.filter((x) => x !== sid) }); },
+        close: (ev) => { if (ev && ev.stopPropagation) ev.stopPropagation(); put({ tiles: tiles.filter((x) => x !== sid) }); },
         pick: () => { if (sid !== focus) setFocus(sid); } });
     });
     const tabKey = (ev) => {
@@ -185,7 +186,7 @@ class Component extends DCLogic {
     return { theme, pen: P.pen || '1', groups, tiles: out, tabKey, termH: P.termH || '220px', minH: '0',
       boxRef: (el) => { this.box = el; },
       frameStyle: 'min-width: 0; background: var(--paper)',
-      counts: [1, 2, 3].map((k) => ({ n: String(k), on: tiles.length === k ? 'true' : 'false', pick: () => { const pool = [focus].concat(tiles.filter((x) => x !== focus), tabs.filter((x) => tiles.indexOf(x) < 0)); const nt = tiles.slice(0, k).concat(pool.filter((x) => tiles.slice(0, k).indexOf(x) < 0)).slice(0, k); this.setState({ tiles: nt, sizes: nt.map(() => 33) }); } })),
+      counts: [1, 2, 3].map((k) => ({ n: String(k), on: tiles.length === k ? 'true' : 'false', pick: () => { const pool = [focus].concat(tiles.filter((x) => x !== focus), tabs.filter((x) => tiles.indexOf(x) < 0)); const nt = tiles.slice(0, k).concat(pool.filter((x) => tiles.slice(0, k).indexOf(x) < 0)).slice(0, k); put({ tiles: nt, sizes: nt.map(() => 33) }); } })),
       hasSync: !!P.sync, sync: 'Selected in the tree ↔ focused tile: ' + focus + '. Keys go to the tile with the heavy edge; Ctrl+] and Ctrl+[ move between tiles, Ctrl+↑ opens the owner.' };
   }
 }

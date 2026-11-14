@@ -662,6 +662,15 @@
    "x": 2408,
    "y": 1660
   },
+  "settings.keyboard.words.dc.html": {
+   "h": 1540,
+   "is_interactive": true,
+   "page": "settings",
+   "title": "settings.keyboard.words · Learned words",
+   "w": 1124,
+   "x": 0,
+   "y": 8300
+  },
   "settings.landscape.dc.html": {
    "h": 1540,
    "is_interactive": true,
@@ -887,6 +896,15 @@
    "x": 0,
    "y": 7700
   },
+  "shell.keyboard.remove.dc.html": {
+   "h": 1090,
+   "is_interactive": true,
+   "page": "shell",
+   "title": "shell.keyboard.remove · Removing a suggestion",
+   "w": 824,
+   "x": 3320,
+   "y": 7700
+  },
   "shell.landscape.dc.html": {
    "h": 1120,
    "is_interactive": true,
@@ -1055,6 +1073,7 @@
   "shell.keyboard.dc.html",
   "shell.keyboard.purpose.dc.html",
   "shell.keyboard.private.dc.html",
+  "shell.keyboard.remove.dc.html",
   "shell.write.dc.html",
   "shell.write.pending.dc.html",
   "shell.write.correct.dc.html",
@@ -1076,6 +1095,7 @@
   "settings.gestures.dc.html",
   "settings.power.dc.html",
   "settings.keyboard.dc.html",
+  "settings.keyboard.words.dc.html",
   "settings.apps.dc.html",
   "settings.app.dc.html",
   "settings.app.eink.dc.html",

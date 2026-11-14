@@ -184,7 +184,7 @@ class Component extends DCLogic {
     kbWordsL: [['okay', 96, 'English'], ['gonna', 41, 'English'], ['teh', 23, 'English'], ['Feierabend', 21, 'Deutsch'], ['e-ink', 19, 'English'], ['tmrw', 17, 'English'], ['Glassine', 14, 'English'], ['gemütlich', 11, 'Deutsch'], ['sourdough', 9, 'English'], ['kerning', 7, 'English'], ['brb', 6, 'English'], ['Hokusai', 4, 'English'], ['wanna', 3, 'English'], ['refactor', 2, 'English']],
     kbGone: [], kbQ: '',
     pkQ: '', pkSel: 'retroarch', pkFrom: 'pkgSearch', pkSheet: null, pkPlanPg: 0, pkRun: null, pkRes: null, pkAck: false, pkUpd: 'never',
-    pkInst: ['libretro-mgba', 'htop', 'vim', 'sdl2', 'firefox', 'mesa'], pkAdded: ['htop', 'vim'], pkRemoved: ['nano'], pkNewer: ['firefox', 'mesa'],
+    pkInst: ['libretro-mgba', 'htop', 'vim', 'sdl2', 'firefox', 'mesa', 'glassine-predict-model-en', 'glassine-predict-model-de'], pkAdded: ['htop', 'vim', 'glassine-predict-model-de'], pkRemoved: ['nano'], pkNewer: ['firefox', 'mesa'],
     g: { '3left': 'Previous screen', '3right': 'Next screen', '3up': 'Full screen', '3down': 'Leave full screen', '4left': 'Back', '4right': 'Forward', '4up': 'Home', '4down': 'Refresh screen' }, edge: true,
     saver: false, sleepAfter: '10 min', pill: true, autoT: true, tz: 'Lisbon', fmt: '24-hour', lang: 'English (UK)',
     ov: { Stellarium: { fluOwn: true, flu: 'Clear', dith: true, dithV: 'Dizzy' }, KOReader: { fluOwn: true, flu: 'Calm', grad: false, contentOwn: true, content: 'Text', dith: true, dithV: 'Bayer', freeze: 'Always', fav: true }, 'Firefox ESR': { fluOwn: true, flu: 'Fluid', fav: true }, Chess: { contentOwn: true, content: 'Motion', drawOwn: true, draw: 'Chunked' }, Terminal: { draw: 'CPU', freeze: 'Off' } } };
@@ -200,6 +200,10 @@ class Component extends DCLogic {
     if (Component._pk) return Component._pk;
     const P = (v, d, dl, size, url) => ({ v, d, dl, size, url });
     const D = {
+      'glassine-predict-model-en': P('0_git20261114-r0', 'Keyboard suggestions: English', '2.6 MB', '5.3 MB', 'github.com/GlassineOS/shell'),
+      'glassine-predict-model-de': P('0_git20261114-r0', 'Keyboard suggestions: Deutsch', '3.0 MB', '6.0 MB', 'github.com/GlassineOS/shell'),
+      'glassine-predict-model-fr': P('0_git20261114-r0', 'Keyboard suggestions: Français', '2.8 MB', '5.6 MB', 'github.com/GlassineOS/shell'),
+      'glassine-predict-model-es': P('0_git20261114-r0', 'Keyboard suggestions: Español', '2.7 MB', '5.5 MB', 'github.com/GlassineOS/shell'),
       retroarch: P('1.21.0-r0', 'Frontend for emulators, game engines and media players', '9.8 MB', '31 MB', 'retroarch.com'),
       'retroarch-assets': P('1.21.0-r0', 'RetroArch menu assets', '27 MB', '96 MB', 'github.com/libretro/retroarch-assets'),
       'libretro-mgba': P('0.10.3-r0', 'Game Boy Advance core', '1.1 MB', '3.2 MB', 'mgba.io'),
@@ -253,7 +257,10 @@ class Component extends DCLogic {
     };
   }
 
-  pkPretty(n) { return n === 'retroarch' ? 'RetroArch' : n; }
+  pkPretty(n) {
+    const kb = { 'glassine-predict-model-en': 'English', 'glassine-predict-model-de': 'Deutsch', 'glassine-predict-model-fr': 'Français', 'glassine-predict-model-es': 'Español' }[n];
+    return n === 'retroarch' ? 'RetroArch' : kb ? kb + ' for the keyboard' : n;
+  }
 
   pkPlan(op, name) {
     const X = this.pkData(), pr = this.pkPretty(name);
@@ -712,10 +719,15 @@ class Component extends DCLogic {
     const NEWER = { firefox: '142.0.1 · the system has 142.0', mesa: '24.2.8 · the system has 24.2.7' };
     const kbRm = w => () => u(st => ({ kbWordsL: st.kbWordsL.filter(x => x[0] !== w), kbGone: [w, ...st.kbGone], kbLearnedW: Math.max(0, st.kbLearnedW - 1) }));
     const kbBack = w => () => u(st => ({ kbGone: st.kbGone.filter(x => x !== w) }));
-    const KB_LANGS = [['English', '40,000 words'], ['Deutsch', '40,000 words'], ['Français', 'Not installed'], ['Español', 'Not installed']];
-    const kbLang = l => () => u(st => ({ kbLangs: st.kbLangs.includes(l) ? st.kbLangs.filter(x => x !== l) : KB_LANGS.map(x => x[0]).filter(x => x === l || st.kbLangs.includes(x)) }));
-    PAGES.kbLangs = () => [S('', [W.note('Suggestions come from every language that is on, in one row, leaning to the language you are writing in. A word you pick or type is learned into its language.')]),
-      S('Languages', KB_LANGS.map(([l, d]) => d === 'Not installed' ? W.info(l, d) : W.tog(l, d, s.kbLangs.includes(l), kbLang(l))), { list: true })];
+    // Keyboard languages are packages (glassine-predict-model-LANG): installed ones can be switched
+    // on, the rest install through the package sheet; the full list is in Packages.
+    const KB_LANGS = [['English', 'en'], ['Deutsch', 'de'], ['Español', 'es'], ['Français', 'fr']].map(([l, c]) => ({ l, pkg: 'glassine-predict-model-' + c }));
+    const kbLang = l => () => u(st => ({ kbLangs: st.kbLangs.includes(l) ? st.kbLangs.filter(x => x !== l) : KB_LANGS.map(x => x.l).filter(x => x === l || st.kbLangs.includes(x)) }));
+    PAGES.kbLangs = () => { const inst = KB_LANGS.filter(x => isInst(x.pkg)), more = KB_LANGS.filter(x => !isInst(x.pkg));
+      return [pkStatus(), S('', [W.note('Suggestions come from every language that is on, in one row, leaning to the language you are writing in. A word you pick or type is learned into its language.')]),
+        S('On the keyboard', inst.map(x => W.tog(x.l, '40,000 words', s.kbLangs.includes(x.l), kbLang(x.l))), { list: true }),
+        S('Add a language', [...more.map(x => W.btn(x.l, running ? BUSY : 'Download ' + PKD[x.pkg].dl, 'Install', pkAsk('install', x.pkg), !running)),
+          W.link('All keyboard languages', 'In Packages, where installed ones can also be removed', () => u({ topic: 'pkgSearch', pkQ: 'glassine-predict-model', pg: 0 }), 'deployed_code')], { list: true })].filter(Boolean); };
     PAGES.kbWords = () => { const q = (s.kbQ || '').trim().toLowerCase(), hits = s.kbWordsL.filter(([w]) => !q || w.toLowerCase().includes(q));
       return [S('', [W.note('Words the keyboard learned from your typing, kept on this device only. A removed word is never suggested or learned again; you can still type it.')]),
         S('Search', [{ ...W.search(), ph: 'A learned word', q: s.kbQ || '', change: e => u({ kbQ: e.target.value, pg: 0 }), submit: e => e.preventDefault() }], { list: true }),

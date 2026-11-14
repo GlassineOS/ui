@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&amp;display=block" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&amp;display=swap" rel="stylesheet"><style>[data-il-root] [tabindex]:focus-visible{outline:2px solid var(--il-focus);outline-offset:2px}</style></helmet>
+<div style="width:760px;height:1060px;background:#262626;border-radius:28px;padding:24px;box-sizing:border-box">
+<div data-il-root="" style="{{ ilv }};position:relative;width:100%;height:100%;overflow:hidden;background:var(--il-paper);color:var(--il-ink);font-family:{{ font }}">
+
+<div style="height:56px;box-sizing:border-box;display:flex;align-items:center;gap:6px;padding:0 10px;border-bottom:1.5px solid var(--il-ink)">
+<div style="width:40px;height:40px;display:flex;align-items:center;justify-content:center"><span style="font:400 22px/1 'Material Symbols Outlined'">arrow_back</span></div>
+<span style="flex:1;font:600 18px {{ font }}">Reply</span>
+<div style="width:40px;height:40px;display:flex;align-items:center;justify-content:center"><span style="font:400 22px/1 'Material Symbols Outlined'">check</span></div>
+</div>
+<div style="display:flex;align-items:center;gap:14px;height:44px;padding:0 20px;border-bottom:1px dotted var(--il-ink);font:400 15px {{ font }}"><span style="width:64px;color:var(--il-ink-soft)">To</span><span>Ana Lima</span></div>
+<div style="display:flex;align-items:center;gap:14px;height:44px;padding:0 20px;border-bottom:1px dotted var(--il-ink);font:400 15px {{ font }}"><span style="width:64px;color:var(--il-ink-soft)">Subject</span><span>Re: Reading group</span></div>
+
+<div role="textbox" aria-label="Message" aria-multiline="true" data-write-field="" onPointerDown="{{ tapField }}" style="padding:16px 20px 0;min-height:44px;font:400 18px/28px {{ font }};cursor:text">
+<span>{{ text }}</span><span style="text-decoration:underline dotted 2px;text-underline-offset:5px">{{ pending }}</span><span style="display:inline-block;width:2px;height:24px;vertical-align:-5px;background:var(--il-ink)"></span>
+</div>
+
+<div style="padding:18px 20px 0;display:flex;flex-direction:column;gap:12px">
+<span style="font:400 14px {{ font }};color:var(--il-ink-soft)">On Monday, Ana Lima wrote:</span>
+<div style="border-left:3px solid var(--il-rule);padding-left:14px;font:400 16px/1.55 {{ font }};text-wrap:pretty">Invisible Cities, chapters 4 and 5 for Thursday. Bring the passage on Zobeide and the question about memory and desire. Here is the cover of the edition we are reading, so nobody brings the other translation.</div>
+<div aria-label="Picture: book cover" style="margin-left:17px;width:330px;height:420px;border-radius:4px;background:radial-gradient(circle at 30% 28%, var(--il-paper) 0 18%, transparent 19%),repeating-linear-gradient(45deg, var(--il-ink) 0 2px, transparent 2px 7px),repeating-linear-gradient(-45deg, var(--il-ink-soft) 0 1px, transparent 1px 5px),var(--il-rule);display:flex;align-items:flex-end;padding:18px;box-sizing:border-box"><span style="background:var(--il-ink);color:var(--il-paper);padding:6px 10px;font:600 22px {{ font }}">Invisible Cities</span></div>
+</div>
+
+<sc-if value="{{ open }}" hint-placeholder-val="{{ true }}">
+<div data-write-paper="" role="region" aria-label="Writing area" style="position:absolute;left:14px;right:14px;top:{{ paperTop }}px;height:{{ paperH }}px;border-radius:14px;background:color-mix(in srgb, var(--il-paper) 76%, transparent);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);box-shadow:0 0 0 1px color-mix(in srgb, var(--il-ink) 22%, transparent),0 3px 0 color-mix(in srgb, var(--il-shade) 70%, transparent)">
+<div style="position:absolute;left:28px;right:28px;top:{{ baseY }}px;border-top:1.5px dotted color-mix(in srgb, var(--il-ink) 30%, transparent)"></div>
+<sc-if value="{{ hasCands }}" hint-placeholder-val="{{ false }}">
+<div role="listbox" aria-label="Recognized text" style="position:absolute;left:12px;right:96px;top:10px;display:flex;gap:8px;justify-content:center">
+<sc-for list="{{ cands }}" as="c" hint-placeholder-count="3"><div role="option" tabindex="0" aria-selected="{{ c.sel }}" onPointerDown="{{ c.pick }}" style="height:38px;box-sizing:border-box;padding:0 14px;display:flex;align-items:center;border-radius:10px;background:var(--il-paper);box-shadow:inset 0 0 0 {{ c.bw }} var(--il-ink);font:{{ c.weight }} 16px {{ font }};white-space:nowrap;cursor:pointer">{{ c.l }}</div></sc-for>
+</div>
+</sc-if>
+<svg width="100%" height="100%" style="position:absolute;inset:0;touch-action:none;cursor:crosshair" onPointerDown="{{ pd }}" onPointerMove="{{ pm }}" onPointerUp="{{ pu }}" onPointerCancel="{{ pu }}"><path d="{{ inkD }}" fill="none" stroke="var(--il-pen,var(--il-ink))" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="{{ inkOp }}"></path></svg>
+<div style="position:absolute;right:8px;top:8px;display:flex;gap:2px">
+<div role="button" tabindex="0" aria-label="Type with keys" onPointerDown="{{ toKeys }}" style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;color:var(--il-ink-soft);cursor:pointer"><span style="font:400 22px/1 'Material Symbols Outlined'">keyboard</span></div>
+<div role="button" tabindex="0" aria-label="Put the paper away" onPointerDown="{{ close }}" style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;color:var(--il-ink-soft);cursor:pointer"><span style="font:400 22px/1 'Material Symbols Outlined'">close</span></div>
+</div>
+</div>
+</sc-if>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview": {"width": 760, "height": 1060}, "step": {"editor": "enum", "options": ["field", "paper", "ink", "pending"], "default": "ink"}, "theme": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "scheme": {"editor": "enum", "options": ["eink", "paper", "night"], "default": "eink"}, "pen": {"editor": "enum", "options": ["1", "2", "3"], "default": "1"}}'>
+class Component extends DCLogic {
+  state = {};
+
+  componentDidMount() {
+    const step = this.props.step ?? 'ink';
+    this.setState({ open: step !== 'field', sample: step === 'ink' || step === 'pending', pending: step === 'pending', strokes: [], text: '' });
+  }
+
+  componentWillUnmount() { clearTimeout(this.tm); }
+
+  // The sample handwriting: a few letters as single pen strokes in a unit box
+  // (x-height 0..1, baseline at 1), laid out with a slant and a little wobble.
+  sampleInk(x0, base, s) {
+    const G = {
+      s: [0.85, 'M0.75 0.15 C0.5 -0.05 0.1 0.05 0.15 0.3 C0.2 0.55 0.75 0.45 0.75 0.75 C0.75 1.05 0.25 1.05 0.08 0.85'],
+      e: [0.95, 'M0.1 0.55 L0.85 0.5 C0.9 0.1 0.15 -0.05 0.1 0.5 C0.08 1.0 0.7 1.05 0.88 0.85'],
+      y: [0.95, 'M0.1 0 L0.1 0.5 C0.1 0.9 0.75 0.9 0.8 0.5 M0.8 0 L0.8 1.3 C0.8 1.75 0.2 1.75 0.1 1.45'],
+      o: [1.0, 'M0.5 0 C0.05 0 0.05 1 0.5 1 C0.95 1 0.95 0 0.5 0'],
+      u: [0.95, 'M0.1 0 L0.1 0.65 C0.1 1.05 0.75 1.05 0.8 0.6 M0.8 0 L0.8 1'],
+      a: [0.95, 'M0.8 0.3 C0.65 -0.05 0.1 0 0.1 0.55 C0.1 1.05 0.7 1.05 0.8 0.6 M0.8 0 L0.82 1'],
+      t: [0.8, 'M0.35 -0.6 L0.35 0.8 C0.35 1.05 0.6 1.05 0.75 0.9 M0.05 0.05 L0.7 0.05'],
+      8: [1.0, 'M0.5 -0.7 C0.0 -0.7 0.05 -0.05 0.5 0.1 C0.95 0.25 0.95 1 0.5 1 C0.05 1 0.05 0.25 0.5 0.1 C0.95 -0.05 0.95 -0.7 0.5 -0.7']
+    };
+    let x = x0, out = '', i = 0;
+    for (const ch of 'see you at 8') {
+      if (ch === " ") { x += 0.55 * s; continue; }
+      const [w, d] = G[ch], j = ((i * 37) % 7 - 3) / 3, k = s * (1 + j * 0.04), dy = j * 0.05 * s;
+      let n = 0;
+      out += d.replace(/-?\d*\.?\d+ -?\d*\.?\d+/g, pair => {
+        const [px, py] = pair.split(' ').map(Number);
+        const X = x + px * k - (py - 1) * k * 0.2, Y = base + dy + (py - 1) * k;
+        n++;
+        return X.toFixed(1) + ' ' + Y.toFixed(1);
+      }) + ' ';
+      x += (w + 0.06) * s; i++;
+    }
+    return out;
+  }
+
+  renderVals() {
+    const p = this.props, s = this.state, u = q => this.setState(q);
+    const voice = ['white', 'editorial', 'stationery'].includes(p.theme) ? p.theme : 'white';
+    const font = { white: "'IBM Plex Sans',sans-serif", editorial: "'Source Serif 4',serif", stationery: "'EB Garamond',serif" }[voice];
+    const paperTop = 220, paperH = 250, baseY = 168;
+    const best = 'see you at 8', alts = ['see you at B', best, 'see yon at 8'];
+    const commit = t => { clearTimeout(this.tm); u(st => ({ text: (st.text || '') + t + ' ', pending: false, sample: false, strokes: [] })); };
+    const pt = e => {
+      const r = e.currentTarget.getBoundingClientRect(), k = r.width / (e.currentTarget.clientWidth || r.width) || 1;
+      return ((e.clientX - r.left) / k).toFixed(1) + ' ' + ((e.clientY - r.top) / k).toFixed(1);
+    };
+    const inkD = (s.sample ? this.sampleInk(40, baseY, 34) : '') + (s.strokes || []).join(' ');
+    return {
+      ilv: this.ilVars(voice, p.scheme, p.pen), font,
+      open: !!s.open, text: s.text || '', pending: s.pending ? best + ' ' : '',
+      paperTop, paperH, baseY, inkD: inkD || 'M0 0', inkOp: s.pending ? '0.35' : '1',
+      hasCands: !!s.pending,
+      cands: alts.map(l => ({ l, sel: String(l === best), bw: l === best ? '2px' : '1px', weight: l === best ? 600 : 400, pick: e => { e.stopPropagation(); commit(l); } })),
+      tapField: () => { if (!s.open) u({ open: true }); },
+      pd: e => {
+        if (e.currentTarget.setPointerCapture) e.currentTarget.setPointerCapture(e.pointerId);
+        clearTimeout(this.tm);
+        if (this.state.pending) commit(best);
+        this.drawing = true;
+        u(st => ({ strokes: [...(st.strokes || []), 'M' + pt(e)] }));
+      },
+      pm: e => {
+        if (!this.drawing) return;
+        const q = pt(e);
+        u(st => { const a = [...(st.strokes || [])]; a[a.length - 1] += ' L' + q; return { strokes: a }; });
+      },
+      pu: () => {
+        if (!this.drawing) return;
+        this.drawing = false;
+        clearTimeout(this.tm);
+        this.tm = setTimeout(() => u({ pending: true }), 800);
+      },
+      toKeys: e => { e.stopPropagation(); if (this.state.pending) commit(best); u({ open: false, strokes: [], sample: false }); },
+      close: e => { e.stopPropagation(); if (this.state.pending) commit(best); u({ open: false, strokes: [], sample: false }); }
+    };
+  }
+
+  // Interleaf colours for a voice, scheme and pen (the same lookup as EinkShell).
+  ilVars(voice, scheme, pen) {
+    const V = ['white', 'editorial', 'stationery'].includes(voice) ? voice : 'white';
+    const S = scheme === 'night' || scheme === 'paper' ? scheme : 'eink';
+    const id = S === 'eink' ? (V === 'stationery' ? 'stationery-eink' : 'eink') : V + '-' + S;
+    const T = Component.ilTokens(this);
+    if (!T) return '--il-theme:' + id;
+    const i = ['1', '2', '3'].indexOf(String(pen ?? '1')), sfx = i > 0 ? '-' + (i + 1) : '';
+    const g = name => {
+      let x = T[name];
+      x = x && typeof x === 'object' ? x[id] : x;
+      if (x == null) return null;
+      const m = /^\{([a-z0-9-]+)\}$/.exec(x);
+      if (!m) return x;
+      return g(m[1] === 'accent' || m[1] === 'highlight' ? m[1] + sfx : m[1]);
+    };
+    const v = { paper: g('paper'), ink: g('ink'), 'ink-soft': g('ink-soft'), rule: g('rule'), shade: g('shade'), pen: g('pen'), focus: g('focus') };
+    return Object.keys(v).filter(k => v[k]).map(k => '--il-' + k + ':' + v[k]).join(';') + ';--il-theme:' + id;
+  }
+
+  static ilTokens(c) {
+    const K = Component;
+    if (K._ilT !== undefined) return K._ilT;
+    if (!K._ilP) {
+      K._ilW = [];
+      K._ilP = fetch('ds/interleaf/tokens.json')
+        .then(r => (r.ok ? r.json() : null))
+        .then(j => {
+          const T = {};
+          if (j) for (const sec of [j.color, j.shadow]) for (const t of (sec && sec.tokens) || []) T[t.name] = t.value;
+          K._ilT = j ? T : null;
+        })
+        .catch(() => { K._ilT = null; })
+        .then(() => { const w = K._ilW; K._ilW = []; for (const x of w) { try { x.forceUpdate(); } catch (e) {} } });
+    }
+    if (c && K._ilW.indexOf(c) < 0) K._ilW.push(c);
+    return null;
+  }
+}
+</script>
+</body>
+</html>

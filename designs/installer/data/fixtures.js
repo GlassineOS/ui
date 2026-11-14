@@ -77,6 +77,17 @@ window.INSTALLER = {
       },
       /* How a person picks a system at start-up is the device's own (its description holds it):
          today a power-menu item and the cover; later a start-up chooser on the device. */
+      /* The plan's "In short" card: one plain sentence per outcome, no technical words. */
+      plain: {
+        keep: 'Android stays. GlassineOS is added next to it, and you can start either one.',
+        replace: 'Android and its apps are removed. GlassineOS takes their place.',
+        erase: 'Your files in Android (books, notes, downloads) are erased. Copy what you want to keep first.',
+        backup: 'First, a full copy of the Note Air is saved on this computer. With it, everything can be put back.',
+        noBackup: 'No copy of the Note Air is made. If something goes wrong, it can’t be put back as it was.',
+        stock: 'GlassineOS is removed and the Note Air goes back to how it came from the maker, from your backup.',
+        cableNeed: 'An emergency cable',
+        cableNote: 'Only used if something goes wrong in step 2.'
+      },
       keepChoice: {
         os: 'Android 10',
         heading: 'Android 10, the maker’s system',
@@ -279,6 +290,15 @@ window.INSTALLER = {
         offBody: 'For when there isn’t a disk with room for it.',
         offWhat: 'Without a backup, Windows 11 and its files are gone for good: going back to it and repairing damage are not possible.',
         always: ''
+      },
+      plain: {
+        keep: 'Windows stays. GlassineOS is added in the free space, and you can start either one.',
+        replace: 'Windows and every file in it are erased. GlassineOS uses the whole disk.',
+        erase: '',
+        backup: 'First, the PC’s start-up files are saved to the USB stick. With them, the PC can be put back.',
+        backupReplace: 'First, a full copy of Windows is saved to a disk you choose. With it, Windows can be put back.',
+        noBackup: 'No backup is made. If something goes wrong, the PC can’t be put back as it was.',
+        stock: 'GlassineOS is removed and the PC goes back to how it was, from your backup.'
       },
       disks: [{ name: '512 GB disk', body: 'Windows 11 · 100 GB free', checked: true }],
       oses: [{

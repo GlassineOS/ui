@@ -3,7 +3,8 @@
 # tools/fetch-design-prs OUT: the files under designs/ of every open pull request of this repository
 # (none from a fork: their boards' JavaScript would run on the organization's github.io origin,
 # which only people with write access to this repository may put there) that changes designs/, at its
-# head: OUT/N/designs/ and OUT/N/pr.json ({number, title, url, head}). Only files are written; nothing
+# head: OUT/N/designs/ and OUT/N/pr.json ({number, title, url, head, and checks when the head's check
+# runs have all finished: "passed" or "failed"}). Only files are written; nothing
 # of the pull request runs. Needs gh (GH_TOKEN), jq, git with this repository as origin, and
 # GITHUB_REPOSITORY (OWNER/NAME). Prints the numbers fetched, one per line.
 set -eu
@@ -25,7 +26,13 @@ while IFS="$(printf '\t')" read -r n sha; do
 	git fetch -q --no-tags --depth=1 origin "$sha"
 	mkdir -p "$OUT/$n"
 	if git ls-tree -d "$sha" designs | grep -q .; then git archive "$sha" designs | tar -x -C "$OUT/$n"; fi
-	gh api "repos/$GITHUB_REPOSITORY/pulls/$n" --jq '{number, title, url: .html_url, head: .head.sha}' > "$OUT/$n/pr.json"
+	# the result of the head's checks, once all of them have finished (else none): a failed lookup
+	# leaves it out rather than failing the site
+	checks=$(gh api --paginate "repos/$GITHUB_REPOSITORY/commits/$sha/check-runs?per_page=100" --jq '.check_runs[] | [.status, (.conclusion // "")] | @tsv' 2>/dev/null |
+		awk -F '\t' '$1 != "completed" { open = 1 } $2 ~ /^(failure|timed_out|cancelled|action_required|startup_failure)$/ { bad = 1 } { n++ }
+			END { if (n && !open) print (bad ? "failed" : "passed") }') || checks=
+	gh api "repos/$GITHUB_REPOSITORY/pulls/$n" --jq '{number, title, url: .html_url, head: .head.sha}' |
+		jq --arg checks "$checks" 'if $checks == "" then . else . + {checks: $checks} end' > "$OUT/$n/pr.json"
 	echo "$n"
 done < "$list"
 rm -f "$list" "$files"

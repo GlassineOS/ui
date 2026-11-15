@@ -106,6 +106,7 @@ boards-check:
 	$(NODE) test/boards/samples-e2e.js
 	$(NODE) test/boards/stream-e2e.js
 	$(NODE) test/boards/states-e2e.js
+	$(NODE) test/boards/review-e2e.js
 
 # Every design, one report per folder (out/designs-check/PROJECT.json); every folder is checked even
 # when one fails. No folders is success.
@@ -165,7 +166,8 @@ reference:
 # the published site (spec 002 FR-031, spec 003 FR-016, FR-017): the reference, and the boards of
 # every design under designs/ (tools/boards export, beside the reference at designs/PROJECT/, listed
 # on designs.html). SITE_PRS (tools/fetch-design-prs) adds the open pull requests' designs at
-# designs/pr-N/PROJECT/. Needs node.
+# designs/pr-N/PROJECT/, each with its review (boards/lib/review.js); SITE_DIFFS=1|0|auto (default
+# auto) renders the difference images of its changed boards (Chromium, puppeteer-core). Needs node.
 SITE_PRS ?=
 site:
 	sh tools/site-designs $(O)/site-designs $(SITE_PRS)

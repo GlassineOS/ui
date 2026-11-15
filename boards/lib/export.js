@@ -4,8 +4,8 @@
 // The folder it writes is what the preview server answers, as files: the design folder, the
 // preview's pages at _boards/ with the canvas data (_boards/api/canvas.json, no live reload) and
 // Interleaf's fonts (_boards/fonts/), and in every folder that holds a board its support.js (the
-// runtime), ds/interleaf/ (Interleaf) and ds/web/ (the web form), since a board loads both relative to its own page. Every
-// URL is relative, so the folder works from any sub-path of a static host.
+// runtime), ds/interleaf/ (Interleaf) and ds/web/ (the web form), since a board loads both relative to its own page,
+// and ds/web/ at the top for the preview's pages. Every URL is relative, so the folder works from any sub-path of a static host.
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -123,6 +123,8 @@ function exportDesign(opts) {
     // the generated web form, as the preview serves it at ds/web/
     copyTree(web, path.join(at, 'ds', 'web'));
   }
+  // the preview's pages load the web form from the folder above _boards/, also when no board sits there
+  if (dirs.indexOf('.') < 0) copyTree(web, path.join(out, 'ds', 'web'));
   copyTree(PREVIEW_DIR, path.join(out, '_boards'));
   fs.mkdirSync(path.join(out, '_boards', 'api'), { recursive: true });
   fs.writeFileSync(path.join(out, '_boards', 'api', 'canvas.json'), JSON.stringify(desc) + '\n');

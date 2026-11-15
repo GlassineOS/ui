@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en" data-theme="white-paper">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Review</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="../ds/web/tokens.css">
+<link rel="stylesheet" href="../ds/web/bundle.css">
+<link rel="stylesheet" href="review.css">
+</head>
+<body class="rv">
+<header id="bar" class="rv-bar">
+  <a class="rv-brand" id="home" href="./"><span class="rv-brand__mark" aria-hidden="true"></span>Boards</a>
+  <span class="rv-soft" id="design"></span>
+  <span class="rv-tag rv-tag--ink" id="rev"></span>
+  <span class="rv-grow"></span>
+  <a class="rv-btn rv-btn--flat" href="./">Canvas</a>
+  <form id="render" class="rv-render" aria-label="Render"></form>
+  <button type="button" class="rv-btn rv-btn--flat" id="chrome" title="Paper or night for the viewer">Night</button>
+</header>
+<div class="rv-review">
+  <section class="rv-pr" id="pr" aria-label="The proposal"></section>
+  <div class="rv-body">
+    <aside class="rv-rail">
+      <h3>Changed boards <span id="total"></span></h3>
+      <nav class="rv-changes" id="list" aria-label="Changed boards"></nav>
+      <p class="rv-small rv-soft rv-note">“Seen” is kept in this browser only and never sent anywhere. Comments go to the proposal.</p>
+      <p class="rv-small rv-soft rv-note rv-keys"><span class="rv-key">N</span> next unseen · <span class="rv-key">S</span> mark seen ·
+        <span class="rv-key">J</span>/<span class="rv-key">K</span> next/previous · <span class="rv-key">C</span> comparison ·
+        <span class="rv-key">T</span> state · <span class="rv-key">←</span>/<span class="rv-key">→</span> divider</p>
+    </aside>
+    <main class="rv-compare">
+      <div class="rv-compare__bar" id="cbar"></div>
+      <div class="rv-stage" id="stage"></div>
+      <footer class="rv-foot" id="foot"></footer>
+    </main>
+  </div>
+</div>
+<script src="preview-common.js"></script>
+<script src="review.js"></script>
+</body>
+</html>

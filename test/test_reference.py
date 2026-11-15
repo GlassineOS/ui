@@ -8,8 +8,9 @@
 - every relative link and source resolves to a file, and every #fragment to an id in it;
   no link is root-relative (the site is published under a sub-path)
 - two builds are byte for byte the same
-- with --designs: the designs page lists main's and the pull requests' exported folders, every link of
-  it resolves, a pull request's title is escaped, its own page is at designs/pr-N/; bad stages are refused
+- with --designs: the designs page lists the pull requests' exported folders (with their reviews: the
+  number of changed boards, the check result) before main's, every link of it resolves, a pull
+  request's title is escaped, its own page is at designs/pr-N/; bad stages are refused
 """
 import html.parser
 import importlib.machinery
@@ -221,17 +222,37 @@ try:
     with open(os.path.join(stage, "pr-12", "pr.json"), "w") as fh:
         json.dump({"number": 12, "title": "<img src=x onerror=alert(1)> new look", "url": "https://github.com/o/ui/pull/12",
                    "head": "0123456789abcdef0123456789abcdef01234567"}, fh)
+    # a proposal with its review (boards/lib/review.js) and a check result; pr-12 has neither
+    fake_export(os.path.join(stage, "pr-13", "hub"), "Hub", 4)
+    open(os.path.join(stage, "pr-13", "hub", "_boards", "review.html"), "w").close()
+    with open(os.path.join(stage, "pr-13", "hub", "_boards", "api", "review.json"), "w") as fh:
+        json.dump({"boards": [{"file": "a", "change": "changed"}, {"file": "b", "change": "changed"}, {"file": "c", "change": "removed"}]}, fh)
+    with open(os.path.join(stage, "pr-13", "pr.json"), "w") as fh:
+        json.dump({"number": 13, "title": "Hub", "url": "https://github.com/o/ui/pull/13", "head": "ab" * 20, "checks": "passed"}, fh)
+    with open(os.path.join(stage, "pr-12", "pr.json")) as fh:
+        meta = json.load(fh)
+    meta["checks"] = "<b>passed</b>"
+    with open(os.path.join(stage, "pr-12", "pr.json"), "w") as fh:
+        json.dump(meta, fh)
     d = os.path.join(TMP, "d")
     r = build(d, "--designs", stage)
     ok(r.returncode == 0, "--designs: the build runs" + ("" if r.returncode == 0 else ": " + r.stderr.strip()))
     dp = open(os.path.join(d, "designs.html"), encoding="utf-8").read()
     pr = open(os.path.join(d, "designs", "pr-12", "index.html"), encoding="utf-8").read()
-    dpages = {rel: parse(os.path.join(d, rel)) for rel in ("index.html", "designs.html", "designs/pr-12/index.html")}
+    dpages = {rel: parse(os.path.join(d, rel)) for rel in ("index.html", "designs.html", "designs/pr-12/index.html", "designs/pr-13/index.html")}
     ok('href="designs.html"' in open(os.path.join(d, "index.html"), encoding="utf-8").read(), "--designs: the pages link the designs page")
     ok('href="designs/hub/_boards/"' in dp and 'href="designs/pr-12/shell/_boards/"' in dp and 'href="designs/pr-12/"' in dp
        and "3 boards" in dp and 'href="shell/_boards/"' in pr and 'href="../../designs.html"' in pr,
        "--designs: main's designs and the pull request's, each to its canvas")
     ok(dp.count('id="main"') == 1, "--designs: one id main")
+    ok(0 < dp.index('id="pulls"') < dp.index('id="pr-12"') < dp.index('id="pr-13"') < dp.index('id="on-main"'),
+       "--designs: the open proposals first, by number, then the designs on main (003 FR-060)")
+    sec13 = dp[dp.index('id="pr-13"'):dp.index('id="on-main"')]
+    sec12 = dp[dp.index('id="pr-12"'):dp.index('id="pr-13"')]
+    ok("3 boards changed · checks passed" in sec13 and 'href="designs/pr-13/hub/_boards/review.html"' in sec13
+       and "2 changed, 1 removed" in sec13, "--designs: a proposal's number of changed boards, its checks and its review")
+    ok("boards changed" not in sec12 and "checks" not in sec12 and "review.html" not in sec12 and "&lt;b&gt;" not in dp,
+       "--designs: no review and an unknown check result: neither shown")
     ok("<img" not in dp and "<img" not in pr and "&lt;img" in dp and "The &lt;hub&gt;" in dp, "--designs: titles are escaped")
     ok(os.path.isfile(os.path.join(d, "designs", "hub", "_boards", "api", "canvas.json"))
        and os.path.isfile(os.path.join(d, "designs", "index.html")), "--designs: the exports copied to designs/")

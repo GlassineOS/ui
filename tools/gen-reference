@@ -598,8 +598,22 @@ PROJECT_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 PR_DIR = re.compile(r"^pr-([1-9][0-9]*)$")
 
 
-def design_projects(folder):
-    """[{name, title, boards, pages}] of the exported design folders in folder (tools/boards export)"""
+def read_review(d):
+    """the counts of a proposal's review (_boards/api/review.json, boards/lib/review.js), or None"""
+    p = os.path.join(d, "_boards", "api", "review.json")
+    if not os.path.isfile(p):
+        return None
+    r = json.load(open(p, encoding="utf-8"))
+    counts = {"added": 0, "changed": 0, "removed": 0}
+    for b in r.get("boards") or []:
+        if b.get("change") in counts:
+            counts[b["change"]] += 1
+    counts["total"] = sum(counts.values())
+    return counts
+
+
+def design_projects(folder, reviews=False):
+    """[{name, title, boards, pages, review}] of the exported design folders in folder (tools/boards export)"""
     out = []
     for name in sorted(os.listdir(folder)):
         d = os.path.join(folder, name)
@@ -612,12 +626,13 @@ def design_projects(folder):
             raise ValueError("%s: not an export of a design (no _boards/api/canvas.json)" % d)
         c = json.load(open(api, encoding="utf-8"))
         out.append({"name": name, "title": str(c.get("title") or name),
-                    "boards": sum(1 for b in c.get("boards", []) if b.get("exists")), "pages": len(c.get("pages") or [])})
+                    "boards": sum(1 for b in c.get("boards", []) if b.get("exists")), "pages": len(c.get("pages") or []),
+                    "review": read_review(d) if reviews else None})
     return out
 
 
 def read_designs(stage):
-    """{main: [project], prs: [{number, title, url, head, projects}]} from a stage (tools/site-designs)"""
+    """{main: [project], prs: [{number, title, url, head, checks, projects}]} from a stage (tools/site-designs)"""
     prs = []
     for name in sorted(os.listdir(stage)):
         m = PR_DIR.match(name)
@@ -629,19 +644,36 @@ def read_designs(stage):
         url = str(meta.get("url") or "")
         if not url.startswith("https://"):
             raise ValueError("%s/pr.json: url must be https" % name)
+        projects = design_projects(os.path.join(stage, name), reviews=True)
+        reviewed = [p["review"] for p in projects if p["review"] is not None]
         prs.append({"number": meta["number"], "title": str(meta.get("title") or ""), "url": url,
                     "head": re.sub(r"[^0-9a-f]", "", str(meta.get("head") or ""))[:40],
-                    "projects": design_projects(os.path.join(stage, name))})
+                    # the result of its checks when pr.json knows it (tools/fetch-design-prs), else nothing
+                    "checks": meta.get("checks") if meta.get("checks") in ("passed", "failed") else None,
+                    "changed": sum(r["total"] for r in reviewed) if reviewed else None,
+                    "projects": projects})
     prs.sort(key=lambda p: p["number"])
     return {"main": design_projects(stage), "prs": prs}
+
+
+def plural(n, one, many=None):
+    return "%d %s" % (n, one if n == 1 else (many or one + "s"))
 
 
 def project_items(projects, at):
     if not projects:
         return '<p class="ref-none">None.</p>'
-    return "<ul>%s</ul>" % "".join(
-        '<li><a class="il-link" href="%s%s/_boards/">%s</a> <span class="ref-value">%s/ · %d boards</span></li>'
-        % (at, esc(p["name"]), esc(p["title"]), esc(p["name"]), p["boards"]) for p in projects)
+    items = []
+    for p in projects:
+        r = p.get("review")
+        line = '<li><a class="il-link" href="%s%s/_boards/">%s</a> <span class="ref-value">%s/ · %d boards</span>' % (
+            at, esc(p["name"]), esc(p["title"]), esc(p["name"]), p["boards"])
+        if r is not None:
+            parts = ["%d %s" % (r[k], k) for k in ("changed", "added", "removed") if r[k]]
+            line += ' · <a class="il-link" href="%s%s/_boards/review.html">Review</a> <span class="ref-value">%s</span>' % (
+                at, esc(p["name"]), esc(", ".join(parts) if parts else "no board changed"))
+        items.append(line + "</li>")
+    return "<ul>%s</ul>" % "".join(items)
 
 
 def designs_page(designs, combos):
@@ -649,23 +681,32 @@ def designs_page(designs, combos):
                        "The boards of each design folder of the <code class=\"il-code-inline\">ui</code> repository, rendered in "
                        "your browser: the canvas, and each board with its voice, scheme and pen picker. A board is a proposal; "
                        "it can differ from the program it describes.")]
-    toc = [("on-main", "On main"), ("pulls", "Open pull requests")]
-    out.append('<section class="ref-section" aria-labelledby="on-main"><h2 class="il-h2" id="on-main">On main</h2>%s</section>'
-               % project_items(designs["main"], "designs/"))
+    toc = [("pulls", "Open proposals"), ("on-main", "On main")]
     items = []
     for pr in designs["prs"]:
         at = "designs/pr-%d/" % pr["number"]
+        facts = []
+        if pr["changed"] is not None:
+            facts.append(plural(pr["changed"], "board") + " changed")
+        if pr["checks"] == "passed":
+            facts.append("checks passed")
+        elif pr["checks"] == "failed":
+            facts.append("checks failed")
         items.append('<section class="ref-component" id="pr-%d" aria-labelledby="pr-%d-title"><h3 id="pr-%d-title">'
-                     '<a class="il-link" href="%s">#%d</a> %s</h3><p>Boards of <code class="il-code-inline">%s</code> '
+                     '<a class="il-link" href="%s">#%d</a> %s</h3>%s<p>Boards of <code class="il-code-inline">%s</code> '
                      '(<a class="il-link" href="%s">the pull request</a>):</p>%s</section>'
-                     % (pr["number"], pr["number"], pr["number"], at, pr["number"], esc(pr["title"]), esc(pr["head"][:12]),
+                     % (pr["number"], pr["number"], pr["number"], at, pr["number"], esc(pr["title"]),
+                        '<p class="ref-value">%s</p>' % esc(" · ".join(facts)) if facts else "", esc(pr["head"][:12]),
                         esc(pr["url"]), project_items(pr["projects"], at)))
-    out.append('<section class="ref-section" aria-labelledby="pulls"><h2 class="il-h2" id="pulls">Open pull requests</h2>'
+    out.append('<section class="ref-section" aria-labelledby="pulls"><h2 class="il-h2" id="pulls">Open proposals</h2>'
                '<p>Each open pull request of this repository that changes a design has its boards at '
-               '<code class="il-code-inline">designs/pr-NUMBER/</code>, as of its latest commit, until it is closed.</p>%s</section>'
+               '<code class="il-code-inline">designs/pr-NUMBER/</code>, as of its latest commit, until it is closed, with a review '
+               'of the boards it adds, changes and removes.</p>%s</section>'
                % ("".join(items) or '<p class="ref-none">No open pull request changes a design.</p>'))
+    out.append('<section class="ref-section" aria-labelledby="on-main"><h2 class="il-h2" id="on-main">On main</h2>%s</section>'
+               % project_items(designs["main"], "designs/"))
     return frame("designs.html", "Design boards", "\n".join(out), toc, combos,
-                 "The design boards of GlassineOS, on main and in open pull requests.")
+                 "The design boards of GlassineOS: open proposals, then the designs on main.")
 
 
 def pr_index(pr):

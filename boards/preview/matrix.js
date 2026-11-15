@@ -63,8 +63,8 @@
     // cells: as large as the panel allows, at most 180 px wide
     const sz = board.size, cols = m.colValues.length;
     const room = Math.min(window.innerWidth * 0.62, 900) - 48 - 100 - (cols - 1) * 14;
-    const cw = Math.max(60, Math.min(180, room / cols)), ch = Math.max(70, (window.innerHeight - 56 - 220) / m.rowValues.length - 14);
-    const s = Math.min(cw / sz.width, ch / sz.height);
+    const cw = Math.max(60, Math.min(180, room / cols)), cellH = Math.max(70, (window.innerHeight - 56 - 220) / m.rowValues.length - 14);
+    const s = Math.min(cw / sz.width, cellH / sz.height);
     grid.textContent = '';
     grid.style.gridTemplateColumns = 'auto repeat(' + cols + ', ' + Math.round(sz.width * s) + 'px)';
     grid.append(el('span'));

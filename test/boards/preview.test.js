@@ -139,3 +139,9 @@ test('search: ranks exact, prefix, word start, anywhere, letters; states and pag
   assert.strictEqual(L.search(two, 'wi-fi', { page: 'b' })[0].file, 'x2.dc.html');
   assert.strictEqual(L.search(data, 'b', { limit: 2 }).length, 2);
 });
+
+test('every script of the preview compiles', () => {
+  const fs = require('fs'), vm = require('vm');
+  const dir = path.join(__dirname, '..', '..', 'boards', 'preview');
+  for (const f of fs.readdirSync(dir).filter((x) => x.endsWith('.js'))) new vm.Script(fs.readFileSync(path.join(dir, f), 'utf8'), { filename: f });
+});

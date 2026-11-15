@@ -402,7 +402,7 @@ body.vw { height: 100vh; display: grid; grid-template-rows: 56px minmax(0, 1fr);
 .vw-axes > span:first-child { width: 64px; font-size: 12.5px; color: var(--ink-soft); }
 .vw-axes .vw-seg button { flex: 0 0 auto; padding: 0 10px; }
 .vw-axes .vw-seg button[disabled] { opacity: .35; cursor: default; }
-.vw-matrix select { max-width: 280px; }
+.vw-matrix select { max-width: 100%; min-width: 280px; }
 .vw-cell { border: 0; padding: 0; background: none; cursor: pointer; align-items: center; position: relative; }
 .vw-cell .vw-fbox { border-radius: 4px; box-shadow: 0 0 0 1px var(--rule), 0 2px 6px rgba(0,0,0,.06); background: var(--paper); }
 .vw-cell:hover .vw-fbox { box-shadow: 0 0 0 2px var(--ink-soft); }

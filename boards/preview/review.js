@@ -96,16 +96,12 @@
     const s = q().get('state');
     return s && statesOf(b).some(function (x) { return x.id === s; }) ? s : null;
   }
-  // a board's page on one side: the render, the state, and the state's props for a runtime that
-  // does not read state= yet (the same values: a state is its props)
+  // a board's page on one side: the render and the state (when that side's board has it)
   function frameSrc(side, b) {
     const desc = side === 'after' ? after : before, r = render(), st = stateId(b);
     const s = new URLSearchParams(r);
-    const bi = info(desc, b.file), state = st && bi && (bi.states || []).find(function (x) { return x.id === st; });
-    if (state) {
-      s.set('state', st);
-      for (const k of Object.keys(state.props || {})) { const v = state.props[k]; s.set('p.' + k, typeof v === 'string' ? v : JSON.stringify(v)); }
-    }
+    const bi = info(desc, b.file);
+    if (st && bi && (bi.states || []).some(function (x) { return x.id === st; })) s.set('state', st);
     const file = b.file.split('/').map(encodeURIComponent).join('/');
     return (side === 'after' ? '../' : review.base) + file + '?' + s.toString();
   }
@@ -185,7 +181,7 @@
     if (!diffs) return 'Its file, an import or a file it loads differs';
     if (!d || !d.computed) return 'Differences not computed for this render';
     if (!d.differing) return 'The same pixels in this render';
-    return d.regions.length + (d.regions.length === 1 ? ' region' : ' regions') + ' differ in this render';
+    return d.regions.length + (d.regions.length === 1 ? ' region differs' : ' regions differ') + ' in this render';
   }
 
   function list(cur) {

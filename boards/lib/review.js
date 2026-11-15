@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Design boards: the review of a proposal (spec 003 FR-055..FR-057). Node only, no npm packages.
 //
-// What a proposal changes: every board of the proposal's design folder compared by hash with the
-// same board on the main line (added, changed, removed), written as _boards/api/review.json into
+// What a proposal changes: every board of the proposal's design folder compared by its hash
+// (describe()) with the same board on the main line (added, changed, removed), written as _boards/api/review.json into
 // the proposal's export. With diffs, both sides of each changed board are rendered in headless
 // Chromium in a set of combinations and the differences kept as images and region boxes
 // (_boards/diffs/). Used by tools/site-designs:
@@ -15,113 +15,31 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const PNG = require('./png.js');
-const T = require('../runtime/template.js');
 
 const CONTRACT = 1;
 const DIFFS = '_boards/diffs/';
 
-// ---- hashes -------------------------------------------------------------------------------------
-// The board hash of the canvas data (describe() `hash`): the board's bytes, then, sorted by path,
-// each file it loads (its bytes) and each board it imports (its hash; a cycle or a missing file
-// gives its path only). boardHashes() computes it the same way for a canvas description that has
-// no `hash` yet; both sides of a comparison always come from the same function.
-
-// the files of the design folder a board loads by a literal relative URL: the head's scripts and
-// the helmet's links and scripts, without ./support.js, ds/… and absolute or remote URLs
-function boardLoads(doc, file) {
-  const urls = doc.headScripts.map(function (s) { return s.src; });
-  for (const h of doc.helmet) {
-    if (h.tag === 'link' && h.attrs.href) urls.push(h.attrs.href);
-    if (h.tag === 'script' && h.attrs.src) urls.push(h.attrs.src);
-  }
-  const out = new Set();
-  for (const u0 of urls) {
-    const u = String(u0).split(/[?#]/)[0];
-    if (!u || u.indexOf('{{') >= 0 || /^[a-z][a-z0-9+.-]*:|^\/|^\/\//i.test(u)) continue;
-    if (/^(\.\/)?(\.\.\/)*ds\//.test(u) || /^(\.\/)?support\.js$/.test(u)) continue;
-    const p = path.posix.normalize(path.posix.join(path.posix.dirname(file), u));
-    if (p.startsWith('..')) continue;
-    out.add(p);
-  }
-  return Array.from(out).sort();
-}
-
-function boardImports(doc, file) {
-  return doc.imports.map(function (n) {
-    return path.posix.normalize(n[0] === '/' ? n.slice(1) + '.dc.html' : path.posix.join(path.posix.dirname(file), n + '.dc.html'));
-  });
-}
-
-// boardHashes(design, files) → {file: sha256 hex}
-function boardHashes(design, files) {
-  const read = function (rel) { try { return fs.readFileSync(path.join(design, rel)); } catch (e) { return null; } };
-  const docs = new Map(), memo = new Map();
-  const doc = function (f) {
-    if (!docs.has(f)) {
-      const src = read(f);
-      let d = null;
-      if (src) { try { d = T.parseBoard(src.toString('utf8'), f); } catch (e) { d = null; } }
-      docs.set(f, { src: src, loads: d ? boardLoads(d, f) : [], imports: d ? boardImports(d, f) : [] });
-    }
-    return docs.get(f);
-  };
-  // → {hash, cyclic}: cyclic when a board on the stack was reached, so the value depends on where
-  // the walk started and is not kept
-  function hash(f, stack) {
-    if (memo.has(f)) return { hash: memo.get(f), cyclic: false };
-    const d = doc(f);
-    const h = crypto.createHash('sha256').update(d.src);
-    let cyclic = false;
-    const parts = d.loads.map(function (p) { return { p: p, load: true }; }).concat(d.imports.map(function (p) { return { p: p, load: false }; }));
-    parts.sort(function (a, b) { return a.p < b.p ? -1 : a.p > b.p ? 1 : a.load === b.load ? 0 : a.load ? -1 : 1; });
-    for (const x of parts) {
-      if (x.load) { const b = read(x.p); h.update(b || x.p); continue; }
-      if (stack.indexOf(x.p) >= 0) { cyclic = true; h.update(x.p); continue; }
-      if (!read(x.p)) { h.update(x.p); continue; }
-      const sub = hash(x.p, stack.concat([x.p]));
-      cyclic = cyclic || sub.cyclic;
-      h.update(sub.hash);
-    }
-    const out = h.digest('hex');
-    if (!cyclic) memo.set(f, out);
-    return { hash: out, cyclic: cyclic };
-  }
-  const out = {};
-  for (const f of files) out[f] = hash(f, [f]).hash;
-  return out;
-}
-
-// sideHashes([mainDesc, prDesc], [mainDir, prDir]) → [hashes, hashes] ({file: hash}, null for no
-// description): the canvas data's own hashes when every board of both carries one, else both computed here
-function sideHashes(descs, dirs) {
-  const has = descs.every(function (d) { return !d || d.boards.every(function (b) { return !b.exists || typeof b.hash === 'string'; }); });
-  return descs.map(function (d, i) {
-    if (!d) return null;
-    const files = d.boards.filter(function (b) { return b.exists; }).map(function (b) { return b.file; });
-    if (has) { const o = {}; for (const b of d.boards) if (b.exists) o[b.file] = b.hash; return o; }
-    return boardHashes(dirs[i], files);
-  });
-}
-
-// compareDesigns(main, pr) → [{file, title, change, issues, hash, page, states}]
-//   main, pr: {desc, hashes} (main null for a design the main line does not have: every board added).
-//   Order: the proposal's boards as its canvas lists them, then the removed ones as main lists them.
+// compareDesigns(main, pr) → [{file, title, change, issues, hash, page}]
+//   main, pr: canvas descriptions (describe()); main null for a design the main line does not have
+//   (every board added). A board is changed when its hash (describe(): its file, the files it loads
+//   and the hashes of the boards it imports) differs. Boards that do not exist are left out. Order:
+//   the proposal's boards as its canvas lists them, then the removed ones as main lists them.
 function compareDesigns(main, pr) {
   const out = [];
   const before = new Map();
-  if (main) for (const b of main.desc.boards) if (b.exists) before.set(b.file, b);
+  if (main) for (const b of main.boards) if (b.exists) before.set(b.file, b);
   const entry = function (b, change, hash) {
     return { file: b.file, title: b.title, change: change, issues: (b.issues || []).length, hash: hash, page: b.page || null };
   };
   const seen = new Set();
-  for (const b of pr.desc.boards) {
+  for (const b of pr.boards) {
     if (!b.exists) continue;
     seen.add(b.file);
     const m = before.get(b.file);
-    if (!m) out.push(entry(b, 'added', pr.hashes[b.file]));
-    else if (main.hashes[b.file] !== pr.hashes[b.file]) out.push(entry(b, 'changed', pr.hashes[b.file]));
+    if (!m) out.push(entry(b, 'added', b.hash));
+    else if (m.hash !== b.hash) out.push(entry(b, 'changed', b.hash));
   }
-  if (main) for (const b of main.desc.boards) if (b.exists && !seen.has(b.file)) out.push(Object.assign(entry(b, 'removed', main.hashes[b.file]), { issues: 0 }));
+  if (main) for (const b of main.boards) if (b.exists && !seen.has(b.file)) out.push(Object.assign(entry(b, 'removed', b.hash), { issues: 0 }));
   return out;
 }
 
@@ -221,7 +139,7 @@ function boardCombos(all, mainBoard, prBoard) {
   const combos = base.slice(), missing = [];
   for (const s of ps) {
     if (!ms.has(s.id)) { missing.push(s.id); continue; }
-    for (const c of base) combos.push(Object.assign({}, c, { state: s.id, mainProps: ms.get(s.id).props || {}, prProps: s.props || {} }));
+    for (const c of base) combos.push(Object.assign({}, c, { state: s.id }));
   }
   for (const id of ms.keys()) if (!ps.some(function (s) { return s.id === id; })) missing.push(id);
   return { combos: combos, missing: missing.sort() };
@@ -276,7 +194,7 @@ async function renderDiffs(o) {
     browsers = await openBrowsers(jobs, { chromium: o.chromium });
     const shoot = async function (side, board, c, worker) {
       const r = await renderBoard(browsers[worker], servers[side].url, board.file, { width: board.size.width, height: board.size.height,
-        voice: c.voice, scheme: c.scheme, pen: c.pen, props: c.state ? (side ? c.prProps : c.mainProps) : undefined, timeout: o.timeout, keepPage: true, faces: faces[side] });
+        state: c.state, voice: c.voice, scheme: c.scheme, pen: c.pen, timeout: o.timeout, keepPage: true, faces: faces[side] });
       try {
         const errs = errorList(r);
         const fonts = await steady(r.page);
@@ -342,8 +260,7 @@ async function writeReview(o) {
   const { describe } = require('./server.js');
   const mainDesc = o.main && fs.existsSync(o.main) ? describe(o.main) : null;
   const prDesc = describe(o.pr);
-  const hs = sideHashes([mainDesc, prDesc], [o.main, o.pr]);
-  const boards = compareDesigns(mainDesc ? { desc: mainDesc, hashes: hs[0] } : null, { desc: prDesc, hashes: hs[1] });
+  const boards = compareDesigns(mainDesc, prDesc);
   const review = { contract: CONTRACT, pr: readPr(o.prJson), base: mainDesc ? o.base : null, boards: boards, diffs: null };
   let ms = null;
   if (o.diffs && mainDesc && boards.some(function (b) { return b.change === 'changed'; })) {
@@ -386,5 +303,5 @@ function main(argv) {
 
 if (require.main === module) main(process.argv.slice(2));
 
-module.exports = { CONTRACT: CONTRACT, DIFFS: DIFFS, boardLoads: boardLoads, boardHashes: boardHashes, sideHashes: sideHashes, compareDesigns: compareDesigns,
+module.exports = { CONTRACT: CONTRACT, DIFFS: DIFFS, compareDesigns: compareDesigns,
   diffMask: diffMask, regions: regions, boardCombos: boardCombos, comboId: comboId, renderDiffs: renderDiffs, readPr: readPr, writeReview: writeReview };

@@ -9,7 +9,7 @@
   const B = window.Boards, L = B.logic, el = B.el;
   const bar = B.bar('flow');
   const box = document.getElementById('canvas'), sizer = document.getElementById('sizer'), plane = document.getElementById('plane');
-  const NH = 220, GAPX = 150, GAPY = 120, PAD = 80, SVGNS = 'http://www.w3.org/2000/svg';
+  const NH = 220, GAPX = 150, GAPY = 120, PAD = 80, SVGNS = B.SVG;
   let data = null, page = null, g = null, steps = [], at = 0, scale = 0.5, planeW = 0, planeH = 0;
   let nodeEls = new Map(), edgeEls = [];
 

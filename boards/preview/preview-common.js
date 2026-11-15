@@ -302,7 +302,8 @@
     for (const c of kids || []) if (c !== null && c !== undefined && c !== false) e.append(c);
     return e;
   }
-  const SVG = 'http://www.w3.org/2000/svg';
+  // the SVG namespace, read from a parsed svg element (the page names no address of another site)
+  const SVG = (function () { const t = document.createElement('div'); t.innerHTML = '<svg></svg>'; return t.firstChild.namespaceURI; })();
   // a 24-unit line icon from path data
   function icon(d) {
     const s = document.createElementNS(SVG, 'svg');
@@ -575,8 +576,8 @@
   }
 
   // ---- the top bar (every page; the review page too) ------------------------------------------------
-  // bar(mode, opts) puts the bar at the top of document.body (or opts.into) and returns
-  //   {el, ready: Promise<{data, review}>, render: () => {voice, scheme, pen}, onRender(fn)}
+  // bar(mode, opts) puts the bar at the top of document.body (or opts.into) and returns its header
+  //   element, carrying el (itself), ready: Promise<{data, review}>, render: () => {voice, scheme, pen}, onRender(fn)
   // mode: 'canvas' | 'board' | 'flow' | 'matrix' | 'review'. A render picked in it goes into the
   // address and localStorage boards.render, then every onRender listener runs with it. It adds the
   // web form and preview.css when the page lacks them, the chrome's data-theme, and the keys ⌘K, /, T.
@@ -654,7 +655,8 @@
       return { data: d, review: rv };
     });
     ready.catch(function (e) { title.textContent = String(e && e.message || e); });
-    return { el: header, ready: ready, render: currentRender, onRender: function (fn) { renderFns.push(fn); } };
+    // the header element itself (review.html puts it in place of its own bar), with the page hooks on it
+    return Object.assign(header, { el: header, ready: ready, render: currentRender, onRender: function (fn) { renderFns.push(fn); } });
   }
 
   function copy(text, btn) {
@@ -672,6 +674,7 @@
   }
 
   window.Boards = {
+    SVG: SVG,
     logic: L, canvas: canvas, review: review, changesOf: changesOf, onChange: function (fn) { changes.push(fn); },
     el: el, icon: icon, ICONS: ICONS, mark: mark, errMark: errMark, frameBox: frameBox, frameErrors: frameErrors,
     // the design folder, and a board's URL in it

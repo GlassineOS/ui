@@ -61,6 +61,23 @@ function resolveChoices(opts, props, choices) {
   return out;
 }
 
+// the named state of a board for --state, or null when none is asked for; an id the board has no
+// state for throws, naming the states
+function pickState(b, id) {
+  if (id === undefined || id === null) return null;
+  const st = (b.states || []).find(function (s) { return s.id === id; });
+  if (!st) throw new Error('unknown state "' + id + '" of ' + b.file + ': ' + (b.states && b.states.length ? 'the states are ' + b.states.map(function (s) { return s.id; }).join(', ') : 'the board names no states'));
+  return st;
+}
+
+// the board's props as a state shows them: the state's values in place of the defaults
+function stateProps(props, st) {
+  if (!st) return props;
+  const out = Object.assign({}, props);
+  for (const k of Object.keys(st.props)) out[k] = Object.assign({}, props[k], { default: st.props[k] });
+  return out;
+}
+
 // every problem as one list, each entry in the check report's form ({board, kind, feature, detail,
 // line, message}; requests also carry url). kind: render, script, load, ... as the runtime reports
 // them, unsupported, console, request, external, font, click.
@@ -161,9 +178,9 @@ async function runClicks(page, r, clicks, timeout) {
 async function shootOn(browser, ctx, b, pick, opts) {
   const t0 = Date.now();
   const size = opts.size || b.size;
-  const rep = { ok: false, image: null, board: b.file, design: shown(ctx.design), voice: pick.voice, scheme: pick.scheme, pen: pick.pen,
+  const rep = { ok: false, image: null, board: b.file, state: opts.state || null, design: shown(ctx.design), voice: pick.voice, scheme: pick.scheme, pen: pick.pen,
     size: { width: size.width, height: size.height }, clicks: [], errors: [], notApplied: pick.notApplied };
-  const r = await renderBoard(browser, ctx.srv.url, b.file, { width: size.width, height: size.height, voice: pick.asked.voice, scheme: pick.asked.scheme,
+  const r = await renderBoard(browser, ctx.srv.url, b.file, { width: size.width, height: size.height, state: opts.state || undefined, voice: pick.asked.voice, scheme: pick.asked.scheme,
     pen: pick.asked.pen, timeout: opts.timeout, keepPage: true, faces: ctx.faces });
   r.fontErrors = [];
   const fontLine = function (f) { return { board: b.file, kind: 'font', feature: '', detail: '', line: 0, message: 'font did not load: ' + f.family + ' ' + f.style + ' ' + f.weight }; };
@@ -209,11 +226,12 @@ function boardIn(ctx, rel) {
 
 function defaultImage(rep, size) {
   const name = rep.board.replace(/\.dc\.html$/, '').replace(/[^A-Za-z0-9._-]+/g, '_');
-  return path.join('out', 'shots', [name, rep.voice, rep.scheme, rep.pen, size.width + 'x' + size.height].join('-') + '.png');
+  return path.join('out', 'shots', [name].concat(rep.state ? [rep.state] : [], [rep.voice, rep.scheme, rep.pen, size.width + 'x' + size.height]).join('-') + '.png');
 }
 
-// shootBoard({board, voice, scheme, pen, size, clicks, out, interleaf, timeout, chromium}) → the report.
-// What the user got wrong (no such board, an unknown voice) throws; what the board does is reported.
+// shootBoard({board, state, voice, scheme, pen, size, clicks, out, interleaf, timeout, chromium}) → the
+// report. What the user got wrong (no such board, an unknown state or voice) throws; what the board
+// does is reported.
 async function shootBoard(opts) {
   const file = path.resolve(opts.board);
   if (!fs.existsSync(file) || !fs.statSync(file).isFile()) throw new Error('no board at ' + opts.board);
@@ -226,10 +244,12 @@ async function shootBoard(opts) {
     const b = boardIn(ctx, rel);
     const size = opts.size || b.size;
     // validated before a browser starts
-    const pick = resolveChoices(opts, b.props || {}, ctx.choices);
-    const out = path.resolve(opts.out || defaultImage({ board: rel, voice: pick.voice, scheme: pick.scheme, pen: pick.pen }, size));
+    const st = pickState(b, opts.state);
+    const pick = resolveChoices(opts, stateProps(b.props || {}, st), ctx.choices);
+    const state = st ? st.id : null;
+    const out = path.resolve(opts.out || defaultImage({ board: rel, state: state, voice: pick.voice, scheme: pick.scheme, pen: pick.pen }, size));
     browsers = await openBrowsers(1, { chromium: opts.chromium });
-    return await shootOn(browsers[0], ctx, b, pick, Object.assign({}, opts, { size: size, out: out }));
+    return await shootOn(browsers[0], ctx, b, pick, Object.assign({}, opts, { size: size, out: out, state: state }));
   } finally {
     await Promise.all(browsers.map(function (x) { return x.close(); }));
     await ctx.close();
@@ -281,4 +301,5 @@ async function shootBoards(opts) {
 }
 
 module.exports = { designDirOf: designDirOf, parseSize: parseSize, validChoices: validChoices, resolveChoices: resolveChoices, flatErrors: flatErrors,
+  pickState: pickState, stateProps: stateProps, defaultImage: defaultImage,
   shootBoard: shootBoard, shootBoards: shootBoards, changedBoards: changedBoards };

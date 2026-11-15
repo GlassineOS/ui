@@ -332,8 +332,10 @@ async function shootDesign(opts) {
       if (bc.skip) continue;
       const combos = expandCombinations(bc.combinations || config.combinations || ['own'], all, CONFIG + ' ' + b.file);
       const sizes = (bc.sizes || [b.size]).map(function (s) { return { width: Math.round(s.width), height: Math.round(s.height) }; });
-      for (const s of sizes) for (const c of combos) {
-        cases.push({ id: b.file + '/' + s.width + 'x' + s.height + '/' + c.name, board: b.file, size: s, combination: c.name, _c: c });
+      // each combination as the board opens, and in each of its named states (id ending "#STATE")
+      const states = [null].concat(b.issues.length ? [] : b.states.map(function (x) { return x.id; }));
+      for (const s of sizes) for (const c of combos) for (const st of states) {
+        cases.push({ id: b.file + '/' + s.width + 'x' + s.height + '/' + c.name + (st ? '#' + st : ''), board: b.file, state: st, size: s, combination: c.name, _c: c });
       }
     }
     const jobs = opts.jobs || 4;
@@ -344,7 +346,7 @@ async function shootDesign(opts) {
       cases: cases, refs: refs, out: out, update: opts.update, kind: 'boards', chromium: version, libraries: textPackages(), jobs: jobs, pool: pool,
       allowEmpty: !!opts.allowEmpty, only: !!(opts.boards && opts.boards.length),
       render: async function (c, worker) {
-        const r = await renderBoard(browsers[worker], srv.url, c.board, { width: c.size.width, height: c.size.height, voice: c._c.voice, scheme: c._c.scheme,
+        const r = await renderBoard(browsers[worker], srv.url, c.board, { width: c.size.width, height: c.size.height, state: c.state || undefined, voice: c._c.voice, scheme: c._c.scheme,
           pen: c._c.pen, props: c._c.props, timeout: opts.timeout, keepPage: true, faces: faces });
         try {
           const errors = [];

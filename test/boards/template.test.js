@@ -22,7 +22,7 @@ function render(doc, vals, imports) {
   return { out: out.filter((x) => typeof x !== 'string' || x.trim()), errors };
 }
 
-test('subset version', () => { assert.strictEqual(T.SUBSET_VERSION, 1); });
+test('subset version', () => { assert.strictEqual(T.SUBSET_VERSION, 2); });
 
 test('holes: paths, literals, whitespace inside the braces', () => {
   assert.deepStrictEqual(T.parseHole(' user.name ').path, ['user', 'name']);

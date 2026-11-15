@@ -410,7 +410,7 @@ design session works in one place.
 
 ### Supported subset
 
-Contract: board subset, version 1 (`SUBSET_VERSION` in `boards/runtime/template.js`; `tools/boards
+Contract: board subset, version 2 (`SUBSET_VERSION` in `boards/runtime/template.js`; `tools/boards
 version`). A board that uses anything else fails visibly: the board shows a red box naming the board,
 the line and the feature, and the check reports it as `unsupported`.
 
@@ -449,6 +449,15 @@ the line and the feature, and the check reports it as `unsupported`.
 - `data-props` (single- or double-quoted; entities are decoded before the JSON is read): per-prop
   `editor`, `default`, `options`; `$preview: {width, height}`. The board opened on its own gets the
   `default`s as props, as an editor seeds them.
+- `$states` in `data-props`: the board's named states, an array of `{"id", "name", "props", "from"}`.
+  `id` is of `a-z`, `0-9`, `.`, `_`, `-` (starting with a letter or digit) and used once; `name` is a
+  string; `props` holds values of the board's own declared props, each one of that prop's `options`
+  when it has some (matched exactly: `1` is not `"1"`); `from` (optional) lists the steps that lead
+  here, `{"state": ID, "label": TEXT}`, from another state of the same board. Anything else is an issue
+  (`feature` `$states`) on the `data-props` line, and the board does not render. `BOARD.dc.html?state=ID`
+  opens the board in that state: its `props` over the defaults, then the preview's voice, scheme and pen,
+  then `p.NAME=` parameters; an unknown id is an error (`kind` `state`, `feature` `unknown state`, the id
+  as `detail`) and the board shows its defaults. `window.__boards.state` is the state shown, or `null`.
 - Links `<a href="Other.dc.html">` move to that board (relative to the board that holds the link; a
   leading `/` is the design folder); the preview's voice, scheme and pen go along. `#id` scrolls; `http`
   and `https` links to other sites open a new tab, other schemes (`javascript:`, `data:`) do nothing.
@@ -460,13 +469,14 @@ the line and the feature, and the check reports it as `unsupported`.
 ```
 tools/boards preview DESIGN_DIR [--port 4790] [--host 127.0.0.1] [--allow-host NAME]... [--interleaf DIR] [--web DIR]
 tools/boards check   DESIGN_DIR [--interleaf DIR] [--json out/boards-check.json|-] [--board FILE]...
-tools/boards shot   BOARD_FILE [--voice V] [--scheme S] [--pen P] [--size WxH] [--click SELECTOR]... [--out FILE]
+tools/boards shot   BOARD_FILE [--state ID] [--voice V] [--scheme S] [--pen P] [--size WxH] [--click SELECTOR]... [--out FILE]
                     [--interleaf DIR] [--timeout MS] [--chromium PATH]
 tools/boards shots  [--out out/shots] [--root DIR] [--jobs N] [--interleaf DIR] [--timeout MS] [--chromium PATH] < CHANGED_PATHS
 tools/boards references DESIGN_DIR [--update] [--refs DIR] [--out DIR] [--json FILE|-] [--board FILE]... [--allow-empty]
 tools/boards export  DESIGN_DIR OUT_DIR [--interleaf DIR] [--web DIR]
 tools/boards stream DESIGN_DIR [--interleaf DIR] [--web DIR] [--size WxH] [--chromium PATH]   # JSON lines on stdin/stdout
 tools/boards import  CANVAS_EXPORT_DIR DEST_DIR [--force]
+tools/boards version        # the supported subset: "boards subset 2"
 tools/in-alpine CMD...      # CMD in alpine:3.24 with the pinned Chromium and node, as the calling user
 ```
 
@@ -490,13 +500,27 @@ tools/in-alpine CMD...      # CMD in alpine:3.24 with the pinned Chromium and no
   `--host 0.0.0.0` lets the hub reach it. It answers only requests whose `Host` (and `Origin`, when
   sent) is localhost, the bound address (every local address when bound to all), or a name given
   with `--allow-host` (the hub's name for this machine, for example).
+- The canvas data (`/_boards/api/canvas.json`, also in an export) has `subset` and, per board, the
+  canvas entry, `props`, `preview`, `size`, `issues`, and: `states` (the board's `$states`, `from`
+  always a list), `links` (each `<a>` whose literal `href` names a board: `to`, the board as a path in
+  the folder, resolved as the runtime does, `text`, the link's literal words, and `line`; links with a
+  hole are left out), `imports` (the boards its `<dc-import>`s name, as paths), `loads` (the folder's
+  files it loads by a literal relative URL: head scripts and the helmet's `<link href>`, without
+  `support.js`, `ds/…` and absolute or remote URLs) and `hash`: sha256 over the board's bytes, then,
+  sorted by path, each loaded file's path and bytes and each imported board's path and hash
+  (recursively; a missing file and an import that closes a cycle add their path only). Boards with the
+  same inputs have the same hash in any folder; a change to a board, a file it loads or a board it
+  imports changes it. A board on the canvas but missing has empty lists and `hash` `null`.
 - `check` renders every board of the folder in headless Chromium at its canvas size (else its
-  `$preview` size) and writes a JSON report (`--json -` for stdout) and a summary: per board the render,
+  `$preview` size), once as it opens and once in each of its named states, and writes a JSON report
+  (`--json -` for stdout) and a summary: per render (`board`, `state`: the id or `null`) the render,
   script and load errors (`errors`), the features outside the subset (`unsupported`), console errors
   and uncaught exceptions (`console`), failed requests to the preview (`requests`) and requests to
   other sites (`external`). Boards render without network (see "References"), so every request to
   another site is refused and fails the board, except a Google Fonts stylesheet for a vendored family.
-  It exits 1 when a board fails or a board on the canvas is missing. It needs Chromium and `puppeteer-core` (`npm ci`; the version is pinned in
+  `summary` counts `boards`, `renders`, `clean` and `failing` renders and `failingBoards`; the text
+  names a failing render as `FILE#state`. It exits 1 when a render fails or a board on the canvas is
+  missing. It needs Chromium and `puppeteer-core` (`npm ci`; the version is pinned in
   `package.json` and `package-lock.json`); `tools/in-alpine tools/boards check …` provides both.
   Chromium runs with its sandbox, except as root or in a container, where it can't start
   (`BOARDS_NO_SANDBOX=1` turns it off elsewhere).
@@ -505,11 +529,13 @@ tools/in-alpine CMD...      # CMD in alpine:3.24 with the pinned Chromium and no
   design folder is the nearest ancestor holding `canvas.json` (else the board's directory). The default
   size is the board's declared one (canvas size, else its `$preview` size); a voice, scheme or pen not
   given stays the board's own, named by its default or else the web form's first combination (white,
-  paper, 1). `--click SELECTOR`, in order, each followed by the same settling as the first render, and
+  paper, 1). `--state ID` renders the board in that named state (the state's props stand in for the
+  defaults, so a state that sets the scheme names it); an unknown id is a usage error naming the
+  states. `--click SELECTOR`, in order, each followed by the same settling as the first render, and
   a link to another board is followed; a click that finds no target is an error, ends the series, and
   the image holds what was reached. The image goes to
-  `out/shots/<board>-<voice>-<scheme>-<pen>-<WxH>.png` (or `--out`), and one JSON object to stdout:
-  `ok`, `image`, `board`, `design`, `voice`, `scheme`, `pen`, `size`, `clicks` (per selector `ok`, and
+  `out/shots/<board>[-<state>]-<voice>-<scheme>-<pen>-<WxH>.png` (or `--out`), and one JSON object to
+  stdout: `ok`, `image`, `board`, `state` (the id or `null`), `design`, `voice`, `scheme`, `pen`, `size`, `clicks` (per selector `ok`, and
   `error` or `skipped`), `notApplied` (settings asked for that the board has no prop for), `ms` and
   `errors`: everything `check` reports, in one list, each entry with `board`, `kind`, `feature`,
   `detail`, `line`, `message` (`kind` also `unsupported`, `console`, `request`, `external` with `url`,
@@ -632,7 +658,8 @@ tools/previews [--update] [--component NAME]... [--width desktop|phone]... [--co
   render is as tall as its content. References: `test/references/components/`.
 - **Boards:** every board of a design folder at its declared size (the canvas size, else its
   `$preview` size), in the combinations the folder lists in `references.json` (default: one per board,
-  the board's own props). References: `references/` in the design folder. Only the samples
+  the board's own props), each as the board opens and in each of its named states (case id ending
+  `#STATE`). References: `references/` in the design folder. Only the samples
   (`boards/samples/`) have them: the designs under `designs/` store no images (003 FR-011); a design's
   `references.json` holds at most `fonts`.
 

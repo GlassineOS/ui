@@ -45,10 +45,12 @@ async function openBrowser(opts) {
   });
 }
 
-// boardUrl(base, file, {voice, scheme, pen, props}) → the board's URL on a running preview server
+// boardUrl(base, file, {state, voice, scheme, pen, props}) → the board's URL on a running preview
+// server (state: the id of a named state, or none)
 function boardUrl(base, file, opts) {
   const u = new URL(file.split('/').map(encodeURIComponent).join('/'), base);
   opts = opts || {};
+  if (opts.state !== undefined && opts.state !== null) u.searchParams.set('state', String(opts.state));
   for (const k of ['voice', 'scheme', 'pen']) if (opts[k] !== undefined) u.searchParams.set(k, String(opts[k]));
   const props = opts.props || {};
   for (const k of Object.keys(props)) u.searchParams.set('p.' + k, typeof props[k] === 'string' ? props[k] : JSON.stringify(props[k]));
@@ -184,8 +186,8 @@ async function waitSettled(page, opts) {
   if (opts.settleMs !== 0) await new Promise(function (res) { setTimeout(res, opts.settleMs || 200); });
 }
 
-// renderBoard(browser, base, file, {width, height, voice, scheme, pen, props, timeout, keepPage, faces})
-//   → {board, url, size, settled, errors, unsupported, console, requests, external, page?}
+// renderBoard(browser, base, file, {width, height, state, voice, scheme, pen, props, timeout, keepPage, faces})
+//   → {board, state, url, size, settled, errors, unsupported, console, requests, external, page?}
 //   errors: the runtime's render, script and load errors; unsupported: the board's format features
 //   outside the subset; console: console errors and uncaught exceptions; requests: failed requests
 //   to the preview server; external: requests elsewhere, all refused (isolate(); faces: the
@@ -196,7 +198,7 @@ async function renderBoard(browser, base, file, opts) {
   const width = Math.max(1, Math.round(opts.width || 1280)), height = Math.max(1, Math.round(opts.height || 800));
   const url = boardUrl(base, file, opts);
   const origin = new URL(base).origin;
-  const r = { board: file, url: url, size: { width: width, height: height }, settled: false, errors: [], unsupported: [], console: [], requests: [], external: [] };
+  const r = { board: file, state: opts.state === undefined ? null : opts.state, url: url, size: { width: width, height: height }, settled: false, errors: [], unsupported: [], console: [], requests: [], external: [] };
   const t0 = Date.now();
   const page = await browser.newPage();
   await page.setViewport({ width: width, height: height, deviceScaleFactor: opts.scale || 1 });

@@ -33,7 +33,7 @@ async function main() {
   await test('every sample renders clean', async () => {
     const rep = await checkDesign({ design: path.join(ROOT, 'boards/samples'), interleaf: INTERLEAF });
     assert.strictEqual(rep.summary.failing, 0, JSON.stringify(rep.boards.filter((b) => !b.ok), null, 1));
-    assert.strictEqual(rep.summary.boards, 6);
+    assert.strictEqual(rep.summary.boards, 7);
   });
 
   await test('boards outside the subset fail, naming board and feature', async () => {
@@ -283,7 +283,7 @@ async function main() {
         await p.goto(srv.url + '_boards/', { waitUntil: 'load' });
         await p.waitForSelector('.board');
         assert.strictEqual(await p.$$eval('.board', (b) => b.length), 3);
-        assert.match(await p.$eval('#pages', (n) => n.textContent), /Screens \(3\)Parts \(3\)/);
+        assert.match(await p.$eval('#pages', (n) => n.textContent), /Screens \(3\)Parts \(4\)/);
         await p.goto(srv.url + '_boards/view.html?board=Main.dc.html&voice=stationery', { waitUntil: 'load' });
         await p.waitForSelector('#controls select');
         const f = await (await p.$('#frame')).contentFrame();

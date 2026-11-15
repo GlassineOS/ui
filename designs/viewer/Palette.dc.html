@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Go to</title>
+<script src="./support.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="viewer.css">
+</helmet>
+<div class="vw-pop vw-palette" data-theme="white-paper" style="position: relative; top: 0; left: 0; transform: none" role="dialog" aria-label="Go to">
+  <div class="vw-palette__in"><svg class="vw-ico" viewBox="0 0 24 24" style="width: 20px; height: 20px"><circle cx="11" cy="11" r="6"></circle><path d="M20 20l-4.5-4.5"></path></svg>{{ query }}<span class="vw-caret"></span><span class="vw-grow"></span><span class="vw-tag">every design</span></div>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="3">
+    <div class="vw-palette__group">
+      <h3>{{ g.name }}</h3>
+      <sc-for list="{{ g.items }}" as="i" hint-placeholder-count="3">
+        <div class="vw-palette__item" aria-selected="{{ i.sel }}">
+          <div class="vw-palette__thumb"><sc-if value="{{ i.kind }}" hint-placeholder-val="{{ true }}"><dc-import name="Thumb" kind="{{ i.kind }}" state="{{ i.state }}" voice="{{ voice }}" scheme="{{ scheme }}" style="position: absolute; inset: 0" hint-size="100%,100%"></dc-import></sc-if><sc-if value="{{ i.glyph }}" hint-placeholder-val="{{ false }}"><span class="vw-mono">{{ i.glyph }}</span></sc-if></div>
+          <div><b>{{ i.pre }}<mark>{{ i.hit }}</mark>{{ i.post }}</b><div class="vw-small vw-soft">{{ i.where }}</div></div>
+          <span class="vw-small vw-soft">{{ i.hint }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </sc-for>
+  <footer><span><span class="vw-key">↑</span><span class="vw-key">↓</span> choose</span><span><span class="vw-key">⏎</span> open</span><span><span class="vw-key">⇧⏎</span> open beside</span><span class="vw-grow"></span><span><span class="vw-key">esc</span></span></footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"query":{"editor":"text","default":"blue"},"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"$preview":{"width":620,"height":520}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props, q = p.query || 'blue';
+    const it = (text, rest) => { const i = text.toLowerCase().indexOf(q.toLowerCase()); return i < 0 ? { pre: text, hit: '', post: '', ...rest } : { pre: text.slice(0, i), hit: text.slice(i, i + q.length), post: text.slice(i + q.length), ...rest }; };
+    return {
+      query: q, voice: p.voice || 'white', scheme: p.scheme || 'paper',
+      groups: [
+        { name: 'Boards', items: [
+          it('Bluetooth', { kind: 'pair', state: '1', where: 'Shell · Settings · settings.bluetooth', hint: '4 states', sel: 'true' }),
+          it('Bluetooth › Pairing', { kind: 'dialog', state: '0', where: 'Shell · Settings · new in #47', hint: '3 states', sel: 'false' }),
+          it('Bluetooth', { kind: 'list', state: '0', where: 'Shell · Fit (window sizes) · fit.bluetooth', hint: '', sel: 'false' }),
+        ] },
+        { name: 'States', items: [
+          it('Scanning — Bluetooth', { kind: 'pair', state: '2', where: 'settings.bluetooth · state 3 of 4', hint: '', sel: 'false' }),
+        ] },
+        { name: 'Do', items: [
+          it('Review the Bluetooth proposal (#47)', { glyph: '#', where: '6 boards changed · checks passed', hint: 'R', sel: 'false' }),
+        ] },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

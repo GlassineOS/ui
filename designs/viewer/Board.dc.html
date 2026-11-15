@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Board view</title>
+<script src="./support.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="viewer.css">
+</helmet>
+<div class="vw" data-theme="white-paper" style="position: relative">
+  <dc-import name="Bar" mode="board" rev="{{ rev }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,56px"></dc-import>
+  <div class="vw-body vw-body--wide">
+    <main class="vw-desk">
+      <div class="vw-desk__top">
+        <a class="vw-crumb" href="canvas.main.dc.html"><svg class="vw-ico" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"></path></svg>Settings</a>
+        <span class="{{ mk }}"></span><span class="vw-desk__title">{{ b.title }}</span>
+        <span class="vw-tag vw-mono">{{ b.file }}</span>
+        <span class="vw-grow"></span>
+        <div class="vw-seg" style="width: 230px"><sc-for list="{{ scales }}" as="s" hint-placeholder-count="3"><button type="button" aria-pressed="{{ s.on }}" onClick="{{ s.pick }}" title="{{ s.tip }}">{{ s.name }}</button></sc-for></div>
+        <div class="vw-seg" style="width: 170px"><button type="button" aria-pressed="{{ sheetOn }}" onClick="{{ toSheet }}">Sheet</button><button type="button" aria-pressed="{{ deviceOn }}" onClick="{{ toDevice }}">Device</button></div>
+        <a class="vw-btn vw-btn--flat" href="#" title="The board alone, in a new tab">Alone ↗</a>
+      </div>
+      <div class="vw-desk__mid">
+        <a class="vw-step" href="#" title="Previous board (K)"><svg class="vw-ico" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"></path></svg></a>
+        <sc-if value="{{ isSheet }}" hint-placeholder-val="{{ true }}">
+          <div class="vw-sheet" style="width: {{ w }}px; height: {{ h }}px">
+            <div class="vw-ruler vw-ruler--x">{{ b.w }} px</div>
+            <div class="vw-ruler vw-ruler--y">{{ b.h }} px</div>
+            <dc-import name="Thumb" kind="{{ b.kind }}" v="{{ v }}" state="{{ stateIx }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" style="position: absolute; inset: 0" hint-size="100%,100%"></dc-import>
+          </div>
+        </sc-if>
+        <sc-if value="{{ isDevice }}" hint-placeholder-val="{{ false }}">
+          <div class="vw-device">
+            <div class="vw-sheet" style="width: {{ w }}px; height: {{ h }}px">
+              <dc-import name="Thumb" kind="{{ b.kind }}" v="{{ v }}" state="{{ stateIx }}" voice="{{ voice }}" scheme="eink" pen="{{ pen }}" style="position: absolute; inset: 0" hint-size="100%,100%"></dc-import>
+            </div>
+          </div>
+        </sc-if>
+        <a class="vw-step" href="#" title="Next board (J)"><svg class="vw-ico" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"></path></svg></a>
+        <div class="vw-float" style="left: 16px; bottom: 12px"><span class="vw-small vw-soft" style="padding: 0 8px">7 of 20 on Settings</span><span class="vw-sep"></span><span class="vw-small vw-mono" style="padding: 0 8px">{{ scaleText }}</span></div>
+        <sc-if value="{{ isDevice }}" hint-placeholder-val="{{ false }}">
+          <div class="vw-float" style="right: 16px; bottom: 12px; flex-direction: column; align-items: stretch; gap: 6px; padding: 10px 12px; width: 230px">
+            <span class="vw-small"><b>Device</b> · 10.3″ e-ink, 1404 × 1872</span>
+            <span class="vw-small vw-soft">16 greys, the panel’s own steps. Size on screen is the panel’s, once the screen is measured.</span>
+            <div class="vw-seg"><button type="button" aria-pressed="true">Still</button><button type="button">Show refresh</button></div>
+          </div>
+        </sc-if>
+      </div>
+      <sc-if value="{{ hasStates }}" hint-placeholder-val="{{ true }}">
+        <div class="vw-film" aria-label="States">
+          <div class="vw-film__label"><b>States</b><span class="vw-soft">{{ stateCount }} named by the board</span></div>
+          <sc-for list="{{ states }}" as="s" hint-placeholder-count="4"><a href="#" aria-current="{{ s.cur }}" onClick="{{ s.pick }}"><span class="vw-film__img" style="position: relative"><dc-import name="Thumb" kind="{{ b.kind }}" v="{{ v }}" state="{{ s.ix }}" voice="{{ voice }}" scheme="{{ filmScheme }}" pen="{{ pen }}" style="position: absolute; inset: 0" hint-size="100%,100%"></dc-import></span><span>{{ s.name }} <span class="vw-film__k">{{ s.key }}</span></span></a></sc-for>
+          <span class="vw-grow"></span>
+          <div class="vw-film__label" style="align-items: flex-end; text-align: right"><a class="vw-btn vw-btn--flat" href="matrix.states.dc.html" style="flex-direction: row; color: var(--ink)">Every state × voice</a></div>
+        </div>
+      </sc-if>
+    </main>
+    <aside class="vw-insp">
+      <section>
+        <h3>Render <a class="vw-small" href="#" style="text-transform: none; letter-spacing: 0; font-family: var(--font-plex); text-decoration: underline">as every board</a></h3>
+        <div class="vw-field"><span>Voice</span><div class="vw-seg"><sc-for list="{{ voices }}" as="o" hint-placeholder-count="3"><button type="button" aria-pressed="{{ o.on }}" onClick="{{ o.set }}">{{ o.name }}</button></sc-for></div></div>
+        <div class="vw-field"><span>Scheme</span><div class="vw-seg"><sc-for list="{{ schemes }}" as="o" hint-placeholder-count="3"><button type="button" aria-pressed="{{ o.on }}" onClick="{{ o.set }}">{{ o.name }}</button></sc-for></div></div>
+        <div class="vw-field"><span>Pen</span><div class="vw-seg"><sc-for list="{{ pens }}" as="o" hint-placeholder-count="3"><button type="button" aria-pressed="{{ o.on }}" onClick="{{ o.set }}">{{ o.id }}</button></sc-for></div></div>
+      </section>
+      <section>
+        <h3>Props <span>the board’s own</span></h3>
+        <div class="vw-field"><span>Window</span><div class="vw-seg"><button type="button" aria-pressed="true">Full</button><button type="button">Column</button><button type="button">Row</button><button type="button">¼</button></div></div>
+        <div class="vw-field"><span>Orientation</span><div class="vw-seg"><button type="button" aria-pressed="true">Portrait</button><button type="button">Landscape</button></div></div>
+        <div class="vw-field"><span>App</span><span class="vw-filter" style="margin: 0">Stellarium</span></div>
+      </section>
+      <section>
+        <h3>Size</h3>
+        <div class="vw-seg"><button type="button" aria-pressed="true">760 × 1140</button><button type="button">390 × 760</button><button type="button">Fill</button></div>
+      </section>
+      <section>
+        <h3>Links</h3>
+        <div class="vw-links"><a href="#"><span class="vw-arrow">→</span>Bluetooth › Pairing <span class="vw-soft vw-small">“Pair”</span></a><a href="#"><span class="vw-arrow">←</span>Settings › More · 1/2</a></div>
+      </section>
+      <section>
+        <h3>Check</h3>
+        <div class="vw-row vw-small"><span class="vw-tag vw-tag--ok">no errors</span><span class="vw-soft">rendered 3 s ago, live</span></div>
+      </section>
+      <section style="border-bottom: 0">
+        <div class="vw-actions"><a class="vw-btn" href="#">Copy link</a><a class="vw-btn" href="#">Copy shot command</a></div>
+      </section>
+    </aside>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"board":{"editor":"text","default":"settings.bluetooth"},"state":{"editor":"text","default":"2"},"look":{"editor":"enum","options":["sheet","device"],"default":"sheet"},"rev":{"editor":"enum","options":["main","pr"],"default":"main"},"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p) {
+    super(p);
+    this.state = { st: Number(p.state || 0), look: p.look || 'sheet', scale: 'fit', voice: p.voice || 'white', scheme: p.scheme || 'paper', pen: p.pen || '1' };
+  }
+  renderVals() {
+    const p = this.props, s = this.state, V = window.VIEWER, b = V.board(p.board || 'settings.bluetooth');
+    const dev = s.look === 'device';
+    const h = dev ? 520 : (b.states.length > 1 ? 560 : 680), w = Math.round(h * b.w / b.h);
+    const opt = (k, list) => list.map(([id, name]) => ({ id, name, on: s[k] === id ? 'true' : 'false', set: () => this.setState({ [k]: id }) }));
+    return {
+      b, rev: p.rev || 'main', voice: s.voice, scheme: s.scheme, pen: s.pen, v: b.v || 'a', w, h,
+      mk: b.interactive ? 'vw-mk vw-mk--play' : 'vw-mk vw-mk--still',
+      isSheet: !dev, isDevice: dev, sheetOn: dev ? 'false' : 'true', deviceOn: dev ? 'true' : 'false',
+      toSheet: () => this.setState({ look: 'sheet' }), toDevice: () => this.setState({ look: 'device' }),
+      scales: [['fit', 'Fit', 'Fit the desk (1)'], ['1', '1:1', 'One board pixel per screen pixel (0)'], ['real', 'Real size', 'The panel’s size in centimetres']].map(([id, name, tip]) => ({ name, tip, on: s.scale === id ? 'true' : 'false', pick: () => this.setState({ scale: id }) })),
+      scaleText: Math.round(100 * h / b.h) + '% · ' + b.w + ' × ' + b.h,
+      hasStates: b.states.length > 1, stateCount: b.states.length, stateIx: String(s.st), filmScheme: dev ? 'eink' : s.scheme,
+      states: b.states.map((n, i) => ({ name: n, ix: String(i), key: String(i + 1), cur: i === s.st ? 'true' : 'false', pick: () => this.setState({ st: i }) })),
+      voices: opt('voice', V.VOICES), schemes: dev ? V.SCHEMES.map(([id, name]) => ({ id, name: id === 'eink' ? 'E-ink (device)' : name, on: id === 'eink' ? 'true' : 'false', set: () => this.setState({ look: 'sheet', scheme: id }) })) : opt('scheme', V.SCHEMES), pens: opt('pen', V.PENS),
+    };
+  }
+}
+</script>
+</body>
+</html>

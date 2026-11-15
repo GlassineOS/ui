@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Designs</title>
+<script src="./support.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="viewer.css">
+</helmet>
+<div class="vw" data-theme="white-paper" style="position: relative">
+  <dc-import name="Bar" mode="index" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,56px"></dc-import>
+  <div class="vw-index">
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <h1>Design boards</h1>
+      <p class="vw-soft" style="font-size: 16px; max-width: 760px">Every design of the <span class="vw-mono">ui</span> repository, drawn in your browser. A board is a proposal: it can differ from the program it describes.</p>
+    </div>
+    <h2>Waiting for review · 2</h2>
+    <div class="vw-prs">
+      <sc-for list="{{ prs }}" as="r" hint-placeholder-count="2">
+        <div class="vw-prrow">
+          <span class="vw-mono" style="font-size: 18px; font-weight: 600">#{{ r.n }}</span>
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <b style="font-size: 15px">{{ r.title }}</b>
+            <span class="vw-small vw-soft">{{ r.designName }} · {{ r.count }} boards changed · {{ r.revisions }} revisions · {{ r.updated }}</span>
+          </div>
+          <div class="vw-prrow__strip"><sc-for list="{{ r.strip }}" as="s" hint-placeholder-count="4"><div><dc-import name="Thumb" kind="{{ s.kind }}" v="{{ s.v }}" voice="{{ voice }}" scheme="{{ scheme }}" style="position: absolute; inset: 0" hint-size="100%,100%"></dc-import></div></sc-for></div>
+          <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-end">
+            <span class="{{ r.checkCls }}">{{ r.checkText }}</span>
+            <span class="vw-small vw-soft">{{ r.seenText }}</span>
+          </div>
+          <a class="{{ r.btnCls }}" href="review.side.dc.html">{{ r.btn }}</a>
+        </div>
+      </sc-for>
+    </div>
+    <h2>On main · 4 designs</h2>
+    <div class="vw-cards">
+      <sc-for list="{{ designs }}" as="d" hint-placeholder-count="4">
+        <a class="vw-card" href="canvas.main.dc.html">
+          <div class="vw-card__mosaic"><sc-for list="{{ d.tiles }}" as="t" hint-placeholder-count="6"><div style="position: relative"><dc-import name="Thumb" kind="{{ t.kind }}" v="{{ t.v }}" voice="{{ voice }}" scheme="{{ scheme }}" style="position: absolute; inset: 0" hint-size="100%,100%"></dc-import></div></sc-for></div>
+          <div class="vw-card__body">
+            <b>{{ d.name }}</b>
+            <span class="vw-small vw-soft"><span class="vw-mono">designs/{{ d.id }}/</span> · {{ d.boards }} boards · {{ d.pages }} pages</span>
+            <span class="vw-small vw-soft">Changed {{ d.updated }}{{ d.prNote }}</span>
+          </div>
+        </a>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props, V = window.VIEWER;
+    const kindOf = id => V.board(id).kind;
+    const prs = V.prs.map((r, i) => {
+      const ok = r.checks === 'passed';
+      return { ...r, designName: 'GlassineOS shell', count: r.boards.length,
+        strip: r.boards.slice(0, 4).map((b, j) => ({ kind: i ? ['home', 'settings'][j] : kindOf(b.id), v: ['a', 'b', 'c', 'a'][j] })),
+        checkCls: 'vw-tag ' + (ok ? 'vw-tag--ok' : 'vw-tag--bad'), checkText: ok ? 'checks passed' : 'checks failed · 1 board',
+        seenText: i ? 'not opened yet' : 'you saw 2 of 6 · new since: r4',
+        btn: i ? 'Start review' : 'Continue review', btnCls: 'vw-btn' + (i ? '' : ' vw-btn--primary') };
+    });
+    const designs = V.designs.map(d => ({ ...d, tiles: d.kinds.map((k, j) => ({ kind: k, v: ['a', 'b', 'c'][j % 3] })), prNote: d.id === 'shell' ? ' · 2 proposals open' : '' }));
+    return { voice: p.voice || 'white', scheme: p.scheme || 'paper', pen: p.pen || '1', prs, designs };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Board viewer · start here</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="viewer.css">
+</helmet>
+<div class="vw vw-doc" data-theme="white-paper">
+  <div class="vw-doc__in">
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <span class="vw-small vw-soft vw-mono">designs/viewer · start here</span>
+      <h1>The board viewer, redrawn</h1>
+      <p class="vw-lead">The preview and the published designs today: a row of page buttons, a zoom slider, boards on grey, and a board view made of drop-downs. This design keeps the canvas, but the viewer becomes the place where a design proposal is <b>reviewed</b>: what changed, before and after, in every voice, and how the screens connect.</p>
+    </div>
+    <div class="vw-cols">
+      <div class="vw-pane vw-pane--ink"><h3>For whom</h3><span>The user, looking at the boards by eye, and the reviewer of a design proposal. Agents keep <span class="vw-mono">shot</span> and <span class="vw-mono">stream</span>; the hub’s design view shows the same pages.</span></div>
+      <div class="vw-pane"><h3>What was wrong</h3><ul><li>Boards draw their own state buttons, because the viewer has no place for states.</li><li>Zoomed out, labels and badges collide; there is no fit, no map, no search.</li><li>Nothing compares: no voices side by side, no before and after for a proposal.</li><li>The board view leaves most of the screen empty.</li></ul></div>
+      <div class="vw-pane"><h3>Rules for the viewer</h3><ul><li>Drawn in Interleaf White, paper or night; the boards in the voice the picker says.</li><li>A mark has a shape, never only a colour.</li><li>Static pages: no server, no accounts. “Seen” lives in the browser, comments on GitHub.</li><li>Every view is a link: board, state, voice, scheme, pen, compare mode.</li><li>Keys for everything: <span class="vw-mono">⌘K J K ⏎ S N M 1 0</span>.</li></ul></div>
+    </div>
+    <h2>The boards</h2>
+    <div class="vw-boardlist">
+      <a href="home.dc.html"><code>home</code><span>Home: proposals waiting for review first, then the designs on main.</span></a>
+      <a href="canvas.main.dc.html"><code>canvas.main</code><span>The canvas: pages and an outline in a rail, sections, readable labels at any zoom, a map, fit and 1:1.</span></a>
+      <a href="canvas.selected.dc.html"><code>canvas.selected</code><span>A selected board opens the inspector: its states, props, links, check, the shot command.</span></a>
+      <a href="canvas.pr.dc.html"><code>canvas.pr</code><span>The same canvas for a proposal: changed and new boards marked, “Changed only” dims the rest.</span></a>
+      <a href="canvas.picker.dc.html"><code>canvas.picker</code><span>Voice, scheme and pen for every board, chosen by picture.</span></a>
+      <a href="canvas.search.dc.html"><code>canvas.search</code><span>Go to (⌘K): boards, states and actions across every design.</span></a>
+      <a href="canvas.night.dc.html"><code>canvas.night</code><span>The viewer at night, the boards in E-ink.</span></a>
+      <a href="board.states.dc.html"><code>board.states</code><span>One board on the desk, rulers, the states as a filmstrip, render and props on the right.</span></a>
+      <a href="board.device.dc.html"><code>board.device</code><span>The same board on the device, in e-ink greys.</span></a>
+      <a href="review.side.dc.html"><code>review.side</code><span>The review desk: the changed boards with “seen”, before and after, in any state.</span></a>
+      <a href="review.slider.dc.html"><code>review.slider</code><span>Before and after under one slider.</span></a>
+      <a href="review.changes.dc.html"><code>review.changes</code><span>What differs, boxed and numbered.</span></a>
+      <a href="review.added.dc.html"><code>review.added</code><span>A board the proposal adds: nothing on the left.</span></a>
+      <a href="matrix.voices.dc.html"><code>matrix.voices</code><span>One board in all nine voices and schemes, a contrast failure flagged, the chosen cell large.</span></a>
+      <a href="matrix.states.dc.html"><code>matrix.states</code><span>Every state in every voice.</span></a>
+      <a href="flow.pair.dc.html"><code>flow.pair</code><span>The screens as a flow, drawn from the links and states, walked step by step.</span></a>
+      <a href="Convention.dc.html"><code>Convention</code><span>The one change to the board format this needs: <span class="vw-mono">$states</span>.</span></a>
+    </div>
+    <h2>Open</h2>
+    <div class="vw-cols">
+      <div class="vw-pane"><h3>The difference</h3><span class="vw-soft">“Changes” needs both revisions rendered and compared in the browser. The pixel boxes are cheap; naming them (“row is now the pair button”) is not, and is drawn here as if the proposal said it.</span></div>
+      <div class="vw-pane"><h3>Flows</h3><span class="vw-soft">The arrows can be drawn from links and <span class="vw-mono">$states</span>. A named flow and its walking order (“Pair a device”) is not in any file today: a list in <span class="vw-mono">canvas.json</span>, or left out.</span></div>
+      <div class="vw-pane"><h3>Real size</h3><span class="vw-soft">“Real size” and the device frame need the screen’s pixel density, which a browser does not know: a one-time measuring step, or only the frame without the size.</span></div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1240,"height":1500}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

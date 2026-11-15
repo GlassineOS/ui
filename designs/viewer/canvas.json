@@ -1,0 +1,376 @@
+{
+ "v": 3,
+ "title": "Board viewer",
+ "launch": {
+  "view": "canvas",
+  "page": "start"
+ },
+ "pages": [
+  {
+   "id": "start",
+   "name": "Start here"
+  },
+  {
+   "id": "canvas",
+   "name": "Canvas"
+  },
+  {
+   "id": "review",
+   "name": "Review"
+  },
+  {
+   "id": "board",
+   "name": "Board and flow"
+  },
+  {
+   "id": "parts",
+   "name": "Parts"
+  }
+ ],
+ "boards": {
+  "Main.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1240,
+   "h": 1500,
+   "title": "Board viewer · start here",
+   "page": "start"
+  },
+  "Convention.dc.html": {
+   "x": 1400,
+   "y": 0,
+   "w": 1240,
+   "h": 1240,
+   "title": "States convention",
+   "page": "start"
+  },
+  "home.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1440,
+   "h": 900,
+   "title": "Home · proposals, then designs",
+   "page": "canvas",
+   "is_interactive": true
+  },
+  "canvas.main.dc.html": {
+   "x": 1600,
+   "y": 0,
+   "w": 1440,
+   "h": 900,
+   "title": "Canvas · the main line",
+   "page": "canvas",
+   "is_interactive": true
+  },
+  "canvas.selected.dc.html": {
+   "x": 3200,
+   "y": 0,
+   "w": 1440,
+   "h": 900,
+   "title": "Canvas · a board selected",
+   "page": "canvas",
+   "is_interactive": true
+  },
+  "canvas.pr.dc.html": {
+   "x": 0,
+   "y": 1100,
+   "w": 1440,
+   "h": 900,
+   "title": "Canvas · a proposal, its changes marked",
+   "page": "canvas",
+   "is_interactive": true
+  },
+  "canvas.picker.dc.html": {
+   "x": 1600,
+   "y": 1100,
+   "w": 1440,
+   "h": 900,
+   "title": "Canvas · render picker open",
+   "page": "canvas",
+   "is_interactive": true
+  },
+  "canvas.search.dc.html": {
+   "x": 3200,
+   "y": 1100,
+   "w": 1440,
+   "h": 900,
+   "title": "Canvas · go to (⌘K)",
+   "page": "canvas",
+   "is_interactive": true
+  },
+  "canvas.night.dc.html": {
+   "x": 0,
+   "y": 2200,
+   "w": 1440,
+   "h": 900,
+   "title": "Canvas · the viewer at night, boards in E-ink",
+   "page": "canvas",
+   "is_interactive": true
+  },
+  "review.side.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1440,
+   "h": 900,
+   "title": "Review · a proposal, before and after",
+   "page": "review",
+   "is_interactive": true
+  },
+  "review.slider.dc.html": {
+   "x": 1600,
+   "y": 0,
+   "w": 1440,
+   "h": 900,
+   "title": "Review · slider",
+   "page": "review",
+   "is_interactive": true
+  },
+  "review.changes.dc.html": {
+   "x": 3200,
+   "y": 0,
+   "w": 1440,
+   "h": 900,
+   "title": "Review · the changes marked",
+   "page": "review",
+   "is_interactive": true
+  },
+  "review.added.dc.html": {
+   "x": 0,
+   "y": 1100,
+   "w": 1440,
+   "h": 900,
+   "title": "Review · a new board",
+   "page": "review",
+   "is_interactive": true
+  },
+  "matrix.voices.dc.html": {
+   "x": 1600,
+   "y": 1100,
+   "w": 1440,
+   "h": 900,
+   "title": "Matrix · voice × scheme",
+   "page": "review",
+   "is_interactive": true
+  },
+  "matrix.states.dc.html": {
+   "x": 3200,
+   "y": 1100,
+   "w": 1440,
+   "h": 900,
+   "title": "Matrix · state × voice",
+   "page": "review",
+   "is_interactive": true
+  },
+  "board.states.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1440,
+   "h": 900,
+   "title": "Board view · a board and its states",
+   "page": "board",
+   "is_interactive": true
+  },
+  "board.device.dc.html": {
+   "x": 1600,
+   "y": 0,
+   "w": 1440,
+   "h": 900,
+   "title": "Board view · on the device, in e-ink",
+   "page": "board",
+   "is_interactive": true
+  },
+  "flow.pair.dc.html": {
+   "x": 3200,
+   "y": 0,
+   "w": 1440,
+   "h": 900,
+   "title": "Flow · drawn from the links, walked step by step",
+   "page": "board",
+   "is_interactive": true
+  },
+  "Canvas.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1440,
+   "h": 900,
+   "title": "Canvas",
+   "page": "parts",
+   "is_interactive": true
+  },
+  "Board.dc.html": {
+   "x": 1600,
+   "y": 0,
+   "w": 1440,
+   "h": 900,
+   "title": "Board view",
+   "page": "parts",
+   "is_interactive": true
+  },
+  "Review.dc.html": {
+   "x": 3200,
+   "y": 0,
+   "w": 1440,
+   "h": 900,
+   "title": "Review desk",
+   "page": "parts",
+   "is_interactive": true
+  },
+  "Matrix.dc.html": {
+   "x": 0,
+   "y": 1100,
+   "w": 1440,
+   "h": 900,
+   "title": "Matrix",
+   "page": "parts",
+   "is_interactive": true
+  },
+  "Flow.dc.html": {
+   "x": 1600,
+   "y": 1100,
+   "w": 1440,
+   "h": 900,
+   "title": "Flow",
+   "page": "parts",
+   "is_interactive": true
+  },
+  "Index.dc.html": {
+   "x": 3200,
+   "y": 1100,
+   "w": 1440,
+   "h": 900,
+   "title": "Designs",
+   "page": "parts",
+   "is_interactive": true
+  },
+  "Bar.dc.html": {
+   "x": 0,
+   "y": 2200,
+   "w": 1440,
+   "h": 56,
+   "title": "Viewer bar",
+   "page": "parts",
+   "is_interactive": true
+  },
+  "Picker.dc.html": {
+   "x": 1600,
+   "y": 2200,
+   "w": 400,
+   "h": 420,
+   "title": "Render picker",
+   "page": "parts",
+   "is_interactive": true
+  },
+  "Palette.dc.html": {
+   "x": 2160,
+   "y": 2200,
+   "w": 620,
+   "h": 520,
+   "title": "Go to",
+   "page": "parts",
+   "is_interactive": true
+  },
+  "Thumb.dc.html": {
+   "x": 0,
+   "y": 2920,
+   "w": 380,
+   "h": 570,
+   "title": "Mock screen",
+   "page": "parts"
+  }
+ },
+ "order": [
+  "Main.dc.html",
+  "Convention.dc.html",
+  "home.dc.html",
+  "canvas.main.dc.html",
+  "canvas.selected.dc.html",
+  "canvas.pr.dc.html",
+  "canvas.picker.dc.html",
+  "canvas.search.dc.html",
+  "canvas.night.dc.html",
+  "review.side.dc.html",
+  "review.slider.dc.html",
+  "review.changes.dc.html",
+  "review.added.dc.html",
+  "matrix.voices.dc.html",
+  "matrix.states.dc.html",
+  "board.states.dc.html",
+  "board.device.dc.html",
+  "flow.pair.dc.html",
+  "Canvas.dc.html",
+  "Board.dc.html",
+  "Review.dc.html",
+  "Matrix.dc.html",
+  "Flow.dc.html",
+  "Index.dc.html",
+  "Bar.dc.html",
+  "Picker.dc.html",
+  "Palette.dc.html",
+  "Thumb.dc.html"
+ ],
+ "notes": {
+  "t-start": {
+   "x": 0,
+   "y": -260,
+   "text": "Start here",
+   "kind": "title1",
+   "page": "start"
+  },
+  "t-canvas": {
+   "x": 0,
+   "y": -260,
+   "text": "Canvas",
+   "kind": "title1",
+   "page": "canvas"
+  },
+  "t-review": {
+   "x": 0,
+   "y": -260,
+   "text": "Review",
+   "kind": "title1",
+   "page": "review"
+  },
+  "t-board": {
+   "x": 0,
+   "y": -260,
+   "text": "Board and flow",
+   "kind": "title1",
+   "page": "board"
+  },
+  "t-parts": {
+   "x": 0,
+   "y": -260,
+   "text": "Parts",
+   "kind": "title1",
+   "page": "parts"
+  },
+  "n-canvas": {
+   "x": 0,
+   "y": -150,
+   "w": 1400,
+   "text": "The canvas stays the base: pages and an outline in a rail, sections with readable labels, a map, fit and 1:1, an inspector for the selected board. Render (voice, scheme, pen) is chosen once for every board, by picture.",
+   "page": "canvas"
+  },
+  "n-review": {
+   "x": 0,
+   "y": -150,
+   "w": 1400,
+   "text": "The lead: a proposal is reviewed board by board. The changed boards with “seen” (kept in the browser), before and after in four ways, in any state; the matrix shows one board in every voice and scheme, with the contrast check’s failures marked.",
+   "page": "review"
+  },
+  "n-board": {
+   "x": 0,
+   "y": -150,
+   "w": 1400,
+   "text": "One board on the desk with its states as a filmstrip ($states, see Start here › Convention), and on the device in e-ink. The flow is drawn from links and states and can be walked step by step.",
+   "page": "board"
+  },
+  "n-parts": {
+   "x": 0,
+   "y": -150,
+   "w": 1400,
+   "text": "The components the boards above are made of. Thumb is a schematic screen that follows the voice and scheme; the mockups use it in place of real boards, which a design folder cannot import from another.",
+   "page": "parts"
+  }
+ }
+}

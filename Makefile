@@ -104,6 +104,7 @@ BOARDS_INTERLEAF ?=
 boards-check:
 	tools/boards check boards/samples $(if $(BOARDS_INTERLEAF),--interleaf $(BOARDS_INTERLEAF)) --json $(O)/boards-check.json
 	$(NODE) test/boards/samples-e2e.js
+	$(NODE) test/boards/preview-e2e.js
 	$(NODE) test/boards/stream-e2e.js
 	$(NODE) test/boards/states-e2e.js
 	$(NODE) test/boards/review-e2e.js

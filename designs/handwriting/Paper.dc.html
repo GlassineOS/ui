@@ -11,11 +11,11 @@
 <div data-write-paper="" role="region" aria-label="Writing area" style="position:relative;width:100%;height:100%;box-sizing:border-box;overflow:hidden;border-radius:{{ v.r }};background:var(--il-paper);box-shadow:{{ v.edge }}">
 <sc-for list="{{ guides }}" as="g" hint-placeholder-count="4"><div style="position:absolute;left:{{ inset }}px;right:{{ inset }}px;top:{{ g.y }}px;border-top:{{ v.guide }}"></div></sc-for>
 <sc-if value="{{ showHint }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:{{ inset }}px;top:{{ hintY }}px;font:{{ v.hint }};color:var(--il-ink-soft)">{{ hint }}</div></sc-if>
-<sc-for list="{{ lines }}" as="l" hint-placeholder-count="1"><div style="position:absolute;left:{{ l.x }}px;top:{{ l.top }}px;font:400 {{ fs }}px/1 'Kalam',cursive;color:var(--il-pen);white-space:nowrap">{{ l.t }}</div></sc-for>
+<sc-for list="{{ lines }}" as="l" hint-placeholder-count="1"><div style="position:absolute;left:{{ l.x }}px;top:{{ l.top }}px;font:400 {{ fs }}px/1 'Kalam',cursive;color:var(--il-pen);white-space:nowrap;transform:skewX({{ slant }}deg);transform-origin:left bottom">{{ l.t }}</div></sc-for>
 <svg width="100%" height="100%" style="position:absolute;inset:0;touch-action:none;cursor:{{ cur }};pointer-events:{{ pe }}" onPointerDown="{{ pd }}" onPointerMove="{{ pm }}" onPointerUp="{{ pu }}" onPointerCancel="{{ pu }}"><path d="{{ inkD }}" fill="none" stroke="var(--il-pen)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview": {"width": 640, "height": 300}, "voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "ink": {"editor": "text", "default": "quiet"}, "line": {"editor": "text", "default": "75"}, "size": {"editor": "text", "default": "44"}, "height": {"editor": "text", "default": "300"}, "hint": {"editor": "text", "default": ""}, "live": {"editor": "boolean", "default": false}, "onInk": {"editor": null}, "clear": {"editor": "text", "default": "0"}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview": {"width": 640, "height": 300}, "voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "ink": {"editor": "text", "default": "quiet"}, "line": {"editor": "text", "default": "75"}, "size": {"editor": "text", "default": "44"}, "height": {"editor": "text", "default": "300"}, "hint": {"editor": "text", "default": ""}, "live": {"editor": "boolean", "default": false}, "onInk": {"editor": null}, "clear": {"editor": "text", "default": "0"}, "slant": {"editor": "text", "default": "0"}}'>
 class Component extends DCLogic {
   // The keyboard's writing paper (shell spec 006) as the samples app uses it: one guide per
   // line, at two thirds of the line, in the rule grey; ink in the pen colour. The sample ink is
@@ -47,7 +47,7 @@ class Component extends DCLogic {
       stationery: { r: '3px', edge: 'inset 0 0 0 1px var(--il-ink-soft),var(--il-card-stack)', guide: '1px dashed var(--il-ink-soft)', hint: "italic 400 18px 'EB Garamond',serif" }
     }[voice];
     return {
-      v: V, guides, lines, fs, inset,
+      v: V, guides, lines, fs, inset, slant: Number(p.slant) || 0,
       hint: p.hint || '', showHint: !!p.hint && !ink.length && !s.strokes.length, hintY: Math.round(L * 2 / 3) - 26,
       inkD: s.strokes.join(' ') || 'M0 0', pe: live ? 'auto' : 'none', cur: live ? 'crosshair' : 'default',
       pd: e => {

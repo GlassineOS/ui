@@ -583,10 +583,12 @@ The site (`make site`, published by `.github/workflows/reference.yml` with the r
 deployment) holds every design folder as `tools/boards export` writes it, at
 `designs/PROJECT/` (the canvas at `designs/PROJECT/_boards/`, a board's view at
 `designs/PROJECT/_boards/view.html?board=FILE&voice=V&scheme=S&pen=P`), listed on `designs.html`,
-which every reference page links (spec 003 FR-016). Boards render in the viewer's browser; nothing
-rendered is stored, and a visitor's browser asks no other site: a board's Google Fonts links name
+which every reference page links (spec 003 FR-016). Boards render in the viewer's browser, and a
+visitor's browser asks no other site: a board's Google Fonts links name
 `_boards/fonts/google.css` in the export (Interleaf's vendored faces and the design's own, from
-`references.json` `fonts`, as the checks answer them; a family in neither is not loaded).
+`references.json` `fonts`, as the checks answer them; a family in neither is not loaded). The only
+rendered images on the site are the difference images of the proposals' reviews (below), made when
+the site is built; none is stored in the repository.
 
 Each open pull request of this repository that changes `designs/` is on the site too, at
 `designs/pr-N/` (`designs/pr-N/PROJECT/_boards/`), with the boards of its latest commit (FR-017):
@@ -597,18 +599,68 @@ Each open pull request of this repository that changes `designs/` is on the site
 - That build lists the open pull requests (`tools/fetch-design-prs`: not from forks, whose boards
   would run on the site; only those whose files include `designs/`), reads each one's `designs/` at
   its head with `git archive` (files only), and exports them with main's tools and main's Interleaf
-  (`tools/site-designs`; one that fails to export is left out with a warning). A closed pull request
-  is no longer listed, so its copy is gone from that publication.
+  (`tools/site-designs`; one that fails to export is left out with a warning). Its `pr.json` holds
+  the number, title, address and head, and `checks` (`passed` or `failed`) once every check run of
+  the head has finished. A closed pull request is no longer listed, so its copy is gone from that
+  publication.
+- The build runs in Alpine with the pinned Chromium, without network, without the token and without
+  the checkout's `.git`: rendering the difference images runs the boards' JavaScript of main and of
+  the pull requests in that browser. No tool or script of a pull request runs.
 - A published pull request's boards run their JavaScript on the organization's github.io origin,
   next to the reference. That is acceptable only because a pull request from this repository comes
   from someone with write access to it already; this is why pull requests from forks are never
   published. Do not relax that rule.
 - After the deployment, each published pull request gets one comment (marked `<!-- boards-pages -->`)
-  with the links, edited in place on every publish; on close it says the copy is gone.
+  with the links to each design's canvas and review, edited in place on every publish; on close it
+  says the copy is gone.
+
+`designs.html` lists the open proposals first, each with the number of boards it changes (added,
+changed and removed, over its designs), its check result when `pr.json` has one, and per design the
+canvas and the review; then the designs on main (FR-060).
+
+**The review** of a proposal (FR-055..FR-057), per design, at `designs/pr-N/PROJECT/_boards/review.html`
+(`?board=FILE&compare=side|slider|overlay|changes&state=ID&voice=V&scheme=S&pen=P`, every parameter
+optional). `tools/site-designs` writes its data with `boards/lib/review.js` (contract: review,
+version 1):
+
+- `_boards/api/review.json`: `pr` (`number`, `title`, `url`, `head`, `checks` when known), `base` (the
+  main line's export of the same design, relative to `_boards/`: `../../../PROJECT/`; `null` when
+  main has no such design, and then every board is added), `boards` (per board `file`, `title`,
+  `page`, `change`: `added`, `changed` or `removed`, `issues`: its check issues, and `hash`), and
+  `diffs` (`_boards/diffs/`, or `null` without difference images).
+- A board is changed when its hash differs from main's: the hash covers its own file, every file it
+  loads by a literal relative URL (the head's scripts, the helmet's links and scripts, not
+  `support.js` or `ds/`) and the hash of every board it imports, so a change to `viewer.css` or to an
+  imported board marks every board that uses it. The comparison is with main as it is when the site
+  is built, not with the commit the proposal started from.
+- `_boards/diffs/index.json` and the images: for each changed board, both sides rendered as the
+  checks render them, in every voice × scheme at pen 1, in the default state and in each named
+  state both sides have (a state only one side has is listed in `missingStates`). Per combination
+  (`white-paper-1`, `white-paper-1@STATE`): `differing` pixels of `total`, the `regions` (the
+  differing pixels grouped by nearness, each a box `x`, `y`, `width`, `height` with its `pixels`;
+  every differing pixel is in one, none is empty), the `image` (the reference faded, differing
+  pixels red, an area only one side has blue, named by a hash of its bytes) and each side's render
+  `errors`. The default combinations of all boards come first; past `SITE_DIFF_BUDGET` renders (400
+  per pull request and design) the rest are listed as not computed. Five changed boards of the shell
+  (90 renders) take about 45 s with four workers. `SITE_DIFFS=0` leaves the images out, `1` (CI)
+  requires Chromium, `auto` (the default) makes them when Chromium and `puppeteer-core` are there; a
+  rendering that fails leaves them out with a warning, and the review says so.
+- The page: the changed boards with their marks (⊞ added, ◉ changed, ⊟ removed, the number of check
+  issues), side by side (main's board from `base`, the proposal's from this export; a board one side
+  lacks shows that side as absent), a slider, an overlay with a fade, and the changes: the proposal's
+  board with the regions of the chosen voice, scheme, pen and state marked, numbered and counted (a
+  combination that was not computed says so). A board's state picker offers its named states.
+- "Seen" marks are kept in the reviewer's browser only, in `localStorage` `boards.seen.<the
+  proposal's export path>` as `{file: hash}`; a mark whose hash is no longer the board's shows as
+  changed since. The page sends nothing anywhere and asks no other site. Keys: N marks the board and
+  opens the next one not seen, S marks or clears, J/K next and previous, C the next comparison, T the
+  next state, ←/→ the divider or the fade. Comments go to the pull request: the page links it, and
+  each board's address can be copied to quote there.
 
 ```
 make site                          # out/reference/ with designs.html and designs/ (needs node)
-make site SITE_PRS=DIR             # and the pull requests of DIR (DIR/N/pr.json, DIR/N/designs/)
+make site SITE_PRS=DIR             # and the pull requests of DIR (DIR/N/pr.json, DIR/N/designs/), with reviews
+make site SITE_PRS=DIR SITE_DIFFS=0   # reviews without difference images (no Chromium needed)
 GITHUB_REPOSITORY=OWNER/ui tools/fetch-design-prs DIR   # what CI does to fill DIR (gh, jq, git)
 ```
 
@@ -630,7 +682,8 @@ Code: `boards/runtime/` (the reader `template.js`, shared with node; the browser
 callers that take screenshots, `isolate()` (no network, Google Fonts from the vendored fonts) and
 `steady()` (no motion, fonts loaded) for any page; `check.js`; `png.js`: PNG and the pixel
 comparison; `references.js`: the reference store, the runner and the board references;
-`previews.js`: the component previews), `boards/preview/` (the canvas and the board view).
+`previews.js`: the component previews; `review.js`: the review of a proposal),
+`boards/preview/` (the canvas, the board view and the review).
 
 - `references` renders every board at its declared sizes in the combinations the design folder lists
   and compares each with its reference image (see "References"); `--update` writes the references.

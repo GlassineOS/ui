@@ -7,6 +7,12 @@
 # checkout's tools from the pull request's files, which are only read and copied, never run here.
 # A design of this checkout that fails to export fails the run; a pull request's is left out with a
 # warning. STAGE is replaced only if an earlier run wrote it.
+# Each pull request's export gets its review (boards/lib/review.js): _boards/api/review.json, the
+# boards it adds, changes and removes against the same design of this checkout, and with
+# SITE_DIFFS the difference images of the changed ones (_boards/diffs/), rendered in headless
+# Chromium without network: SITE_DIFFS=1 needs Chromium, 0 leaves them out, auto (the default) makes
+# them when Chromium and puppeteer-core are there. A review whose rendering fails is written without
+# the images, with a warning. SITE_DIFF_BUDGET caps the renders per pull request and design (400).
 set -eu
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 NODE=${NODE:-node}
@@ -37,6 +43,27 @@ for d in "$ROOT"/designs/*/; do
 done
 
 [ -n "$PRS" ] || exit 0
+
+DIFFS=${SITE_DIFFS:-auto}
+case $DIFFS in
+auto) if (cd "$ROOT" && "$NODE" -e 'require("puppeteer-core"); require("./boards/lib/browser.js").findChromium()') >/dev/null 2>&1; then DIFFS=1; else
+	DIFFS=0; echo "site-designs: no Chromium or puppeteer-core: the reviews have no difference images (SITE_DIFFS=1 requires them)" >&2; fi ;;
+1) (cd "$ROOT" && "$NODE" -e 'require("puppeteer-core"); require("./boards/lib/browser.js").findChromium()') >/dev/null ||
+	{ echo "site-designs: SITE_DIFFS=1 needs Chromium and puppeteer-core (npm ci)" >&2; exit 1; } ;;
+0) ;;
+*) echo "site-designs: SITE_DIFFS is 1, 0 or auto" >&2; exit 2 ;;
+esac
+# review PRDESIGN EXPORT PRJSON PROJECT: the review of one exported design of a pull request,
+# against designs/PROJECT of this checkout when it has one
+review() {
+	m=; [ -d "$ROOT/designs/$4" ] && [ -d "$STAGE/$4" ] && m=$ROOT/designs/$4
+	if [ "$DIFFS" = 1 ]; then
+		"$NODE" "$ROOT/boards/lib/review.js" "$1" "$2" --pr "$3" ${m:+--main} ${m:+"$m"} --base "../../../$4/" \
+			--diffs --budget "${SITE_DIFF_BUDGET:-400}" && return 0
+		echo "site-designs: warning: $2: the difference images failed; the review has none" >&2
+	fi
+	"$NODE" "$ROOT/boards/lib/review.js" "$1" "$2" --pr "$3" ${m:+--main} ${m:+"$m"} --base "../../../$4/"
+}
 for pr in "$PRS"/*/; do
 	[ -d "$pr" ] || continue
 	n=$(basename "$pr")
@@ -47,7 +74,7 @@ for pr in "$PRS"/*/; do
 		[ -d "$d" ] && [ ! -L "${d%/}" ] || continue
 		p=$(basename "$d")
 		if ! name_ok "$p"; then echo "site-designs: warning: #$n: designs/$p: not a usable folder name, left out" >&2; continue; fi
-		if "$NODE" "$ROOT/tools/boards" export "$d" "$STAGE/pr-$n/$p"; then got=1
+		if "$NODE" "$ROOT/tools/boards" export "$d" "$STAGE/pr-$n/$p" && review "$d" "$STAGE/pr-$n/$p" "$pr/pr.json" "$p"; then got=1
 		else echo "site-designs: warning: #$n: designs/$p did not export, left out" >&2; rm -rf "$STAGE/pr-$n/$p"; fi
 	done
 	if [ "$got" = 1 ]; then cp "$pr/pr.json" "$STAGE/pr-$n/pr.json"; else rm -rf "$STAGE/pr-$n"; fi

@@ -142,9 +142,10 @@ nothing leads to are listed.
   closed proposal is gone from the next publication.
 - **FR-018**: The boards are rendered in the viewer's browser; publishing stores no rendered image in the
   repository and ships nothing of claude.ai. A published board makes the viewer's browser contact no other site:
-  the fonts it asks for come from the vendored faces (FR-020), as in the checks. Publishing reads a proposal's design files as data and runs only
-  this repository's main-line tools; proposals from forks are not published, since their boards would run on the
-  site.
+  the fonts it asks for come from the vendored faces (FR-020), as in the checks. Publishing reads a proposal's
+  design files as data and runs only this repository's main-line tools; the proposal's boards run only in the
+  browser that renders the review's differences (FR-055), without network, credentials or the repository's
+  history. Proposals from forks are not published, since their boards would run on the site.
 
 **States**
 - **FR-050**: A board can name its states. A state has a name and an identifier and is a set of values of the

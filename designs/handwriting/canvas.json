@@ -23,6 +23,10 @@
    "name": "Learn"
   },
   {
+   "id": "best",
+   "name": "Your handwriting"
+  },
+  {
    "id": "donate",
    "name": "Donate"
   },
@@ -36,7 +40,7 @@
    "x": 0,
    "y": 0,
    "w": 824,
-   "h": 1460,
+   "h": 1500,
    "title": "Welcome",
    "page": "wizard",
    "is_interactive": true
@@ -45,7 +49,7 @@
    "x": 904,
    "y": 0,
    "w": 824,
-   "h": 1460,
+   "h": 1500,
    "title": "Try one",
    "page": "wizard",
    "is_interactive": true
@@ -54,7 +58,7 @@
    "x": 1808,
    "y": 0,
    "w": 824,
-   "h": 1460,
+   "h": 1500,
    "title": "Tried",
    "page": "wizard",
    "is_interactive": true
@@ -63,7 +67,7 @@
    "x": 2712,
    "y": 0,
    "w": 824,
-   "h": 1460,
+   "h": 1500,
    "title": "Your samples stay here",
    "page": "wizard",
    "is_interactive": true
@@ -72,7 +76,7 @@
    "x": 3616,
    "y": 0,
    "w": 824,
-   "h": 1460,
+   "h": 1500,
    "title": "Learning happens on its own",
    "page": "wizard",
    "is_interactive": true
@@ -81,7 +85,7 @@
    "x": 4520,
    "y": 0,
    "w": 824,
-   "h": 1460,
+   "h": 1500,
    "title": "The invitation to donate",
    "page": "wizard",
    "is_interactive": true
@@ -90,25 +94,34 @@
    "x": 5424,
    "y": 0,
    "w": 824,
-   "h": 1460,
+   "h": 1500,
    "title": "Choose a licence",
    "page": "wizard",
    "is_interactive": true
   },
-  "wizard.ready.dc.html": {
+  "wizard.earlier.dc.html": {
    "x": 6328,
    "y": 0,
    "w": 824,
-   "h": 1460,
+   "h": 1500,
+   "title": "Earlier samples (after the licence)",
+   "page": "wizard",
+   "is_interactive": true
+  },
+  "wizard.ready.dc.html": {
+   "x": 7232,
+   "y": 0,
+   "w": 824,
+   "h": 1500,
    "title": "Ready",
    "page": "wizard",
    "is_interactive": true
   },
   "wizard.donate.landscape.dc.html": {
-   "x": 7232,
+   "x": 8136,
    "y": 0,
    "w": 1058,
-   "h": 1226,
+   "h": 1266,
    "title": "The invitation · turned",
    "page": "wizard",
    "is_interactive": true
@@ -117,7 +130,7 @@
    "x": 0,
    "y": 0,
    "w": 824,
-   "h": 1460,
+   "h": 1500,
    "title": "Write · a new prompt",
    "page": "write",
    "is_interactive": true
@@ -126,7 +139,7 @@
    "x": 904,
    "y": 0,
    "w": 824,
-   "h": 1460,
+   "h": 1500,
    "title": "Write · ink on the paper",
    "page": "write",
    "is_interactive": true
@@ -135,7 +148,7 @@
    "x": 1808,
    "y": 0,
    "w": 824,
-   "h": 1460,
+   "h": 1500,
    "title": "Write · the last one kept",
    "page": "write",
    "is_interactive": true
@@ -144,7 +157,7 @@
    "x": 2712,
    "y": 0,
    "w": 824,
-   "h": 1460,
+   "h": 1500,
    "title": "Write · the check didn’t pass",
    "page": "write",
    "is_interactive": true
@@ -153,7 +166,7 @@
    "x": 3616,
    "y": 0,
    "w": 824,
-   "h": 1460,
+   "h": 1500,
    "title": "Write · a sentence",
    "page": "write",
    "is_interactive": true
@@ -162,7 +175,7 @@
    "x": 4520,
    "y": 0,
    "w": 824,
-   "h": 1460,
+   "h": 1500,
    "title": "Write · what to write",
    "page": "write",
    "is_interactive": true
@@ -171,7 +184,7 @@
    "x": 5424,
    "y": 0,
    "w": 1058,
-   "h": 1226,
+   "h": 1266,
    "title": "Write · turned",
    "page": "write",
    "is_interactive": true
@@ -180,7 +193,7 @@
    "x": 6562,
    "y": 0,
    "w": 1058,
-   "h": 1226,
+   "h": 1266,
    "title": "Write · check, turned",
    "page": "write",
    "is_interactive": true
@@ -189,7 +202,7 @@
    "x": 0,
    "y": 0,
    "w": 824,
-   "h": 1460,
+   "h": 1500,
    "title": "Samples",
    "page": "library",
    "is_interactive": true
@@ -198,7 +211,7 @@
    "x": 904,
    "y": 0,
    "w": 824,
-   "h": 1460,
+   "h": 1500,
    "title": "A sample",
    "page": "library",
    "is_interactive": true
@@ -207,7 +220,7 @@
    "x": 1808,
    "y": 0,
    "w": 824,
-   "h": 1460,
+   "h": 1500,
    "title": "Delete a sample?",
    "page": "library",
    "is_interactive": true
@@ -216,7 +229,7 @@
    "x": 2712,
    "y": 0,
    "w": 1058,
-   "h": 1226,
+   "h": 1266,
    "title": "Samples · turned",
    "page": "library",
    "is_interactive": true
@@ -225,7 +238,7 @@
    "x": 3850,
    "y": 0,
    "w": 824,
-   "h": 1460,
+   "h": 1500,
    "title": "Coverage",
    "page": "library",
    "is_interactive": true
@@ -234,7 +247,7 @@
    "x": 4754,
    "y": 0,
    "w": 1058,
-   "h": 1226,
+   "h": 1266,
    "title": "Coverage · turned",
    "page": "library",
    "is_interactive": true
@@ -243,7 +256,7 @@
    "x": 0,
    "y": 0,
    "w": 824,
-   "h": 1460,
+   "h": 1500,
    "title": "Learn · not enough yet",
    "page": "learn",
    "is_interactive": true
@@ -252,7 +265,7 @@
    "x": 904,
    "y": 0,
    "w": 824,
-   "h": 1460,
+   "h": 1500,
    "title": "Learn · ready, waiting for the charger",
    "page": "learn",
    "is_interactive": true
@@ -261,7 +274,7 @@
    "x": 1808,
    "y": 0,
    "w": 824,
-   "h": 1460,
+   "h": 1500,
    "title": "Learn · learning",
    "page": "learn",
    "is_interactive": true
@@ -270,7 +283,7 @@
    "x": 2712,
    "y": 0,
    "w": 824,
-   "h": 1460,
+   "h": 1500,
    "title": "Learn · better",
    "page": "learn",
    "is_interactive": true
@@ -279,7 +292,7 @@
    "x": 3616,
    "y": 0,
    "w": 824,
-   "h": 1460,
+   "h": 1500,
    "title": "Learn · not better",
    "page": "learn",
    "is_interactive": true
@@ -288,16 +301,70 @@
    "x": 4520,
    "y": 0,
    "w": 1058,
-   "h": 1226,
+   "h": 1266,
    "title": "Learn · turned",
    "page": "learn",
+   "is_interactive": true
+  },
+  "best.intro.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 824,
+   "h": 1500,
+   "title": "Your handwriting",
+   "page": "best",
+   "is_interactive": true
+  },
+  "best.write.dc.html": {
+   "x": 904,
+   "y": 0,
+   "w": 824,
+   "h": 1500,
+   "title": "Write it your best",
+   "page": "best",
+   "is_interactive": true
+  },
+  "best.quick.dc.html": {
+   "x": 1808,
+   "y": 0,
+   "w": 824,
+   "h": 1500,
+   "title": "Quick, then careful · step 1",
+   "page": "best",
+   "is_interactive": true
+  },
+  "best.careful.dc.html": {
+   "x": 2712,
+   "y": 0,
+   "w": 824,
+   "h": 1500,
+   "title": "Quick, then careful · step 2",
+   "page": "best",
+   "is_interactive": true
+  },
+  "best.pick.dc.html": {
+   "x": 3616,
+   "y": 0,
+   "w": 824,
+   "h": 1500,
+   "title": "Which one is nicer?",
+   "page": "best",
+   "is_interactive": true
+  },
+  "best.pick.landscape.dc.html": {
+   "x": 4520,
+   "y": 0,
+   "w": 1058,
+   "h": 1266,
+   "title": "Which one is nicer? · turned",
+   "page": "best",
    "is_interactive": true
   },
   "donate.off.dc.html": {
    "x": 0,
    "y": 0,
    "w": 824,
-   "h": 1460,
+   "h": 1500,
    "title": "Donate · off",
    "page": "donate",
    "is_interactive": true
@@ -306,34 +373,43 @@
    "x": 904,
    "y": 0,
    "w": 824,
-   "h": 1460,
+   "h": 1500,
    "title": "Donate · choose a licence",
    "page": "donate",
    "is_interactive": true
   },
-  "donate.on.dc.html": {
+  "donate.earlier.dc.html": {
    "x": 1808,
    "y": 0,
    "w": 824,
-   "h": 1460,
+   "h": 1500,
+   "title": "Donate · add earlier samples",
+   "page": "donate",
+   "is_interactive": true
+  },
+  "donate.on.dc.html": {
+   "x": 2712,
+   "y": 0,
+   "w": 824,
+   "h": 1500,
    "title": "Donate · on",
    "page": "donate",
    "is_interactive": true
   },
   "donate.saved.dc.html": {
-   "x": 2712,
+   "x": 3616,
    "y": 0,
    "w": 824,
-   "h": 1460,
+   "h": 1500,
    "title": "Donate · saved",
    "page": "donate",
    "is_interactive": true
   },
   "donate.landscape.dc.html": {
-   "x": 3616,
+   "x": 4520,
    "y": 0,
    "w": 1058,
-   "h": 1226,
+   "h": 1266,
    "title": "Donate · turned",
    "page": "donate",
    "is_interactive": true
@@ -374,7 +450,7 @@
    "x": 0,
    "y": -300,
    "w": 240,
-   "maxW": 8370
+   "maxW": 9274
   },
   "title_write": {
    "kind": "title1",
@@ -403,6 +479,15 @@
    "w": 240,
    "maxW": 5658
   },
+  "title_best": {
+   "kind": "title1",
+   "page": "best",
+   "text": "Your handwriting · careful samples and picks (font and neatening come later)",
+   "x": 0,
+   "y": -300,
+   "w": 240,
+   "maxW": 5658
+  },
   "title_donate": {
    "kind": "title1",
    "page": "donate",
@@ -410,7 +495,7 @@
    "x": 0,
    "y": -300,
    "w": 240,
-   "maxW": 4754
+   "maxW": 5658
   },
   "title_parts": {
    "kind": "title1",
@@ -430,6 +515,7 @@
   "wizard.learning.dc.html",
   "wizard.donate.dc.html",
   "wizard.licence.dc.html",
+  "wizard.earlier.dc.html",
   "wizard.ready.dc.html",
   "wizard.donate.landscape.dc.html",
   "write.prompt.dc.html",
@@ -452,8 +538,15 @@
   "learn.better.dc.html",
   "learn.kept.dc.html",
   "learn.landscape.dc.html",
+  "best.intro.dc.html",
+  "best.write.dc.html",
+  "best.quick.dc.html",
+  "best.careful.dc.html",
+  "best.pick.dc.html",
+  "best.pick.landscape.dc.html",
   "donate.off.dc.html",
   "donate.licence.dc.html",
+  "donate.earlier.dc.html",
   "donate.on.dc.html",
   "donate.saved.dc.html",
   "donate.landscape.dc.html",

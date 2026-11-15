@@ -234,7 +234,7 @@
 <div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ chips }}" as="tb" hint-placeholder-count="12"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ tb.on }}" style="font:500 11.5px 'IBM Plex Mono';padding:7px 11px;border-radius:6px;border:1px solid rgba(0,0,0,.2);cursor:pointer;background:{{ tb.bg }};color:{{ tb.fg }}">{{ tb.label }}</div></sc-for></div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview": {"width": 760, "height": 1080}, "theme": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "scheme": {"editor": "enum", "options": ["paper", "night", "eink"], "default": "eink"}, "pen": {"editor": "enum", "options": ["1", "2", "3"], "default": "1"}, "orient": {"editor": "enum", "options": ["portrait", "landscape"], "default": "portrait"}, "screen": {"editor": "enum", "options": ["w-welcome", "w-try", "w-try-done", "w-private", "w-learning", "w-share", "w-licence", "w-earlier", "w-ready", "write", "write-ink", "write-kept", "write-check", "write-sentence", "write-sets", "samples", "sample", "sample-delete", "coverage", "learn-few", "learn-waiting", "learn-running", "learn-better", "learn-kept", "best-intro", "best-write", "best-quick", "best-careful", "best-pick", "donate-off", "donate-licence", "donate-earlier", "donate-on", "donate-saved"], "default": "w-welcome"}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview": {"width": 760, "height": 1080}, "theme": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "scheme": {"editor": "enum", "options": ["paper", "night", "eink"], "default": "eink"}, "pen": {"editor": "enum", "options": ["1", "2", "3"], "default": "1"}, "orient": {"editor": "enum", "options": ["portrait", "landscape"], "default": "portrait"}, "screen": {"editor": "enum", "options": ["w-welcome", "w-try", "w-try-done", "w-private", "w-learning", "w-share", "w-licence", "w-ready", "write", "write-ink", "write-kept", "write-check", "write-sentence", "write-sets", "samples", "sample", "sample-delete", "coverage", "learn-few", "learn-waiting", "learn-running", "learn-better", "learn-kept", "best-intro", "best-write", "best-quick", "best-careful", "best-pick", "donate-off", "donate-licence", "donate-earlier", "donate-on", "donate-saved"], "default": "w-welcome"}}'>
 class Component extends DCLogic {
   state = { screen: null, donating: null, licence: null, tried: 0, inkN: 0, clear: 0, picked: null, out: [] };
 
@@ -295,7 +295,7 @@ class Component extends DCLogic {
   }
 
   screens() {
-    return ['w-welcome', 'w-try', 'w-try-done', 'w-private', 'w-learning', 'w-share', 'w-licence', 'w-earlier', 'w-ready',
+    return ['w-welcome', 'w-try', 'w-try-done', 'w-private', 'w-learning', 'w-share', 'w-licence', 'w-ready',
       'write', 'write-ink', 'write-kept', 'write-check', 'write-sentence', 'write-sets', 'samples', 'sample', 'sample-delete', 'coverage',
       'learn-few', 'learn-waiting', 'learn-running', 'learn-better', 'learn-kept', 'best-intro', 'best-write', 'best-quick', 'best-careful', 'best-pick',
       'donate-off', 'donate-licence', 'donate-earlier', 'donate-on', 'donate-saved'];
@@ -321,7 +321,7 @@ class Component extends DCLogic {
     // ---- the wizard
     const STEPS = ['w-welcome', 'w-try', 'w-private', 'w-learning', 'w-share'];
     const NAMES = { 'w-welcome': 'Welcome', 'w-try': 'Try one', 'w-private': 'Your samples', 'w-learning': 'Learning', 'w-share': 'Donating' };
-    const stepOf = { 'w-try-done': 'w-try', 'w-licence': 'w-share', 'w-earlier': 'w-share', 'w-ready': 'w-share' };
+    const stepOf = { 'w-try-done': 'w-try', 'w-licence': 'w-share', 'w-ready': 'w-share' };
     const si = STEPS.indexOf(stepOf[screen] || screen);
     const donating = s.donating ?? (screen === 'donate-on' || screen === 'donate-saved');
     const wizSteps = STEPS.map((id, i) => { const x = screen === 'w-ready' ? k.stepDone : i === si ? k.stepOn : i < si ? k.stepDone : k.stepTodo; return { n: k.nums[i], name: NAMES[id], on: go(id), ...x }; });
@@ -334,7 +334,6 @@ class Component extends DCLogic {
       'w-learning': ['Learning happens on its own', 'You write; the tablet does the rest, at a time that suits it.'],
       'w-share': ['Would you like to donate your samples?', 'The handwriting reader in GlassineOS is open source. It learns to read everyone from handwriting that people choose to donate. Your samples could help it, if you like.'],
       'w-licence': ['How may others use your samples?', 'Pick the licence for your donation. Both let anyone use it; you choose once.'],
-      'w-earlier': ['Add the sample you wrote before?', 'You’ve already written 1 sample: the word you just tried. Add it to your donation too? Either answer is fine; Donate keeps this offer for later.'],
       'w-ready': ['', '']
     };
     const LEARN_T = { 'learn-few': 'Learn', 'learn-waiting': 'Learn', 'learn-running': 'Learn', 'learn-better': 'Learn', 'learn-kept': 'Learn' };
@@ -529,8 +528,8 @@ class Component extends DCLogic {
 
     // ---- earlier samples, offered when donating is turned on
     const out = s.out || [];
-    const EW = screen === 'w-earlier' ? [['quiet', 'Just now']] : SM.slice(0, land ? 8 : 9).map(([t, when]) => [t, when]);
-    const nAll = screen === 'w-earlier' ? 1 : 255, nIn = nAll - out.length;
+    const EW = SM.slice(0, land ? 8 : 9).map(([t, when]) => [t, when]);
+    const nAll = 255, nIn = nAll - out.length;
     const er = { cols: land ? 4 : 3, paged: screen === 'donate-earlier', inPage: screen === 'donate-earlier', page: 'Page 1 of 29',
       count: nIn + ' of ' + nAll + ' to add', after: '',
       items: EW.map(([t, when], i) => { const on = !out.includes(i);
@@ -538,18 +537,17 @@ class Component extends DCLogic {
           bg: on ? 'var(--il-sheet)' : 'var(--il-paper)', sh: on ? k.cardFlat : 'inset 0 0 0 1px var(--il-rule)',
           cbBg: on ? 'var(--il-accent)' : 'transparent', cbSh: on ? 'none' : 'inset 0 0 0 1.5px var(--il-ink)',
           on: () => u(st => { const o = st.out || []; return { out: o.includes(i) ? o.filter(x => x !== i) : [...o, i] }; }) }; }),
-      btns: [btn('Not now', go('donate-on')), btn(nIn ? 'Add ' + nIn + ' samples' : 'Add none', go('donate-on'))],
-      choices: [{ label: 'Not now', icon: 'schedule', on: go('w-ready') }, { label: nIn ? 'Add it' : 'Add none', icon: 'add', on: go('w-ready') }] };
+      btns: [btn('Not now', go('donate-on')), btn(nIn ? 'Add ' + nIn + ' samples' : 'Add none', go('donate-on'))] };
 
     // ---- the wizard's footer
-    const nextOf = { 'w-welcome': 'w-try', 'w-try': 'w-private', 'w-try-done': 'w-private', 'w-private': 'w-learning', 'w-learning': 'w-share', 'w-licence': 'w-earlier', 'w-earlier': 'w-ready', 'w-ready': 'write' };
-    const backOf = { 'w-try': 'w-welcome', 'w-try-done': 'w-welcome', 'w-private': 'w-try', 'w-learning': 'w-private', 'w-share': 'w-learning', 'w-licence': 'w-share', 'w-earlier': 'w-licence', 'w-ready': 'w-share' };
+    const nextOf = { 'w-welcome': 'w-try', 'w-try': 'w-private', 'w-try-done': 'w-private', 'w-private': 'w-learning', 'w-learning': 'w-share', 'w-licence': 'w-ready', 'w-ready': 'write' };
+    const backOf = { 'w-try': 'w-welcome', 'w-try-done': 'w-welcome', 'w-private': 'w-try', 'w-learning': 'w-private', 'w-share': 'w-learning', 'w-licence': 'w-share', 'w-ready': 'w-share' };
     const nextOn = screen === 'w-licence' ? !!curLic : true;
     const foot = { show: wizard, backVis: screen === 'w-welcome' ? 'hidden' : 'visible', back: go(backOf[screen] || 'w-welcome'),
-      h: land ? '72px' : '84px', choices: screen === 'w-share' && land ? share.choices : screen === 'w-earlier' ? er.choices : [],
-      status: { 'w-share': land ? 'Either way is fine; change it any time in Donate.' : 'Your choice, either way', 'w-licence': curLic ? '' : 'Pick one to go on', 'w-earlier': '', 'w-try': '' }[screen] || '',
-      showSkip: wizard && !['w-share', 'w-licence', 'w-earlier', 'w-ready'].includes(screen), skip: go('write'),
-      showNext: screen !== 'w-share' && screen !== 'w-earlier', nextLabel: screen === 'w-welcome' ? 'Begin' : screen === 'w-licence' ? 'Donate with this licence' : screen === 'w-ready' ? 'Start writing' : 'Continue',
+      h: land ? '72px' : '84px', choices: screen === 'w-share' && land ? share.choices : [],
+      status: { 'w-share': land ? 'Either way is fine; change it any time in Donate.' : 'Your choice, either way', 'w-licence': curLic ? '' : 'Pick one to go on', 'w-try': '' }[screen] || '',
+      showSkip: wizard && !['w-share', 'w-licence', 'w-ready'].includes(screen), skip: go('write'),
+      showNext: screen !== 'w-share', nextLabel: screen === 'w-welcome' ? 'Begin' : screen === 'w-licence' ? 'Donate with this licence' : screen === 'w-ready' ? 'Start writing' : 'Continue',
       nextIcon: screen === 'w-ready' ? 'edit' : 'arrow_forward', dis: String(!nextOn), cur: nextOn ? 'pointer' : 'default',
       next: nextOn ? () => u({ screen: nextOf[screen] || 'write', donating: screen === 'w-licence' ? true : s.donating }) : null,
       bg: nextOn ? k.priBg : 'transparent', fg: nextOn ? k.priFg : 'var(--il-dim)', sh: nextOn ? k.priSh : 'inset 0 0 0 1.5px var(--il-dim)' };
@@ -561,11 +559,11 @@ class Component extends DCLogic {
       write: 'Write', 'write-ink': 'Ink', 'write-kept': 'Kept', 'write-check': 'Check failed', 'write-sentence': 'Sentence', 'write-sets': 'Sets',
       samples: 'Samples', sample: 'Sample', 'sample-delete': 'Delete?', coverage: 'Coverage',
       'learn-few': 'Too few', 'learn-waiting': 'Waiting', 'learn-running': 'Learning', 'learn-better': 'Better', 'learn-kept': 'Not better', 'best-intro': 'Your handwriting', 'best-write': 'Your best', 'best-quick': 'Quick', 'best-careful': 'Careful', 'best-pick': 'Which one?',
-      'donate-off': 'Donate off', 'donate-licence': 'Licence', 'donate-earlier': 'Earlier samples', 'w-earlier': '5 Earlier', 'donate-on': 'Donate on', 'donate-saved': 'Saved' };
+      'donate-off': 'Donate off', 'donate-licence': 'Licence', 'donate-earlier': 'Earlier samples', 'donate-on': 'Donate on', 'donate-saved': 'Saved' };
     const chips = all.map(id => ({ label: LABEL[id], on: go(id), bg: id === screen ? '#111111' : '#ffffff', fg: id === screen ? '#ffffff' : '#111111' }));
 
     const W = land ? 936 : 702, H = land ? 702 : 936;
-    const is = { earlier: screen === 'w-earlier' || screen === 'donate-earlier', bestIntro: screen === 'best-intro', pick: screen === 'best-pick', wWelcome: screen === 'w-welcome', wTry: screen === 'w-try' || screen === 'w-try-done', wList: !!LISTS[screen], share: screen === 'w-share', licence: screen === 'w-licence' || screen === 'donate-licence',
+    const is = { earlier: screen === 'donate-earlier', bestIntro: screen === 'best-intro', pick: screen === 'best-pick', wWelcome: screen === 'w-welcome', wTry: screen === 'w-try' || screen === 'w-try-done', wList: !!LISTS[screen], share: screen === 'w-share', licence: screen === 'w-licence' || screen === 'donate-licence',
       pickLicence: screen === 'donate-licence', ready: screen === 'w-ready', write: isW, sets: screen === 'write-sets', samples: screen === 'samples', sample: screen === 'sample' || screen === 'sample-delete',
       coverage: screen === 'coverage', learn: screen.startsWith('learn'), donate: screen === 'donate-off' || screen === 'donate-on' || screen === 'donate-saved' };
 

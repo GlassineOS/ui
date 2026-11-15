@@ -30,7 +30,7 @@ html, body { margin: 0; height: 100%; }
 .vw-crumb svg, .vw-ico { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .vw-slash { color: var(--rule); font-size: 18px; }
 .vw-rev { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--rule); font-family: var(--font-mono); font-size: 12px; white-space: nowrap; }
-.vw-rev--pr { box-shadow: inset 0 0 0 1.5px var(--ink); background: var(--highlight); color: #111111; }
+.vw-rev--pr { box-shadow: inset 0 0 0 1.5px var(--ink); background: var(--highlight); color: var(--ink); }
 .vw-modes { display: flex; gap: 2px; padding: 3px; border-radius: 9px; background: var(--sheet); margin: 0 auto; }
 .vw-modes a { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; border-radius: 7px; color: var(--ink-soft); font-weight: 500; white-space: nowrap; }
 .vw-modes a[aria-current="page"] { background: var(--paper); color: var(--ink); box-shadow: 0 0 0 1px var(--rule), 0 1px 2px rgba(0,0,0,.08); }
@@ -458,3 +458,4 @@ body.vw { height: 100vh; display: grid; grid-template-rows: 56px minmax(0, 1fr);
 @media (max-width: 900px) { .vw-body--flow { grid-template-columns: minmax(0, 1fr); } }
 .vw [hidden] { display: none !important; }
 .vw-palette__in input:focus-visible { outline: none; }
+.vw-insp .vw-seg { flex-wrap: wrap; height: auto; min-height: 32px; } .vw-insp .vw-seg button { flex: 1 0 auto; padding: 0 8px; }

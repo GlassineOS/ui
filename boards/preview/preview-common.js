@@ -593,13 +593,15 @@
     const pick = el('button', { type: 'button', class: 'vw-render', id: 'render', 'aria-haspopup': 'dialog', 'aria-expanded': 'false', title: 'How every board renders' });
     const find = el('button', { type: 'button', class: 'vw-search-btn', title: 'Search (⌘K or /)', 'aria-keyshortcuts': 'Control+K Meta+K /' },
       [icon(ICONS.search), el('span', { class: 'vw-grow vw-search-btn__t', text: 'Boards, states, pages' }), el('span', { class: 'vw-key', text: '⌘K' })]);
-    const night = el('button', { type: 'button', class: 'vw-icon-btn', id: 'chrome', 'aria-keyshortcuts': 't' });
+    // T toggles the chrome, except on the review page, where T steps through the states
+    const tKey = mode !== 'review';
+    const night = el('button', { type: 'button', class: 'vw-icon-btn', id: 'chrome', 'aria-keyshortcuts': tKey ? 't' : null });
     syncChrome = function () {
       const n = chrome() === 'white-night';
       night.textContent = '';
       night.append(icon(n ? ICONS.sun : ICONS.moon));
       night.setAttribute('aria-label', n ? 'Viewer on paper' : 'Viewer at night');
-      night.title = (n ? 'Paper' : 'Night') + ' (T)';
+      night.title = (n ? 'Paper' : 'Night') + (tKey ? ' (T)' : '');
     };
     syncChrome();
     night.onclick = toggleChrome;
@@ -616,7 +618,7 @@
     header.append(home, el('span', { class: 'vw-slash', 'aria-hidden': 'true', text: '/' }), title, rev, modes, pick, find, night);
     const into = opts.into || document.body;
     into.insertBefore(header, into.firstChild);
-    keys({ t: toggleChrome });
+    if (tKey) keys({ t: toggleChrome });
     const fillModes = function (d, rv) {
       const a = L.parse(location.search), r = currentRender();
       const keep = { voice: r.voice, scheme: r.scheme, pen: r.pen };

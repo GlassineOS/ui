@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Viewer bar</title>
+<script src="./support.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="viewer.css">
+</helmet>
+<header class="vw-bar">
+  <a class="vw-brand" href="home.dc.html" title="All designs"><span class="vw-brand__mark" aria-hidden="true"></span>Boards</a>
+  <sc-if value="{{ inDesign }}" hint-placeholder-val="{{ true }}">
+  <span class="vw-slash">/</span>
+  <span class="vw-crumb" title="Switch design">GlassineOS shell <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5"></path></svg></span>
+  <sc-if value="{{ onPr }}" hint-placeholder-val="{{ false }}">
+    <a class="vw-rev vw-rev--pr" href="review.side.dc.html" title="Proposal #47, revision 3f9c2a1">#47 · 6 changed</a>
+  </sc-if>
+  <sc-if value="{{ onMain }}" hint-placeholder-val="{{ true }}">
+    <span class="vw-rev" title="The main line">main · 0743e22</span>
+  </sc-if>
+  <nav class="vw-modes" aria-label="Views">
+    <sc-for list="{{ modes }}" as="m" hint-placeholder-count="4"><a href="{{ m.href }}" aria-current="{{ m.cur }}"><svg class="vw-ico" viewBox="0 0 24 24"><path d="{{ m.icon }}"></path></svg>{{ m.label }}<sc-if value="{{ m.count }}" hint-placeholder-val="{{ false }}"><span class="vw-count">{{ m.count }}</span></sc-if></a></sc-for>
+  </nav>
+  </sc-if>
+  <sc-if value="{{ home }}" hint-placeholder-val="{{ false }}"><span class="vw-grow"></span></sc-if>
+  <button type="button" class="vw-render" aria-expanded="{{ pickerOpen }}" onClick="{{ onPicker }}" title="How every board renders">
+    <span class="vw-render__sw" data-theme="{{ theme }}"><span></span><span></span></span>
+    <span><b>{{ voiceName }}</b> · {{ schemeName }} · {{ penName }}</span>
+    <svg class="vw-ico" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5"></path></svg>
+  </button>
+  <span class="vw-search-btn" onClick="{{ onSearch }}"><svg class="vw-ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"></circle><path d="M20 20l-4.5-4.5"></path></svg><span class="vw-grow">Boards, states, pages</span><span class="vw-key">⌘K</span></span>
+</header>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["canvas","flow","matrix","review","board","index"],"default":"canvas"},"rev":{"editor":"enum","options":["main","pr"],"default":"main"},"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"picker":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":56}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props, V = window.VIEWER, mode = p.mode || 'canvas', pr = p.rev === 'pr';
+    const modes = [
+      { id: 'canvas', label: 'Canvas', href: pr ? 'canvas.pr.dc.html' : 'canvas.main.dc.html', icon: 'M4 4h7v7H4zM13 4h7v4h-7zM13 10h7v10h-7zM4 13h7v7H4z' },
+      { id: 'flow', label: 'Flow', href: 'flow.pair.dc.html', icon: 'M5 6h5v4H5zM14 14h5v4h-5zM10 8h2a2 2 0 0 1 2 2v4' },
+      { id: 'matrix', label: 'Matrix', href: 'matrix.voices.dc.html', icon: 'M4 4h4v4H4zM10 4h4v4h-4zM16 4h4v4h-4zM4 10h4v4H4zM10 10h4v4h-4zM16 10h4v4h-4zM4 16h4v4H4zM10 16h4v4h-4zM16 16h4v4h-4z' },
+      { id: 'review', label: 'Review', href: 'review.side.dc.html', icon: 'M4 5h7v14H4zM13 5h7v14h-7z', count: pr || mode === 'review' ? 6 : null },
+    ].map(m => ({ ...m, cur: (m.id === mode || (mode === 'board' && m.id === 'canvas')) ? 'page' : null }));
+    return {
+      inDesign: mode !== 'index', home: mode === 'index',
+      modes, onPr: pr || mode === 'review', onMain: !(pr || mode === 'review'),
+      theme: V.theme(p.voice, p.scheme), voiceName: V.name(V.VOICES, p.voice), schemeName: V.name(V.SCHEMES, p.scheme), penName: V.name(V.PENS, p.pen),
+      pickerOpen: p.picker ? 'true' : 'false',
+      onPicker: () => p.onPicker && p.onPicker(), onSearch: () => p.onSearch && p.onSearch(),
+    };
+  }
+}
+</script>
+</body>
+</html>

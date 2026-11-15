@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mock screen</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="viewer.css">
+</helmet>
+<div class="th" data-theme="{{ theme }}" data-pen="{{ pen }}">
+  <div class="th__status"><i></i><i></i></div>
+  <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ true }}">
+    <div class="th__body">
+      <div class="th__split">
+        <div class="th__card">
+          <div class="th__title"></div>
+          <div class="th__sub"></div>
+          <div class="th__seg"><sc-for list="{{ seg }}" as="s" hint-placeholder-count="4"><i class="{{ s }}"></i></sc-for></div>
+          <sc-for list="{{ rows }}" as="r" hint-placeholder-count="5"><div class="th__row"><div><b></b><s></s></div><sc-if value="{{ r.t }}" hint-placeholder-val="{{ true }}"><u class="{{ r.c }}"></u></sc-if><sc-if value="{{ r.m }}" hint-placeholder-val="{{ false }}"><em></em></sc-if></div></sc-for>
+        </div>
+        <div class="th__tabs"><sc-for list="{{ tabs }}" as="t" hint-placeholder-count="9"><i class="{{ t }}"></i></sc-for></div>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ isPair }}" hint-placeholder-val="{{ false }}">
+    <div class="th__body">
+      <div class="th__title"></div>
+      <div class="th__card"><div class="th__row"><div><b></b><s></s></div><u class="{{ btOn }}"></u></div></div>
+      <div class="th__sub"></div>
+      <div class="th__card">
+        <sc-for list="{{ devices }}" as="d" hint-placeholder-count="4"><div class="th__row {{ d.hl }}"><span class="th__ico"></span><div><b></b><s></s></div><sc-if value="{{ d.spin }}" hint-placeholder-val="{{ false }}"><span class="th__spin"></span></sc-if><sc-if value="{{ d.go }}" hint-placeholder-val="{{ true }}"><em></em></sc-if></div></sc-for>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ isList }}" hint-placeholder-val="{{ false }}">
+    <div class="th__body">
+      <div class="th__title"></div>
+      <div class="th__field"><i></i></div>
+      <div class="th__card"><sc-for list="{{ rows }}" as="r" hint-placeholder-count="6"><div class="th__row"><span class="th__ico"></span><div><b></b><s></s></div><em></em></div></sc-for></div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ isHome }}" hint-placeholder-val="{{ false }}">
+    <div class="th__body">
+      <div class="th__grid"><i class="big"></i><i></i><sc-for list="{{ tiles }}" as="t" hint-placeholder-count="9"><i></i></sc-for></div>
+    </div>
+    <div class="th__dock"><i></i><i></i><i></i><i></i></div>
+  </sc-if>
+  <sc-if value="{{ isKeyboard }}" hint-placeholder-val="{{ false }}">
+    <div class="th__body">
+      <div class="th__title"></div>
+      <div class="th__field"><i></i></div>
+      <div class="th__card"><div class="th__row"><div><b></b><s></s></div><u></u></div><div class="th__row"><div><b></b><s></s></div><em></em></div></div>
+    </div>
+    <div class="th__keys"><sc-for list="{{ keys }}" as="k" hint-placeholder-count="30"><i class="{{ k }}"></i></sc-for></div>
+  </sc-if>
+  <sc-if value="{{ isDialog }}" hint-placeholder-val="{{ false }}">
+    <div class="th__body">
+      <div class="th__title"></div>
+      <div class="th__card"><sc-for list="{{ under }}" as="r" hint-placeholder-count="4"><div class="th__row"><span class="th__ico"></span><div><b></b><s></s></div></div></sc-for></div>
+    </div>
+    <div class="th__scrim"></div>
+    <div class="th__sheet">
+      <div class="th__title"></div>
+      <div class="th__sub"></div>
+      <sc-if value="{{ showCode }}" hint-placeholder-val="{{ true }}"><div class="th__code"><i></i><i></i><i></i><i></i><i></i><i></i></div></sc-if>
+      <sc-if value="{{ showAlert }}" hint-placeholder-val="{{ false }}"><div class="th__alert"><div><b></b></div></div></sc-if>
+      <sc-if value="{{ showWait }}" hint-placeholder-val="{{ false }}"><div class="th__row"><span class="th__ico"></span><div><b></b><s></s></div><span class="th__spin"></span></div></sc-if>
+      <div class="th__btns"><div class="th__btn"></div><div class="th__btn th__btn--primary"></div></div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ isWelcome }}" hint-placeholder-val="{{ false }}">
+    <div class="th__body">
+      <div class="th__hero"><i></i><i></i><s></s><s></s></div>
+      <div class="th__btns"><div class="th__btn th__btn--primary"></div></div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"kind":{"editor":"enum","options":["settings","pair","list","home","keyboard","dialog","welcome"],"default":"settings"},"v":{"editor":"enum","options":["a","b","c"],"default":"a"},"state":{"editor":"text","default":"0"},"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":380,"height":570}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props, k = p.kind || 'settings', v = p.v || 'a', st = Number(p.state || 0);
+    const n = (a, b, c) => (v === 'b' ? b : v === 'c' ? c : a);
+    const rows = [];
+    const rc = n(5, 4, 6);
+    for (let i = 0; i < rc; i++) rows.push({ t: i % 3 === 0, m: i % 3 !== 0, c: (i + st) % 2 ? 'off' : '' });
+    const seg = [0, 1, 2, 3].map(i => (i === (st % 4 || n(1, 2, 0)) ? 'on' : ''));
+    const tabs = [0, 1, 2, 3, 4, 5, 6, 7, 8].map(i => (i === n(0, 3, 5) ? 'on' : ''));
+    const devCount = st === 0 ? 0 : n(4, 3, 4);
+    const devices = [];
+    for (let i = 0; i < devCount; i++) devices.push({ hl: st >= 3 && i === 0 ? 'th__hl' : '', spin: st === 2 && i === devCount - 1, go: !(st === 2 && i === devCount - 1) });
+    const keys = [];
+    for (let i = 0; i < 30; i++) keys.push(i === 26 ? 'wide' : i === 25 || i === 29 ? 'mid' : '');
+    return {
+      theme: (p.voice || 'white') + '-' + (p.scheme || 'paper'), pen: p.pen || '1',
+      isSettings: k === 'settings', isPair: k === 'pair', isList: k === 'list', isHome: k === 'home', isKeyboard: k === 'keyboard', isDialog: k === 'dialog', isWelcome: k === 'welcome',
+      rows, seg, tabs, devices, btOn: st === 0 ? 'off' : '',
+      tiles: Array.from({ length: n(7, 10, 4) }, (_, i) => i), keys: keys.slice(0, 26 + (st % 3)).concat(['wide', 'mid']),
+      under: [0, 1, 2, 3], showCode: v === 'b' || (v === 'a' && st === 0), showAlert: v === 'c', showWait: v === 'a' && st === 1,
+    };
+  }
+}
+</script>
+</body>
+</html>

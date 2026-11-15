@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Canvas</title>
+<script src="./support.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="viewer.css">
+</helmet>
+<div class="vw" data-theme="{{ chrome }}" style="position: relative">
+  <dc-import name="Bar" mode="canvas" rev="{{ rev }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" picker="{{ pickerOpen }}" on-picker="{{ togglePicker }}" on-search="{{ openSearch }}" hint-size="100%,56px"></dc-import>
+  <div class="vw-body" style="{{ bodyCols }}">
+    <aside class="vw-rail">
+      <nav class="vw-nav" aria-label="Pages">
+        <h3>Pages <span>8</span></h3>
+        <sc-for list="{{ pages }}" as="p" hint-placeholder-count="8"><a href="#" aria-current="{{ p.cur }}">{{ p.name }}<sc-if value="{{ p.pr }}" hint-placeholder-val="{{ false }}"><span class="vw-mk vw-mk--changed" title="Changed in #47"></span></sc-if><span class="vw-n">{{ p.n }}</span></a></sc-for>
+      </nav>
+      <div class="vw-outline">
+        <h3>On this page <span>{{ count }}</span></h3>
+        <div class="vw-filter"><svg class="vw-ico" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"></path></svg>Filter boards<span class="vw-grow"></span><span class="vw-key">/</span></div>
+        <sc-for list="{{ outline }}" as="b" hint-placeholder-count="18"><a href="#" aria-selected="{{ b.sel }}" onClick="{{ b.pick }}" title="{{ b.file }}"><span class="{{ b.mk }}"></span><span class="vw-t">{{ b.title }}</span><sc-if value="{{ b.errors }}" hint-placeholder-val="{{ false }}"><span class="vw-err">{{ b.errors }}</span></sc-if></a></sc-for>
+      </div>
+      <div class="vw-soft vw-small" style="padding: 0 8px; display: flex; flex-direction: column; gap: 4px">
+        <span class="vw-row"><span class="vw-mk vw-mk--play"></span>clickable</span>
+        <span class="vw-row"><span class="vw-mk vw-mk--still"></span>picture only</span>
+        <sc-if value="{{ onPr }}" hint-placeholder-val="{{ false }}"><span class="vw-row"><span class="vw-mk vw-mk--changed"></span>changed · <span class="vw-mk vw-mk--added"></span>new in #47</span></sc-if>
+      </div>
+    </aside>
+
+    <main class="vw-stage" aria-label="Canvas">
+      <div class="vw-plane">
+        <sc-for list="{{ sections }}" as="s" hint-placeholder-count="3"><div class="vw-section" style="left: {{ s.x }}px; top: {{ s.y }}px">{{ s.name }}<small>{{ s.sub }}</small></div></sc-for>
+        <sc-for list="{{ tiles }}" as="t" hint-placeholder-count="18">
+          <div class="vw-tile {{ t.dim }}" aria-selected="{{ t.sel }}" onClick="{{ t.pick }}" onDoubleClick="{{ t.open }}" style="left: {{ t.x }}px; top: {{ t.y }}px; width: {{ t.w }}px; height: {{ t.h }}px">
+            <sc-if value="{{ t.many }}" hint-placeholder-val="{{ false }}"><div class="vw-tile__stack"></div><div class="vw-tile__stack"></div></sc-if>
+            <div class="vw-tile__label"><span class="{{ t.mk }}"></span><span class="vw-t">{{ t.title }}</span><sc-if value="{{ t.errors }}" hint-placeholder-val="{{ false }}"><span class="vw-err">{{ t.errors }}</span></sc-if></div>
+            <div class="vw-tile__frame"><dc-import name="Thumb" kind="{{ t.kind }}" v="{{ t.v }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" style="position: absolute; inset: 0" hint-size="100%,100%"></dc-import></div>
+            <sc-if value="{{ t.many }}" hint-placeholder-val="{{ false }}"><div class="vw-tile__states" title="{{ t.statesTip }}"><sc-for list="{{ t.dots }}" as="d" hint-placeholder-count="3"><i></i></sc-for></div></sc-if>
+          </div>
+        </sc-for>
+      </div>
+
+      <div class="vw-float" style="left: 14px; bottom: 14px">
+        <button type="button" title="Zoom out">−</button><button type="button" class="vw-mono" style="min-width: 52px">14%</button><button type="button" title="Zoom in">+</button>
+        <span class="vw-sep"></span>
+        <button type="button" aria-pressed="true" title="Fit the page (1)">Fit</button><button type="button" title="Actual size (0)">1:1</button>
+        <span class="vw-sep"></span>
+        <sc-if value="{{ onPr }}" hint-placeholder-val="{{ false }}"><button type="button" aria-pressed="{{ onlyChanged }}" onClick="{{ toggleChanged }}">Changed only</button></sc-if>
+        <button type="button" aria-pressed="{{ liveOn }}" onClick="{{ toggleLive }}" title="Boards answer clicks in place (U)"><svg class="vw-ico" viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z"></path></svg>Use in place</button>
+      </div>
+      <div class="vw-mini" aria-label="Map of the page">
+        <div class="vw-mini__map">
+          <sc-for list="{{ mini }}" as="m" hint-placeholder-count="18"><i class="{{ m.on }}" style="left: {{ m.x }}px; top: {{ m.y }}px; width: 13px; height: 18px"></i></sc-for>
+          <div class="vw-mini__view" style="left: 4px; top: 4px; width: 164px; height: 84px"></div>
+        </div>
+        <div class="vw-row vw-small vw-soft" style="justify-content: space-between; margin-top: 6px"><span>Settings</span><span class="vw-mono">20 boards</span></div>
+      </div>
+      <sc-if value="{{ showHint }}" hint-placeholder-val="{{ true }}">
+        <div class="vw-hint"><span><span class="vw-key">Space</span> drag to pan</span><span><span class="vw-key">⏎</span> open</span><span><span class="vw-key">J</span><span class="vw-key">K</span> next / previous</span><span><span class="vw-key">M</span> matrix</span></div>
+      </sc-if>
+    </main>
+
+    <sc-if value="{{ hasSel }}" hint-placeholder-val="{{ true }}">
+      <aside class="vw-insp" aria-label="Selected board">
+        <section>
+          <div class="vw-row"><span class="{{ sel.mk }}"></span><span class="vw-small vw-soft vw-mono">{{ sel.file }}</span></div>
+          <h2>{{ sel.title }}</h2>
+          <div class="vw-row" style="flex-wrap: wrap; gap: 6px">
+            <sc-if value="{{ sel.interactive }}" hint-placeholder-val="{{ true }}"><span class="vw-tag vw-tag--ink">clickable</span></sc-if>
+            <span class="vw-tag">{{ sel.w }} × {{ sel.h }}</span>
+            <sc-if value="{{ sel.changeTag }}" hint-placeholder-val="{{ false }}"><span class="vw-tag vw-tag--ink">{{ sel.changeTag }}</span></sc-if>
+          </div>
+          <div class="vw-actions">
+            <a class="vw-btn vw-btn--primary" href="{{ openHref }}">Open <span class="vw-key" style="background: transparent; color: inherit; box-shadow: inset 0 0 0 1px currentColor">⏎</span></a>
+            <a class="vw-btn" href="matrix.voices.dc.html">Matrix</a>
+            <sc-if value="{{ onPr }}" hint-placeholder-val="{{ false }}"><a class="vw-btn" href="review.side.dc.html">Compare</a></sc-if>
+          </div>
+        </section>
+        <sc-if value="{{ sel.hasStates }}" hint-placeholder-val="{{ true }}">
+          <section>
+            <h3>States <span>{{ sel.stateCount }}</span></h3>
+            <div class="vw-seg"><sc-for list="{{ sel.states }}" as="s" hint-placeholder-count="4"><button type="button" aria-pressed="{{ s.on }}" onClick="{{ s.pick }}">{{ s.name }}</button></sc-for></div>
+            <p class="vw-small vw-soft">Named in the board’s <span class="vw-mono">$states</span>; the tile and the board view follow the one chosen here.</p>
+          </section>
+        </sc-if>
+        <section>
+          <h3>Props</h3>
+          <div class="vw-field"><span>Window</span><div class="vw-seg"><button type="button" aria-pressed="true">Full</button><button type="button">Column</button><button type="button">Quarter</button></div></div>
+          <div class="vw-field"><span>Orientation</span><div class="vw-seg"><button type="button" aria-pressed="true">Portrait</button><button type="button">Landscape</button></div></div>
+          <div class="vw-field"><span>Render</span><span class="vw-small">as every board · <a href="#" onClick="{{ togglePicker }}" style="text-decoration: underline">change</a></span></div>
+        </section>
+        <section>
+          <h3>Links <span>{{ sel.linkCount }}</span></h3>
+          <div class="vw-links">
+            <sc-for list="{{ sel.out }}" as="l" hint-placeholder-count="2"><a href="#"><span class="vw-arrow">→</span>{{ l }}</a></sc-for>
+            <sc-for list="{{ sel.in }}" as="l" hint-placeholder-count="1"><a href="#"><span class="vw-arrow">←</span>{{ l }}</a></sc-for>
+          </div>
+          <a class="vw-small" href="flow.pair.dc.html" style="text-decoration: underline">See it in the flow</a>
+        </section>
+        <sc-if value="{{ sel.errors }}" hint-placeholder-val="{{ false }}">
+          <section>
+            <h3>Check <span class="vw-err">1</span></h3>
+            <div class="vw-errbox"><b>Unsupported: an expression in a hole</b><code>settings.bluetooth.failed.dc.html:41 · {{ errSample }}</code></div>
+          </section>
+        </sc-if>
+        <section>
+          <h3>For an agent</h3>
+          <pre class="vw-code" style="font-size: 11px; padding: 10px 12px">{{ shotCmd }}</pre>
+        </section>
+      </aside>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{ pickerOpen }}" hint-placeholder-val="{{ false }}">
+    <div class="vw-scrim" style="background: transparent" onClick="{{ togglePicker }}"></div>
+    <dc-import name="Picker" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" on-set="{{ setRender }}" style="position: absolute; top: 50px; right: 236px; z-index: 21" hint-size="400px,420px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ searchOpen }}" hint-placeholder-val="{{ false }}">
+    <div class="vw-scrim" onClick="{{ closeSearch }}"></div>
+    <dc-import name="Palette" query="blue" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" style="position: absolute; top: 72px; left: 50%; margin-left: -310px; z-index: 21" hint-size="620px,520px"></dc-import>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"rev":{"editor":"enum","options":["main","pr"],"default":"main"},"selected":{"editor":"text","default":""},"overlay":{"editor":"enum","options":["none","picker","search"],"default":"none"},"chrome":{"editor":"enum","options":["white-paper","white-night"],"default":"white-paper"},"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p) {
+    super(p);
+    this.state = { sel: p.selected || '', overlay: p.overlay || 'none', onlyChanged: false, live: false, stateIx: {}, render: null };
+  }
+  renderVals() {
+    const p = this.props, s = this.state, V = window.VIEWER, pr = p.rev === 'pr';
+    const r = s.render || { voice: p.voice || 'white', scheme: p.scheme || 'paper', pen: p.pen || '1' };
+    const z = 0.14, W = 760 * z, H = 1140 * z, PX = 134, PY = 262, X0 = 28, Y0 = 96;
+    const secs = [
+      { name: 'E-ink and the look', sub: 'Six boards · the picker pages' },
+      { name: 'Bluetooth', sub: pr ? 'Changed in #47 · 4 boards' : 'Pairing and its failures' },
+      { name: 'Apps and the system', sub: 'Lists, one app, about' },
+    ];
+    const sections = secs.map((x, i) => ({ ...x, x: X0, y: Y0 - 84 + i * PY }));
+    const mk = b => (pr && b.change ? 'vw-mk vw-mk--' + b.change : b.interactive ? 'vw-mk vw-mk--play' : 'vw-mk vw-mk--still');
+    const pick = id => () => this.setState({ sel: id });
+    const tiles = V.boards.map(b => ({
+      ...b, x: X0 + b.col * PX, y: Y0 + b.row * PY, w: Math.round(W), h: Math.round(H), v: b.v || 'a',
+      sel: s.sel === b.id ? 'true' : 'false', mk: mk(b), many: b.states.length > 1, dots: b.states.slice(0, 4),
+      statesTip: b.states.length + ' states: ' + b.states.join(', '),
+      dim: pr && s.onlyChanged && !b.change ? 'vw-tile--dim' : '',
+      pick: pick(b.id), open: () => { location.href = 'board.states.dc.html'; },
+    }));
+    const b = s.sel ? V.board(s.sel) : null;
+    const incoming = V.boards.filter(x => (x.links || []).includes(s.sel)).map(x => x.title);
+    const ix = s.stateIx[s.sel] || 0;
+    const sel = b ? {
+      ...b, mk: mk(b), hasStates: b.states.length > 1, stateCount: b.states.length,
+      states: b.states.map((n, i) => ({ name: n, on: i === ix ? 'true' : 'false', pick: () => this.setState({ stateIx: { ...s.stateIx, [s.sel]: i } }) })),
+      out: (b.links || []).map(l => V.board(l).title), in: incoming, linkCount: (b.links || []).length + incoming.length,
+      changeTag: pr && b.change ? (b.change === 'added' ? 'new in #47' : 'changed in #47') : '',
+    } : {};
+    return {
+      chrome: p.chrome || 'white-paper', rev: pr ? 'pr' : 'main', onPr: pr, ...r,
+      pickerOpen: s.overlay === 'picker', searchOpen: s.overlay === 'search',
+      togglePicker: () => this.setState({ overlay: s.overlay === 'picker' ? 'none' : 'picker' }),
+      openSearch: () => this.setState({ overlay: 'search' }), closeSearch: () => this.setState({ overlay: 'none' }),
+      setRender: (k, v) => this.setState({ render: { ...r, [k]: v } }),
+      bodyCols: b ? '' : 'grid-template-columns: 248px 1fr',
+      pages: V.pages.map(x => ({ ...x, cur: x.id === 'settings' ? 'page' : null, pr: pr && (x.id === 'settings' || x.id === 'fit') })),
+      count: V.boards.length,
+      outline: V.boards.map(x => ({ ...x, sel: s.sel === x.id ? 'true' : 'false', mk: mk(x), pick: pick(x.id) })),
+      sections, tiles,
+      mini: V.boards.map(x => ({ x: 8 + x.col * 22, y: 8 + x.row * 27, on: s.sel === x.id ? 'on' : '' })),
+      onlyChanged: s.onlyChanged ? 'true' : 'false', toggleChanged: () => this.setState({ onlyChanged: !s.onlyChanged }),
+      liveOn: s.live ? 'true' : 'false', toggleLive: () => this.setState({ live: !s.live }),
+      showHint: !b, hasSel: !!b, sel, openHref: 'board.states.dc.html', errSample: '{{ dev.name || "it" }}',
+      shotCmd: b ? 'tools/boards shot ' + b.file + '\n  --voice ' + r.voice + ' --scheme ' + r.scheme + ' --pen ' + r.pen : '',
+    };
+  }
+}
+</script>
+</body>
+</html>

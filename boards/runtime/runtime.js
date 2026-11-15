@@ -3,8 +3,8 @@
 // vendored Preact and template.js. It stops the browser from parsing the board, reads the board's
 // source itself (template.js), loads its head scripts, and mounts its logic class with Preact.
 //
-// State for tools: window.__boards = {subset, board, pending, settled, errors: [{board, kind,
-// feature, detail, line, message}]}. 'settled' turns true once every board in the tree has loaded,
+// State for tools: window.__boards = {subset, board, state, pending, settled, errors: [{board, kind,
+// feature, detail, line, message}]}; state: the id of the named state shown (?state=ID), or null. 'settled' turns true once every board in the tree has loaded,
 // rendered and the fonts are ready; the event 'boards:settled' fires on window then.
 (function () {
   'use strict';
@@ -16,7 +16,7 @@
   // element and nothing in it is loaded or run by the browser. The runtime reads the source below.
   document.write('<plaintext hidden style="display:none">');
 
-  const status = window.__boards = { subset: T.SUBSET_VERSION, board: null, pending: 0, settled: false, errors: [] };
+  const status = window.__boards = { subset: T.SUBSET_VERSION, board: null, state: null, pending: 0, settled: false, errors: [] };
   const seen = new Set();
   function report(e) {
     const key = [e.board, e.kind, e.feature, e.detail, e.line, e.message].join('|');
@@ -303,28 +303,17 @@
     location.assign(u.href);
   });
 
-  // ---- props of the top board: data-props defaults (as an editor seeds them), then the query --
-  function typed(spec, v) {
-    const e = spec && spec.editor;
-    if (e === 'boolean') return v === 'true' || v === '1';
-    if (e === 'int' || e === 'float' || e === 'range' || e === 'number') { const n = Number(v); return isNaN(n) ? v : n; }
-    if (e === 'enum' || e === 'text' || e === 'color') return v;
-    try { return JSON.parse(v); } catch (x) { return v; }
-  }
-  function topProps(doc, q) {
-    const props = {};
-    for (const k of Object.keys(doc.props)) if ('default' in doc.props[k]) props[k] = doc.props[k].default;
-    // the preview's voice picker reaches boards that call their voice "voice" or "theme"
-    const glob = { voice: ['voice', 'theme'], scheme: ['scheme'], pen: ['pen'] };
-    for (const g of Object.keys(glob)) {
-      if (!q.has(g)) continue;
-      for (const k of glob[g]) if (doc.props[k]) props[k] = typed(doc.props[k], q.get(g));
+  // ---- props of the top board: data-props defaults, ?state=ID, voice/scheme/pen, p.NAME= ----
+  // (BoardsTemplate.boardProps). An unknown state is an error of the board; it renders with its
+  // defaults.
+  function topProps(rec, q) {
+    const r = T.boardProps(rec.doc, q);
+    if (r.unknownState !== null) {
+      report({ board: rec.file, kind: 'state', feature: 'unknown state', detail: r.unknownState, line: 0,
+        message: rec.doc.states.length ? 'the states are ' + rec.doc.states.map(function (s) { return s.id; }).join(', ') : 'the board names no states' });
     }
-    for (const [k, v] of q) {
-      const name = k.slice(2);
-      if (k.startsWith('p.') && /^[A-Za-z_$][\w$]*$/.test(name) && ['__proto__', 'constructor', 'prototype'].indexOf(name) < 0) props[name] = typed(doc.props[name], v);
-    }
-    return props;
+    status.state = r.state;
+    return r.props;
   }
 
   // ---- start ----------------------------------------------------------------------------------
@@ -352,7 +341,7 @@
       }
     }
     if (rec.state !== 'ready') P.render(errorBox(rec.file, rec.problems.map(issueLine)), root);
-    else P.render(h(Boundary, { board: rec.file }, h(rec.Class, topProps(rec.doc, new URLSearchParams(location.search)))), root);
+    else P.render(h(Boundary, { board: rec.file }, h(rec.Class, topProps(rec, new URLSearchParams(location.search)))), root);
     mounted = true;
     scheduleSettle();
   }

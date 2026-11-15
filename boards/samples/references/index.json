@@ -59,6 +59,31 @@
    "width": 900,
    "height": 760
   },
+  "States.dc.html/420x240/own": {
+   "file": "7b59f74e31673c2a.png",
+   "width": 420,
+   "height": 240
+  },
+  "States.dc.html/420x240/own#connected": {
+   "file": "ceda64851688f597.png",
+   "width": 420,
+   "height": 240
+  },
+  "States.dc.html/420x240/own#off": {
+   "file": "7b59f74e31673c2a.png",
+   "width": 420,
+   "height": 240
+  },
+  "States.dc.html/420x240/own#on": {
+   "file": "853acaf991c2d6c8.png",
+   "width": 420,
+   "height": 240
+  },
+  "States.dc.html/420x240/own#scanning": {
+   "file": "ed158bd62c9db9e7.png",
+   "width": 420,
+   "height": 240
+  },
   "sub/Badge.dc.html/160x40/own": {
    "file": "c4e4897f3b47d8cb.png",
    "width": 160,

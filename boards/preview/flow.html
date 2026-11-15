@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en" data-theme="white-paper">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flow</title>
+<link rel="stylesheet" href="../ds/web/tokens.css">
+<link rel="stylesheet" href="../ds/web/bundle.css">
+<link rel="stylesheet" href="preview.css">
+</head>
+<body class="vw flow-page">
+<div class="vw-body vw-body--flow">
+  <nav class="vw-rail" aria-label="Pages and the walk">
+    <section><h3>Flows by page <span id="npages"></span></h3><div class="vw-nav" id="pages"></div></section>
+    <div class="vw-pane"><b>Drawn from the boards</b>Every arrow is a link (solid) or a state step a board names (dashed). Nothing here is laid out by hand; a board nothing links to or from shows under “Not reached”.</div>
+    <section><h3>Walk <span id="walk-n"></span></h3><ol class="vw-walk" id="walk"></ol><p class="vw-soft vw-small" id="walk-none"></p></section>
+  </nav>
+  <div class="vw-stagewrap">
+    <main class="vw-stage vw-flow" id="canvas" aria-label="The flow"><div id="sizer"><div id="plane" class="vw-plane"></div></div></main>
+    <div class="vw-float vw-walkbar" id="walkbar" role="toolbar" aria-label="Walk">
+      <button type="button" id="back" aria-label="Previous step (K)" title="Previous step (K)" aria-keyshortcuts="k">◂</button>
+      <span class="vw-t" id="walk-t"></span>
+      <button type="button" id="fwd" aria-label="Next step (J)" title="Next step (J)" aria-keyshortcuts="j">▸</button>
+      <span class="vw-sep"></span>
+      <a id="open" aria-keyshortcuts="Enter" title="Open this step in the board view (⏎)">Open this step</a>
+      <span class="vw-sep"></span>
+      <button type="button" id="fit" title="Fit (1)" aria-keyshortcuts="1">Fit</button>
+      <button type="button" id="actual" title="Actual size (0)" aria-keyshortcuts="0">1:1</button>
+    </div>
+  </div>
+</div>
+<script src="preview-common.js"></script>
+<script src="flow.js"></script>
+</body>
+</html>

@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-2.0-or-later
-"""Vendor Material Symbols Outlined for the shell's design boards (designs/shell/fonts/).
+"""Vendor Material Symbols Outlined for the design boards that use it (designs/PROJECT/fonts/).
 
-    subset-icons           write the font, its stylesheet and NOTICE
-    subset-icons --check   fail when a board names an icon the font lacks
+    subset-icons           write each such folder's font, its stylesheet and NOTICE
+    subset-icons --check   fail when a board names an icon its folder's font lacks
+
+A design folder uses the icon font when one of its boards names the family (Material Symbols
+Outlined); each such folder gets its own font, cut down to the icons its own boards name, and
+names the stylesheet in its references.json ("fonts": "fonts/fonts.css"), which --check also
+holds.
 
 Run through tools/in-alpine (`make designs-icons`, `make designs-icons-check`): fontTools and
 brotli are in that image. Both need network access for the source font. The source is the pinned google/material-design-icons commit below,
@@ -25,6 +30,7 @@ an icon name just keeps a few more glyphs.
 """
 import hashlib
 import html
+import json
 import os
 import re
 import shutil
@@ -56,8 +62,7 @@ CHANGES = [
 ]
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DESIGN = os.path.join(ROOT, "designs", "shell")
-OUT = os.path.join(DESIGN, "fonts")
+DESIGNS = os.path.join(ROOT, "designs")
 CACHE = os.path.join(ROOT, "out", "icon-font")
 
 ELEMENT_TEXT = re.compile(r"Material Symbols Outlined[^>]*>\s*([a-z0-9_]+)\s*<")
@@ -102,18 +107,32 @@ def ligatures(font):
     return names, chars
 
 
-def named_in_boards(known):
-    used = set()
-    for folder, dirs, files in os.walk(DESIGN):
+def board_texts(design):
+    for folder, dirs, files in os.walk(design):
         dirs[:] = [d for d in dirs if d not in ("fonts", "references")]
         for name in files:
             if name.endswith((".dc.html", ".json", ".js")):
                 with open(os.path.join(folder, name), encoding="utf-8") as f:
-                    text = f.read()
-                used.update(m.group(1) for m in ELEMENT_TEXT.finditer(text))
-                used.update(m.group(1) for m in STRING.finditer(text))
-                for m in PREFIX.finditer(text):
-                    used.update(k for k in known if k.startswith(m.group(1)) and k[len(m.group(1))].isdigit())
+                    yield f.read()
+
+
+def icon_designs():
+    """the design folders whose boards ask for the icon font"""
+    out = []
+    for name in sorted(os.listdir(DESIGNS)):
+        d = os.path.join(DESIGNS, name)
+        if os.path.isdir(d) and any(FAMILY in t or FAMILY.replace(" ", "+") in t for t in board_texts(d)):
+            out.append(d)
+    return out
+
+
+def named_in_boards(design, known):
+    used = set()
+    for text in board_texts(design):
+        used.update(m.group(1) for m in ELEMENT_TEXT.finditer(text))
+        used.update(m.group(1) for m in STRING.finditer(text))
+        for m in PREFIX.finditer(text):
+            used.update(k for k in known if k.startswith(m.group(1)) and k[len(m.group(1))].isdigit())
     return used & known
 
 
@@ -154,31 +173,55 @@ def font_names(path):
     return set(ligatures(font)[0])
 
 
-def main():
-    check = "--check" in sys.argv[1:]
-    source = fetch(FONT_URL, FONT_SHA256, "MaterialSymbolsOutlined.ttf")
-    names, _ = ligatures(TTFont(source, lazy=True))
-    used = named_in_boards(set(names))
-    target = os.path.join(OUT, BASENAME + ".woff2")
-    if check:
-        missing = sorted(used - font_names(target))
-        if missing:
-            sys.exit("%s lacks: %s (make designs-icons)" % (target, " ".join(missing)))
-        print("icon font: %d icons named by the boards, all present" % len(used))
-        return
-    license_path = fetch(LICENSE_URL, LICENSE_SHA256, "LICENSE")
-    os.makedirs(OUT, exist_ok=True)
+def names_stylesheet(design):
+    p = os.path.join(design, "references.json")
+    if not os.path.exists(p):
+        return False
+    with open(p, encoding="utf-8") as f:
+        return json.load(f).get("fonts") == "fonts/fonts.css"
+
+
+def write(design, source, license_path, used):
+    out = os.path.join(design, "fonts")
+    target = os.path.join(out, BASENAME + ".woff2")
+    os.makedirs(out, exist_ok=True)
     build(source, used).save(target, reorderTables=False)
-    shutil.copyfile(license_path, os.path.join(OUT, BASENAME + ".LICENSE"))
-    with open(os.path.join(OUT, BASENAME + ".NOTICE"), "w") as f:
+    shutil.copyfile(license_path, os.path.join(out, BASENAME + ".LICENSE"))
+    with open(os.path.join(out, BASENAME + ".NOTICE"), "w") as f:
         f.write("%s, from google/material-design-icons at commit %s,\n"
                 "under the Apache License 2.0 (the file beside this one).\n\nChanged from the original:\n" % (FAMILY, COMMIT))
         f.writelines("- %s\n" % c for c in CHANGES)
         f.write("\nMade by tools/subset-icons of GlassineOS/ui.\n")
-    with open(os.path.join(OUT, "fonts.css"), "w") as f:
+    with open(os.path.join(out, "fonts.css"), "w") as f:
         f.write("@font-face {\n  font-family: '%s';\n  font-style: normal;\n  font-weight: 400;\n  font-display: block;\n"
                 "  src: url(%s.woff2) format('woff2');\n}\n" % (FAMILY, BASENAME))
-    print("icon font: %d icons, %d bytes (source %d bytes)" % (len(used), os.path.getsize(target), os.path.getsize(source)))
+    return target
+
+
+def main():
+    check = "--check" in sys.argv[1:]
+    source = fetch(FONT_URL, FONT_SHA256, "MaterialSymbolsOutlined.ttf")
+    names, _ = ligatures(TTFont(source, lazy=True))
+    license_path = None if check else fetch(LICENSE_URL, LICENSE_SHA256, "LICENSE")
+    failed = []
+    for design in icon_designs():
+        rel = os.path.relpath(design, ROOT)
+        used = named_in_boards(design, set(names))
+        if not names_stylesheet(design):
+            failed.append('%s/references.json does not name "fonts": "fonts/fonts.css"' % rel)
+        if check:
+            target = os.path.join(design, "fonts", BASENAME + ".woff2")
+            missing = sorted(used - font_names(target)) if os.path.exists(target) else ["(no font)"]
+            if missing:
+                failed.append("%s lacks: %s (make designs-icons)" % (os.path.relpath(target, ROOT), " ".join(missing)))
+            else:
+                print("icon font: %s: %d icons named by the boards, all present" % (rel, len(used)))
+            continue
+        target = write(design, source, license_path, used)
+        print("icon font: %s: %d icons, %d bytes (source %d bytes)" % (rel, len(used), os.path.getsize(target),
+                                                                       os.path.getsize(source)))
+    if failed:
+        sys.exit("\n".join(failed))
 
 
 if __name__ == "__main__":

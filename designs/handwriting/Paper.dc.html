@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&amp;family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&amp;family=Kalam:wght@400&amp;display=swap" rel="stylesheet"></helmet>
+<div data-write-paper="" role="region" aria-label="Writing area" style="position:relative;width:100%;height:100%;box-sizing:border-box;overflow:hidden;border-radius:{{ v.r }};background:var(--il-paper);box-shadow:{{ v.edge }}">
+<sc-for list="{{ guides }}" as="g" hint-placeholder-count="4"><div style="position:absolute;left:{{ inset }}px;right:{{ inset }}px;top:{{ g.y }}px;border-top:{{ v.guide }}"></div></sc-for>
+<sc-if value="{{ showHint }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:{{ inset }}px;top:{{ hintY }}px;font:{{ v.hint }};color:var(--il-ink-soft)">{{ hint }}</div></sc-if>
+<sc-for list="{{ lines }}" as="l" hint-placeholder-count="1"><div style="position:absolute;left:{{ l.x }}px;top:{{ l.top }}px;font:400 {{ fs }}px/1 'Kalam',cursive;color:var(--il-pen);white-space:nowrap;transform:skewX({{ slant }}deg);transform-origin:left bottom">{{ l.t }}</div></sc-for>
+<svg width="100%" height="100%" style="position:absolute;inset:0;touch-action:none;cursor:{{ cur }};pointer-events:{{ pe }}" onPointerDown="{{ pd }}" onPointerMove="{{ pm }}" onPointerUp="{{ pu }}" onPointerCancel="{{ pu }}"><path d="{{ inkD }}" fill="none" stroke="var(--il-pen)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview": {"width": 640, "height": 300}, "voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "ink": {"editor": "text", "default": "quiet"}, "line": {"editor": "text", "default": "75"}, "size": {"editor": "text", "default": "44"}, "height": {"editor": "text", "default": "300"}, "hint": {"editor": "text", "default": ""}, "live": {"editor": "boolean", "default": false}, "onInk": {"editor": null}, "clear": {"editor": "text", "default": "0"}, "slant": {"editor": "text", "default": "0"}}'>
+class Component extends DCLogic {
+  // The keyboard's writing paper (shell spec 006) as the samples app uses it: one guide per
+  // line, at two thirds of the line, in the rule grey; ink in the pen colour. The sample ink is
+  // set in Kalam (a handwriting font, as the synthetic samples are), never anyone's writing.
+  // "ink" holds the written lines, separated by "|". With "live", the pen (or mouse) draws.
+  state = { strokes: [] };
+
+  componentDidUpdate(prev) {
+    if (prev.clear !== this.props.clear && this.state.strokes.length) this.setState({ strokes: [] });
+  }
+
+  renderVals() {
+    const p = this.props, s = this.state, u = q => this.setState(q);
+    const voice = ['white', 'editorial', 'stationery'].includes(p.voice) ? p.voice : 'white';
+    const L = Number(p.line) || 75, fs = Number(p.size) || 44, H = Number(p.height) || 300, inset = 24;
+    const guides = [];
+    for (let y = Math.round(L * 2 / 3); y < H; y += L) guides.push({ y });
+    const ink = String(p.ink ?? '').split('|').filter(Boolean);
+    const lines = ink.map((t, i) => ({ t, x: inset + 8 + (i % 2) * 6, top: Math.round(L * 2 / 3 + i * L - fs * 0.76) }));
+    const live = !!p.live;
+    const pt = e => {
+      const r = e.currentTarget.getBoundingClientRect(), k = r.width / (e.currentTarget.clientWidth || r.width) || 1;
+      return ((e.clientX - r.left) / k).toFixed(1) + ' ' + ((e.clientY - r.top) / k).toFixed(1);
+    };
+    const tell = n => { if (p.onInk) p.onInk(n); };
+    const V = {
+      white: { r: '14px', edge: 'inset 0 0 0 1.5px var(--il-ink)', guide: '1.5px dashed var(--il-rule)', hint: "400 15px 'IBM Plex Sans',sans-serif" },
+      editorial: { r: '0', edge: 'inset 0 0 0 1px var(--il-ink)', guide: '1px solid var(--il-rule)', hint: "italic 400 16px 'Source Serif 4',serif" },
+      stationery: { r: '3px', edge: 'inset 0 0 0 1px var(--il-ink-soft),var(--il-card-stack)', guide: '1px dashed var(--il-ink-soft)', hint: "italic 400 18px 'EB Garamond',serif" }
+    }[voice];
+    return {
+      v: V, guides, lines, fs, inset, slant: Number(p.slant) || 0,
+      hint: p.hint || '', showHint: !!p.hint && !ink.length && !s.strokes.length, hintY: Math.round(L * 2 / 3) - 26,
+      inkD: s.strokes.join(' ') || 'M0 0', pe: live ? 'auto' : 'none', cur: live ? 'crosshair' : 'default',
+      pd: e => {
+        if (e.currentTarget.setPointerCapture) e.currentTarget.setPointerCapture(e.pointerId);
+        this.drawing = true;
+        u(st => ({ strokes: [...st.strokes, 'M' + pt(e)] }));
+      },
+      pm: e => {
+        if (!this.drawing) return;
+        const q = pt(e);
+        u(st => { const a = [...st.strokes]; a[a.length - 1] += ' L' + q; return { strokes: a }; });
+      },
+      pu: () => { if (!this.drawing) return; this.drawing = false; tell(this.state.strokes.length); }
+    };
+  }
+}
+</script>
+</body>
+</html>

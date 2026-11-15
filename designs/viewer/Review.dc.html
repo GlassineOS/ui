@@ -22,7 +22,7 @@
       <span class="vw-tag vw-mono">{{ pr.branch }}</span>
       <span class="vw-tag vw-tag--ok">checks passed</span>
       <span class="vw-grow"></span>
-      <div class="vw-seg" title="Which revisions to compare"><button type="button" aria-pressed="{{ sinceMain }}" onClick="{{ toMain }}">main → r4</button><button type="button" aria-pressed="{{ sinceLast }}" onClick="{{ toLast }}">since you looked · r3 → r4</button></div>
+      <span class="vw-tag vw-tag--ink" title="Boards you had marked that changed afterwards lost the mark">1 changed since you looked</span>
       <div class="vw-progress"><span class="vw-progress__bar"><i style="width: {{ pct }}%"></i></span><b>{{ seenN }} of {{ total }}</b> seen</div>
       <a class="vw-btn vw-btn--flat" href="#">On GitHub ↗</a>
     </header>
@@ -35,7 +35,7 @@
               <span class="{{ c.mk }}" title="{{ c.change }}"></span>
               <span class="vw-t">{{ c.title }}</span>
               <span class="vw-row" style="gap: 6px"><sc-if value="{{ c.errors }}" hint-placeholder-val="{{ false }}"><span class="vw-err">{{ c.errors }}</span></sc-if><span class="{{ c.seenCls }}" onClick="{{ c.toggle }}" title="Seen"></span></span>
-              <span class="vw-what">{{ c.what }}</span>
+              <span class="vw-what"><sc-if value="{{ c.since }}" hint-placeholder-val="{{ false }}"><b style="color: var(--ink)">Changed since you looked · </b></sc-if>{{ c.what }}</span>
             </a>
           </sc-for>
         </div>
@@ -129,14 +129,14 @@
 class Component extends DCLogic {
   constructor(p) {
     super(p);
-    this.state = { cur: p.board || 'settings.bluetooth', mode: p.compare || 'side', seen: { 'fit.bluetooth': true, 'settings.bluetooth.empty': true }, st: 3, range: 'main' };
+    this.state = { cur: p.board || 'settings.bluetooth', mode: p.compare || 'side', seen: { 'fit.bluetooth': true, 'settings.bluetooth.empty': true }, st: 3 };
   }
   renderVals() {
     const p = this.props, s = this.state, V = window.VIEWER, pr = V.pr;
     const items = pr.boards.map(c => {
       const b = V.board(c.id);
       return { ...c, title: b.title === c.id.replace(/^[^.]+\./, '') && c.id.startsWith('fit.') ? 'Fit › Bluetooth' : c.id === 'settings.bluetooth.empty' ? 'Bluetooth › Empty' : b.title,
-        sel: s.cur === c.id ? 'true' : 'false', mk: 'vw-mk vw-mk--' + c.change, seenCls: 'vw-seen' + (s.seen[c.id] ? ' vw-seen--on' : ''),
+        since: c.id === 'settings.bluetooth.failed' && !s.seen[c.id], sel: s.cur === c.id ? 'true' : 'false', mk: 'vw-mk vw-mk--' + c.change, seenCls: 'vw-seen' + (s.seen[c.id] ? ' vw-seen--on' : ''),
         pick: () => this.setState({ cur: c.id }),
         toggle: e => { if (e) e.stopPropagation(); this.setState({ seen: { ...s.seen, [c.id]: !s.seen[c.id] } }); } };
     });
@@ -154,9 +154,7 @@ class Component extends DCLogic {
     return {
       pr, voice: p.voice || 'white', scheme: p.scheme || 'paper', pen: p.pen || '1',
       items, cur, total: pr.boards.length, seenN, pct: Math.round(100 * seenN / pr.boards.length),
-      sinceMain: s.range === 'main' ? 'true' : 'false', sinceLast: s.range === 'last' ? 'true' : 'false',
-      toMain: () => this.setState({ range: 'main' }), toLast: () => this.setState({ range: 'last' }),
-      beforeRev: s.range === 'main' ? 'main · 0743e22' : 'r3 · 81d4e07',
+      beforeRev: 'main · 0743e22',
       hasStates: b.states.length > 1,
       states: b.states.map((n, i) => ({ name: n, on: i === s.st ? 'true' : 'false', pick: () => this.setState({ st: i }) })),
       st: String(b.states.length > 1 ? Math.min(s.st, b.states.length - 1) : 0),

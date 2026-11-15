@@ -15,7 +15,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  const SUBSET_VERSION = 1;
+  const SUBSET_VERSION = 2;
 
   const VOID = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr']);
   const RAWTEXT = new Set(['script', 'style']);
@@ -349,7 +349,106 @@
       return el;
     }
     el.children = compileNodes(n.children, issue, ctx);
+    if (tag === 'a' && ctx && ctx.links) {
+      const href = el.attrs.filter(function (a) { return a.name === 'href'; })[0];
+      if (href && 'lit' in href.b) ctx.links.push({ href: href.b.lit, text: literalText(el.children).replace(/\s+/g, ' ').trim(), line: n.line });
+    }
     return el;
+  }
+
+  // the literal text of compiled nodes (holes left out), as a link's words
+  function literalText(nodes) {
+    let s = '';
+    for (const c of nodes) {
+      if (c.k === 'text') { for (const p of c.parts) if (typeof p === 'string') s += p; }
+      else if (c.children) s += literalText(c.children);
+    }
+    return s;
+  }
+
+  // ---- named states (003 FR-050) ----------------------------------------------------------------
+  const STATE_ID_RE = /^[a-z0-9][a-z0-9._-]*$/;
+  const STATE_KEYS = ['id', 'name', 'props', 'from'];
+  // readStates(list, props, issue, line) → [{id, name, props, from: [{state, label}]}]: the
+  // well-formed states of a board's "$states"; every fault is an issue on the data-props line
+  function readStates(list, props, issue, line) {
+    const out = [];
+    if (!Array.isArray(list)) { issue('unsupported', '$states', 'is not an array', line); return out; }
+    const ids = new Set();
+    list.forEach(function (st, i) {
+      const at = 'state ' + (st && typeof st === 'object' && typeof st.id === 'string' ? '"' + st.id + '"' : i + 1) + ': ';
+      if (!st || typeof st !== 'object' || Array.isArray(st)) { issue('unsupported', '$states', at + 'is not an object', line); return; }
+      let ok = true;
+      const bad = function (kind, detail) { issue(kind, '$states', at + detail, line); ok = false; };
+      for (const k of Object.keys(st)) if (STATE_KEYS.indexOf(k) < 0) bad('unsupported', 'key "' + k + '"');
+      if (typeof st.id !== 'string' || !STATE_ID_RE.test(st.id)) bad('error', 'id ' + JSON.stringify(st.id === undefined ? null : st.id) + ' is not of a-z, 0-9, ".", "_", "-" (starting with a letter or digit)');
+      else if (ids.has(st.id)) bad('error', 'id used twice');
+      else ids.add(st.id);
+      if (typeof st.name !== 'string') bad('error', 'name is not a string');
+      const sp = st.props === undefined ? {} : st.props;
+      if (!sp || typeof sp !== 'object' || Array.isArray(sp)) bad('error', 'props is not an object');
+      else {
+        for (const k of Object.keys(sp)) {
+          if (!Object.prototype.hasOwnProperty.call(props, k)) { bad('error', 'prop "' + k + '" is not declared in data-props'); continue; }
+          const opts = props[k].options;
+          if (Array.isArray(opts) && opts.indexOf(sp[k]) < 0) bad('error', 'prop "' + k + '" value ' + JSON.stringify(sp[k]) + ' is not one of its options (' + opts.map(function (o) { return JSON.stringify(o); }).join(', ') + ')');
+        }
+      }
+      const from = st.from === undefined ? [] : st.from;
+      if (!Array.isArray(from)) bad('unsupported', 'from is not an array');
+      else {
+        from.forEach(function (f) {
+          if (!f || typeof f !== 'object' || Array.isArray(f)) { bad('unsupported', 'a from entry is not an object'); return; }
+          for (const k of Object.keys(f)) if (k !== 'state' && k !== 'label') bad('unsupported', 'from key "' + k + '"');
+          if (typeof f.label !== 'string') bad('error', 'from label is not a string');
+        });
+      }
+      if (ok) out.push({ id: st.id, name: st.name, props: Object.assign({}, sp), from: from.map(function (f) { return { state: f.state, label: f.label }; }) });
+    });
+    // the states a step comes from, once every id is known
+    for (const st of out) {
+      for (const f of st.from) {
+        if (typeof f.state !== 'string' || !ids.has(f.state)) issue('error', '$states', 'state "' + st.id + '": from state ' + JSON.stringify(f.state === undefined ? null : f.state) + ' is not a state of this board', line);
+        else if (f.state === st.id) issue('error', '$states', 'state "' + st.id + '": from names the state itself', line);
+      }
+    }
+    return out;
+  }
+
+  // the value of a query parameter for a prop, by its editor
+  function typedProp(spec, v) {
+    const e = spec && spec.editor;
+    if (e === 'boolean') return v === 'true' || v === '1';
+    if (e === 'int' || e === 'float' || e === 'range' || e === 'number') { const n = Number(v); return isNaN(n) ? v : n; }
+    if (e === 'enum' || e === 'text' || e === 'color') return v;
+    try { return JSON.parse(v); } catch (x) { return v; }
+  }
+
+  // boardProps(doc, query) → {props, state, unknownState}: the props of a board opened on its own.
+  // In order, each over the one before: the data-props defaults (as an editor seeds them), the
+  // props of the state named by ?state=ID, the preview's voice (the board's "voice" or "theme"),
+  // scheme and pen, and p.NAME= parameters. query: a URLSearchParams. An id the board has no state
+  // for gives unknownState (the defaults stay).
+  function boardProps(doc, q) {
+    const props = {};
+    for (const k of Object.keys(doc.props)) if ('default' in doc.props[k]) props[k] = doc.props[k].default;
+    let state = null, unknownState = null;
+    const want = q.get('state');
+    if (want !== null && want !== '') {
+      const st = (doc.states || []).filter(function (s) { return s.id === want; })[0];
+      if (st) { state = st.id; for (const k of Object.keys(st.props)) props[k] = st.props[k]; }
+      else unknownState = want;
+    }
+    const glob = { voice: ['voice', 'theme'], scheme: ['scheme'], pen: ['pen'] };
+    for (const g of Object.keys(glob)) {
+      if (!q.has(g)) continue;
+      for (const k of glob[g]) if (doc.props[k]) props[k] = typedProp(doc.props[k], q.get(g));
+    }
+    for (const [k, v] of q) {
+      const name = k.slice(2);
+      if (k.startsWith('p.') && IDENT_RE.test(name) && ['__proto__', 'constructor', 'prototype'].indexOf(name) < 0) props[name] = typedProp(doc.props[name], v);
+    }
+    return { props: props, state: state, unknownState: unknownState };
   }
 
   // ---- board file ------------------------------------------------------------------------------
@@ -357,12 +456,14 @@
   function onlyWhitespace(n) { return n.type === 'text' && !n.text.trim(); }
 
   // parseBoard(src, file) → {file, lang, title, meta, headScripts, helmet, template, code, codeLine,
-  //   props, preview, imports, importLines, issues}. A board with issues must not be rendered.
-  //   imports: the names of the boards it imports; importLines: name → line of its first <dc-import>.
+  //   props, preview, states, links, imports, importLines, issues}. A board with issues must not be
+  //   rendered. states: its named states ("$states", readStates()); links: every <a> whose href is
+  //   literal, as written ({href, text, line}); imports: the names of the boards it imports;
+  //   importLines: name → line of its first <dc-import>.
   function parseBoard(src, file) {
     const issues = [];
     const issue = function (kind, feature, detail, line) { issues.push({ kind: kind, feature: feature, detail: detail || '', line: line || 0 }); };
-    const doc = { file: file || '', subset: SUBSET_VERSION, lang: '', title: '', meta: [], headScripts: [], helmet: [], template: [], code: '', codeLine: 0, props: {}, preview: null, imports: [], importLines: Object.create(null), issues: issues };
+    const doc = { file: file || '', subset: SUBSET_VERSION, lang: '', title: '', meta: [], headScripts: [], helmet: [], template: [], code: '', codeLine: 0, props: {}, preview: null, states: [], links: [], imports: [], importLines: Object.create(null), issues: issues };
     const nodes = parseHTML(src, issue);
     const html = findEl(nodes, 'html');
     let head, body;
@@ -426,17 +527,18 @@
         if (!p || typeof p !== 'object' || Array.isArray(p)) throw new Error('not an object');
         doc.preview = p.$preview && typeof p.$preview === 'object' ? { width: Number(p.$preview.width) || 0, height: Number(p.$preview.height) || 0 } : null;
         for (const k of Object.keys(p)) {
-          if (k[0] === '$') { if (k !== '$preview') issue('unsupported', 'data-props entry', k, SA['data-props'].line); continue; }
+          if (k[0] === '$') { if (k !== '$preview' && k !== '$states') issue('unsupported', 'data-props entry', k, SA['data-props'].line); continue; }
           if (!p[k] || typeof p[k] !== 'object' || Array.isArray(p[k])) { issue('unsupported', 'data-props entry that is not an object', k, SA['data-props'].line); continue; }
           doc.props[k] = p[k];
         }
+        if ('$states' in p) doc.states = readStates(p.$states, doc.props, issue, SA['data-props'].line);
       } catch (e) {
         issue('error', 'data-props is not JSON', String(e.message || e), SA['data-props'].line);
       }
     }
 
     // the template: a <helmet> at its top (head content), then the content
-    const ctx = { imports: [] };
+    const ctx = { imports: [], links: [] };
     const content = [];
     let helmets = 0;
     for (const n of xdc.children) {
@@ -459,6 +561,7 @@
       content.push(n);
     }
     doc.template = compileNodes(content, issue, ctx);
+    doc.links = ctx.links;
     for (const i of ctx.imports) if (!(i.name in doc.importLines)) { doc.importLines[i.name] = i.line; doc.imports.push(i.name); }
     return doc;
   }
@@ -610,6 +713,9 @@
     decode: decode,
     parseBoard: parseBoard,
     importCycles: importCycles,
+    readStates: readStates,
+    typedProp: typedProp,
+    boardProps: boardProps,
     rootScope: rootScope,
     childScope: childScope,
     lookup: lookup,

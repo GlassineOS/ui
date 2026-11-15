@@ -18,8 +18,8 @@ const TMP = path.join(ROOT, 'out', 'test', 'boards');
 
 test('describe: canvas entries, data-props, sizes', () => {
   const d = describe(SAMPLES);
-  assert.strictEqual(d.subset, 1);
-  assert.deepStrictEqual(d.boards.map((b) => b.file), ['Main.dc.html', 'Counter.dc.html', 'Form.dc.html', 'Card.dc.html', 'sub/Nested.dc.html', 'sub/Badge.dc.html']);
+  assert.strictEqual(d.subset, 2);
+  assert.deepStrictEqual(d.boards.map((b) => b.file), ['Main.dc.html', 'Counter.dc.html', 'Form.dc.html', 'Card.dc.html', 'sub/Nested.dc.html', 'sub/Badge.dc.html', 'States.dc.html']);
   const main = d.boards[0];
   assert.strictEqual(main.interactive, true);
   assert.deepStrictEqual(main.size, { width: 900, height: 760 });
@@ -66,7 +66,7 @@ test('server: runtime at any support.js, Interleaf from the checkout, design fil
     assert.strictEqual((await get('%2e%2e/%2e%2e/LICENSE')).status, 404);
     assert.strictEqual((await get('ds/interleaf/..%2f..%2fLICENSE')).status, 404);
     const c = await (await get('_boards/api/canvas')).json();
-    assert.strictEqual(c.boards.length, 6);
+    assert.strictEqual(c.boards.length, 7);
     assert.strictEqual((await get('_boards/')).status, 200);
     assert.strictEqual((await get('_boards/events')).status, 404);
   } finally { await srv.close(); }

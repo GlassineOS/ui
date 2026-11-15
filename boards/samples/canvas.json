@@ -12,9 +12,10 @@
   "Form.dc.html": { "x": 980, "y": 440, "w": 480, "h": 420, "title": "Form · inputs and keys", "page": "screens", "is_interactive": true },
   "Card.dc.html": { "x": 0, "y": 0, "w": 280, "h": 120, "title": "Card · imported", "page": "parts" },
   "sub/Nested.dc.html": { "x": 360, "y": 0, "w": 420, "h": 200, "title": "Nested · imports from its own folder", "page": "parts", "is_interactive": true },
-  "sub/Badge.dc.html": { "x": 360, "y": 280, "w": 160, "h": 40, "title": "Badge", "page": "parts" }
+  "sub/Badge.dc.html": { "x": 360, "y": 280, "w": 160, "h": 40, "title": "Badge", "page": "parts" },
+  "States.dc.html": { "x": 0, "y": 400, "w": 420, "h": 240, "title": "States · named states, links, loads", "page": "parts", "is_interactive": true }
  },
- "order": ["Main.dc.html", "Counter.dc.html", "Form.dc.html", "Card.dc.html", "sub/Nested.dc.html", "sub/Badge.dc.html"],
+ "order": ["Main.dc.html", "Counter.dc.html", "Form.dc.html", "Card.dc.html", "sub/Nested.dc.html", "sub/Badge.dc.html", "States.dc.html"],
  "notes": {
   "n1": { "x": 0, "y": 820, "w": 600, "text": "Samples of the supported board subset. CI renders each one (tools/boards check) and clicks through them (test/boards/samples-e2e.js).", "page": "screens" },
   "t1": { "x": 0, "y": -200, "text": "Parts", "kind": "title1", "page": "parts" }

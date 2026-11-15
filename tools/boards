@@ -6,7 +6,7 @@
 //                  [--timeout MS] [--chromium PATH] [--allow-empty]
 //   boards references DESIGN_DIR [--update] [--refs DIR] [--out DIR] [--json FILE|-] [--board FILE]...
 //                  [--interleaf DIR] [--jobs N] [--timeout MS] [--chromium PATH] [--allow-empty]
-//   boards shot    BOARD_FILE [--voice V] [--scheme S] [--pen P] [--size WxH] [--click SELECTOR]... [--out FILE]
+//   boards shot    BOARD_FILE [--state ID] [--voice V] [--scheme S] [--pen P] [--size WxH] [--click SELECTOR]... [--out FILE]
 //                  [--interleaf DIR] [--timeout MS] [--chromium PATH]
 //   boards shots   [--out DIR] [--root DIR] [--jobs N] [--interleaf DIR] [--timeout MS] [--chromium PATH] < CHANGED_PATHS
 //   boards export  DESIGN_DIR OUT_DIR [--interleaf DIR] [--web DIR]
@@ -24,7 +24,7 @@ function usage(code) {
     '       boards check DESIGN_DIR [--interleaf DIR] [--json FILE|-] [--board FILE]... [--jobs N] [--timeout MS] [--chromium PATH] [--allow-empty]',
     '       boards references DESIGN_DIR [--update] [--refs DIR] [--out DIR] [--json FILE|-] [--board FILE]... [--interleaf DIR]',
     '                 [--jobs N] [--timeout MS] [--chromium PATH] [--allow-empty]',
-    '       boards shot BOARD_FILE [--voice V] [--scheme S] [--pen P] [--size WxH] [--click SELECTOR]... [--out FILE]',
+    '       boards shot BOARD_FILE [--state ID] [--voice V] [--scheme S] [--pen P] [--size WxH] [--click SELECTOR]... [--out FILE]',
     '                 [--interleaf DIR] [--timeout MS] [--chromium PATH]',
     '       boards shots [--out DIR] [--root DIR] [--jobs N] [--interleaf DIR] [--timeout MS] [--chromium PATH] < CHANGED_PATHS',
     '       boards export DESIGN_DIR OUT_DIR [--interleaf DIR] [--web DIR]',
@@ -102,13 +102,13 @@ async function main() {
     return writeReport(rep, opt.json || path.join(rep.out, 'report.json'), R.textSummary(rep, 'boards references (' + rep.design + ')'));
   }
   if (cmd === 'shot') {
-    const { pos, opt } = parse(rest, { voice: 'value', scheme: 'value', pen: 'value', size: 'value', click: 'list', out: 'value', interleaf: 'value',
+    const { pos, opt } = parse(rest, { state: 'value', voice: 'value', scheme: 'value', pen: 'value', size: 'value', click: 'list', out: 'value', interleaf: 'value',
       timeout: 'value', chromium: 'value' });
     if (pos.length !== 1) usage(2);
     const S = require(path.join(LIB, 'shot.js'));
     const size = opt.size === undefined ? undefined : S.parseSize(opt.size);
     if (size === null) { process.stderr.write('boards: --size is WIDTHxHEIGHT, not "' + opt.size + '"\n'); usage(2); }
-    const rep = await S.shootBoard({ board: pos[0], voice: opt.voice, scheme: opt.scheme, pen: opt.pen, size: size, clicks: opt.click, out: opt.out,
+    const rep = await S.shootBoard({ board: pos[0], state: opt.state, voice: opt.voice, scheme: opt.scheme, pen: opt.pen, size: size, clicks: opt.click, out: opt.out,
       interleaf: opt.interleaf, timeout: opt.timeout ? Number(opt.timeout) : 30000, chromium: opt.chromium });
     process.stdout.write(JSON.stringify(rep, null, 1) + '\n');
     return rep.ok ? 0 : 1;

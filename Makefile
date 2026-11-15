@@ -105,6 +105,7 @@ boards-check:
 	tools/boards check boards/samples $(if $(BOARDS_INTERLEAF),--interleaf $(BOARDS_INTERLEAF)) --json $(O)/boards-check.json
 	$(NODE) test/boards/samples-e2e.js
 	$(NODE) test/boards/stream-e2e.js
+	$(NODE) test/boards/states-e2e.js
 
 # Every design, one report per folder (out/designs-check/PROJECT.json); every folder is checked even
 # when one fails. No folders is success.

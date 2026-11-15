@@ -9,6 +9,7 @@
 //   /_boards/              the canvas index, the board view, the canvas data (api/canvas.json), live-reload events,
 //                          Interleaf's fonts (/_boards/fonts/)
 'use strict';
+const crypto = require('crypto');
 const fs = require('fs');
 const http = require('http');
 const path = require('path');
@@ -58,7 +59,99 @@ function readCanvas(dir) {
   return JSON.parse(fs.readFileSync(p, 'utf8'));
 }
 
+// a URL a board names, as a path in the design folder (with "/"), or null: relative to the board, a
+// leading "/" being the design folder when root is allowed; query and fragment dropped; remote URLs,
+// other schemes and paths that leave the folder give null
+function refPath(board, ref, root) {
+  let r = String(ref).replace(/[?#].*$/, '');
+  if (!r || /^[a-z][a-z0-9+.-]*:|^\/\//i.test(r)) return null;
+  try { r = decodeURIComponent(r); } catch (e) { return null; }
+  if (r[0] === '/' && !root) return null;
+  const p = path.posix.normalize(r[0] === '/' ? r.slice(1) : path.posix.join(path.posix.dirname(board), r));
+  if (p === '..' || p.startsWith('../') || p === '.' || p.indexOf('\0') >= 0) return null;
+  return p;
+}
+
+// the links of a parsed board to other boards: [{to, text, line}]
+function boardLinks(file, doc) {
+  const out = [];
+  for (const l of doc.links) {
+    const to = refPath(file, l.href, true);
+    if (to && /\.dc\.html$/.test(to)) out.push({ to: to, text: l.text, line: l.line });
+  }
+  return out;
+}
+
+// the files of the design folder a parsed board loads by a literal relative URL: head scripts and
+// the helmet's <link href> / <script src>, without support.js, ds/ (Interleaf, the web form) and
+// absolute or remote URLs
+function boardLoads(file, doc) {
+  const refs = doc.headScripts.map(function (s) { return s.src; });
+  for (const n of doc.helmet) {
+    if (n.tag === 'link' && n.attrs.href) refs.push(n.attrs.href);
+    if (n.tag === 'script' && n.attrs.src) refs.push(n.attrs.src);
+  }
+  const out = [];
+  for (const r of refs) {
+    const p = refPath(file, r, false);
+    if (!p || /(^|\/)support\.js$/.test(p) || /(^|\/)ds\//.test(p) || out.indexOf(p) >= 0) continue;
+    out.push(p);
+  }
+  return out;
+}
+
+// boardHashes(dir, files, docs, bytes, importsOf) → Map(file → sha256 hex). A board's hash covers its
+// own bytes, then, sorted by path, each file it loads (its path and bytes) and each board it imports
+// (its path and hash, recursively). A missing file, a file outside the folder, and an import that
+// closes a cycle contribute their path only. Paths are relative to the design folder, so two folders
+// with the same contents give the same hashes.
+function boardHashes(dir, files, docs, bytes, importsOf) {
+  const done = new Map();
+  const read = function (rel) {
+    const f = within(dir, rel);
+    try { return f && fs.statSync(f).isFile() ? fs.readFileSync(f) : null; } catch (e) { return null; }
+  };
+  function part(h, kind, rel, content) {
+    h.update(kind + '\0' + rel + '\0');
+    if (content === null) h.update('-\0');
+    else { h.update('+' + Buffer.byteLength(content) + '\0'); h.update(content); }
+  }
+  // → {hash, cut}: cut when a cycle was cut below, so the hash depends on where the walk began
+  function one(file, stack) {
+    if (done.has(file)) return { hash: done.get(file), cut: false };
+    const h = crypto.createHash('sha256');
+    h.update('board\0' + Buffer.byteLength(bytes.get(file)) + '\0');
+    h.update(bytes.get(file));
+    const doc = docs.get(file);
+    const items = boardLoads(file, doc).map(function (p) { return { p: p, kind: 'load' }; })
+      .concat(importsOf(file).map(function (i) { return { p: i.file, kind: 'import' }; }));
+    items.sort(function (a, b) { return a.p < b.p ? -1 : a.p > b.p ? 1 : a.kind < b.kind ? -1 : a.kind > b.kind ? 1 : 0; });
+    let cut = false;
+    const seen = new Set();
+    stack.add(file);
+    for (const it of items) {
+      if (seen.has(it.kind + it.p)) continue;
+      seen.add(it.kind + it.p);
+      if (it.kind === 'load') { part(h, 'load', it.p, read(it.p)); continue; }
+      if (!docs.has(it.p)) { part(h, 'import', it.p, null); continue; }
+      if (stack.has(it.p)) { part(h, 'import', it.p, null); cut = true; continue; }
+      const c = one(it.p, stack);
+      if (c.cut) cut = true;
+      part(h, 'import', it.p, c.hash);
+    }
+    stack.delete(file);
+    const hex = h.digest('hex');
+    if (!cut) done.set(file, hex);
+    return { hash: hex, cut: cut };
+  }
+  const out = new Map();
+  for (const f of files) out.set(f, one(f, new Set()).hash);
+  return out;
+}
+
 // The canvas description with every board's data-props and issues: what the index and the check use.
+// Per board also its named states, its links to other boards, the boards it imports, the files it
+// loads and its hash (boardHashes()).
 function describe(dir) {
   const canvas = readCanvas(dir) || {};
   const files = listBoards(dir);
@@ -66,25 +159,42 @@ function describe(dir) {
   const entries = canvas.boards || {};
   const names = Array.from(new Set((canvas.order || []).filter(function (f) { return entries[f]; }).concat(Object.keys(entries), files)));
   const docs = new Map();
-  for (const f of files) docs.set(f, T.parseBoard(fs.readFileSync(path.join(dir, f), 'utf8'), f));
+  const bytes = new Map();
+  for (const f of files) {
+    bytes.set(f, fs.readFileSync(path.join(dir, f)));
+    docs.set(f, T.parseBoard(bytes.get(f).toString('utf8'), f));
+  }
   // as the runtime resolves them: beside the importing board, or from the design folder for "/…"
   const importsOf = function (f) {
     const d = docs.get(f);
     if (!d || d.issues.length) return [];
+    return resolvedImports(f);
+  };
+  // every <dc-import> of a board, also of a board with issues
+  const resolvedImports = function (f) {
+    const d = docs.get(f);
+    if (!d) return [];
     return d.imports.map(function (n) {
       const file = path.posix.normalize(n[0] === '/' ? n.slice(1) + '.dc.html' : path.posix.join(path.posix.dirname(f), n + '.dc.html'));
       return { name: n, file: file, line: d.importLines[n] };
     });
   };
+  const hashes = boardHashes(dir, files, docs, bytes, resolvedImports);
   const boards = names.map(function (f) {
     const c = entries[f] || null;
     const b = { file: f, exists: onDisk.has(f), onCanvas: !!c, title: c && c.title || f, page: c && c.page || null,
       x: c ? c.x : null, y: c ? c.y : null, w: c ? c.w : null, h: c ? c.h : null,
-      interactive: !!(c && c.is_interactive), expand: c && c.expand || null, props: {}, preview: null, issues: [] };
+      interactive: !!(c && c.is_interactive), expand: c && c.expand || null, props: {}, preview: null, issues: [],
+      states: [], links: [], imports: [], loads: [], hash: null };
     if (b.exists) {
       const doc = docs.get(f);
       b.props = doc.props;
       b.preview = doc.preview;
+      b.states = doc.states;
+      b.links = boardLinks(f, doc);
+      b.imports = Array.from(new Set(resolvedImports(f).map(function (i) { return i.file; })));
+      b.loads = boardLoads(f, doc);
+      b.hash = hashes.get(f);
       b.issues = doc.issues.concat(T.importCycles(f, importsOf).map(function (c) {
         return { kind: 'unsupported', feature: 'dc-import cycle', detail: c.chain.join(' → '), line: c.line };
       }));
@@ -245,4 +355,4 @@ function startServer(opts) {
   });
 }
 
-module.exports = { startServer: startServer, describe: describe, listBoards: listBoards, runtimeSource: runtimeSource, within: within, sendFile: sendFile, MIME: MIME, UI_ROOT: UI_ROOT };
+module.exports = { startServer: startServer, describe: describe, refPath: refPath, boardHashes: boardHashes, listBoards: listBoards, runtimeSource: runtimeSource, within: within, sendFile: sendFile, MIME: MIME, UI_ROOT: UI_ROOT };

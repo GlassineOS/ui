@@ -126,7 +126,7 @@ test('tools/boards export: the command', () => {
   const out = fresh('cli');
   const r = spawnSync(process.execPath, [path.join(ROOT, 'tools', 'boards'), 'export', SAMPLES, out], { encoding: 'utf8' });
   assert.strictEqual(r.status, 0, r.stderr);
-  assert.match(r.stdout, /^boards export: 6 boards of /);
+  assert.match(r.stdout, /^boards export: 7 boards of /);
   assert.ok(fs.existsSync(path.join(out, '_boards', 'api', 'canvas.json')));
   const bad = spawnSync(process.execPath, [path.join(ROOT, 'tools', 'boards'), 'export', SAMPLES], { encoding: 'utf8' });
   assert.strictEqual(bad.status, 2);

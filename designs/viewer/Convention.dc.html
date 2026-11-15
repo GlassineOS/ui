@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>States convention</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="viewer.css">
+</helmet>
+<div class="vw vw-doc" data-theme="white-paper">
+  <div class="vw-doc__in">
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <span class="vw-tag" style="align-self: flex-start">proposal · board subset 2</span>
+      <h1>A board names its states</h1>
+      <p class="vw-lead">Today a board that has several states draws its own row of buttons to switch between them, inside its own pixels. With <span class="vw-mono">$states</span> the board says which states it has, and the viewer shows them: on the tile, in the filmstrip, in the matrix, in the flow, and in the review.</p>
+    </div>
+    <div class="vw-cols vw-cols--2">
+      <div class="vw-pane">
+        <h3>Today</h3>
+        <div style="position: relative; height: 330px; border-radius: 8px; overflow: hidden; box-shadow: 0 0 0 1px var(--rule)">
+          <div style="position: absolute; left: 0; right: 0; top: 0; bottom: 64px"><dc-import name="Thumb" kind="pair" state="2" style="position: absolute; inset: 0" hint-size="100%,100%"></dc-import></div>
+          <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 64px; padding: 10px; display: flex; flex-wrap: wrap; gap: 6px; background: var(--sheet); border-top: 1px dashed var(--accent-2)">
+            <span class="il-chip">Off</span><span class="il-chip">On</span><span class="il-chip il-chip--waits">Scanning</span><span class="il-chip">Connected</span><span class="il-chip">Window: full</span><span class="il-chip">column</span>
+          </div>
+        </div>
+        <ul>
+          <li>The buttons are part of the board, so they are in every screenshot and every review image.</li>
+          <li>Each design draws them differently; the viewer cannot see them.</li>
+          <li>An agent reaches a state only by naming clicks (<span class="vw-mono">--click</span>).</li>
+        </ul>
+      </div>
+      <div class="vw-pane">
+        <h3>With $states</h3>
+        <div style="position: relative; height: 330px; display: flex; flex-direction: column; gap: 10px">
+          <div style="position: relative; flex: 1; border-radius: 8px; overflow: hidden; box-shadow: 0 0 0 1px var(--rule)"><dc-import name="Thumb" kind="pair" state="2" style="position: absolute; inset: 0" hint-size="100%,100%"></dc-import></div>
+          <div class="vw-seg"><button type="button">Off</button><button type="button">On</button><button type="button" aria-pressed="true">Scanning</button><button type="button">Connected</button></div>
+        </div>
+        <ul>
+          <li>The board shows only the screen. The viewer draws the state switch.</li>
+          <li>States are addressable: <span class="vw-mono">view.html?board=…&amp;state=scanning</span>.</li>
+          <li><span class="vw-mono">tools/boards shot FILE --state scanning</span>; the checks render every state.</li>
+        </ul>
+      </div>
+    </div>
+    <h2>In the board file</h2>
+    <pre class="vw-code">&lt;script type="text/x-dc" data-dc-script data-props='{
+  "$preview": { "width": 760, "height": 1140 },
+  <b>"$states"</b>: [
+    { "id": "off",       "name": "Off",       "props": { "bt": "off" } },
+    { "id": "on",        "name": "On",        "props": { "bt": "on" } },
+    { "id": "scanning",  "name": "Scanning",  "props": { "bt": "scan" } },
+    { "id": "connected", "name": "Connected", "props": { "bt": "on", "paired": "Keyboard K380" },
+      <b>"from"</b>: [{ "state": "scanning", "label": "Pair" }] }
+  ],
+  "bt": { "editor": "enum", "options": ["off", "on", "scan"], "default": "off" },
+  "paired": { "editor": "text", "default": "" }
+}'&gt;</pre>
+    <div class="vw-cols">
+      <div class="vw-pane"><h3>Only props</h3><span class="vw-soft">A state is a set of the board’s own props, nothing more. The logic does not change; a board without <span class="vw-mono">$states</span> works as before.</span></div>
+      <div class="vw-pane"><h3>Arrows for the flow</h3><span class="vw-soft">Links between boards come from <span class="vw-mono">&lt;a href&gt;</span>. A change of state inside one board has no link, so <span class="vw-mono">from</span> names it, with the label on the arrow.</span></div>
+      <div class="vw-pane"><h3>Checked</h3><span class="vw-soft">The check reads <span class="vw-mono">$states</span>: an unknown prop or option, or a duplicate id, is an error. Every state renders in <span class="vw-mono">designs-check</span>.</span></div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1240,"height":1240}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

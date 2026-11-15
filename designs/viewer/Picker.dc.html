@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Render picker</title>
+<script src="./support.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="viewer.css">
+</helmet>
+<div class="vw-pop vw-picker" data-theme="white-paper" style="position: relative; top: 0; right: 0" role="dialog" aria-label="Render every board in">
+  <h3>Voice</h3>
+  <div class="vw-swatches"><sc-for list="{{ voices }}" as="o" hint-placeholder-count="3"><div class="vw-swatch" aria-pressed="{{ o.on }}" onClick="{{ o.set }}"><div class="vw-swatch__img"><dc-import name="Thumb" kind="settings" voice="{{ o.id }}" scheme="{{ scheme }}" style="position: absolute; inset: 0" hint-size="100%,100%"></dc-import></div>{{ o.name }}</div></sc-for></div>
+  <h3>Scheme</h3>
+  <div class="vw-swatches"><sc-for list="{{ schemes }}" as="o" hint-placeholder-count="3"><div class="vw-swatch" aria-pressed="{{ o.on }}" onClick="{{ o.set }}"><div class="vw-swatch__img"><dc-import name="Thumb" kind="settings" voice="{{ voice }}" scheme="{{ o.id }}" style="position: absolute; inset: 0" hint-size="100%,100%"></dc-import></div>{{ o.name }}</div></sc-for></div>
+  <h3>Pen</h3>
+  <div class="vw-seg"><sc-for list="{{ pens }}" as="o" hint-placeholder-count="3"><button type="button" aria-pressed="{{ o.on }}" onClick="{{ o.set }}"><span data-theme="{{ theme }}" data-pen="{{ o.id }}" style="width: 10px; height: 10px; border-radius: 50%; background: var(--pen); display: inline-block"></span>{{ o.name }}</button></sc-for></div>
+  <footer><span class="vw-soft vw-grow">Every board on every page. One board can differ: its inspector.</span><a class="vw-btn vw-btn--flat" href="matrix.voices.dc.html">All 9 side by side</a></footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":400,"height":420}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { voice: p.voice || 'white', scheme: p.scheme || 'paper', pen: p.pen || '1' }; }
+  renderVals() {
+    const V = window.VIEWER, s = this.state, p = this.props;
+    const opt = (k, list) => list.map(([id, name]) => ({ id, name, on: s[k] === id ? 'true' : 'false', set: () => { this.setState({ [k]: id }); if (p.onSet) p.onSet(k, id); } }));
+    return { ...s, theme: V.theme(s.voice, s.scheme), voices: opt('voice', V.VOICES), schemes: opt('scheme', V.SCHEMES), pens: opt('pen', V.PENS) };
+  }
+}
+</script>
+</body>
+</html>

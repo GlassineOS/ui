@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en" data-theme="white-paper">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Matrix</title>
+<link rel="stylesheet" href="../ds/web/tokens.css">
+<link rel="stylesheet" href="../ds/web/bundle.css">
+<link rel="stylesheet" href="preview.css">
+</head>
+<body class="vw matrix-page">
+<div class="vw-body vw-body--matrix">
+  <section class="vw-matrix" id="side" aria-label="Every combination">
+    <label class="vw-row"><span class="vw-mks" id="mark"></span><select id="board" aria-label="Board"></select></label>
+    <div class="vw-axes"><span>Rows</span><div class="vw-seg" id="rows" role="group" aria-label="Rows"></div></div>
+    <div class="vw-axes"><span>Columns</span><div class="vw-seg" id="cols" role="group" aria-label="Columns"></div></div>
+    <div class="vw-grid" id="grid" role="grid" aria-label="Combinations"></div>
+    <p class="vw-soft vw-small" id="note"></p>
+  </section>
+  <section class="vw-big" aria-label="The chosen combination">
+    <div class="vw-big__top"><h2 id="big-t"></h2><span id="big-err"></span><span class="vw-grow"></span><a class="vw-btn" id="open" aria-keyshortcuts="Enter">Open in the board view</a></div>
+    <div class="vw-big__stage" id="big"></div>
+    <div class="vw-big__foot">Click a cell to look closer · arrow keys move · <span class="vw-key">⏎</span> opens it</div>
+  </section>
+</div>
+<script src="preview-common.js"></script>
+<script src="matrix.js"></script>
+</body>
+</html>

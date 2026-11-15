@@ -1,22 +1,49 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="white-paper">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Boards</title>
+<link rel="stylesheet" href="../ds/web/tokens.css">
+<link rel="stylesheet" href="../ds/web/bundle.css">
 <link rel="stylesheet" href="preview.css">
 </head>
-<body class="canvas-page">
-<header class="bar">
-  <strong id="title">Boards</strong>
-  <nav id="pages" aria-label="Pages"></nav>
-  <span class="grow"></span>
-  <label><input type="checkbox" id="live"> Live boards</label>
-  <label title="Live boards take clicks and keys here; a board's title opens it in the board view"><input type="checkbox" id="use"> Use boards</label>
-  <label>Zoom <input type="range" id="zoom" min="5" max="100" value="20"></label>
-</header>
-<main id="canvas" aria-label="Canvas"><div id="sizer"><div id="plane"></div></div></main>
-<section id="extra" class="extra" hidden></section>
+<body class="vw canvas-page">
+<div class="vw-body" id="body">
+  <nav class="vw-rail" id="rail" aria-label="Pages and boards">
+    <section>
+      <h3>Pages <span id="npages"></span></h3>
+      <div class="vw-nav" id="pages"></div>
+    </section>
+    <section>
+      <h3>On this page <span id="nboards"></span></h3>
+      <label class="vw-filter"><svg class="vw-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"></path></svg><input id="filter" type="search" placeholder="Filter boards" aria-label="Filter the boards of this page" aria-keyshortcuts="f" autocomplete="off"><span class="vw-key" aria-hidden="true">F</span></label>
+      <div class="vw-outline" id="outline" role="listbox" aria-label="Boards on this page"></div>
+    </section>
+    <section id="extra" class="extra" hidden>
+      <h3>Not on the canvas <span id="nextra"></span></h3>
+      <div class="vw-outline" id="extra-list"></div>
+    </section>
+  </nav>
+  <div class="vw-stagewrap">
+    <main class="vw-stage" id="canvas" aria-label="Canvas"><div id="sizer"><div id="plane" class="vw-plane"></div></div></main>
+    <div class="vw-float vw-zoombar" role="toolbar" aria-label="Zoom and use">
+      <button type="button" id="out" title="Zoom out (−)" aria-label="Zoom out" aria-keyshortcuts="-">−</button>
+      <input type="range" id="zoom" min="5" max="200" value="20" aria-label="Zoom" title="Zoom (ctrl+wheel or pinch on the canvas)">
+      <output id="pct" for="zoom">20%</output>
+      <button type="button" id="in" title="Zoom in (+)" aria-label="Zoom in" aria-keyshortcuts="+">+</button>
+      <span class="vw-sep"></span>
+      <button type="button" id="fit" title="Fit the page (1)" aria-keyshortcuts="1">Fit</button>
+      <button type="button" id="actual" title="Actual size (0)" aria-keyshortcuts="0">1:1</button>
+      <span class="vw-sep"></span>
+      <label class="vw-toggle" title="Boards live in frames, else their names (L)"><input type="checkbox" id="live" aria-keyshortcuts="l"> Live</label>
+      <label class="vw-toggle" title="Live boards take clicks and keys here; a board's title opens it in the board view (U)"><input type="checkbox" id="use" aria-keyshortcuts="u"> Use in place</label>
+      <label class="vw-toggle" id="changed-only-l" hidden title="Dim the boards the proposal leaves alone (C)"><input type="checkbox" id="changed-only" aria-keyshortcuts="c"> Changed only</label>
+    </div>
+    <div class="vw-mini" id="mini" aria-label="Where the view lies on the page"><div class="vw-mini__map" id="map"></div><div class="vw-mini__cap"><span id="map-page"></span><span id="map-n" class="vw-mono"></span></div></div>
+  </div>
+  <aside class="vw-insp" id="insp" aria-label="The chosen board" hidden></aside>
+</div>
 <script src="preview-common.js"></script>
 <script src="canvas.js"></script>
 </body>

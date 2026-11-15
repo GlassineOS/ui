@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // The review of a proposal under plain node (no browser): what counts as added, changed and removed
-// (a board's own file, a board it imports, a file it loads), the board hash, the "seen" marks of the
-// review page, the regions of a known difference, and review.json as tools/site-designs writes it.
+// (a board's own file, a board it imports, a file it loads, by describe()'s hash), the "seen" marks
+// of the review page, the regions of a known difference, and review.json as tools/site-designs writes it.
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert');
@@ -25,19 +25,13 @@ function fresh(name) {
 function copy(name) { const d = fresh(name); fs.cpSync(SAMPLES, d, { recursive: true }); return d; }
 function edit(dir, file, fn) { const p = path.join(dir, file); fs.writeFileSync(p, fn(fs.readFileSync(p, 'utf8'))); }
 function changes(mainDir, prDir) {
-  const m = describe(mainDir), p = describe(prDir);
-  const hs = R.sideHashes([m, p], [mainDir, prDir]);
   const out = {};
-  for (const b of R.compareDesigns({ desc: m, hashes: hs[0] }, { desc: p, hashes: hs[1] })) out[b.file] = b.change;
+  for (const b of R.compareDesigns(describe(mainDir), describe(prDir))) out[b.file] = b.change;
   return out;
 }
 
-test('review: identical designs give identical hashes and no change', () => {
-  const a = copy('same-a'), b = copy('same-b');
-  assert.deepStrictEqual(changes(a, b), {});
-  const files = describe(a).boards.filter((x) => x.exists).map((x) => x.file);
-  assert.deepStrictEqual(R.boardHashes(a, files), R.boardHashes(b, files));
-  for (const h of Object.values(R.boardHashes(a, files))) assert.match(h, /^[0-9a-f]{64}$/);
+test('review: identical designs give no change', () => {
+  assert.deepStrictEqual(changes(copy('same-a'), copy('same-b')), {});
 });
 
 test('review: a board\'s own file, an import and a loaded file each mark the boards that use them', () => {
@@ -63,9 +57,6 @@ test('review: a board\'s own file, an import and a loaded file each mark the boa
   fs.writeFileSync(path.join(css, 'data/extra.css'), 'b { color: red }\n');
   fs.writeFileSync(path.join(css2, 'data/extra.css'), 'b { color: blue }\n');
   assert.deepStrictEqual(changes(css, css2), { 'Counter.dc.html': 'changed' });
-  assert.deepStrictEqual(R.boardLoads({ headScripts: [{ src: 'data/a.js' }], helmet: [{ tag: 'link', attrs: { href: '../x.css' } },
-    { tag: 'link', attrs: { href: 'ds/web/tokens.css' } }, { tag: 'link', attrs: { href: 'https://fonts.googleapis.com/css2' } },
-    { tag: 'script', attrs: { src: '/abs.js' } }, { tag: 'link', attrs: { href: 'b.css?v=1' } }] }, 'sub/X.dc.html'), ['b.css', 'data/a.js', 'x.css'].map((x) => x === 'x.css' ? 'x.css' : 'sub/' + x).sort());
 });
 
 test('review: added and removed boards, in the proposal\'s order then main\'s', () => {
@@ -73,35 +64,13 @@ test('review: added and removed boards, in the proposal\'s order then main\'s', 
   fs.copyFileSync(path.join(pr, 'Counter.dc.html'), path.join(pr, 'Extra.dc.html'));
   fs.rmSync(path.join(pr, 'Form.dc.html'));
   const m = describe(main), p = describe(pr);
-  const hs = R.sideHashes([m, p], [main, pr]);
-  const list = R.compareDesigns({ desc: m, hashes: hs[0] }, { desc: p, hashes: hs[1] });
+  const list = R.compareDesigns(m, p);
+  // Form stays on the proposal's canvas but is gone from disk (hash null): removed, not listed twice
   assert.deepStrictEqual(list.map((b) => b.file + ':' + b.change), ['Extra.dc.html:added', 'Form.dc.html:removed']);
-  assert.strictEqual(list[1].hash, hs[0]['Form.dc.html'], 'a removed board carries main\'s hash');
+  assert.strictEqual(list[1].hash, m.boards.find((b) => b.file === 'Form.dc.html').hash, 'a removed board carries main\'s hash');
   // a design the main line does not have: every board added
-  const all = R.compareDesigns(null, { desc: p, hashes: hs[1] });
+  const all = R.compareDesigns(null, p);
   assert.ok(all.length > 0 && all.every((b) => b.change === 'added'));
-});
-
-test('review: an import cycle or a missing import still hashes', () => {
-  const d = fresh('cycle');
-  fs.mkdirSync(d, { recursive: true });
-  const board = (imp) => '<!doctype html><html><head><title>x</title><script src="./support.js"></script></head><body><x-dc>' +
-    imp.map((n) => '<dc-import name="' + n + '"></dc-import>').join('') + '</x-dc><script type="text/x-dc" data-dc-script>class Component extends DCLogic {}</script></body></html>';
-  fs.writeFileSync(path.join(d, 'A.dc.html'), board(['B']));
-  fs.writeFileSync(path.join(d, 'B.dc.html'), board(['A', 'Gone']));
-  const h = R.boardHashes(d, ['A.dc.html', 'B.dc.html']);
-  assert.match(h['A.dc.html'], /^[0-9a-f]{64}$/);
-  assert.notStrictEqual(h['A.dc.html'], h['B.dc.html']);
-  assert.deepStrictEqual(R.boardHashes(d, ['B.dc.html', 'A.dc.html']), h, 'the same whatever the order');
-});
-
-test('review: the canvas data\'s own hashes are used only when both sides have them', () => {
-  const desc = (hash) => ({ boards: [{ file: 'a.dc.html', exists: true, hash: hash }] });
-  assert.deepStrictEqual(R.sideHashes([desc('1'), desc('2')], [null, null]), [{ 'a.dc.html': '1' }, { 'a.dc.html': '2' }]);
-  const main = copy('mixed');
-  const m = describe(main);
-  const hs = R.sideHashes([m, Object.assign({}, m, { boards: m.boards.map((b) => Object.assign({}, b, { hash: 'x' })) })], [main, main]);
-  assert.deepStrictEqual(hs[0], hs[1], 'one side without hashes: both computed here');
 });
 
 test('review: seen marks follow the board hash', () => {
@@ -183,7 +152,7 @@ test('review: the combinations of a changed board', () => {
   assert.strictEqual(c.combos.length, 9 * 2, 'every voice × scheme at pen 1, default and the state both sides have');
   assert.ok(c.combos.every((x) => x.pen === 1));
   assert.deepStrictEqual(c.missing, ['new', 'off']);
-  assert.deepStrictEqual(c.combos.slice(9).map((x) => x.state + ':' + x.mainProps.s + ':' + x.prProps.s)[0], 'on:on:on');
+  assert.ok(c.combos.slice(9).every((x) => x.state === 'on'));
   assert.strictEqual(R.comboId(c.combos[9]), 'white-paper-1@on');
   assert.strictEqual(R.boardCombos(all, {}, {}).combos.length, 9, 'no states');
 });

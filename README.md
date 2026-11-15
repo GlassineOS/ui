@@ -628,7 +628,7 @@ version 1):
   main has no such design, and then every board is added), `boards` (per board `file`, `title`,
   `page`, `change`: `added`, `changed` or `removed`, `issues`: its check issues, and `hash`), and
   `diffs` (`_boards/diffs/`, or `null` without difference images).
-- A board is changed when its hash differs from main's: the hash covers its own file, every file it
+- A board is changed when its hash (`hash` in `_boards/api/canvas.json`) differs from main's: the hash covers its own file, every file it
   loads by a literal relative URL (the head's scripts, the helmet's links and scripts, not
   `support.js` or `ds/`) and the hash of every board it imports, so a change to `viewer.css` or to an
   imported board marks every board that uses it. The comparison is with main as it is when the site

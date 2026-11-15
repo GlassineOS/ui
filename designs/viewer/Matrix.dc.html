@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Matrix</title>
+<script src="./support.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="viewer.css">
+</helmet>
+<div class="vw" data-theme="white-paper" style="position: relative">
+  <dc-import name="Bar" mode="matrix" rev="pr" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,56px"></dc-import>
+  <div class="vw-body" style="grid-template-columns: auto 1fr">
+    <main class="vw-matrix" style="border-right: 1px solid var(--rule); background: var(--paper)">
+      <div class="vw-axes">
+        <span class="vw-filter" style="margin: 0; color: var(--ink); width: 200px"><span class="vw-mk vw-mk--changed"></span>Bluetooth<span class="vw-grow"></span><svg class="vw-ico" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5"></path></svg></span>
+      </div>
+      <div class="vw-axes">
+        <span class="vw-small vw-soft" style="width: 60px">Rows</span>
+        <div class="vw-seg"><sc-for list="{{ rowAxes }}" as="a" hint-placeholder-count="5"><button type="button" aria-pressed="{{ a.on }}" onClick="{{ a.pick }}">{{ a.name }}</button></sc-for></div>
+      </div>
+      <div class="vw-axes">
+        <span class="vw-small vw-soft" style="width: 60px">Columns</span>
+        <div class="vw-seg"><sc-for list="{{ colAxes }}" as="a" hint-placeholder-count="5"><button type="button" aria-pressed="{{ a.on }}" onClick="{{ a.pick }}">{{ a.name }}</button></sc-for></div>
+      </div>
+      <div class="vw-grid" style="grid-template-columns: 92px repeat({{ ncols }}, {{ cw }}px)">
+        <span></span>
+        <sc-for list="{{ cols }}" as="c" hint-placeholder-count="3"><span class="vw-grid__h">{{ c.name }}</span></sc-for>
+        <sc-for list="{{ rows }}" as="r" hint-placeholder-count="3">
+          <span class="vw-grid__r">{{ r.name }}</span>
+          <sc-for list="{{ r.cells }}" as="x" hint-placeholder-count="3">
+            <a class="{{ x.cls }}" href="#" onClick="{{ x.pick }}">
+              <span class="vw-cell__img" style="height: {{ ch }}px; outline: {{ x.ring }}"><dc-import name="Thumb" kind="pair" v="a" state="{{ x.state }}" voice="{{ x.voice }}" scheme="{{ x.scheme }}" pen="{{ x.pen }}" style="position: absolute; inset: 0" hint-size="100%,100%"></dc-import></span>
+              <span class="vw-cell__cap"><span>{{ x.cap }}</span><sc-if value="{{ x.bad }}" hint-placeholder-val="{{ false }}"><span class="vw-tag vw-tag--bad" style="height: 16px">contrast</span></sc-if></span>
+            </a>
+          </sc-for>
+        </sc-for>
+      </div>
+    </main>
+    <section class="vw-desk">
+      <div class="vw-desk__top">
+        <span class="vw-desk__title">{{ spot.title }}</span><span class="vw-grow"></span>
+        <a class="vw-btn vw-btn--flat" href="board.states.dc.html">Open in the board view</a>
+      </div>
+      <div class="vw-desk__mid" style="flex-direction: column; gap: 12px">
+        <div class="vw-sheet" style="width: 440px; height: 660px"><dc-import name="Thumb" kind="pair" v="a" state="{{ spot.state }}" voice="{{ spot.voice }}" scheme="{{ spot.scheme }}" pen="{{ spot.pen }}" style="position: absolute; inset: 0" hint-size="100%,100%"></dc-import></div>
+        <span class="vw-small vw-soft">Click a cell to look closer · arrow keys move · <span class="vw-key">⏎</span> opens it</span>
+      </div>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"rows":{"editor":"enum","options":["voice","scheme","pen","state"],"default":"voice"},"cols":{"editor":"enum","options":["voice","scheme","pen","state"],"default":"scheme"},"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { rows: p.rows || 'voice', cols: p.cols || 'scheme', at: [1, 2] }; }
+  renderVals() {
+    const p = this.props, s = this.state, V = window.VIEWER, b = V.board('settings.bluetooth');
+    const AX = {
+      voice: { name: 'Voice', list: V.VOICES },
+      scheme: { name: 'Scheme', list: V.SCHEMES },
+      pen: { name: 'Pen', list: V.PENS },
+      state: { name: 'State', list: b.states.map((n, i) => [String(i), n]) },
+    };
+    const base = { voice: p.voice || 'white', scheme: p.scheme || 'paper', pen: p.pen || '1', state: '3' };
+    const axes = which => Object.keys(AX).map(k => ({ name: AX[k].name, on: s[which] === k ? 'true' : 'false', pick: () => { if (k !== s[which === 'rows' ? 'cols' : 'rows']) this.setState({ [which]: k, at: [0, 0] }); } }));
+    const R = AX[s.rows].list, C = AX[s.cols].list;
+    const ch = R.length > 3 ? 132 : 180, cw = Math.round(ch * 760 / 1140);
+    const label = (o) => V.name(V.VOICES, o.voice) + ' · ' + V.name(V.SCHEMES, o.scheme) + ' · pen ' + o.pen + (b.states[Number(o.state)] ? ' · ' + b.states[Number(o.state)] : '');
+    const rows = R.map(([rid, rname], ri) => ({
+      name: rname,
+      cells: C.map(([cid, cname], ci) => {
+        const o = { ...base, [s.rows]: rid, [s.cols]: cid };
+        const on = s.at[0] === ri && s.at[1] === ci;
+        const bad = o.voice === 'stationery' && o.scheme === 'night' && o.state === '3';
+        return { ...o, cap: '', bad, cls: 'vw-cell' + (bad ? ' vw-cell--bad' : ''), ring: on ? '3px solid var(--accent)' : 'none', pick: () => this.setState({ at: [ri, ci] }) };
+      }),
+    }));
+    const sp = rows[s.at[0]] ? rows[s.at[0]].cells[s.at[1]] : rows[0].cells[0];
+    return {
+      voice: base.voice, scheme: base.scheme, pen: base.pen,
+      rowAxes: axes('rows'), colAxes: axes('cols'),
+      cols: C.map(([, n]) => ({ name: n })), ncols: C.length, rows, ch, cw,
+      spot: { ...sp, title: label(sp) },
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Flow</title>
+<script src="./support.js"></script>
+<script src="data/fixtures.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="viewer.css">
+<style>.vw-edges path.arrow { fill: var(--ink-soft); stroke: none; } .vw-edges path.arrow.on { fill: var(--ink); }</style>
+</helmet>
+<div class="vw" data-theme="white-paper" style="position: relative">
+  <dc-import name="Bar" mode="flow" rev="pr" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="100%,56px"></dc-import>
+  <div class="vw-body" style="grid-template-columns: 248px 1fr">
+    <aside class="vw-rail">
+      <div class="vw-nav">
+        <h3>Flows on Settings <span>4</span></h3>
+        <sc-for list="{{ flows }}" as="f" hint-placeholder-count="4"><a href="#" aria-current="{{ f.cur }}">{{ f.name }}<span class="vw-n">{{ f.n }}</span></a></sc-for>
+      </div>
+      <div class="vw-pane" style="margin: 0 4px; font-size: 13px">
+        <b>Drawn from the boards</b>
+        <span class="vw-soft">Every arrow is a link or a state change a board makes. Nothing here is laid out by hand; a board nothing leads to shows under “Not reached”.</span>
+      </div>
+      <div class="vw-outline">
+        <h3>Walk <span>{{ stepN }} / {{ steps }}</span></h3>
+        <sc-for list="{{ path }}" as="p" hint-placeholder-count="5"><a href="#" aria-selected="{{ p.sel }}" onClick="{{ p.pick }}"><span class="vw-mono vw-small vw-soft">{{ p.n }}</span><span class="vw-t">{{ p.title }}</span><span class="vw-soft vw-small">{{ p.via }}</span></a></sc-for>
+      </div>
+    </aside>
+    <main class="vw-stage vw-flow">
+      <div class="vw-plane" style="left: 24px; top: 24px">
+        <sc-for list="{{ edges }}" as="e" hint-placeholder-count="7"><svg class="vw-edges" width="1" height="1"><path class="{{ e.cls }}" d="{{ e.d }}"></path><path class="{{ e.acls }}" d="{{ e.a }}"></path></svg></sc-for>
+        <sc-for list="{{ edges }}" as="e" hint-placeholder-count="7"><span class="{{ e.lcls }}" style="left: {{ e.lx }}px; top: {{ e.ly }}px">{{ e.label }}</span></sc-for>
+        <sc-for list="{{ nodes }}" as="n" hint-placeholder-count="6">
+          <div class="vw-tile" aria-selected="{{ n.sel }}" onClick="{{ n.pick }}" style="left: {{ n.x }}px; top: {{ n.y }}px; width: {{ nw }}px; height: {{ nh }}px">
+            <div class="vw-tile__label"><span class="{{ n.mk }}"></span><span class="vw-t">{{ n.title }}</span></div>
+            <div class="vw-tile__frame"><dc-import name="Thumb" kind="{{ n.kind }}" v="{{ n.v }}" state="{{ n.state }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" style="position: absolute; inset: 0" hint-size="100%,100%"></dc-import></div>
+            <sc-if value="{{ n.stateName }}" hint-placeholder-val="{{ false }}"><span class="vw-tag" style="position: absolute; left: 0; top: calc(100% + 6px); background: var(--paper)">state · {{ n.stateName }}</span></sc-if>
+          </div>
+        </sc-for>
+        <div class="vw-section" style="left: 0; top: 590px">Not reached<small>Boards on this page no link leads to</small></div>
+        <sc-for list="{{ orphans }}" as="o" hint-placeholder-count="3"><div class="vw-tile" style="left: {{ o.x }}px; top: 660px; width: 70px; height: 105px"><div class="vw-tile__label"><span class="vw-t">{{ o.title }}</span></div><div class="vw-tile__frame"><dc-import name="Thumb" kind="{{ o.kind }}" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" style="position: absolute; inset: 0" hint-size="100%,100%"></dc-import></div></div></sc-for>
+      </div>
+      <div class="vw-float" style="left: 50%; bottom: 14px; transform: translateX(-50%)">
+        <button type="button" onClick="{{ prev }}">◂</button>
+        <span class="vw-small" style="padding: 0 10px"><b>Walk</b> · step {{ stepN }} of {{ steps }}: {{ stepTitle }}</span>
+        <button type="button" onClick="{{ next }}">▸</button>
+        <span class="vw-sep"></span>
+        <a href="board.states.dc.html">Open this step</a>
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night","eink"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { step: 2 }; }
+  renderVals() {
+    const p = this.props, s = this.state, nw = 124, nh = 186;
+    const N = {
+      more: { title: 'More · 1/2', kind: 'list', x: 0, y: 200, mk: 'vw-mk vw-mk--still' },
+      bt: { title: 'Bluetooth', kind: 'pair', state: '1', x: 210, y: 200, mk: 'vw-mk vw-mk--changed' },
+      pair: { title: 'Bluetooth › Pairing', kind: 'dialog', x: 430, y: 40, mk: 'vw-mk vw-mk--added' },
+      code: { title: 'Bluetooth › Code shown', kind: 'dialog', v: 'b', x: 660, y: 40, mk: 'vw-mk vw-mk--added' },
+      fail: { title: 'Bluetooth › Failed', kind: 'dialog', v: 'c', x: 430, y: 380, mk: 'vw-mk vw-mk--changed' },
+      done: { title: 'Bluetooth', kind: 'pair', state: '3', stateName: 'Connected', x: 890, y: 200, mk: 'vw-mk vw-mk--changed' },
+    };
+    const path = ['more', 'bt', 'pair', 'code', 'done'];
+    const via = { bt: '“Bluetooth”', pair: '“Pair”', code: '“Show code”', done: '“Done”' };
+    const E = [['more', 'bt', 'Bluetooth'], ['bt', 'pair', 'Pair'], ['pair', 'code', 'Show code'], ['code', 'done', 'Done'], ['pair', 'fail', 'No answer'], ['fail', 'pair', 'Try again'], ['fail', 'bt', 'Back']];
+    const onPath = (a, b) => { const i = path.indexOf(a); return i >= 0 && path[i + 1] === b && i < s.step; };
+    const edges = E.map(([a, b, label]) => {
+      const A = N[a], B = N[b];
+      let x1, y1, x2, y2, lx, ly, arrow;
+      if (a === 'pair' && b === 'fail') { x1 = A.x + 34; y1 = A.y + nh; x2 = B.x + 34; y2 = B.y - 22; lx = x1 - 58; ly = (y1 + y2) / 2; arrow = `M${x2} ${y2} l-5 -9 h10 z`; }
+      else if (a === 'fail' && b === 'pair') { x1 = A.x + nw - 34; y1 = A.y - 22; x2 = B.x + nw - 34; y2 = B.y + nh + 2; lx = x1 + 40; ly = (y1 + y2) / 2; arrow = `M${x2} ${y2} l-5 9 h10 z`; }
+      else if (a === 'fail' && b === 'bt') { x1 = A.x; y1 = A.y + nh / 2; x2 = B.x + nw / 2; y2 = B.y + nh + 2; lx = (x1 + x2) / 2 - 10; ly = y1 - 30; arrow = `M${x2} ${y2} l-5 9 h10 z`; }
+      else { x1 = A.x + nw; y1 = A.y + nh / 2; x2 = B.x - 2; y2 = B.y + nh / 2; lx = (x1 + x2) / 2; ly = (y1 + y2) / 2; arrow = `M${x2} ${y2} l-9 -5 v10 z`; }
+      const vert = Math.abs(x2 - x1) < 60;
+      const d = (a === 'fail' && b === 'bt') ? `M${x1} ${y1} C${x2} ${y1} ${x2} ${y1} ${x2} ${y2}` : vert ? `M${x1} ${y1} L${x2} ${y2}` : `M${x1} ${y1} C${(x1 + x2) / 2} ${y1} ${(x1 + x2) / 2} ${y2} ${x2} ${y2}`;
+      const on = onPath(a, b);
+      return { d, a: arrow, cls: on ? 'on' : '', acls: 'arrow' + (on ? ' on' : ''), label, lx, ly, lcls: 'vw-edge-label' + (on ? ' vw-edge-label--on' : '') };
+    });
+    const nodes = Object.keys(N).map(k => ({ ...N[k], v: N[k].v || 'a', state: N[k].state || '0', stateName: N[k].stateName || '', sel: path[s.step] === k ? 'true' : 'false', pick: () => { const i = path.indexOf(k); if (i >= 0) this.setState({ step: i }); } }));
+    return {
+      voice: p.voice || 'white', scheme: p.scheme || 'paper', pen: p.pen || '1', nw, nh, nodes, edges,
+      flows: [['Pair a device', 5, true], ['E-ink and the look', 4], ['Wi-Fi with a password', 3], ['One app’s settings', 3]].map(([name, n, cur]) => ({ name, n, cur: cur ? 'page' : null })),
+      path: path.map((k, i) => ({ n: String(i + 1), title: N[k].title + (N[k].stateName ? ' · ' + N[k].stateName : ''), via: via[k] || 'start', sel: i === s.step ? 'true' : 'false', pick: () => this.setState({ step: i }) })),
+      steps: path.length, stepN: s.step + 1, stepTitle: N[path[s.step]].title,
+      prev: () => this.setState({ step: Math.max(0, s.step - 1) }), next: () => this.setState({ step: Math.min(path.length - 1, s.step + 1) }),
+      orphans: [{ title: 'About', kind: 'list', x: 0 }, { title: 'Date & time', kind: 'settings', x: 96 }, { title: 'Power', kind: 'settings', x: 192 }],
+    };
+  }
+}
+</script>
+</body>
+</html>

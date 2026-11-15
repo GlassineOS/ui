@@ -99,17 +99,8 @@
    "page": "wizard",
    "is_interactive": true
   },
-  "wizard.earlier.dc.html": {
-   "x": 6328,
-   "y": 0,
-   "w": 824,
-   "h": 1593,
-   "title": "Earlier samples (after the licence)",
-   "page": "wizard",
-   "is_interactive": true
-  },
   "wizard.ready.dc.html": {
-   "x": 7232,
+   "x": 6328,
    "y": 0,
    "w": 824,
    "h": 1545,
@@ -118,7 +109,7 @@
    "is_interactive": true
   },
   "wizard.donate.landscape.dc.html": {
-   "x": 8136,
+   "x": 7232,
    "y": 0,
    "w": 1058,
    "h": 1266,
@@ -450,7 +441,7 @@
    "x": 0,
    "y": -300,
    "w": 240,
-   "maxW": 9274
+   "maxW": 8370
   },
   "title_write": {
    "kind": "title1",
@@ -515,7 +506,6 @@
   "wizard.learning.dc.html",
   "wizard.donate.dc.html",
   "wizard.licence.dc.html",
-  "wizard.earlier.dc.html",
   "wizard.ready.dc.html",
   "wizard.donate.landscape.dc.html",
   "write.prompt.dc.html",

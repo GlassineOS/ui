@@ -180,7 +180,7 @@
 <div style="display:flex;gap:10px"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ sd.back }}" style="height:48px;padding:0 18px 0 12px;display:flex;align-items:center;gap:6px;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }}"><span style="font:400 22px/1 'Material Symbols Outlined'">arrow_back</span>All samples</div><span style="flex:1"></span><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ sd.del }}" style="height:48px;padding:0 18px 0 14px;display:flex;align-items:center;gap:6px;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }}"><span style="font:400 22px/1 'Material Symbols Outlined'">delete</span>Delete</div></div>
 <sc-if value="{{ sd.asking }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;display:flex;align-items:flex-end;padding:{{ bodyPad }};box-sizing:border-box"><div role="dialog" aria-label="Delete this sample?" style="width:100%;display:flex;flex-direction:column;gap:14px;padding:20px 22px;box-sizing:border-box;border-radius:{{ k.cardR }};background:var(--il-paper);box-shadow:{{ k.dialogSh }}">
 <span style="font:{{ k.packF }};font-variant:{{ k.packVar }};letter-spacing:{{ k.packLs }}">Delete this sample?</span>
-<span style="font:{{ k.sub }};text-wrap:pretty">It’s removed from your samples for good. What the tablet has already learned from it stays until it learns again.</span>
+<span style="font:{{ k.sub }};text-wrap:pretty">It’s removed from your samples, and from your donation, for good. What the tablet has already learned from it stays until it learns again.</span>
 <div style="display:flex;justify-content:flex-end;gap:10px"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ sd.keep }}" style="height:48px;padding:0 18px;display:flex;align-items:center;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }}">Keep it</div><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ sd.back }}" style="height:48px;padding:0 18px;display:flex;align-items:center;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.priBg }};color:{{ k.priFg }};box-shadow:{{ k.priSh }}">Delete</div></div>
 </div></div></sc-if>
 </div></sc-if>
@@ -438,7 +438,7 @@ class Component extends DCLogic {
       hasLast: screen === 'write-kept' || screen === 'best-careful', isCheck: screen === 'write-check',
       lastInk: screen === 'best-careful' ? 'garden' : 'quiet', lastState: screen === 'best-careful' ? 'The quick one' : 'Kept', lastRead: screen === 'best-careful' ? 'Kept. Now the careful one.' : 'Read as “quiet”',
       lastBtns: screen === 'best-careful' ? [btn('Redo', go('best-quick'))] : [btn('Redo', go('write')), btn('Discard', go('write'))],
-      checkBtns: [btn('Redo', go('write')), btn('Skip', go('write-kept')), btn('Keep it', go('write-kept'), 'pri')],
+      checkBtns: [btn('Keep it', go('write-kept')), btn('Skip', go('write-kept')), btn('Redo', go('write'), 'pri')],
       ink: wrInk, inkSize: sentence ? '40' : '46', hint: screen === 'write' && !s.inkN ? 'Write here with the pen' : '',
       clear: String(s.clear), onInk: n => u({ inkN: n }),
       counts: isBest ? '9 careful samples today' : 'Today 24 · 312 in all · 58 new to learn from',

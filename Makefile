@@ -8,8 +8,8 @@
 #                        check-forms (python3 alone, seconds), check-lib, check-boards (node)
 #   make boards-check    the design-board samples in headless Chromium (in Alpine: tools/in-alpine)
 #   make designs-check   every design under designs/, each folder (Chromium; tools/in-alpine)
-#   make designs-icons   rewrite the shell's icon font; designs-icons-check: fail when a board names an
-#                        icon the font lacks (tools/in-alpine; network for the source font)
+#   make designs-icons   rewrite the designs' icon fonts; designs-icons-check: fail when a board names an
+#                        icon its folder's font lacks (tools/in-alpine; network for the source font)
 #   make references      the component previews and the sample boards against their references
 #                        (Chromium as pinned in tools/chromium.pin: tools/in-alpine make references)
 #   make references-update   write those references (after a change that is meant to change pixels)
@@ -121,8 +121,9 @@ CHANGED ?= $(O)/designs-changed.txt
 designs-shots:
 	tools/boards shots --out $(O)/shots $(if $(BOARDS_INTERLEAF),--interleaf $(BOARDS_INTERLEAF)) < $(CHANGED)
 
-# the shell's icon font (designs/shell/fonts/): rewrite it, or fail when a board names an icon it
-# lacks (tools/in-alpine provides fontTools; both need network for the source font)
+# the icon font of each design that uses it (designs/PROJECT/fonts/): rewrite them, or fail when a
+# board names an icon its folder's font lacks (tools/in-alpine provides fontTools; both need network
+# for the source font)
 designs-icons:
 	$(PYTHON) tools/subset-icons
 designs-icons-check:

@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&amp;family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&amp;family=Kalam:wght@400&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=block" rel="stylesheet"><style>[data-il-root] [tabindex]:focus-visible{outline:2px solid var(--il-ring,var(--il-focus));outline-offset:2px}[data-ring="leather"]{--il-ring:var(--il-focus-on-leather)}</style></helmet>
+<div style="display:flex;flex-direction:column;gap:12px;width:{{ frameW }}px">
+<div style="width:{{ frameW }}px;background:#262626;border-radius:28px;padding:{{ bezel }};box-sizing:border-box">
+<div data-widget="handwriting" data-il-root="" style="width:{{ W }}px;{{ ilv }};height:{{ H }}px;position:relative;overflow:hidden;background:var(--il-paper);color:var(--il-ink);font-family:{{ k.F }};display:flex;flex-direction:column">
+
+<div aria-label="Status bar" style="flex:none;height:48px;display:flex;align-items:center;gap:12px;padding:0 18px;box-sizing:border-box;border-bottom:1.5px solid var(--il-ink);font:500 14px 'IBM Plex Mono',monospace;background:var(--il-paper);color:var(--il-ink)">
+<span style="font:400 24px/1 'Material Symbols Outlined'">home</span><span style="flex:1"></span><span>{{ bar.time }}</span><span style="font:400 22px/1 'Material Symbols Outlined'">wifi</span><span style="font:400 22px/1 'Material Symbols Outlined'">{{ bar.icon }}</span><span>{{ bar.bat }}</span>
+</div>
+
+<div data-ring="{{ k.ring }}" style="flex:none;position:relative;height:{{ k.headH }};display:flex;align-items:center;gap:14px;padding:0 24px;box-sizing:border-box;background:{{ k.headBg }};color:{{ k.headFg }};border-bottom:{{ k.headRule }}">
+<div style="display:{{ k.stitch }};position:absolute;left:7px;right:7px;top:7px;border-top:1.5px dashed var(--il-gilt)"></div>
+<div style="display:{{ k.stitch }};position:absolute;left:7px;right:7px;bottom:7px;border-top:1.5px dashed var(--il-gilt)"></div>
+<span style="position:relative;font:400 28px/1 'Material Symbols Outlined'">stylus_note</span>
+<div style="position:relative;display:flex;flex-direction:column;gap:1px;min-width:0"><span style="font:{{ k.brand }};font-variant:{{ k.brandVar }};letter-spacing:{{ k.brandLs }};color:{{ k.brandC }}">Handwriting</span><span style="font:{{ k.hsub }};opacity:.92">{{ hdr.sub }}</span></div>
+<span style="flex:1"></span>
+<sc-if value="{{ isWiz }}" hint-placeholder-val="{{ true }}"><div style="position:relative;display:flex;align-items:center;gap:6px"><sc-for list="{{ wiz.steps }}" as="st" hint-placeholder-count="5"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ st.on }}" aria-label="{{ st.name }}" title="{{ st.name }}" style="min-width:{{ k.stepW }};height:32px;padding:0 4px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border-radius:{{ k.stepR }};cursor:pointer;font:{{ k.stepFont }};background:{{ st.bg }};color:{{ st.fg }};box-shadow:{{ st.sh }}">{{ st.n }}</div></sc-for></div></sc-if>
+</div>
+
+<sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}"><div role="tablist" style="flex:none;height:56px;display:flex;align-items:stretch;gap:{{ k.tabGap }};padding:{{ k.tabPad }};box-sizing:border-box;border-bottom:{{ k.sep }}">
+<sc-for list="{{ tabs }}" as="tb" hint-placeholder-count="5"><div tabindex="0" role="tab" aria-selected="{{ tb.sel }}" onKeyDown="{{ ilKey }}" onClick="{{ tb.on }}" style="flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;border-radius:{{ k.segR }};font:{{ k.row }};font-weight:{{ tb.fw }};background:{{ tb.bg }};color:{{ tb.fg }};box-shadow:{{ tb.sh }};white-space:nowrap"><span style="display:{{ tb.iconD }};font:400 20px/1 'Material Symbols Outlined'">{{ tb.icon }}</span>{{ tb.label }}</div></sc-for>
+</div></sc-if>
+
+<div style="flex:1;min-height:0;position:relative;overflow:hidden;padding:{{ bodyPad }};box-sizing:border-box;display:flex;flex-direction:column;gap:16px">
+
+<sc-if value="{{ pg.show }}" hint-placeholder-val="{{ true }}"><div style="flex:none;display:flex;flex-direction:column;gap:8px">
+<span style="font:{{ k.lbl }};font-variant:{{ k.lblVar }};text-transform:{{ k.lblCase }};letter-spacing:{{ k.lblLs }};color:{{ k.lblC }}">{{ pg.eyebrow }}</span>
+<span style="font:{{ pg.font }};letter-spacing:{{ k.displayLs }};text-wrap:balance">{{ pg.title }}</span>
+<sc-if value="{{ pg.hasLead }}" hint-placeholder-val="{{ true }}"><span style="font:{{ k.lead }};color:var(--il-ink-soft);max-width:620px;text-wrap:pretty">{{ pg.lead }}</span></sc-if>
+</div></sc-if>
+
+<sc-if value="{{ is.wWelcome }}" hint-placeholder-val="{{ true }}"><div style="display:flex;flex-direction:column;gap:18px">
+<div style="display:flex;flex-direction:column;gap:6px;padding:16px 18px 6px;border-radius:{{ k.cardR }};background:var(--il-sheet)">
+<span style="font:{{ k.lbl }};font-variant:{{ k.lblVar }};text-transform:{{ k.lblCase }};letter-spacing:{{ k.lblLs }};color:{{ k.lblC }}">{{ k.writeThis }}</span>
+<span style="font:{{ k.promptS }}">quiet</span>
+<div style="height:96px"><dc-import name="Paper" voice="{{ voice }}" ink="quiet" line="75" size="44" height="96" style="width:100%;height:96px" hint-size="100%,96px"></dc-import></div>
+<span style="font:{{ k.sub }};color:var(--il-ink-soft);padding:4px 0 8px">{{ wel.caption }}</span>
+</div>
+<div style="display:flex;flex-direction:column;border-top:{{ k.sep }}"><sc-for list="{{ wel.rows }}" as="r" hint-placeholder-count="3"><div style="min-height:72px;padding:10px 0;box-sizing:border-box;display:flex;align-items:center;gap:16px;border-bottom:{{ k.sep }}"><span style="width:28px;flex:none;font:400 26px/1 'Material Symbols Outlined'">{{ r.icon }}</span><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px"><span style="font:{{ k.row }}">{{ r.label }}</span><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">{{ r.sub }}</span></div></div></sc-for></div>
+</div></sc-if>
+
+<sc-if value="{{ is.wTry }}" hint-placeholder-val="{{ false }}"><div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:baseline;gap:16px"><span style="font:{{ k.lbl }};font-variant:{{ k.lblVar }};text-transform:{{ k.lblCase }};letter-spacing:{{ k.lblLs }};color:{{ k.lblC }}">{{ k.writeThis }}</span><span style="font:{{ k.prompt }}">quiet</span></div>
+<div style="flex:1;min-height:0"><dc-import name="Paper" voice="{{ voice }}" ink="{{ tryP.ink }}" line="75" size="46" height="400" hint="{{ tryP.hint }}" live="{{ yes }}" clear="{{ tryP.clear }}" on-ink="{{ tryP.onInk }}" style="width:100%;height:100%" hint-size="100%,300px"></dc-import></div>
+<div style="display:flex;align-items:center;gap:12px;min-height:48px"><span style="flex:1;min-width:0;font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">{{ tryP.note }}</span><sc-for list="{{ tryP.btns }}" as="b" hint-placeholder-count="2"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ b.on }}" aria-disabled="{{ b.dis }}" style="height:48px;padding:0 18px;display:flex;align-items:center;gap:6px;cursor:{{ b.cur }};border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ b.bg }};color:{{ b.fg }};box-shadow:{{ b.sh }};white-space:nowrap">{{ b.label }}</div></sc-for></div>
+<sc-if value="{{ tryP.done }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:center;gap:14px;padding:12px 16px;border-radius:{{ k.cardR }};box-shadow:{{ k.cardFlat }}"><span style="font:400 24px/1 'Material Symbols Outlined'">check_circle</span><div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font:{{ k.row }}">Read as “quiet”. That’s your first sample.</span><span style="font:{{ k.sub }};color:var(--il-ink-soft)">The next word would be up already. Here, Continue goes on.</span></div></div></sc-if>
+<div style="display:flex;flex-direction:column;gap:6px;padding-top:4px;border-top:{{ k.sep }}"><sc-for list="{{ tryP.tips }}" as="tp" hint-placeholder-count="2"><div style="display:flex;align-items:flex-start;gap:12px;padding-top:6px"><span style="width:24px;flex:none;font:400 22px/1 'Material Symbols Outlined'">{{ tp.icon }}</span><span style="font:{{ k.sub }};text-wrap:pretty">{{ tp.label }}</span></div></sc-for></div>
+</div></sc-if>
+
+<sc-if value="{{ is.wList }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:18px">
+<sc-if value="{{ wl.hasArt }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:center;gap:18px;padding:16px 18px;border-radius:{{ k.cardR }};background:var(--il-sheet)"><span style="font:300 56px/1 'Material Symbols Outlined'">{{ wl.artIcon }}</span><span style="font:{{ k.row }};text-wrap:pretty">{{ wl.art }}</span></div></sc-if>
+<div style="display:flex;flex-direction:column;border-top:{{ k.sep }}"><sc-for list="{{ wl.rows }}" as="r" hint-placeholder-count="4"><div style="min-height:76px;padding:12px 0;box-sizing:border-box;display:flex;align-items:center;gap:16px;border-bottom:{{ k.sep }}"><span style="width:28px;flex:none;font:400 26px/1 'Material Symbols Outlined'">{{ r.icon }}</span><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px"><span style="font:{{ k.row }};text-wrap:pretty">{{ r.label }}</span><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">{{ r.sub }}</span></div></div></sc-for></div>
+</div></sc-if>
+
+<sc-if value="{{ is.share }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:16px">
+<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px">
+<sc-for list="{{ share.cols }}" as="c" hint-placeholder-count="2"><div style="display:flex;flex-direction:column;gap:8px;padding:14px 16px;border-radius:{{ k.cardR }};box-shadow:{{ k.cardFlat }};background:{{ c.bg }}"><span style="font:{{ k.lbl }};font-variant:{{ k.lblVar }};text-transform:{{ k.lblCase }};letter-spacing:{{ k.lblLs }};color:{{ k.lblC }};padding-bottom:6px;border-bottom:{{ k.sep }}">{{ c.head }}</span><sc-for list="{{ c.items }}" as="it" hint-placeholder-count="3"><div style="display:flex;align-items:flex-start;gap:10px"><span style="width:20px;flex:none;font:400 20px/1.2 'Material Symbols Outlined'">{{ c.icon }}</span><span style="font:{{ k.sub }};color:var(--il-ink);text-wrap:pretty">{{ it }}</span></div></sc-for></div></sc-for>
+</div>
+<div style="display:flex;gap:14px;padding:12px 16px;border-radius:{{ k.cardR }};background:var(--il-sheet)"><span style="font:400 24px/1 'Material Symbols Outlined'">{{ share.noteIcon }}</span><span style="font:{{ k.sub }};text-wrap:pretty">{{ share.note }}</span></div>
+<sc-if value="{{ share.ask }}" hint-placeholder-val="{{ true }}"><div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px">
+<sc-for list="{{ share.choices }}" as="ch" hint-placeholder-count="2"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ ch.on }}" style="min-height:64px;padding:10px 18px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};color:var(--il-ink);box-shadow:{{ k.btnSh }};text-align:center"><span style="font:400 22px/1 'Material Symbols Outlined'">{{ ch.icon }}</span>{{ ch.label }}</div></sc-for>
+</div>
+<span style="font:{{ k.sub }};color:var(--il-ink-soft);text-align:center">{{ share.after }}</span></sc-if>
+</div></sc-if>
+
+<sc-if value="{{ is.licence }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:14px">
+<sc-for list="{{ lic.cards }}" as="lc" hint-placeholder-count="2"><div tabindex="0" role="radio" aria-checked="{{ lc.sel }}" onKeyDown="{{ ilKey }}" onClick="{{ lc.on }}" style="display:flex;align-items:flex-start;gap:16px;padding:16px 18px;cursor:pointer;border-radius:{{ k.cardR }};background:{{ lc.bg }};box-shadow:{{ lc.sh }}">
+<div style="width:26px;height:26px;flex:none;margin-top:2px;box-sizing:border-box;border-radius:50%;box-shadow:inset 0 0 0 2px var(--il-ink);display:flex;align-items:center;justify-content:center"><div style="width:12px;height:12px;border-radius:50%;background:var(--il-ink);visibility:{{ lc.vis }}"></div></div>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px"><div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><span style="font:{{ k.packF }};font-variant:{{ k.packVar }};letter-spacing:{{ k.packLs }}">{{ lc.name }}</span><span style="font:{{ k.mono }};color:var(--il-ink-soft)">{{ lc.code }}</span></div><span style="font:{{ k.sub }};text-wrap:pretty">{{ lc.desc }}</span></div>
+</div></sc-for>
+<span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">{{ lic.note }}</span>
+</div></sc-if>
+
+<sc-if value="{{ is.ready }}" hint-placeholder-val="{{ false }}"><div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:20px;padding:0 8px">
+<span style="font:300 72px/1 'Material Symbols Outlined'">stylus_note</span>
+<span style="font:{{ k.lbl }};font-variant:{{ k.lblVar }};text-transform:{{ k.lblCase }};letter-spacing:{{ k.lblLs }};color:{{ k.lblC }}">{{ k.readyEyebrow }}</span>
+<span style="font:{{ k.display }};letter-spacing:{{ k.displayLs }}">Ready when you are.</span>
+<span style="font:{{ k.lead }};color:var(--il-ink-soft);text-wrap:pretty">Write a few words whenever you like. A handful today and a handful tomorrow is just as good as many at once.</span>
+<div style="display:flex;flex-direction:column;border-top:{{ k.sep }}"><sc-for list="{{ ready.rows }}" as="r" hint-placeholder-count="3"><div style="min-height:60px;padding:8px 0;box-sizing:border-box;display:flex;align-items:center;gap:14px;border-bottom:{{ k.sep }}"><span style="width:26px;flex:none;font:400 24px/1 'Material Symbols Outlined'">{{ r.icon }}</span><span style="width:110px;flex:none;font:{{ k.lbl }};font-variant:{{ k.lblVar }};text-transform:{{ k.lblCase }};letter-spacing:{{ k.lblLs }};color:{{ k.lblC }}">{{ r.label }}</span><span style="flex:1;min-width:0;font:{{ k.row }};text-wrap:pretty">{{ r.value }}</span></div></sc-for></div>
+</div></sc-if>
+
+<sc-if value="{{ is.write }}" hint-placeholder-val="{{ false }}"><div style="flex:1;min-height:0;display:flex;flex-direction:{{ wr.dir }};gap:20px">
+<div style="flex:{{ wr.leftFlex }};width:{{ wr.leftW }};min-width:0;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:12px"><span style="flex:1;font:{{ k.lbl }};font-variant:{{ k.lblVar }};text-transform:{{ k.lblCase }};letter-spacing:{{ k.lblLs }};color:{{ k.lblC }}">{{ k.writeThis }}</span><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ wr.toSets }}" style="height:40px;padding:0 12px 0 14px;display:flex;align-items:center;gap:6px;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.sub }};color:var(--il-ink);box-shadow:{{ k.cardFlat }};white-space:nowrap">{{ wr.setName }}<span style="font:400 20px/1 'Material Symbols Outlined'">expand_more</span></div></div>
+<span style="font:{{ wr.promptFont }};text-wrap:pretty">{{ wr.prompt }}</span>
+<sc-if value="{{ wr.hasLast }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:center;gap:14px;padding:10px 12px;border-radius:{{ k.cardR }};box-shadow:{{ k.cardFlat }};flex-wrap:{{ wr.wrap }}">
+<div style="width:132px;height:56px;flex:none;position:relative;overflow:hidden;border-radius:{{ k.rowR }};background:var(--il-sheet)"><span style="position:absolute;left:12px;top:6px;font:400 30px/1.3 'Kalam',cursive;color:var(--il-pen);white-space:nowrap">{{ wr.lastInk }}</span></div>
+<div style="flex:1;min-width:120px;display:flex;flex-direction:column;gap:2px"><span style="font:{{ k.row }}">{{ wr.lastState }}</span><span style="font:{{ k.sub }};color:var(--il-ink-soft)">{{ wr.lastRead }}</span></div>
+<div style="display:flex;gap:8px"><sc-for list="{{ wr.lastBtns }}" as="b" hint-placeholder-count="2"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ b.on }}" style="height:40px;padding:0 14px;display:flex;align-items:center;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ b.bg }};color:{{ b.fg }};box-shadow:{{ b.sh }};white-space:nowrap">{{ b.label }}</div></sc-for></div>
+</div></sc-if>
+<sc-if value="{{ wr.isCheck }}" hint-placeholder-val="{{ false }}"><div role="status" style="display:flex;flex-direction:column;gap:12px;padding:14px 16px;border-radius:{{ k.cardR }};box-shadow:{{ k.noteSh }};background:var(--il-paper)">
+<div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:{{ wr.wrap }}">
+<div style="width:132px;height:56px;flex:none;position:relative;overflow:hidden;border-radius:{{ k.rowR }};background:var(--il-sheet)"><span style="position:absolute;left:12px;top:6px;font:400 30px/1.3 'Kalam',cursive;color:var(--il-pen);white-space:nowrap">jamp</span></div>
+<div style="flex:1;min-width:160px;display:flex;flex-direction:column;gap:4px"><span style="font:{{ k.row }};font-weight:600">This doesn’t quite look like “jump”.</span><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">That may be the tablet’s mistake. If you wrote “jump”, keep it.</span></div>
+</div>
+<div style="display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap"><sc-for list="{{ wr.checkBtns }}" as="b" hint-placeholder-count="3"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ b.on }}" style="height:44px;padding:0 18px;display:flex;align-items:center;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ b.bg }};color:{{ b.fg }};box-shadow:{{ b.sh }};white-space:nowrap">{{ b.label }}</div></sc-for></div>
+</div></sc-if>
+<sc-if value="{{ wr.side }}" hint-placeholder-val="{{ false }}"><span style="flex:1"></span></sc-if>
+<sc-if value="{{ wr.side }}" hint-placeholder-val="{{ false }}"><span style="font:{{ k.sub }};color:var(--il-ink-soft)">{{ wr.counts }}</span></sc-if>
+<sc-if value="{{ wr.side }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:10px"><sc-for list="{{ wr.btns }}" as="b" hint-placeholder-count="3"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ b.on }}" aria-disabled="{{ b.dis }}" style="flex:1;height:52px;padding:0 12px;display:flex;align-items:center;justify-content:center;cursor:{{ b.cur }};border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ b.bg }};color:{{ b.fg }};box-shadow:{{ b.sh }};white-space:nowrap">{{ b.label }}</div></sc-for></div></sc-if>
+</div>
+<div style="flex:1;min-height:0;min-width:0"><dc-import name="Paper" voice="{{ voice }}" ink="{{ wr.ink }}" line="75" size="{{ wr.inkSize }}" height="700" hint="{{ wr.hint }}" live="{{ yes }}" clear="{{ wr.clear }}" on-ink="{{ wr.onInk }}" style="width:100%;height:100%" hint-size="100%,400px"></dc-import></div>
+<sc-if value="{{ wr.below }}" hint-placeholder-val="{{ true }}"><div style="display:flex;align-items:center;gap:10px"><span style="flex:1;min-width:0;font:{{ k.sub }};color:var(--il-ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ wr.counts }}</span><sc-for list="{{ wr.btns }}" as="b" hint-placeholder-count="3"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ b.on }}" aria-disabled="{{ b.dis }}" style="height:52px;padding:0 22px;display:flex;align-items:center;cursor:{{ b.cur }};border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ b.bg }};color:{{ b.fg }};box-shadow:{{ b.sh }};white-space:nowrap">{{ b.label }}</div></sc-for></div></sc-if>
+</div></sc-if>
+
+<sc-if value="{{ is.sets }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:4px">
+<sc-for list="{{ sets }}" as="st" hint-placeholder-count="7"><div tabindex="0" role="radio" aria-checked="{{ st.sel }}" onKeyDown="{{ ilKey }}" onClick="{{ st.on }}" style="min-height:62px;padding:8px 16px;box-sizing:border-box;display:flex;align-items:center;gap:14px;cursor:pointer;border-radius:{{ k.rowR }};background:{{ st.bg }};color:{{ st.fg }};box-shadow:{{ st.sh }}"><span style="width:26px;flex:none;font:400 24px/1 'Material Symbols Outlined'">{{ st.icon }}</span><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font:{{ k.row }}">{{ st.name }}</span><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">{{ st.desc }}</span></div><span style="width:24px;font:400 22px/1 'Material Symbols Outlined';visibility:{{ st.vis }}">check</span></div></sc-for>
+</div></sc-if>
+
+<sc-if value="{{ is.samples }}" hint-placeholder-val="{{ false }}"><div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:14px">
+<div style="display:grid;grid-template-columns:repeat({{ sm.cols }},minmax(0,1fr));gap:12px">
+<sc-for list="{{ sm.items }}" as="it" hint-placeholder-count="12"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ it.on }}" style="height:118px;box-sizing:border-box;padding:1.5px;display:flex;flex-direction:column;cursor:pointer;border-radius:{{ k.cardR }};box-shadow:{{ k.cardFlat }};overflow:hidden">
+<div style="flex:1;position:relative;overflow:hidden;background:var(--il-sheet);border-bottom:{{ k.sep }}"><span style="position:absolute;left:12px;top:8px;font:400 {{ it.fs }}px/1.3 'Kalam',cursive;color:var(--il-pen);white-space:nowrap">{{ it.ink }}</span></div>
+<div style="height:36px;flex:none;padding:0 10px;display:flex;align-items:center;gap:6px"><span style="flex:1;min-width:0;font:{{ k.sub }};color:var(--il-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ it.when }}</span><span style="font:400 18px/1 'Material Symbols Outlined';display:{{ it.giftD }}" title="In your donation">volunteer_activism</span></div>
+</div></sc-for>
+</div>
+<span style="flex:1"></span>
+<div style="display:flex;align-items:center;gap:10px">
+<div tabindex="0" role="button" onKeyDown="{{ ilKey }}" aria-label="Previous page" style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:{{ k.btnR }};color:var(--il-dim);box-shadow:inset 0 0 0 1.5px var(--il-dim)"><span style="font:400 24px/1 'Material Symbols Outlined'">chevron_left</span></div>
+<span style="font:{{ k.mono }}">{{ sm.page }}</span>
+<div tabindex="0" role="button" onKeyDown="{{ ilKey }}" aria-label="Next page" style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:{{ k.btnR }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }}"><span style="font:400 24px/1 'Material Symbols Outlined'">chevron_right</span></div>
+<span style="flex:1"></span>
+<sc-for list="{{ sm.btns }}" as="b" hint-placeholder-count="3"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ b.on }}" style="height:48px;padding:0 16px;display:flex;align-items:center;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ b.bg }};color:{{ b.fg }};box-shadow:{{ b.sh }};white-space:nowrap">{{ b.label }}</div></sc-for>
+</div>
+</div></sc-if>
+
+<sc-if value="{{ is.sample }}" hint-placeholder-val="{{ false }}"><div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:16px">
+<div style="height:{{ sd.paperH }}px;flex:none"><dc-import name="Paper" voice="{{ voice }}" ink="quiet" line="150" size="88" height="{{ sd.paperH }}" style="width:100%;height:100%" hint-size="100%,220px"></dc-import></div>
+<div style="display:flex;flex-direction:column;border-top:{{ k.sepStrong }}"><sc-for list="{{ sd.rows }}" as="r" hint-placeholder-count="4"><div style="min-height:56px;padding:8px 0;box-sizing:border-box;display:flex;align-items:center;gap:14px;border-bottom:{{ k.sep }}"><span style="width:150px;flex:none;font:{{ k.lbl }};font-variant:{{ k.lblVar }};text-transform:{{ k.lblCase }};letter-spacing:{{ k.lblLs }};color:{{ k.lblC }}">{{ r.label }}</span><span style="flex:1;min-width:0;font:{{ k.row }};text-wrap:pretty">{{ r.value }}</span><sc-if value="{{ r.hasBtn }}" hint-placeholder-val="{{ false }}"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" style="height:40px;padding:0 14px;display:flex;align-items:center;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }};white-space:nowrap">{{ r.btn }}</div></sc-if></div></sc-for></div>
+<span style="flex:1"></span>
+<div style="display:flex;gap:10px"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ sd.back }}" style="height:48px;padding:0 18px 0 12px;display:flex;align-items:center;gap:6px;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }}"><span style="font:400 22px/1 'Material Symbols Outlined'">arrow_back</span>All samples</div><span style="flex:1"></span><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ sd.del }}" style="height:48px;padding:0 18px 0 14px;display:flex;align-items:center;gap:6px;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }}"><span style="font:400 22px/1 'Material Symbols Outlined'">delete</span>Delete</div></div>
+<sc-if value="{{ sd.asking }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;display:flex;align-items:flex-end;padding:{{ bodyPad }};box-sizing:border-box"><div role="dialog" aria-label="Delete this sample?" style="width:100%;display:flex;flex-direction:column;gap:14px;padding:20px 22px;box-sizing:border-box;border-radius:{{ k.cardR }};background:var(--il-paper);box-shadow:{{ k.dialogSh }}">
+<span style="font:{{ k.packF }};font-variant:{{ k.packVar }};letter-spacing:{{ k.packLs }}">Delete this sample?</span>
+<span style="font:{{ k.sub }};text-wrap:pretty">It’s removed from your samples for good. What the tablet has already learned from it stays until it learns again.</span>
+<div style="display:flex;justify-content:flex-end;gap:10px"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ sd.keep }}" style="height:48px;padding:0 18px;display:flex;align-items:center;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }}">Keep it</div><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ sd.back }}" style="height:48px;padding:0 18px;display:flex;align-items:center;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.priBg }};color:{{ k.priFg }};box-shadow:{{ k.priSh }}">Delete</div></div>
+</div></div></sc-if>
+</div></sc-if>
+
+<sc-if value="{{ is.coverage }}" hint-placeholder-val="{{ false }}"><div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:14px">
+<sc-for list="{{ cov.groups }}" as="g" hint-placeholder-count="3"><div style="display:flex;flex-direction:column;gap:8px"><span style="font:{{ k.lbl }};font-variant:{{ k.lblVar }};text-transform:{{ k.lblCase }};letter-spacing:{{ k.lblLs }};color:{{ k.lblC }}">{{ g.name }}</span><div style="display:grid;grid-template-columns:repeat({{ cov.cols }},minmax(0,1fr));gap:4px"><sc-for list="{{ g.cells }}" as="c" hint-placeholder-count="26"><div title="{{ c.title }}" style="position:relative;height:{{ cov.cellH }}px;box-sizing:border-box;padding-top:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border-radius:{{ k.cellR }};background:{{ c.bg }};box-shadow:{{ c.sh }}"><span style="font:{{ k.cellF }};line-height:1">{{ c.ch }}</span><span style="font:500 11px/1 'IBM Plex Mono',monospace;color:var(--il-ink)">{{ c.n }}</span><span style="display:{{ c.dot }};position:absolute;right:4px;top:4px;width:7px;height:7px;border-radius:50%;background:var(--il-ink)"></span></div></sc-for></div></div></sc-for>
+<span style="flex:1"></span>
+<div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding-top:10px;border-top:{{ k.sep }}"><sc-for list="{{ cov.legend }}" as="lg" hint-placeholder-count="3"><div style="display:flex;align-items:center;gap:8px"><div style="position:relative;width:28px;height:28px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border-radius:{{ k.cellR }};background:{{ lg.bg }};box-shadow:{{ lg.sh }};font:{{ k.sub }};font-style:normal">a<span style="display:{{ lg.dot }};position:absolute;right:3px;top:3px;width:6px;height:6px;border-radius:50%;background:var(--il-ink)"></span></div><span style="font:{{ k.sub }}">{{ lg.label }}</span></div></sc-for><span style="flex:1"></span><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ cov.practise }}" style="height:48px;padding:0 20px;display:flex;align-items:center;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.priBg }};color:{{ k.priFg }};box-shadow:{{ k.priSh }};white-space:nowrap">Practise these</div></div>
+</div></sc-if>
+
+<sc-if value="{{ is.learn }}" hint-placeholder-val="{{ false }}"><div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:18px">
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:{{ k.sepStrong }};border-bottom:{{ k.sepStrong }}"><sc-for list="{{ ln.stats }}" as="st" hint-placeholder-count="3"><div style="padding:16px 14px 14px;display:flex;flex-direction:column;gap:6px;border-left:{{ st.bl }}"><span style="font:{{ k.num }}">{{ st.n }}</span><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">{{ st.label }}</span></div></sc-for></div>
+<div style="display:flex;flex-direction:column;gap:12px;padding:18px 20px;border-radius:{{ k.cardR }};box-shadow:{{ k.noteSh }}">
+<div style="display:flex;align-items:flex-start;gap:14px"><span style="font:400 30px/1 'Material Symbols Outlined'">{{ ln.icon }}</span><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px"><span style="font:{{ k.packF }};font-variant:{{ k.packVar }};letter-spacing:{{ k.packLs }}">{{ ln.title }}</span><span style="font:{{ k.row }};font-weight:400;text-wrap:pretty">{{ ln.text }}</span></div></div>
+<sc-if value="{{ ln.hasBar }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:6px;padding-left:44px"><div style="display:flex;gap:4px"><sc-for list="{{ ln.bar }}" as="b" hint-placeholder-count="10"><div style="flex:1;height:14px;border-radius:{{ k.barR }};background:{{ b.bg }};box-shadow:inset 0 0 0 1.5px var(--il-ink)"></div></sc-for></div><span style="font:{{ k.mono }}">{{ ln.barText }}</span></div></sc-if>
+</div>
+<div style="display:flex;flex-direction:column;border-top:{{ k.sep }}"><sc-for list="{{ ln.rows }}" as="r" hint-placeholder-count="2"><div style="min-height:56px;padding:8px 0;box-sizing:border-box;display:flex;align-items:center;gap:14px;border-bottom:{{ k.sep }}"><span style="width:26px;flex:none;font:400 22px/1 'Material Symbols Outlined'">{{ r.icon }}</span><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font:{{ k.row }}">{{ r.label }}</span><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">{{ r.sub }}</span></div></div></sc-for></div>
+<span style="flex:1"></span>
+<div style="display:flex;align-items:center;gap:10px"><span style="flex:1;min-width:0;font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">{{ ln.foot }}</span><sc-for list="{{ ln.btns }}" as="b" hint-placeholder-count="2"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ b.on }}" aria-disabled="{{ b.dis }}" style="height:48px;padding:0 18px;display:flex;align-items:center;cursor:{{ b.cur }};border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ b.bg }};color:{{ b.fg }};box-shadow:{{ b.sh }};white-space:nowrap">{{ b.label }}</div></sc-for></div>
+</div></sc-if>
+
+<sc-if value="{{ is.donate }}" hint-placeholder-val="{{ false }}"><div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:16px">
+<sc-if value="{{ dn.saved }}" hint-placeholder-val="{{ false }}"><div role="status" style="display:flex;gap:14px;padding:12px 16px;border-radius:{{ k.cardR }};box-shadow:{{ k.noteSh }}"><span style="font:400 24px/1 'Material Symbols Outlined'">check_circle</span><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px"><span style="font:{{ k.row }}">Saved as handwriting-donation-1.jsonl</span><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">In Documents › Handwriting donations. Send it to the project whenever it suits you.</span></div></div></sc-if>
+<div style="display:flex;align-items:center;gap:16px;padding:16px 18px;border-radius:{{ k.cardR }};background:{{ dn.stateBg }};box-shadow:{{ k.cardFlat }}">
+<span style="font:400 30px/1 'Material Symbols Outlined'">{{ dn.icon }}</span>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px"><span style="font:{{ k.packF }};font-variant:{{ k.packVar }};letter-spacing:{{ k.packLs }}">{{ dn.state }}</span><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">{{ dn.stateSub }}</span></div>
+<sc-if value="{{ dn.on }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px"><span style="font:{{ k.num }}">57</span><span style="font:{{ k.mono }};color:var(--il-ink-soft)">samples · 1.2 MB</span></div></sc-if>
+</div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px">
+<sc-for list="{{ share.cols }}" as="c" hint-placeholder-count="2"><div style="display:flex;flex-direction:column;gap:8px;padding:14px 16px;border-radius:{{ k.cardR }};box-shadow:{{ k.cardFlat }};background:{{ c.bg }}"><span style="font:{{ k.lbl }};font-variant:{{ k.lblVar }};text-transform:{{ k.lblCase }};letter-spacing:{{ k.lblLs }};color:{{ k.lblC }};padding-bottom:6px;border-bottom:{{ k.sep }}">{{ c.head }}</span><sc-for list="{{ c.items }}" as="it" hint-placeholder-count="3"><div style="display:flex;align-items:flex-start;gap:10px"><span style="width:20px;flex:none;font:400 20px/1.2 'Material Symbols Outlined'">{{ c.icon }}</span><span style="font:{{ k.sub }};color:var(--il-ink);text-wrap:pretty">{{ it }}</span></div></sc-for></div></sc-for>
+</div>
+<div style="display:flex;gap:14px;padding:12px 16px;border-radius:{{ k.cardR }};background:var(--il-sheet)"><span style="font:400 24px/1 'Material Symbols Outlined'">folder</span><span style="font:{{ k.sub }};text-wrap:pretty">{{ dn.howTo }}</span></div>
+<span style="flex:1"></span>
+<div style="display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap"><sc-for list="{{ dn.btns }}" as="b" hint-placeholder-count="3"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ b.on }}" style="height:48px;padding:0 18px;display:flex;align-items:center;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ b.bg }};color:{{ b.fg }};box-shadow:{{ b.sh }};white-space:nowrap">{{ b.label }}</div></sc-for></div>
+</div></sc-if>
+
+<sc-if value="{{ is.pickLicence }}" hint-placeholder-val="{{ false }}"><div style="display:flex;justify-content:flex-end;gap:10px;margin-top:auto"><sc-for list="{{ lic.btns }}" as="b" hint-placeholder-count="2"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ b.on }}" aria-disabled="{{ b.dis }}" style="height:48px;padding:0 18px;display:flex;align-items:center;cursor:{{ b.cur }};border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ b.bg }};color:{{ b.fg }};box-shadow:{{ b.sh }};white-space:nowrap">{{ b.label }}</div></sc-for></div></sc-if>
+</div>
+
+<sc-if value="{{ foot.show }}" hint-placeholder-val="{{ true }}"><div style="flex:none;height:{{ foot.h }};padding:0 32px;box-sizing:border-box;display:flex;align-items:center;gap:14px;border-top:{{ k.footRule }};background:var(--il-paper)">
+<div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ foot.back }}" style="visibility:{{ foot.backVis }};height:48px;padding:0 18px 0 12px;display:flex;align-items:center;gap:6px;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }}"><span style="font:400 22px/1 'Material Symbols Outlined'">arrow_back</span>Back</div>
+<span style="flex:1;min-width:0;text-align:center;font:{{ k.sub }};color:var(--il-ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ foot.status }}</span>
+<sc-if value="{{ foot.showSkip }}" hint-placeholder-val="{{ false }}"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ foot.skip }}" style="height:48px;padding:0 14px;display:flex;align-items:center;cursor:pointer;font:{{ k.btnF }};text-decoration:underline;text-underline-offset:4px;white-space:nowrap">Skip to writing</div></sc-if>
+<sc-for list="{{ foot.choices }}" as="ch" hint-placeholder-count="0"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ ch.on }}" style="height:48px;padding:0 18px;display:flex;align-items:center;gap:8px;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};color:var(--il-ink);box-shadow:{{ k.btnSh }};white-space:nowrap"><span style="font:400 22px/1 'Material Symbols Outlined'">{{ ch.icon }}</span>{{ ch.label }}</div></sc-for>
+<sc-if value="{{ foot.showNext }}" hint-placeholder-val="{{ true }}"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ foot.next }}" aria-disabled="{{ foot.dis }}" style="height:48px;padding:0 16px 0 22px;display:flex;align-items:center;gap:6px;cursor:{{ foot.cur }};border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ foot.bg }};color:{{ foot.fg }};box-shadow:{{ foot.sh }};white-space:nowrap">{{ foot.nextLabel }}<span style="font:400 22px/1 'Material Symbols Outlined'">{{ foot.nextIcon }}</span></div></sc-if>
+</div></sc-if>
+</div>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ chips }}" as="tb" hint-placeholder-count="12"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ tb.on }}" style="font:500 11.5px 'IBM Plex Mono';padding:7px 11px;border-radius:6px;border:1px solid rgba(0,0,0,.2);cursor:pointer;background:{{ tb.bg }};color:{{ tb.fg }}">{{ tb.label }}</div></sc-for></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview": {"width": 760, "height": 1080}, "theme": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "scheme": {"editor": "enum", "options": ["paper", "night", "eink"], "default": "eink"}, "pen": {"editor": "enum", "options": ["1", "2", "3"], "default": "1"}, "orient": {"editor": "enum", "options": ["portrait", "landscape"], "default": "portrait"}, "screen": {"editor": "enum", "options": ["w-welcome", "w-try", "w-try-done", "w-private", "w-learning", "w-share", "w-licence", "w-ready", "write", "write-ink", "write-kept", "write-check", "write-sentence", "write-sets", "samples", "sample", "sample-delete", "coverage", "learn-few", "learn-waiting", "learn-running", "learn-better", "learn-kept", "donate-off", "donate-licence", "donate-on", "donate-saved"], "default": "w-welcome"}}'>
+class Component extends DCLogic {
+  state = { screen: null, donating: null, licence: null, tried: 0, inkN: 0, clear: 0 };
+
+  componentDidUpdate(prev) {
+    if (prev.screen !== this.props.screen) this.setState({ screen: null, licence: null });
+  }
+
+  // The voices, as the shell's first-run setup draws them (EinkSetup), plus what this app adds.
+  voiceStyles() {
+    const c = n => 'var(--il-' + n + ')', ink = c('ink');
+    return {
+      white: { F: "'IBM Plex Sans',sans-serif", display: "600 32px/1.12 'IBM Plex Sans',sans-serif", displayS: "600 26px/1.15 'IBM Plex Sans',sans-serif", displayLs: '-0.02em', lead: "400 16px/1.5 'IBM Plex Sans',sans-serif",
+        lbl: "500 11.5px/1.4 'IBM Plex Mono',monospace", lblVar: 'normal', lblCase: 'uppercase', lblLs: '.08em', lblC: c('ink-soft'),
+        row: "500 16px/1.3 'IBM Plex Sans',sans-serif", sub: "400 13.5px/1.4 'IBM Plex Sans',sans-serif", mono: "500 13px 'IBM Plex Mono',monospace", btnF: "600 15px 'IBM Plex Sans',sans-serif",
+        packF: "600 17px/1.25 'IBM Plex Sans',sans-serif", packVar: 'normal', packLs: '0',
+        prompt: "500 46px/1.1 'IBM Plex Sans',sans-serif", promptS: "500 28px/1.25 'IBM Plex Sans',sans-serif", num: "600 36px/1 'IBM Plex Sans',sans-serif", cellF: "500 20px/1.1 'IBM Plex Sans',sans-serif", cellR: '6px',
+        brand: "600 17px 'IBM Plex Sans',sans-serif", brandVar: 'normal', brandLs: '0', brandC: ink, hsub: "500 11.5px 'IBM Plex Mono',monospace",
+        headH: '64px', headBg: c('paper'), headFg: ink, headRule: '1.5px solid ' + ink, stitch: 'none', ring: '',
+        stepW: '32px', stepR: '50%', stepFont: "500 13px 'IBM Plex Mono',monospace",
+        stepOn: { bg: c('accent'), fg: c('on-accent'), sh: c('keycap') }, stepDone: { bg: c('highlight'), fg: ink, sh: 'inset 0 0 0 1.5px ' + ink }, stepTodo: { bg: 'transparent', fg: c('ink-soft'), sh: 'inset 0 0 0 1.5px ' + c('ink-soft') },
+        cardR: '16px', cardFlat: 'inset 0 0 0 1.5px ' + ink, cardOnSh: 'inset 0 0 0 2.5px ' + ink + ',' + c('keycap'), cardOnBg: c('paper'),
+        rowR: '10px', sel: { bg: c('highlight'), fg: ink, sh: 'none' },
+        btnR: '12px', btnBg: c('paper'), btnSh: 'inset 0 0 0 1.5px ' + ink + ',' + c('keycap'), priBg: c('accent'), priFg: c('on-accent'), priSh: c('keycap'),
+        segR: '9px', segOn: { bg: c('accent'), fg: c('on-accent'), sh: 'none' }, tabGap: '4px', tabPad: '6px 12px',
+        sep: '1px dotted ' + ink, sepStrong: '1.5px solid ' + ink, footRule: '1.5px solid ' + ink, noteSh: 'inset 0 0 0 1.5px ' + ink + ',' + c('keycap'), dialogSh: 'inset 0 0 0 2px ' + ink + ',0 4px 0 ' + c('ink'),
+        barR: '4px', writeThis: 'Write this', readyEyebrow: 'All set', nums: ['1', '2', '3', '4', '5'], eyebrow: (i, n) => 'Step ' + i + ' of 5 · ' + n },
+      editorial: { F: "'Source Serif 4',serif", display: "600 36px/1.08 'Source Serif 4',serif", displayS: "600 30px/1.1 'Source Serif 4',serif", displayLs: '-0.01em', lead: "italic 400 17px/1.5 'Source Serif 4',serif",
+        lbl: "400 15px/1.3 'Source Serif 4',serif", lblVar: 'small-caps', lblCase: 'lowercase', lblLs: '.1em', lblC: c('accent'),
+        row: "400 17.5px/1.3 'Source Serif 4',serif", sub: "italic 400 14.5px/1.4 'Source Serif 4',serif", mono: "400 13px 'IBM Plex Mono',monospace", btnF: "600 16px 'Source Serif 4',serif",
+        packF: "600 18px/1.25 'Source Serif 4',serif", packVar: 'normal', packLs: '0',
+        prompt: "400 50px/1.1 'Source Serif 4',serif", promptS: "400 30px/1.25 'Source Serif 4',serif", num: "600 40px/1 'Source Serif 4',serif", cellF: "400 21px/1.1 'Source Serif 4',serif", cellR: '0',
+        brand: "600 19px 'Source Serif 4',serif", brandVar: 'normal', brandLs: '0', brandC: ink, hsub: "italic 400 14px 'Source Serif 4',serif",
+        headH: '68px', headBg: c('paper'), headFg: ink, headRule: '3px double ' + ink, stitch: 'none', ring: '',
+        stepW: '34px', stepR: '0', stepFont: "italic 400 17px 'Source Serif 4',serif",
+        stepOn: { bg: 'transparent', fg: c('accent'), sh: 'inset 0 -2px 0 ' + c('accent') }, stepDone: { bg: 'transparent', fg: ink, sh: 'none' }, stepTodo: { bg: 'transparent', fg: c('ink-soft'), sh: 'none' },
+        cardR: '0', cardFlat: 'inset 0 0 0 1px ' + ink, cardOnSh: 'inset 0 0 0 2px ' + c('accent') + ',' + c('offset'), cardOnBg: c('paper'),
+        rowR: '0', sel: { bg: 'transparent', fg: c('accent'), sh: 'inset 0 -2px 0 ' + c('accent') },
+        btnR: '0', btnBg: 'transparent', btnSh: 'inset 0 0 0 1px ' + ink + ',' + c('offset'), priBg: c('accent'), priFg: c('on-accent'), priSh: c('offset'),
+        segR: '0', segOn: { bg: 'transparent', fg: c('accent'), sh: 'inset 0 -3px 0 ' + c('accent') }, tabGap: '0', tabPad: '0 12px',
+        sep: '1px solid ' + c('rule'), sepStrong: '1px solid ' + ink, footRule: '3px double ' + ink, noteSh: 'inset 0 0 0 1px ' + ink + ',' + c('passe-partout'), dialogSh: 'inset 0 0 0 1px ' + ink + ',' + c('offset'),
+        barR: '0', writeThis: 'write this', readyEyebrow: 'ready', nums: ['i', 'ii', 'iii', 'iv', 'v'], eyebrow: (i, n) => '§ ' + i + ' · ' + n.toLowerCase() },
+      stationery: { F: "'EB Garamond',serif", display: "italic 500 38px/1.08 'EB Garamond',serif", displayS: "italic 500 32px/1.1 'EB Garamond',serif", displayLs: '0', lead: "400 18.5px/1.45 'EB Garamond',serif",
+        lbl: "400 16px/1.3 'EB Garamond',serif", lblVar: 'small-caps', lblCase: 'lowercase', lblLs: '.1em', lblC: c('gold'),
+        row: "400 19px/1.25 'EB Garamond',serif", sub: "italic 400 16px/1.35 'EB Garamond',serif", mono: "400 13px 'IBM Plex Mono',monospace", btnF: "500 18px 'EB Garamond',serif",
+        packF: "500 19px/1.25 'EB Garamond',serif", packVar: 'small-caps', packLs: '.06em',
+        prompt: "400 54px/1.05 'EB Garamond',serif", promptS: "400 32px/1.2 'EB Garamond',serif", num: "500 42px/1 'EB Garamond',serif", cellF: "400 23px/1.1 'EB Garamond',serif", cellR: '3px',
+        brand: "500 20px 'EB Garamond',serif", brandVar: 'small-caps', brandLs: '.1em', brandC: c('gilt'), hsub: "italic 400 15px 'EB Garamond',serif",
+        headH: '72px', headBg: c('leather-dark'), headFg: c('on-accent'), headRule: 'none', stitch: 'block', ring: 'leather',
+        stepW: '36px', stepR: '3px', stepFont: "italic 400 17px 'EB Garamond',serif",
+        stepOn: { bg: c('paper'), fg: ink, sh: 'inset 0 0 0 1.5px ' + c('gilt') }, stepDone: { bg: 'transparent', fg: c('gilt'), sh: 'none' }, stepTodo: { bg: 'transparent', fg: c('on-accent'), sh: 'none' },
+        cardR: '3px', cardFlat: 'inset 0 0 0 1px ' + c('ink-soft'), cardOnSh: 'inset 0 0 0 2px ' + c('accent') + ',' + c('card-stack'), cardOnBg: c('paper'),
+        rowR: '3px', sel: { bg: c('highlight'), fg: ink, sh: 'inset 0 0 0 1px ' + c('gold') },
+        btnR: '6px', btnBg: c('paper'), btnSh: 'inset 0 0 0 1.5px ' + ink + ',0 3px 0 ' + c('shade'), priBg: c('accent'), priFg: c('on-accent'), priSh: 'inset 0 0 0 1.5px ' + c('gilt') + ',0 3px 0 ' + c('shade'),
+        segR: '6px', segOn: { bg: c('accent'), fg: c('on-accent'), sh: 'inset 0 0 0 1px ' + c('gilt') }, tabGap: '4px', tabPad: '6px 12px',
+        sep: '1px solid ' + c('rule'), sepStrong: '1px solid ' + c('gold'), footRule: '1px solid ' + c('gold'), noteSh: c('card-stack') + ',inset 0 0 0 1px ' + c('ink-soft'), dialogSh: 'inset 0 0 0 1.5px ' + ink + ',' + c('card-stack'),
+        barR: '2px', writeThis: 'write this', readyEyebrow: 'ready', nums: ['I', 'II', 'III', 'IV', 'V'], eyebrow: (i, n) => ['I', 'II', 'III', 'IV', 'V'][i - 1] + '. ' + n.toLowerCase() }
+    };
+  }
+
+  screens() {
+    return ['w-welcome', 'w-try', 'w-try-done', 'w-private', 'w-learning', 'w-share', 'w-licence', 'w-ready',
+      'write', 'write-ink', 'write-kept', 'write-check', 'write-sentence', 'write-sets', 'samples', 'sample', 'sample-delete', 'coverage',
+      'learn-few', 'learn-waiting', 'learn-running', 'learn-better', 'learn-kept', 'donate-off', 'donate-licence', 'donate-on', 'donate-saved'];
+  }
+
+  renderVals() {
+    const s = this.state, p = this.props, u = x => this.setState(x);
+    const voice = ['white', 'editorial', 'stationery'].includes(p.theme) ? p.theme : 'white';
+    const k = this.voiceStyles()[voice];
+    const ink = 'var(--il-ink)';
+    const land = p.orient === 'landscape';
+    const all = this.screens();
+    const screen = all.includes(s.screen ?? p.screen) ? (s.screen ?? p.screen) : 'w-welcome';
+    const go = id => () => u({ screen: id, licence: null });
+    const wizard = screen.startsWith('w-');
+    const btn = (label, on, kind) => {
+      const dis = !on;
+      if (dis) return { label, on: null, dis: 'true', cur: 'default', bg: 'transparent', fg: 'var(--il-dim)', sh: 'inset 0 0 0 1.5px var(--il-dim)' };
+      if (kind === 'pri') return { label, on, dis: 'false', cur: 'pointer', bg: k.priBg, fg: k.priFg, sh: k.priSh };
+      return { label, on, dis: 'false', cur: 'pointer', bg: k.btnBg, fg: ink, sh: k.btnSh };
+    };
+
+    // ---- the wizard
+    const STEPS = ['w-welcome', 'w-try', 'w-private', 'w-learning', 'w-share'];
+    const NAMES = { 'w-welcome': 'Welcome', 'w-try': 'Try one', 'w-private': 'Your samples', 'w-learning': 'Learning', 'w-share': 'Donating' };
+    const stepOf = { 'w-try-done': 'w-try', 'w-licence': 'w-share', 'w-ready': 'w-share' };
+    const si = STEPS.indexOf(stepOf[screen] || screen);
+    const donating = s.donating ?? (screen === 'donate-on' || screen === 'donate-saved');
+    const wizSteps = STEPS.map((id, i) => { const x = screen === 'w-ready' ? k.stepDone : i === si ? k.stepOn : i < si ? k.stepDone : k.stepTodo; return { n: k.nums[i], name: NAMES[id], on: go(id), ...x }; });
+
+    const PAGES = {
+      'w-welcome': ['Teach this tablet your handwriting', 'You write a few words it shows you. It learns how you write, so it reads you better everywhere you write with the pen.'],
+      'w-try': ['Try one now', 'Write the word on the line below, the way you always write.'],
+      'w-try-done': ['Try one now', 'Write the word on the line below, the way you always write.'],
+      'w-private': ['Your samples stay here', 'Each word you write is kept as a sample. They belong to you.'],
+      'w-learning': ['Learning happens on its own', 'You write; the tablet does the rest, at a time that suits it.'],
+      'w-share': ['Would you like to help others too?', 'The handwriting reader in GlassineOS is open source. It learns to read everyone from handwriting that people choose to donate. Your samples could help it, if you like.'],
+      'w-licence': ['How may others use your samples?', 'Pick the licence for your donation. Both let anyone use it; you choose once.'],
+      'w-ready': ['', '']
+    };
+    const LEARN_T = { 'learn-few': 'Learn', 'learn-waiting': 'Learn', 'learn-running': 'Learn', 'learn-better': 'Learn', 'learn-kept': 'Learn' };
+
+    // ---- the app's tabs
+    const TABS = [['write', 'Write', 'edit'], ['samples', 'Samples', 'grid_view'], ['coverage', 'Coverage', 'abc'], ['learn', 'Learn', 'school'], ['donate', 'Donate', 'volunteer_activism']];
+    const tabOf = screen.startsWith('write') ? 'write' : screen.startsWith('sample') ? 'samples' : screen.startsWith('learn') ? 'learn' : screen.startsWith('donate') ? 'donate' : screen;
+    const FIRST = { write: 'write', samples: 'samples', coverage: 'coverage', learn: 'learn-waiting', donate: donating ? 'donate-on' : 'donate-off' };
+    const tabs = TABS.map(([id, label, icon]) => { const on = id === tabOf, x = on ? k.segOn : { bg: 'transparent', fg: ink, sh: 'none' };
+      return { label, icon, iconD: land ? 'inline' : 'none', sel: String(on), on: go(FIRST[id]), fw: on ? '600' : '400', ...x }; });
+
+    // ---- the page head (title block) per screen
+    const APP_HEAD = {
+      'write-sets': ['What to write', 'Choose what the prompts are made of. “What needs practice” mixes everything and favours the letters you have written least, or that it reads wrong most often.'],
+      samples: ['312 samples', 'Everything you have written here, newest first. Tap one to look at it or delete it.'],
+      coverage: ['How much of each character', 'The number is how many of your samples have it. Shaded ones could use more; a dot marks the ones it often reads wrong.'],
+      learn: ['How it’s learning', ''],
+      'donate-off': ['Help the reader for everyone', 'The handwriting reader is open source. It learns from handwriting people choose to donate. Donating is off unless you turn it on.'],
+      'donate-on': ['Thank you for donating', 'Every sample you keep for a word or sentence the app shows is added. Earlier ones can be added one at a time in Samples.'],
+      'donate-licence': ['How may others use your samples?', 'Pick the licence for your donation. Both let anyone use it; you choose once.']
+    };
+    const headKey = screen.startsWith('learn') ? 'learn' : screen === 'donate-saved' ? 'donate-on' : screen;
+    let pg = { show: false };
+    if (wizard && PAGES[screen] && PAGES[screen][0]) pg = { show: true, eyebrow: k.eyebrow(si + 1, NAMES[STEPS[si]]), title: PAGES[screen][0], lead: PAGES[screen][1], font: land ? k.displayS : k.display };
+    else if (!wizard && APP_HEAD[headKey]) pg = { show: true, eyebrow: '', title: APP_HEAD[headKey][0], lead: APP_HEAD[headKey][1], font: k.displayS };
+    if (screen === 'sample' || screen === 'sample-delete' || (land && (screen === 'donate-on' || screen === 'donate-saved'))) pg = { show: false };
+    pg.hasLead = !!pg.lead && !(land && !wizard && screen !== 'write-sets');
+    if (pg.show && !pg.eyebrow) pg.eyebrow = { 'write-sets': 'Write', samples: 'Samples', coverage: 'Coverage', learn: 'Learn', 'donate-off': 'Donate', 'donate-on': 'Donate', 'donate-licence': 'Donate' }[headKey] || '';
+    if (voice !== 'white' && pg.eyebrow && !wizard) pg.eyebrow = pg.eyebrow.toLowerCase();
+
+    // ---- wizard pages
+    const wel = { caption: 'One word at a time, on lines like the keyboard’s writing paper.', rows: [
+      ['edit', 'Write what it shows', 'Letters, words and short sentences, one at a time. A few minutes now and then is plenty.'],
+      ['school', 'It learns your hand', 'Over time it reads your writing better: here, and on the keyboard’s writing paper.'],
+      ['lock', 'It stays on this tablet', 'Your writing is kept here and nowhere else, unless you export or donate it.']
+    ].map(([icon, label, sub]) => ({ icon, label, sub })) };
+
+    const tried = screen === 'w-try-done' || s.tried > 0;
+    const tryP = { ink: screen === 'w-try-done' ? 'quiet' : '', hint: 'Write here with the pen', clear: String(s.clear),
+      onInk: n => u({ inkN: n }), done: tried,
+      note: tried ? '' : 'When you’re done, pause for a moment or tap Next.',
+      btns: tried ? [] : [btn('Clear', s.inkN > 0 ? () => u(st => ({ clear: st.clear + 1, inkN: 0 })) : null), btn('Next', s.inkN > 0 ? () => u({ tried: 1 }) : null, 'pri')],
+      tips: [['undo', 'Slipped? Clear starts again. After Next, the last one stays on screen with Redo, in case you change your mind.'],
+        ['help', 'If what you wrote doesn’t look like the word, it asks: Keep it, Redo or Skip. Any answer is fine.']].map(([icon, label]) => ({ icon, label })) };
+
+    const LISTS = {
+      'w-private': { artIcon: 'tablet', art: 'Kept on this tablet only. The app doesn’t use the internet.', rows: [
+        ['grid_view', 'Look at any sample', 'Samples shows everything you have written here.'],
+        ['delete', 'Delete what you don’t want', 'One at a time, or all at once.'],
+        ['folder', 'Take a copy with you', 'Export saves them all as one file in your Documents.'],
+        ['volunteer_activism', 'Share only if you choose to', 'Next, you can decide about donating. It is off unless you turn it on.']] },
+      'w-learning': { artIcon: 'battery_charging_full', art: 'It learns while the tablet is charging and resting. There’s nothing to start and nothing to wait for.', rows: [
+        ['edit_note', 'It starts after about 50 samples', 'About five minutes of writing, spread over as many days as you like.'],
+        ['fact_check', 'It checks itself first', 'It sets a few of your samples aside and keeps what it learned only if it now reads those better.'],
+        ['history', 'You can always go back', 'Learn shows how it’s going, and keeps the version before so you can return to it.']] }
+    };
+    const wl = LISTS[screen] ? { hasArt: true, ...LISTS[screen], rows: LISTS[screen].rows.map(([icon, label, sub]) => ({ icon, label, sub })) } : { hasArt: false, rows: [] };
+
+    const share = {
+      cols: [
+        { head: 'What a donation holds', icon: 'check', bg: 'transparent', items: ['The pen strokes you write for the words the app shows', 'Those words themselves', 'The size of the writing area, and which way the tablet was turned', 'What the tablet read when you wrote it'] },
+        { head: 'What it never holds', icon: 'remove', bg: 'transparent', items: ['Your name, or anything else about you', 'Anything about this tablet', 'Dates and times', 'Words from your own list, or anything you write in other apps'] }
+      ],
+      noteIcon: 'outgoing_mail', note: 'Nothing is sent by itself. Donating sets a copy aside on the tablet. When you like, the app saves it as one file in your Documents, and you send that file to the project yourself.',
+      ask: screen === 'w-share' && !land,
+      choices: [{ label: 'Not now', icon: 'schedule', on: () => u({ donating: false, screen: 'w-ready' }) }, { label: 'Yes, I’d like to donate', icon: 'volunteer_activism', on: go('w-licence') }],
+      after: 'Either way is fine. You can change your mind any time in Donate.'
+    };
+
+    const LIC = [['CC0-1.0', 'Free for anyone', 'CC0', 'Anyone may use, change and share your samples for anything, with no conditions.'],
+      ['CC-BY-4.0', 'Free, with a mention', 'CC BY 4.0', 'Anyone may use, change and share them, as long as they say the handwriting was donated to GlassineOS. Your name is not in it.']];
+    const curLic = s.licence ?? (screen === 'donate-on' || screen === 'donate-saved' ? 'CC0-1.0' : null);
+    const lic = { cards: LIC.map(([id, name, code, desc]) => { const on = curLic === id;
+      return { name, code, desc, sel: String(on), vis: on ? 'visible' : 'hidden', on: () => u({ licence: id }), bg: on ? k.cardOnBg : 'transparent', sh: on ? k.cardOnSh : k.cardFlat }; }),
+      note: 'To pick the other licence later, erase the donation in Donate and start a new one.',
+      btns: [btn('Cancel', go('donate-off')), btn('Turn on donating', curLic ? () => u({ donating: true, screen: 'donate-on' }) : null, 'pri')] };
+
+    const ready = { rows: [
+      ['school', 'Learning', 'On its own, while the tablet charges'],
+      ['lock', 'Your samples', 'Kept on this tablet'],
+      ['volunteer_activism', 'Donating', s.donating ? 'On · ' + LIC.find(x => x[0] === (curLic || 'CC0-1.0'))[1] + ' (' + LIC.find(x => x[0] === (curLic || 'CC0-1.0'))[2] + ')' : 'Off · you can turn it on any time in Donate']
+    ].map(([icon, label, value]) => ({ icon, label, value })) };
+
+    // ---- Write
+    const PROMPT = { write: 'quiet', 'write-ink': 'quiet', 'write-kept': 'o’clock', 'write-check': 'o’clock', 'write-sentence': 'The train left at 7:45 and came back at 9:10.' };
+    const isW = screen in PROMPT;
+    const sentence = screen === 'write-sentence';
+    const hasInk = screen === 'write-ink' || sentence || s.inkN > 0;
+    const wrInk = screen === 'write-ink' ? 'quiet' : sentence ? (land ? 'The train left at 7:45 and|came back' : 'The train left at|7:45 and came') : '';
+    const wr = {
+      prompt: PROMPT[screen] || '', promptFont: sentence ? k.promptS : k.prompt, setName: sentence ? 'Sentences' : 'What needs practice', toSets: go('write-sets'),
+      hasLast: screen === 'write-kept', isCheck: screen === 'write-check', lastInk: 'quiet', lastState: 'Kept', lastRead: 'Read as “quiet”',
+      lastBtns: [btn('Redo', go('write')), btn('Discard', go('write'))],
+      checkBtns: [btn('Redo', go('write')), btn('Skip', go('write-kept')), btn('Keep it', go('write-kept'), 'pri')],
+      ink: wrInk, inkSize: sentence ? '40' : '46', hint: screen === 'write' && !s.inkN ? 'Write here with the pen' : '',
+      clear: String(s.clear), onInk: n => u({ inkN: n }),
+      counts: 'Today 24 · 312 in all · 58 new to learn from',
+      btns: [btn('Clear', hasInk ? () => u(st => ({ clear: st.clear + 1, inkN: 0, screen: screen === 'write-ink' ? 'write' : screen })) : null),
+        btn('Skip', hasInk || screen === 'write-check' ? null : go('write-kept')), btn('Next', hasInk ? () => u(st => ({ clear: st.clear + 1, inkN: 0, screen: 'write-kept' })) : null, 'pri')],
+      dir: land ? 'row' : 'column', leftFlex: land ? 'none' : 'none', leftW: land ? '300px' : 'auto', side: land, below: !land, wrap: land ? 'wrap' : 'nowrap'
+    };
+
+    const SETS = [['auto', 'What needs practice', 'A mix, weighted towards what it knows least about your hand', 'auto_awesome'],
+      ['words', 'Words', 'Common words, one at a time', 'short_text'], ['sentences', 'Sentences', 'Short everyday sentences', 'notes'],
+      ['pangrams', 'Pangrams', 'Sentences that use every letter', 'abc'], ['letters', 'Single letters', 'Each letter, small and capital', 'match_case'],
+      ['digits', 'Digits and punctuation', '0 to 9, and marks like , . ? ! :', 'pin'],
+      ['own', 'My own words', 'A list you keep in your files. Never donated.', 'person_edit']];
+    const sets = SETS.map(([id, name, desc, icon]) => { const on = id === 'auto', x = on ? k.sel : { bg: 'transparent', fg: ink, sh: 'none' };
+      return { name, desc, icon, sel: String(on), vis: on ? 'visible' : 'hidden', on: go('write'), ...x }; });
+
+    // ---- Samples
+    const SM = [['quiet', 'Today, 14:02', 1], ['o’clock', 'Today, 14:02', 1], ['jump', 'Today, 14:01', 1], ['7:30', 'Today, 14:01', 1], ['Q', 'Today, 14:01', 1], ['Monday', 'Today, 14:00', 1],
+      ['pack my box', 'Today, 13:59', 1], ['the', 'Yesterday', 0], ['zebras', 'Yesterday', 0], ['k', 'Yesterday', 0], ['twelve', 'Yesterday', 0], ['quartz!', 'Yesterday', 0]];
+    const cols = land ? 4 : 3;
+    const sm = { cols, page: 'Page 1 of 26', items: SM.slice(0, land ? 8 : 12).map(([t, when, d]) => ({ ink: t, when, fs: t.length > 8 ? 26 : 34, giftD: d ? 'inline' : 'none', on: go('sample') })),
+      btns: [btn('Import', () => {}), btn('Export', () => {}), btn('Erase all', () => {})] };
+
+    const sd = { paperH: land ? 200 : 260, back: go('samples'), del: go('sample-delete'), keep: go('sample'), asking: screen === 'sample-delete',
+      rows: [['Written for', '“quiet”', ''], ['The tablet read', '“quiet”', ''], ['Written', 'Today, 14:02, upright', ''], ['Donation', 'In your donation', '']].map(([label, value, b]) => ({ label, value, btn: b, hasBtn: !!b })) };
+
+    // ---- Coverage
+    const N = { e: 64, t: 51, a: 48, o: 44, i: 41, n: 40, s: 37, h: 33, r: 35, d: 27, l: 26, u: 21, c: 19, m: 18, w: 15, f: 15, g: 14, y: 13, p: 12, b: 10, v: 6, k: 5, j: 3, x: 2, q: 4, z: 1 };
+    const WRONG = new Set(['u', 'n', 'r', 'I', 'l', '1', '0', 'O']);
+    const cell = (ch, n) => { const few = n < 5, none = n === 0, wrong = WRONG.has(ch);
+      return { ch, n: String(n), title: ch + ': ' + n + ' samples' + (wrong ? ', often read wrong' : ''), dot: wrong ? 'block' : 'none',
+        bg: few && !none ? 'var(--il-highlight)' : 'transparent', sh: none ? 'inset 0 0 0 1.5px var(--il-ink-soft)' : 'inset 0 0 0 1px var(--il-rule)' }; };
+    const lower = 'abcdefghijklmnopqrstuvwxyz'.split('');
+    const capN = c => Math.max(0, Math.round((N[c] || 2) / 5) - (c === 'x' || c === 'q' ? 1 : 0));
+    const marks = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', ',', '?', '!', ':', ';', '’', '-', '(', ')', '"', '&', '@'];
+    const MN = { '0': 6, '1': 9, '2': 7, '3': 5, '4': 5, '5': 6, '6': 4, '7': 8, '8': 4, '9': 5, '.': 22, ',': 14, '?': 3, '!': 3, ':': 4, ';': 0, '’': 6, '-': 2, '(': 0, ')': 0, '"': 1, '&': 0, '@': 0 };
+    const cov = { cellH: land ? 52 : 60, cols: land ? 26 : 13, practise: go('write'), groups: [
+      { name: 'Small letters', cells: lower.map(c => cell(c, N[c])) },
+      { name: 'Capitals', cells: lower.map(c => cell(c.toUpperCase(), capN(c))) },
+      { name: 'Digits and marks', cells: marks.map(c => cell(c, MN[c])) }],
+      legend: [['transparent', 'inset 0 0 0 1px var(--il-rule)', 'none', 'Plenty'], ['var(--il-highlight)', 'inset 0 0 0 1px var(--il-rule)', 'none', 'A few'], ['transparent', 'inset 0 0 0 1.5px var(--il-ink-soft)', 'none', 'None yet'], ['transparent', 'inset 0 0 0 1px var(--il-rule)', 'block', 'Often read wrong']]
+        .map(([bg, sh, dot, label]) => ({ bg, sh, dot, label })) };
+
+    // ---- Learn
+    const charging = screen === 'learn-running' || screen === 'learn-better' || screen === 'learn-kept';
+    const LS = {
+      'learn-few': { stats: ['8', '32', '32'], icon: 'edit_note', title: 'Keep writing', text: 'It starts learning once you have about 50 samples. 18 more to go.', bar: 10, barOn: 6, barText: '32 of about 50',
+        rows: [['public', 'What it uses now', 'What it knows from everyone’s handwriting. Nothing learned from yours yet.']], foot: '', btns: [btn('Write more', go('write'), 'pri')] },
+      'learn-waiting': { stats: ['24', '312', '58'], icon: 'battery_charging_full', title: 'Ready to learn from 58 new samples', text: 'It starts by itself the next time the tablet is charging and resting. Nothing to do.',
+        rows: [['person', 'What it uses now', 'What it learned from your handwriting, on Tuesday'], ['history', 'The version before', 'Kept, in case you want to go back to it']],
+        foot: 'Learn now starts as soon as the charger is in.', btns: [btn('Use the version before', () => {}), btn('Learn now', go('learn-running'), 'pri')] },
+      'learn-running': { stats: ['24', '312', '58'], icon: 'school', title: 'Learning from your handwriting', text: 'From 250 of your samples. It keeps 62 others aside to check itself. You can go on using the tablet meanwhile.', bar: 8, barOn: 3, barText: 'Round 3 of 8',
+        rows: [['person', 'What it uses now', 'What it learned on Tuesday, until this is done']], foot: 'If the charger comes out, it stops and tries again later.', btns: [] },
+      'learn-better': { stats: ['24', '312', '0'], icon: 'check_circle', title: 'It reads you better now', text: 'On the samples it kept aside, it used to misread 9 letters in 100. Now it misreads 4. It uses what it learned from now on.',
+        rows: [['person', 'What it uses now', 'What it learned from your handwriting, today at 14:20'], ['history', 'The version before', 'Kept, in case you want to go back to it']],
+        foot: '', btns: [btn('Use the version before', () => {})] },
+      'learn-kept': { stats: ['24', '312', '0'], icon: 'info', title: 'It kept what it had', text: 'It tried, but it didn’t read you better this time (6 letters in 100 misread before, 7 with the new try), so nothing changed. More samples usually help.',
+        rows: [['person', 'What it uses now', 'What it learned from your handwriting, on Tuesday']], foot: '', btns: [btn('Write more', go('write'), 'pri')] }
+    }[screen] || { stats: ['', '', ''], rows: [], btns: [] };
+    const ln = { ...LS, stats: [['today', 0], ['in all', 1], ['new since it last learned', 2]].map(([label, i]) => ({ n: LS.stats[i], label, bl: i ? k.sepStrong.replace(/^/, '') : 'none' })),
+      hasBar: !!LS.bar, bar: Array.from({ length: LS.bar || 0 }, (_, i) => ({ bg: i < LS.barOn ? 'var(--il-ink)' : 'var(--il-paper)' })),
+      rows: (LS.rows || []).map(([icon, label, sub]) => ({ icon, label, sub })) };
+    ln.stats.forEach((x, i) => { x.bl = i ? k.sep : 'none'; });
+
+    // ---- Donate
+    const dn = { on: donating, saved: screen === 'donate-saved', icon: donating ? 'volunteer_activism' : 'toggle_off',
+      state: donating ? 'Donating is on' : 'Donating is off', stateBg: donating ? 'var(--il-sheet)' : 'transparent',
+      stateSub: donating ? 'Free for anyone (CC0). New samples are added as you write.' : 'Nothing is set aside. Your samples stay yours alone.',
+      howTo: donating ? 'Save as a file puts your donation in Documents › Handwriting donations. From there, you send it to the project yourself.'
+        : 'Nothing is sent by itself. When you choose, the app saves your donation as one file in your Documents, and you send it yourself.',
+      btns: donating ? [btn('Erase donation', go('donate-off')), btn('Turn off', () => u({ donating: false, screen: 'donate-off' })), btn('Save as a file', go('donate-saved'), 'pri')]
+        : [btn('Turn on…', go('donate-licence'))] };
+
+    // ---- the wizard's footer
+    const nextOf = { 'w-welcome': 'w-try', 'w-try': 'w-private', 'w-try-done': 'w-private', 'w-private': 'w-learning', 'w-learning': 'w-share', 'w-licence': 'w-ready', 'w-ready': 'write' };
+    const backOf = { 'w-try': 'w-welcome', 'w-try-done': 'w-welcome', 'w-private': 'w-try', 'w-learning': 'w-private', 'w-share': 'w-learning', 'w-licence': 'w-share', 'w-ready': 'w-share' };
+    const nextOn = screen === 'w-licence' ? !!curLic : true;
+    const foot = { show: wizard, backVis: screen === 'w-welcome' ? 'hidden' : 'visible', back: go(backOf[screen] || 'w-welcome'),
+      h: land ? '72px' : '84px', choices: screen === 'w-share' && land ? share.choices : [],
+      status: { 'w-share': land ? 'Either way is fine; change it any time in Donate.' : 'Your choice, either way', 'w-licence': curLic ? '' : 'Pick one to go on', 'w-try': '' }[screen] || '',
+      showSkip: wizard && !['w-share', 'w-licence', 'w-ready'].includes(screen), skip: go('write'),
+      showNext: screen !== 'w-share', nextLabel: screen === 'w-welcome' ? 'Begin' : screen === 'w-licence' ? 'Donate with this licence' : screen === 'w-ready' ? 'Start writing' : 'Continue',
+      nextIcon: screen === 'w-ready' ? 'edit' : 'arrow_forward', dis: String(!nextOn), cur: nextOn ? 'pointer' : 'default',
+      next: nextOn ? () => u({ screen: nextOf[screen] || 'write', donating: screen === 'w-licence' ? true : s.donating }) : null,
+      bg: nextOn ? k.priBg : 'transparent', fg: nextOn ? k.priFg : 'var(--il-dim)', sh: nextOn ? k.priSh : 'inset 0 0 0 1.5px var(--il-dim)' };
+
+    const hdr = { sub: wizard ? (voice === 'white' ? 'Getting started' : 'getting started') : (voice === 'white' ? 'Teach the tablet your hand' : 'teach the tablet your hand') };
+    const bar = { time: '14:20', icon: charging ? 'battery_charging_full' : 'battery_5_bar', bat: charging ? '81 %' : '74 %' };
+
+    const LABEL = { 'w-welcome': '1 Welcome', 'w-try': '2 Try one', 'w-try-done': '2 Tried', 'w-private': '3 Your samples', 'w-learning': '4 Learning', 'w-share': '5 Donating', 'w-licence': '5 Licence', 'w-ready': 'Ready',
+      write: 'Write', 'write-ink': 'Ink', 'write-kept': 'Kept', 'write-check': 'Check failed', 'write-sentence': 'Sentence', 'write-sets': 'Sets',
+      samples: 'Samples', sample: 'Sample', 'sample-delete': 'Delete?', coverage: 'Coverage',
+      'learn-few': 'Too few', 'learn-waiting': 'Waiting', 'learn-running': 'Learning', 'learn-better': 'Better', 'learn-kept': 'Not better',
+      'donate-off': 'Donate off', 'donate-licence': 'Licence', 'donate-on': 'Donate on', 'donate-saved': 'Saved' };
+    const chips = all.map(id => ({ label: LABEL[id], on: go(id), bg: id === screen ? '#111111' : '#ffffff', fg: id === screen ? '#ffffff' : '#111111' }));
+
+    const W = land ? 936 : 702, H = land ? 702 : 936;
+    const is = { wWelcome: screen === 'w-welcome', wTry: screen === 'w-try' || screen === 'w-try-done', wList: !!LISTS[screen], share: screen === 'w-share', licence: screen === 'w-licence' || screen === 'donate-licence',
+      pickLicence: screen === 'donate-licence', ready: screen === 'w-ready', write: isW, sets: screen === 'write-sets', samples: screen === 'samples', sample: screen === 'sample' || screen === 'sample-delete',
+      coverage: screen === 'coverage', learn: screen.startsWith('learn'), donate: screen === 'donate-off' || screen === 'donate-on' || screen === 'donate-saved' };
+
+    return { ilKey: e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } },
+      ilv: this.ilVars(voice, 'eink', '1'), k, voice, yes: true, W, H, frameW: W + 58, bezel: land ? '29px 44px 29px 28px' : '28px 29px 44px',
+      bodyPad: wizard ? (land ? '16px 32px 12px' : '24px 32px 18px') : (land ? '18px 24px 18px' : '20px 28px 20px'),
+      isWiz: wizard, isApp: !wizard, wiz: { steps: wizSteps }, tabs, hdr, bar, pg, is, foot, chips,
+      wel, tryP, wl, share, lic, ready, wr, sets, sm, sd, cov, ln, dn };
+  }
+
+  ilVars(voice, scheme, pen) {
+    const V = ['white', 'editorial', 'stationery'].includes(voice) ? voice : 'white';
+    const S = scheme === 'night' || scheme === 'eink' ? scheme : 'paper';
+    const id = S === 'eink' ? (V === 'stationery' ? 'stationery-eink' : 'eink') : V + '-' + S;
+    const T = Component.ilTokens(this);
+    if (!T) return '--il-theme:' + id;
+    const i = ['1', '2', '3'].indexOf(String(pen ?? '1')), n = i < 0 ? 0 : i, sfx = n ? '-' + (n + 1) : '';
+    const g = name => {
+      let x = T[name];
+      x = x && typeof x === 'object' ? x[id] : x;
+      if (x == null) return null;
+      const m = /^\{([a-z0-9-]+)\}$/.exec(x);
+      if (!m) return x;
+      const r = m[1] === 'accent' || m[1] === 'highlight' ? m[1] + sfx : m[1];
+      return g(r);
+    };
+    const paper = g('paper'), ink = g('ink'), shade = g('shade');
+    const v = { paper, sheet: g('sheet'), ink, 'ink-soft': g('ink-soft'), rule: g('rule'), shade,
+      dim: S === 'night' ? (V === 'stationery' ? g('rule') : g('ink-soft')) : shade,
+      accent: g('accent' + sfx), highlight: g('highlight' + sfx), 'on-accent': g('on-accent'), 'on-accent-soft': g('on-accent-soft'), pen: g('pen'),
+      focus: g('focus'), 'focus-on-leather': g('focus-on-leather'), 'focus-on-cream': g('focus-on-cream'), gold: g('gold'), gilt: g('gilt'),
+      'leather-dark': g('leather-dark'), wax: g('wax'),
+      keycap: '0 3px 0 ' + shade, 'passe-partout': '0 0 0 5px ' + paper + ',0 0 0 6px ' + ink, offset: '3px 3px 0 ' + ink,
+      'card-stack': (V === 'stationery' && g('card-stack')) || ('0 3px 0 ' + shade) };
+    return Object.keys(v).map(k => '--il-' + k + ':' + v[k]).join(';') + ';--il-theme:' + id;
+  }
+
+  static ilTokens(c) {
+    // Live link to the Interleaf design system installed on this canvas (project/ds/interleaf).
+    const K = Component;
+    if (K._ilT !== undefined) return K._ilT;
+    if (!K._ilP) {
+      K._ilW = [];
+      K._ilP = fetch('ds/interleaf/tokens.json')
+        .then(r => (r.ok ? r.json() : null))
+        .then(j => {
+          const T = {};
+          if (j) for (const sec of [j.color, j.shadow]) for (const t of (sec && sec.tokens) || []) T[t.name] = t.value;
+          K._ilT = j ? T : null;
+        })
+        .catch(() => { K._ilT = null; })
+        .then(() => { const w = K._ilW; K._ilW = []; for (const x of w) { try { x.forceUpdate(); } catch (e) {} } });
+    }
+    if (c && K._ilW.indexOf(c) < 0) K._ilW.push(c);
+    return null;
+  }
+}
+</script>
+</body>
+</html>

@@ -364,7 +364,7 @@ class Component extends DCLogic {
     if (wizard && PAGES[screen] && PAGES[screen][0]) pg = { show: true, eyebrow: k.eyebrow(si + 1, NAMES[STEPS[si]]), title: PAGES[screen][0], lead: PAGES[screen][1], font: land ? k.displayS : k.display };
     else if (!wizard && APP_HEAD[headKey]) pg = { show: true, eyebrow: '', title: APP_HEAD[headKey][0], lead: APP_HEAD[headKey][1], font: k.displayS };
     if (screen === 'sample' || screen === 'sample-delete' || (land && (screen === 'donate-on' || screen === 'donate-saved' || screen.startsWith('learn')))) pg = { show: false };
-    pg.hasLead = !!pg.lead && !(land && !wizard && screen !== 'write-sets' && screen !== 'best-intro');
+    pg.hasLead = !!pg.lead && screen !== 'donate-saved' && !(land && !wizard && screen !== 'write-sets' && screen !== 'best-intro');
     if (pg.show && !pg.eyebrow) pg.eyebrow = { 'best-intro': 'Learn', 'best-pick': 'Your handwriting', 'write-sets': 'Write', samples: 'Samples', coverage: 'Coverage', learn: 'Learn', 'donate-off': 'Donate', 'donate-on': 'Donate', 'donate-licence': 'Donate', 'donate-earlier': 'Donate' }[headKey] || '';
     if (voice !== 'white' && pg.eyebrow && !wizard) pg.eyebrow = pg.eyebrow.toLowerCase();
 
@@ -398,8 +398,8 @@ class Component extends DCLogic {
 
     const share = {
       cols: [
-        { head: 'What a donation holds', icon: 'check', bg: 'transparent', items: ['The pen strokes you write for the words the app shows', 'Those words themselves', 'The size of the writing area, and which way the tablet was turned', 'What the tablet read when you wrote it'] },
-        { head: 'What it never holds', icon: 'remove', bg: 'transparent', items: ['Your name, or anything else about you', 'Anything about this tablet', 'Dates and times', 'Words from your own list, or anything you write in other apps'] }
+        { head: 'What a donation holds', icon: 'check', bg: 'transparent', items: ['The pen strokes you write for the words the app shows', 'Those words themselves', 'The size of the writing area, and which way the tablet was turned', 'What the tablet read when you wrote it', 'Quick or careful, and your picks (with both versions)'] },
+        { head: 'What it never holds', icon: 'remove', bg: 'transparent', items: ['Your name, or anything else about you', 'Anything about this tablet', 'Dates and times', 'Words from your own list, or anything you write in other apps', 'A font made from your handwriting'] }
       ],
       noteIcon: 'outgoing_mail', note: 'Nothing is sent by itself. Donating sets a copy aside on the tablet. When you like, the app saves it as one file in your Documents, and you send that file to the project yourself.',
       ask: screen === 'w-share' && !land,
@@ -458,7 +458,7 @@ class Component extends DCLogic {
       return { name, desc, icon, sel: String(on), vis: on ? 'visible' : 'hidden', on: go('write'), ...x }; });
 
     // ---- Your handwriting: careful samples and picks
-    const best = { laterLbl: voice === 'white' ? 'Coming later' : 'coming later', counts: '31 careful samples and 12 picks so far. They stay on this tablet with your other samples.',
+    const best = { laterLbl: voice === 'white' ? 'Coming later' : 'coming later', counts: '31 careful samples and 12 picks so far. They are kept like your other samples. If you donate, a pick goes along only with both of its versions; a font made from your writing never does.',
       modes: [
         { name: 'Write it your best', desc: 'A word written slowly and carefully. Sometimes once quickly first, then once with care.', on: go('best-write'),
           inks: [{ t: 'Thursday', x: 12, y: 22, fs: 30, slant: 0 }] },
@@ -519,7 +519,7 @@ class Component extends DCLogic {
     ln.stats.forEach((x, i) => { x.bl = i ? k.sep : 'none'; });
 
     // ---- Donate
-    const dn = { toEarlier: go('donate-earlier'), howShow: !(land && donating), on: donating, saved: screen === 'donate-saved', icon: donating ? 'volunteer_activism' : 'toggle_off',
+    const dn = { toEarlier: go('donate-earlier'), howShow: !donating, on: donating, saved: screen === 'donate-saved', icon: donating ? 'volunteer_activism' : 'toggle_off',
       state: donating ? 'Donating is on' : 'Donating is off', stateBg: donating ? 'var(--il-sheet)' : 'transparent',
       stateSub: donating ? 'Free for anyone (CC0). New samples are added as you write.' : 'Nothing is set aside. Your samples stay yours alone.',
       howTo: donating ? 'Save as a file puts your donation in Documents › Handwriting donations. From there, you send it to the project yourself.'

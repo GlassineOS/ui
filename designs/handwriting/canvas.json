@@ -40,7 +40,7 @@
    "x": 0,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1569,
    "title": "Welcome",
    "page": "wizard",
    "is_interactive": true
@@ -49,7 +49,7 @@
    "x": 904,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1569,
    "title": "Try one",
    "page": "wizard",
    "is_interactive": true
@@ -58,7 +58,7 @@
    "x": 1808,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1545,
    "title": "Tried",
    "page": "wizard",
    "is_interactive": true
@@ -67,7 +67,7 @@
    "x": 2712,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1545,
    "title": "Your samples stay here",
    "page": "wizard",
    "is_interactive": true
@@ -76,7 +76,7 @@
    "x": 3616,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1545,
    "title": "Learning happens on its own",
    "page": "wizard",
    "is_interactive": true
@@ -85,7 +85,7 @@
    "x": 4520,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1593,
    "title": "The invitation to donate",
    "page": "wizard",
    "is_interactive": true
@@ -94,7 +94,7 @@
    "x": 5424,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1545,
    "title": "Choose a licence",
    "page": "wizard",
    "is_interactive": true
@@ -103,7 +103,7 @@
    "x": 6328,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1593,
    "title": "Earlier samples (after the licence)",
    "page": "wizard",
    "is_interactive": true
@@ -112,7 +112,7 @@
    "x": 7232,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1545,
    "title": "Ready",
    "page": "wizard",
    "is_interactive": true
@@ -130,7 +130,7 @@
    "x": 0,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1545,
    "title": "Write · a new prompt",
    "page": "write",
    "is_interactive": true
@@ -139,7 +139,7 @@
    "x": 904,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1545,
    "title": "Write · ink on the paper",
    "page": "write",
    "is_interactive": true
@@ -148,7 +148,7 @@
    "x": 1808,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1545,
    "title": "Write · the last one kept",
    "page": "write",
    "is_interactive": true
@@ -157,7 +157,7 @@
    "x": 2712,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1569,
    "title": "Write · the check didn’t pass",
    "page": "write",
    "is_interactive": true
@@ -166,7 +166,7 @@
    "x": 3616,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1545,
    "title": "Write · a sentence",
    "page": "write",
    "is_interactive": true
@@ -175,7 +175,7 @@
    "x": 4520,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1545,
    "title": "Write · what to write",
    "page": "write",
    "is_interactive": true
@@ -202,7 +202,7 @@
    "x": 0,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1545,
    "title": "Samples",
    "page": "library",
    "is_interactive": true
@@ -211,7 +211,7 @@
    "x": 904,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1545,
    "title": "A sample",
    "page": "library",
    "is_interactive": true
@@ -220,7 +220,7 @@
    "x": 1808,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1545,
    "title": "Delete a sample?",
    "page": "library",
    "is_interactive": true
@@ -238,7 +238,7 @@
    "x": 3850,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1569,
    "title": "Coverage",
    "page": "library",
    "is_interactive": true
@@ -256,7 +256,7 @@
    "x": 0,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1545,
    "title": "Learn · not enough yet",
    "page": "learn",
    "is_interactive": true
@@ -265,7 +265,7 @@
    "x": 904,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1569,
    "title": "Learn · ready, waiting for the charger",
    "page": "learn",
    "is_interactive": true
@@ -274,7 +274,7 @@
    "x": 1808,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1545,
    "title": "Learn · learning",
    "page": "learn",
    "is_interactive": true
@@ -283,7 +283,7 @@
    "x": 2712,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1545,
    "title": "Learn · better",
    "page": "learn",
    "is_interactive": true
@@ -292,7 +292,7 @@
    "x": 3616,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1545,
    "title": "Learn · not better",
    "page": "learn",
    "is_interactive": true
@@ -310,7 +310,7 @@
    "x": 0,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1569,
    "title": "Your handwriting",
    "page": "best",
    "is_interactive": true
@@ -319,7 +319,7 @@
    "x": 904,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1545,
    "title": "Write it your best",
    "page": "best",
    "is_interactive": true
@@ -328,7 +328,7 @@
    "x": 1808,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1545,
    "title": "Quick, then careful · step 1",
    "page": "best",
    "is_interactive": true
@@ -337,7 +337,7 @@
    "x": 2712,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1545,
    "title": "Quick, then careful · step 2",
    "page": "best",
    "is_interactive": true
@@ -346,7 +346,7 @@
    "x": 3616,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1569,
    "title": "Which one is nicer?",
    "page": "best",
    "is_interactive": true
@@ -364,7 +364,7 @@
    "x": 0,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1545,
    "title": "Donate · off",
    "page": "donate",
    "is_interactive": true
@@ -373,7 +373,7 @@
    "x": 904,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1545,
    "title": "Donate · choose a licence",
    "page": "donate",
    "is_interactive": true
@@ -382,7 +382,7 @@
    "x": 1808,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1569,
    "title": "Donate · add earlier samples",
    "page": "donate",
    "is_interactive": true
@@ -391,7 +391,7 @@
    "x": 2712,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1569,
    "title": "Donate · on",
    "page": "donate",
    "is_interactive": true
@@ -400,7 +400,7 @@
    "x": 3616,
    "y": 0,
    "w": 824,
-   "h": 1500,
+   "h": 1545,
    "title": "Donate · saved",
    "page": "donate",
    "is_interactive": true

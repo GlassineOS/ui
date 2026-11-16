@@ -261,7 +261,7 @@
 <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px"><span style="font:{{ k.row }};font-weight:600">{{ sh.title }}</span><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">{{ sh.sub }}</span></div>
 <div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ sh.close }}" style="height:48px;padding:0 16px 0 12px;display:flex;align-items:center;gap:6px;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }};white-space:nowrap"><span style="font:400 22px/1 'Material Symbols Outlined'">close</span>Close</div>
 </div>
-<div role="tablist" style="flex:none;height:48px;display:flex;align-items:stretch;gap:{{ k.tabGap }};border-bottom:{{ k.sep }};padding-bottom:6px"><sc-for list="{{ sh.segs }}" as="sg" hint-placeholder-count="4"><div tabindex="0" role="tab" aria-selected="{{ sg.sel }}" aria-disabled="{{ sg.dis }}" onKeyDown="{{ ilKey }}" onClick="{{ sg.on }}" style="flex:1;min-width:0;display:flex;align-items:center;justify-content:center;cursor:{{ sg.cur }};border-radius:{{ k.segR }};font:{{ k.row }};font-weight:{{ sg.fw }};background:{{ sg.bg }};color:{{ sg.fg }};box-shadow:{{ sg.sh }};white-space:nowrap">{{ sg.label }}</div></sc-for></div>
+<sc-if value="{{ sh.tabs }}" hint-placeholder-val="{{ true }}"><div role="tablist" style="flex:none;height:48px;display:flex;align-items:stretch;gap:{{ k.tabGap }};border-bottom:{{ k.sep }};padding-bottom:6px"><sc-for list="{{ sh.segs }}" as="sg" hint-placeholder-count="4"><div tabindex="0" role="tab" aria-selected="{{ sg.sel }}" aria-disabled="{{ sg.dis }}" onKeyDown="{{ ilKey }}" onClick="{{ sg.on }}" style="flex:1;min-width:0;display:flex;align-items:center;justify-content:center;cursor:{{ sg.cur }};border-radius:{{ k.segR }};font:{{ k.row }};font-weight:{{ sg.fw }};background:{{ sg.bg }};color:{{ sg.fg }};box-shadow:{{ sg.sh }};white-space:nowrap">{{ sg.label }}</div></sc-for></div></sc-if>
 
 <sc-if value="{{ sh.isNeed }}" hint-placeholder-val="{{ false }}"><div style="flex:none;display:flex;align-items:center;gap:16px;padding:12px 16px;border-radius:{{ k.cardR }};box-shadow:{{ k.noteSh }}">
 <div style="display:flex;gap:8px"><sc-for list="{{ sh.slots }}" as="sl" hint-placeholder-count="3"><div aria-label="{{ sl.aria }}" style="width:56px;height:64px;box-sizing:border-box;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;border-radius:{{ k.rowR }};background:{{ sl.bg }};border:{{ sl.border }}"><span style="font:400 40px/1 'Kalam',cursive;color:var(--il-pen)">{{ sl.ink }}</span><span style="font:{{ k.mono }};color:var(--il-ink-soft)">{{ sl.empty }}</span></div></sc-for></div>
@@ -277,20 +277,21 @@
 <sc-if value="{{ v.isFav }}" hint-placeholder-val="{{ false }}"><span title="Favourite" style="position:absolute;right:8px;top:8px;font:400 26px/1 'Material Symbols Outlined';font-variation-settings:'FILL' 1">star</span></sc-if>
 </div>
 <div style="display:flex;flex-direction:column;gap:2px"><span style="font:{{ k.packF }};font-variant:{{ k.packVar }};letter-spacing:{{ k.packLs }}">{{ v.freq }}</span><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">{{ v.how }}</span></div>
-<div tabindex="0" role="switch" aria-checked="{{ v.favSel }}" aria-disabled="{{ v.favDis }}" onKeyDown="{{ ilKey }}" onClick="{{ v.onFav }}" style="height:48px;padding:0 10px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:6px;cursor:{{ v.favCur }};border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ v.favBg }};color:{{ v.favFg }};box-shadow:{{ v.favSh }};white-space:nowrap"><span style="font:400 20px/1 'Material Symbols Outlined';font-variation-settings:'FILL' {{ v.fill }}">star</span>{{ v.favLabel }}</div>
-<div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ v.onOut }}" style="height:48px;padding:0 10px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};color:var(--il-ink);box-shadow:{{ k.btnSh }};white-space:nowrap"><span style="font:400 20px/1 'Material Symbols Outlined'">{{ v.outIcon }}</span>{{ v.outLabel }}</div>
+<div style="display:grid;grid-template-columns:{{ sh.vBtnCols }};gap:10px"><div tabindex="0" role="switch" aria-checked="{{ v.favSel }}" aria-disabled="{{ v.favDis }}" onKeyDown="{{ ilKey }}" onClick="{{ v.onFav }}" style="height:48px;padding:0 10px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:6px;cursor:{{ v.favCur }};border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ v.favBg }};color:{{ v.favFg }};box-shadow:{{ v.favSh }};white-space:nowrap"><span style="font:400 20px/1 'Material Symbols Outlined';font-variation-settings:'FILL' {{ v.fill }}">star</span>{{ v.favLabel }}</div>
+<div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ v.onOut }}" style="height:48px;padding:0 10px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};color:var(--il-ink);box-shadow:{{ k.btnSh }};white-space:nowrap"><span style="font:400 20px/1 'Material Symbols Outlined'">{{ v.outIcon }}</span>{{ v.outLabel }}</div></div>
+<div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ v.onList }}" style="height:48px;padding:0 10px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};color:var(--il-ink);box-shadow:{{ k.btnSh }};white-space:nowrap">Show its samples</div>
 </div></sc-for></div>
 <sc-if value="{{ sh.vNoteShow }}" hint-placeholder-val="{{ true }}"><div style="display:flex;gap:14px;padding:12px 16px;border-radius:{{ k.cardR }};background:var(--il-sheet)"><span style="font:400 24px/1 'Material Symbols Outlined'">info</span><span style="font:{{ k.sub }};text-wrap:pretty">{{ sh.vNote }}</span></div></sc-if>
 </div></sc-if>
 
 <sc-if value="{{ sh.isSamples }}" hint-placeholder-val="{{ false }}"><div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:12px">
 <span style="font:{{ k.sub }};text-wrap:pretty">{{ sh.sCount }}</span>
-<div style="display:grid;grid-template-columns:repeat({{ sh.sCols }},minmax(0,1fr));gap:10px"><sc-for list="{{ sh.samples }}" as="it" hint-placeholder-count="12"><div tabindex="0" role="checkbox" aria-checked="{{ it.sel }}" aria-disabled="{{ it.dis }}" aria-label="{{ it.aria }}" onKeyDown="{{ ilKey }}" onClick="{{ it.on }}" style="height:{{ sh.tileH }}px;box-sizing:border-box;display:flex;flex-direction:column;cursor:{{ it.cur }};border-radius:{{ k.cardR }};box-shadow:{{ it.sh }};border:{{ it.border }};overflow:hidden">
+<div style="display:grid;grid-template-columns:repeat({{ sh.sCols }},minmax(0,1fr));gap:10px"><sc-for list="{{ sh.samples }}" as="it" hint-placeholder-count="12"><div tabindex="0" role="button" aria-label="{{ it.aria }}" onKeyDown="{{ ilKey }}" onClick="{{ it.on }}" style="height:{{ sh.tileH }}px;box-sizing:border-box;display:flex;flex-direction:column;cursor:pointer;border-radius:{{ k.cardR }};box-shadow:{{ it.sh }};border:{{ it.border }};overflow:hidden">
 <div style="flex:1;position:relative;overflow:hidden;background:{{ it.bg }}"><span style="position:absolute;left:10px;top:6px;font:400 30px/1.3 'Kalam',cursive;color:var(--il-pen);white-space:nowrap">{{ it.pre }}<span style="text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:5px">{{ it.ch }}</span>{{ it.post }}</span></div>
-<div style="height:34px;flex:none;padding:0 8px 0 10px;display:flex;align-items:center;gap:6px;border-top:{{ k.sep }}"><span style="flex:1;min-width:0;font:{{ k.sub }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ it.state }}</span><sc-if value="{{ it.box }}" hint-placeholder-val="{{ true }}"><div style="width:24px;height:24px;flex:none;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border-radius:{{ k.cellR }};background:{{ it.cbBg }};color:var(--il-on-accent);box-shadow:{{ it.cbSh }}"><span style="font:600 18px/1 'Material Symbols Outlined';visibility:{{ it.vis }}">check</span></div></sc-if></div>
+<div style="height:34px;flex:none;padding:0 8px 0 10px;display:flex;align-items:center;gap:6px;border-top:{{ k.sep }}"><span style="flex:1;min-width:0;font:{{ k.sub }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ it.state }}</span></div>
 </div></sc-for></div>
 <sc-if value="{{ sh.hasUndo }}" hint-placeholder-val="{{ false }}"><div role="status" style="display:flex;align-items:center;gap:14px;padding:10px 12px 10px 16px;border-radius:{{ k.cardR }};box-shadow:{{ k.noteSh }}"><span style="font:400 24px/1 'Material Symbols Outlined'">info</span><span style="flex:1;min-width:0;font:{{ k.sub }};text-wrap:pretty">{{ sh.undoT }}</span><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ sh.undo }}" style="height:48px;padding:0 16px 0 12px;display:flex;align-items:center;gap:6px;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }};white-space:nowrap"><span style="font:400 22px/1 'Material Symbols Outlined'">undo</span>Undo</div></div></sc-if>
-<sc-if value="{{ sh.noUndo }}" hint-placeholder-val="{{ true }}"><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">Tap a sample to leave it out of your font. It isn’t deleted: it stays in Samples and still helps the tablet read you.</span></sc-if>
+<sc-if value="{{ sh.noUndo }}" hint-placeholder-val="{{ true }}"><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">Tap a sample to see it whole: write it again, delete it, or leave it out of your font.</span></sc-if>
 <div style="display:flex;align-items:center;gap:10px"><div style="width:48px;height:48px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border-radius:{{ k.btnR }};color:var(--il-dim);box-shadow:inset 0 0 0 1.5px var(--il-dim)"><span style="font:400 24px/1 'Material Symbols Outlined'">chevron_left</span></div><span style="font:{{ k.mono }}">Page 1 of 2</span><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" aria-label="Next page" style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:{{ k.btnR }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }}"><span style="font:400 24px/1 'Material Symbols Outlined'">chevron_right</span></div></div>
 </div></sc-if>
 
@@ -311,7 +312,45 @@
 <div style="display:flex;align-items:center;gap:10px"><span style="flex:1;min-width:0;font:{{ k.sub }};color:var(--il-ink-soft)">{{ sh.pNote }}</span><sc-for list="{{ sh.pBtns }}" as="b" hint-placeholder-count="2"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ b.on }}" style="height:48px;padding:0 18px;display:flex;align-items:center;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ b.bg }};color:{{ b.fg }};box-shadow:{{ b.sh }};white-space:nowrap">{{ b.label }}</div></sc-for></div>
 </div></sc-if>
 
+
+<sc-if value="{{ sh.isVList }}" hint-placeholder-val="{{ false }}"><div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:10px"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ sh.back }}" style="height:48px;padding:0 18px 0 12px;display:flex;align-items:center;gap:6px;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }};white-space:nowrap"><span style="font:400 22px/1 'Material Symbols Outlined'">arrow_back</span>{{ sh.backLabel }}</div></div>
+<div style="display:flex;align-items:center;gap:14px">
+<div style="width:72px;height:88px;flex:none;position:relative;overflow:hidden;border-radius:{{ k.rowR }};background:var(--il-sheet)"><div style="position:absolute;left:8px;right:8px;top:80%;border-top:1.5px dashed var(--il-rule)"></div><sc-if value="{{ sh.vlSvg }}" hint-placeholder-val="{{ true }}"><svg viewBox="0 0 120 150" aria-hidden="true" style="position:absolute;inset:4px 0;width:100%;height:calc(100% - 8px)"><path d="{{ sh.vlD }}" fill="none" stroke="var(--il-pen)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path></svg></sc-if><sc-if value="{{ sh.vlGlyph }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;left:0;right:0;bottom:16%;text-align:center;font:400 56px/1 'Kalam',cursive;color:var(--il-pen);transform:skewX({{ sh.vlSkew }}deg)">{{ sh.ch }}</span></sc-if></div>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px"><span style="font:{{ k.packF }};font-variant:{{ k.packVar }};letter-spacing:{{ k.packLs }}">{{ sh.vlT }}</span><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">{{ sh.vlSub }}</span></div>
+</div>
+<div style="display:grid;grid-template-columns:repeat({{ sh.sCols }},minmax(0,1fr));gap:10px"><sc-for list="{{ sh.vSamples }}" as="it" hint-placeholder-count="6"><div tabindex="0" role="button" aria-label="{{ it.aria }}" onKeyDown="{{ ilKey }}" onClick="{{ it.on }}" style="height:{{ sh.tileH }}px;box-sizing:border-box;display:flex;flex-direction:column;cursor:pointer;border-radius:{{ k.cardR }};box-shadow:{{ it.sh }};border:{{ it.border }};overflow:hidden">
+<div style="flex:1;position:relative;overflow:hidden;background:{{ it.bg }}"><span style="position:absolute;left:10px;top:6px;font:400 30px/1.3 'Kalam',cursive;color:var(--il-pen);white-space:nowrap">{{ it.pre }}<span style="text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:5px">{{ it.ch }}</span>{{ it.post }}</span></div>
+<div style="height:34px;flex:none;padding:0 8px 0 10px;display:flex;align-items:center;gap:6px;border-top:{{ k.sep }}"><span style="flex:1;min-width:0;font:{{ k.sub }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ it.state }}</span></div>
+</div></sc-for></div>
+<span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">The samples that make this way of writing it. Tap one to see it whole: write it again, delete it, or leave it out of your font.</span>
+</div></sc-if>
+
+<sc-if value="{{ sh.isOpen }}" hint-placeholder-val="{{ false }}"><div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:10px"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ sh.back }}" style="height:48px;padding:0 18px 0 12px;display:flex;align-items:center;gap:6px;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }};white-space:nowrap"><span style="font:400 22px/1 'Material Symbols Outlined'">arrow_back</span>{{ sh.backLabel }}</div></div>
+<div role="img" aria-label="{{ sh.oWord }}, with {{ sh.oCh }} picked out" style="height:{{ sh.oInkH }}px;flex:none;position:relative;overflow:hidden;border-radius:{{ k.rowR }};background:var(--il-sheet)">
+<div style="position:absolute;left:20px;right:20px;top:74%;border-top:1.5px dashed var(--il-rule)"></div>
+<span style="position:absolute;left:0;right:0;bottom:22%;text-align:center;font:400 {{ sh.oFs }}px/1 'Kalam',cursive;color:var(--il-ink-soft);white-space:nowrap">{{ sh.oPre }}<span style="display:inline-block;line-height:.82;padding:0 6px;border-radius:{{ k.cellR }};background:var(--il-highlight);color:var(--il-pen)">{{ sh.oCh }}</span>{{ sh.oPost }}</span>
+</div>
+<div style="display:flex;flex-direction:column;border-top:{{ k.sepStrong }}"><sc-for list="{{ sh.oRows }}" as="r" hint-placeholder-count="4"><div style="min-height:46px;padding:8px 0;box-sizing:border-box;display:flex;align-items:center;gap:14px;border-bottom:{{ k.sep }}"><span style="width:150px;flex:none;font:{{ k.lbl }};font-variant:{{ k.lblVar }};text-transform:{{ k.lblCase }};letter-spacing:{{ k.lblLs }};color:{{ k.lblC }}">{{ r.label }}</span><span style="flex:1;min-width:0;font:{{ k.row }};text-wrap:pretty">{{ r.value }}</span></div></sc-for></div>
+<sc-if value="{{ sh.redone }}" hint-placeholder-val="{{ false }}"><div role="status" style="display:flex;align-items:center;gap:14px;padding:10px 16px;border-radius:{{ k.cardR }};box-shadow:{{ k.noteSh }}"><span style="font:400 24px/1 'Material Symbols Outlined'">check_circle</span><span style="flex:1;min-width:0;font:{{ k.sub }};text-wrap:pretty">{{ sh.redoneT }}</span></div></sc-if>
+<sc-if value="{{ sh.oNoteShow }}" hint-placeholder-val="{{ true }}"><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">{{ sh.oNote }}</span></sc-if>
+<span style="flex:1"></span>
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><sc-if value="{{ sh.oCanOut }}" hint-placeholder-val="{{ true }}"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ sh.onOOut }}" style="height:48px;padding:0 18px 0 14px;display:flex;align-items:center;gap:6px;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }};white-space:nowrap"><span style="font:400 22px/1 'Material Symbols Outlined'">{{ sh.oOutIcon }}</span>{{ sh.oOutLabel }}</div></sc-if><span style="flex:1"></span><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ sh.onDel }}" style="height:48px;padding:0 18px 0 14px;display:flex;align-items:center;gap:6px;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }};white-space:nowrap"><span style="font:400 22px/1 'Material Symbols Outlined'">delete</span>Delete</div><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ sh.onRedo }}" style="height:48px;padding:0 18px 0 14px;display:flex;align-items:center;gap:6px;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }};white-space:nowrap"><span style="font:400 22px/1 'Material Symbols Outlined'">draw</span>Write it again</div></div>
+</div></sc-if>
+
+<sc-if value="{{ sh.isRedo }}" hint-placeholder-val="{{ false }}"><div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="height:34px;padding:0 12px 0 10px;box-sizing:border-box;display:flex;align-items:center;gap:6px;border-radius:{{ k.btnR }};box-shadow:inset 0 0 0 1.5px var(--il-ink);font:{{ k.sub }};font-style:normal;white-space:nowrap"><span style="font:400 20px/1 'Material Symbols Outlined'">draw</span>Write it again</span></div>
+<div style="display:flex;align-items:baseline;gap:16px;flex-wrap:wrap"><span style="font:{{ k.prompt }}">{{ sh.oWord }}</span><span style="flex:1;min-width:160px;font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">{{ sh.rNote }}</span></div>
+<div style="flex:1;min-height:0"><dc-import name="Paper" voice="{{ voice }}" ink="{{ sh.rInk }}" line="90" size="52" height="400" hint="{{ sh.rHint }}" live="{{ yes }}" clear="{{ sh.wClear }}" on-ink="{{ sh.onInk }}" style="width:100%;height:100%" hint-size="100%,220px"></dc-import></div>
+<div style="display:flex;align-items:center;gap:10px"><span style="flex:1;min-width:0;font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">It is checked as usual before it’s kept</span><sc-for list="{{ sh.rBtns }}" as="b" hint-placeholder-count="3"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ b.on }}" aria-disabled="{{ b.dis }}" style="height:48px;padding:0 18px;display:flex;align-items:center;cursor:{{ b.cur }};border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ b.bg }};color:{{ b.fg }};box-shadow:{{ b.sh }};white-space:nowrap">{{ b.label }}</div></sc-for></div>
+</div></sc-if>
 <div style="flex:none;display:flex;align-items:flex-start;gap:12px;padding-top:10px;border-top:{{ k.sep }}"><span style="font:400 22px/1 'Material Symbols Outlined'">sync</span><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">{{ sh.foot }}</span></div>
+<sc-if value="{{ sh.asking }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;display:flex;align-items:flex-end;padding:{{ sh.pad }};box-sizing:border-box"><div role="dialog" aria-label="Delete this sample?" style="width:100%;display:flex;flex-direction:column;gap:14px;padding:20px 22px;box-sizing:border-box;border-radius:{{ k.cardR }};background:var(--il-paper);box-shadow:{{ k.dialogSh }}">
+<span style="font:{{ k.packF }};font-variant:{{ k.packVar }};letter-spacing:{{ k.packLs }}">Delete this sample?</span>
+<span style="font:{{ k.sub }};text-wrap:pretty">{{ sh.delText }}</span>
+<div style="display:flex;justify-content:flex-end;gap:10px"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ sh.keep }}" style="height:48px;padding:0 18px;display:flex;align-items:center;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }}">Keep it</div><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ sh.del }}" style="height:48px;padding:0 18px;display:flex;align-items:center;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.priBg }};color:{{ k.priFg }};box-shadow:{{ k.priSh }}">Delete</div></div>
+</div></div></sc-if>
 </div></sc-if>
 
 <sc-if value="{{ is.neat }}" hint-placeholder-val="{{ false }}"><div style="flex:1;min-height:0;display:flex;flex-direction:{{ nt.dir }};gap:18px">
@@ -391,12 +430,12 @@
 <div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ chips }}" as="tb" hint-placeholder-count="12"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ tb.on }}" style="font:500 11.5px 'IBM Plex Mono';padding:7px 11px;border-radius:6px;border:1px solid rgba(0,0,0,.2);cursor:pointer;background:{{ tb.bg }};color:{{ tb.fg }}">{{ tb.label }}</div></sc-for></div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview": {"width": 760, "height": 1080}, "theme": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "scheme": {"editor": "enum", "options": ["paper", "night", "eink"], "default": "eink"}, "pen": {"editor": "enum", "options": ["1", "2", "3"], "default": "1"}, "orient": {"editor": "enum", "options": ["portrait", "landscape"], "default": "portrait"}, "screen": {"editor": "enum", "options": ["w-welcome", "w-try", "w-try-done", "w-private", "w-learning", "w-share", "w-licence", "w-ready", "write", "write-ink", "write-kept", "write-check", "write-sentence", "write-sets", "samples", "sample", "sample-delete", "coverage", "learn-few", "learn-waiting", "learn-running", "learn-better", "learn-kept", "best-intro", "best-write", "best-quick", "best-careful", "best-pick", "best-font-none", "best-font-learning", "best-font", "best-font-installed", "best-font-outdated", "best-font-rename", "best-font-relearn", "best-char", "best-char-samples", "best-char-write", "best-char-pick", "best-char-missing", "best-neat", "best-neat-original", "best-neat-unlearned", "donate-off", "donate-licence", "donate-earlier", "donate-on", "donate-saved", "others", "others-empty", "others-add", "others-rename", "others-taken", "others-remove", "others-remove-plain", "others-done", "others-done-kept", "guest-hello", "guest-try", "guest-share", "guest-age", "guest-licence", "guest-write", "guest-sets", "guest-samples", "guest-coverage", "guest-contribute-off", "guest-contribute"], "default": "w-welcome"}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview": {"width": 760, "height": 1080}, "theme": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "scheme": {"editor": "enum", "options": ["paper", "night", "eink"], "default": "eink"}, "pen": {"editor": "enum", "options": ["1", "2", "3"], "default": "1"}, "orient": {"editor": "enum", "options": ["portrait", "landscape"], "default": "portrait"}, "screen": {"editor": "enum", "options": ["w-welcome", "w-try", "w-try-done", "w-private", "w-learning", "w-share", "w-licence", "w-ready", "write", "write-ink", "write-kept", "write-check", "write-sentence", "write-sets", "samples", "sample", "sample-delete", "coverage", "learn-few", "learn-waiting", "learn-running", "learn-better", "learn-kept", "best-intro", "best-write", "best-quick", "best-careful", "best-pick", "best-font-none", "best-font-learning", "best-font", "best-font-installed", "best-font-outdated", "best-font-rename", "best-font-relearn", "best-char", "best-char-samples", "best-char-write", "best-char-pick", "best-char-missing", "best-char-sample", "best-char-redo", "best-char-delete", "best-char-version-samples", "best-neat", "best-neat-original", "best-neat-unlearned", "donate-off", "donate-licence", "donate-earlier", "donate-on", "donate-saved", "others", "others-empty", "others-add", "others-rename", "others-taken", "others-remove", "others-remove-plain", "others-done", "others-done-kept", "guest-hello", "guest-try", "guest-share", "guest-age", "guest-licence", "guest-write", "guest-sets", "guest-samples", "guest-coverage", "guest-contribute-off", "guest-contribute"], "default": "w-welcome"}}'>
 class Component extends DCLogic {
   state = { screen: null, donating: null, licence: null, tried: 0, inkN: 0, clear: 0, picked: null, out: [] };
 
   componentDidUpdate(prev) {
-    if (prev.screen !== this.props.screen) this.setState({ screen: null, licence: null, fstate: null, sheet: undefined, seg: null, wi: null, wInk: null, outS: null, outV: null, fav: undefined, chosen: null, renaming: false, relearnCh: null, orig: null, strength: null, nClear: 0, guest: null, gname: null, gflow: null, adult: false, savedFirst: false });
+    if (prev.screen !== this.props.screen) this.setState({ screen: null, licence: null, fstate: null, sheet: undefined, seg: null, wi: null, wInk: null, outS: null, outV: null, open: undefined, vList: undefined, redo: undefined, asking: undefined, delS: null, redone: false, fav: undefined, chosen: null, renaming: false, relearnCh: null, orig: null, strength: null, nClear: 0, guest: null, gname: null, gflow: null, adult: false, savedFirst: false });
   }
 
   // The voices, as the shell's first-run setup draws them (EinkSetup), plus what this app adds.
@@ -455,7 +494,7 @@ class Component extends DCLogic {
     return ['w-welcome', 'w-try', 'w-try-done', 'w-private', 'w-learning', 'w-share', 'w-licence', 'w-ready',
       'write', 'write-ink', 'write-kept', 'write-check', 'write-sentence', 'write-sets', 'samples', 'sample', 'sample-delete', 'coverage',
       'learn-few', 'learn-waiting', 'learn-running', 'learn-better', 'learn-kept', 'best-intro', 'best-write', 'best-quick', 'best-careful', 'best-pick',
-      'best-font-none', 'best-font-learning', 'best-font', 'best-font-installed', 'best-font-outdated', 'best-font-rename', 'best-font-relearn', 'best-char', 'best-char-samples', 'best-char-write', 'best-char-pick', 'best-char-missing', 'best-neat', 'best-neat-original', 'best-neat-unlearned',
+      'best-font-none', 'best-font-learning', 'best-font', 'best-font-installed', 'best-font-outdated', 'best-font-rename', 'best-font-relearn', 'best-char', 'best-char-samples', 'best-char-write', 'best-char-pick', 'best-char-missing', 'best-char-sample', 'best-char-redo', 'best-char-delete', 'best-char-version-samples', 'best-neat', 'best-neat-original', 'best-neat-unlearned',
       'donate-off', 'donate-licence', 'donate-earlier', 'donate-on', 'donate-saved',
       'others', 'others-empty', 'others-add', 'others-rename', 'others-taken', 'others-remove', 'others-remove-plain', 'others-done', 'others-done-kept',
       'guest-hello', 'guest-try', 'guest-share', 'guest-age', 'guest-licence', 'guest-write', 'guest-sets', 'guest-samples', 'guest-coverage', 'guest-contribute-off', 'guest-contribute'];
@@ -481,7 +520,7 @@ class Component extends DCLogic {
     const gname = s.gname || 'Guest writer';
     const tab = s.gflow === 'tab';
     const go = (id, g = G) => () => u({ screen: id, guest: g, licence: screen.endsWith('licence') ? s.licence : null, picked: null, out: [],
-      fstate: null, sheet: undefined, seg: null, wi: null, wInk: null, outS: null, outV: null, fav: undefined, chosen: null, renaming: false, renamed: false, relearnCh: null, orig: null, strength: null, nClear: 0, adult: false, savedFirst: false });
+      fstate: null, sheet: undefined, seg: null, wi: null, wInk: null, outS: null, outV: null, open: undefined, vList: undefined, redo: undefined, asking: undefined, delS: null, redone: false, fav: undefined, chosen: null, renaming: false, renamed: false, relearnCh: null, orig: null, strength: null, nClear: 0, adult: false, savedFirst: false });
     const wizard = screen.startsWith('w-');
     const btn = (label, on, kind) => {
       const dis = !on;
@@ -801,7 +840,7 @@ class Component extends DCLogic {
       keys: FCH.map(c => { const n = FN[c] || 0, ok = n >= MIN;
         return { ch: c, hasN: !ok, n: n + '/' + MIN, aria: c + (ok ? ', in your font' : ', ' + n + ' of ' + MIN + ' samples'), fg: ink,
           bg: ok ? 'var(--il-paper)' : n ? 'var(--il-highlight)' : 'transparent', sh: ok ? 'inset 0 0 0 1px var(--il-rule)' : 'inset 0 0 0 1.5px var(--il-ink-soft)',
-          on: () => u({ sheet: c, seg: null, wi: null, outS: null, outV: null, fav: null, chosen: null }) }; }),
+          on: () => u({ sheet: c, seg: null, wi: null, outS: null, outV: null, open: null, vList: null, redo: false, asking: false, delS: null, redone: false, fav: null, chosen: null }) }; }),
       missT: miss + ' not in it yet; shaded ones have a sample or two', writeMissing: go('best-char-missing'),
       name: fontName, rename: () => u({ renaming: true }), renaming: screen === 'best-font-rename' || !!s.renaming,
       renameDone: () => u({ renaming: false, screen: screen === 'best-font-rename' ? 'best-font-installed' : screen }), kbH: land ? '260px' : '330px',
@@ -820,7 +859,7 @@ class Component extends DCLogic {
       : { label, sel: String(on), dis: 'false', on: onClick, cur: 'pointer', fw: on ? '600' : '400', ...(on ? k.segOn : segOff) };
     const chCov = sheetCh != null && covered(sheetCh);
     const shown = chCov && model;
-    const sseg = s.seg ?? ({ 'best-char-samples': 'samples', 'best-char-write': 'write', 'best-char-pick': 'pick' }[screen] || (shown ? 'versions' : chCov ? 'samples' : 'write'));
+    const sseg = s.seg ?? ({ 'best-char-samples': 'samples', 'best-char-sample': 'samples', 'best-char-redo': 'samples', 'best-char-delete': 'samples', 'best-char-version-samples': 'versions', 'best-char-write': 'write', 'best-char-pick': 'pick' }[screen] || (shown ? 'versions' : chCov ? 'samples' : 'write'));
     const kindOf = c => /[a-z]/.test(c) ? 'Small ' + c : /[A-Z]/.test(c) ? 'Capital ' + c : 'The digit ' + c;
     // three ways of writing a small t, drawn as made-up pen paths (viewBox 120 x 150, baseline at 120)
     const TV = [
@@ -841,28 +880,45 @@ class Component extends DCLogic {
         favBg: out ? 'transparent' : isFav ? k.priBg : k.btnBg, favFg: out ? 'var(--il-dim)' : isFav ? k.priFg : ink, favSh: out ? 'inset 0 0 0 1.5px var(--il-dim)' : isFav ? k.priSh : k.btnSh,
         onFav: out ? null : () => u({ fav: isFav ? null : v.id }),
         outIcon: out ? 'undo' : 'block', outLabel: out ? 'Put back' : 'Leave out',
-        onOut: () => u({ outV: out ? outV.filter(x => x !== v.id) : [...outV, v.id], fav: !out && fav === v.id ? null : fav }) }; });
-    // the samples that count towards it (page 1 of 2): [before, the character, after, version, a reason it can't be used]
+        onOut: () => u({ outV: out ? outV.filter(x => x !== v.id) : [...outV, v.id], fav: !out && fav === v.id ? null : fav }),
+        onList: () => u({ vList: v.id, open: null }) }; });
+    // the samples that count towards it (page 1 of 2): [before, the character, after, version, a reason it can't be used];
+    // the rest of t's samples (page 2) follow, so each version can list exactly its own (A 13, B 6, C 3)
     const TS = [['', 't', '', 'A'], ['', 't', 'hat', 'A'], ['wa', 't', 'er', 'B'], ['li', 't', 'tle', '', 'Joined to the next t'], ['s', 't', 'art', 'A'], ['', 't', 'ea', 'B'],
-      ['no', 't', '', 'A'], ['i', 't', '', 'C'], ['af', 't', 'er', 'A'], ['', 't', '', 'B'], ['s', 't', 'reet', '', 'Word not read clearly'], ['ou', 't', '', 'A']];
-    const SS = isT ? TS : [['', sheetCh || '', '', 'A'], ['', sheetCh || '', '', 'A'], ['', sheetCh || '', '', 'B'], ['', sheetCh || '', '', 'A']];
+      ['no', 't', '', 'A'], ['i', 't', '', 'C'], ['af', 't', 'er', 'A'], ['', 't', '', 'B'], ['s', 't', 'reet', '', 'Word not read clearly'], ['ou', 't', '', 'A'],
+      ['', 't', 'ime', 'A'], ['bu', 't', '', 'B'], ['bes', 't', '', 'A'], ['ho', 't', '', 'C'], ['in', 't', 'o', 'A'], ['', 't', 'en', 'B'],
+      ['', 't', 'ree', 'A'], ['si', 't', '', 'A'], ['i', 't', 's', 'B'], ['lef', 't', '', 'A'], ['ca', 't', '', 'C'], ['', 't', 'op', 'A']];
+    const READ = { 3: 'litle', 10: 'stveet' };
+    const ALL = isT ? TS : [['', sheetCh || '', '', 'A'], ['', sheetCh || '', '', 'A'], ['', sheetCh || '', '', 'B'], ['', sheetCh || '', '', 'A']];
+    const SS = ALL.slice(0, 12);
     const outS = s.outS ?? (screen === 'best-char-samples' ? [4] : []);
-    const samples = SS.slice(0, land ? 12 : 12).map(([pre, ch, post, ver, why], i) => { const bad = !!why, out = outS.includes(i), on = !bad && !out;
-      return { pre, ch, post, aria: pre + ch + post, sel: String(on), dis: String(bad), cur: bad ? 'default' : 'pointer', box: !bad, vis: on ? 'visible' : 'hidden',
-        state: bad ? why : out ? 'Left out' : 'Version ' + ver, bg: on ? 'var(--il-sheet)' : 'var(--il-paper)',
+    const delS = s.delS ?? [];
+    // a sample opened from the Samples part or from a version's list (FR-033), by its place in ALL
+    const open = s.open !== undefined ? s.open : ['best-char-sample', 'best-char-redo', 'best-char-delete'].includes(screen) ? 2 : null;
+    const vList = s.vList !== undefined ? s.vList : screen === 'best-char-version-samples' ? 'B' : null;
+    const redo = open != null && (s.redo !== undefined ? s.redo : screen === 'best-char-redo');
+    const asking = open != null && !redo && (s.asking !== undefined ? s.asking : screen === 'best-char-delete');
+    const tile = ([pre, ch, post, ver, why], i) => { const bad = !!why, out = outS.includes(i), on = !bad && !out;
+      return { pre, ch, post, aria: pre + ch + post, state: bad ? why : out ? 'Left out' : 'Version ' + ver, bg: on ? 'var(--il-sheet)' : 'var(--il-paper)',
         sh: bad ? 'none' : on ? k.cardFlat : 'inset 0 0 0 1px var(--il-rule)', border: bad ? '1.5px dashed var(--il-ink-soft)' : 'none',
-        cbBg: on ? 'var(--il-accent)' : 'transparent', cbSh: on ? 'none' : 'inset 0 0 0 1.5px var(--il-ink)',
-        on: bad ? null : () => u(st => { const o = st.outS ?? outS; return { outS: o.includes(i) ? o.filter(x => x !== i) : [...o, i] }; }) }; });
-    const nAllS = isT ? 24 : FN[sheetCh] || 0, nBad = isT ? 2 : 0, nOut = outS.length, lastOut = outS.length ? SS[outS[outS.length - 1]] : null;
+        on: () => u({ open: i, redo: false, asking: false, redone: false }) }; };
+    const samples = SS.map((x, i) => [x, i]).filter(([, i]) => !delS.includes(i)).map(([x, i]) => tile(x, i));
+    const nAllS = (isT ? 24 : FN[sheetCh] || 0) - delS.length, nBad = isT ? 2 - delS.filter(i => ALL[i] && ALL[i][4]).length : 0, nOut = outS.length, lastOut = outS.length ? ALL[outS[outS.length - 1]] : null;
     const PROMPTS = isT ? ['t', 'that', 't', 'after'] : sheetCh === 'Q' ? ['Q', 'Quiet', 'Q'] : [sheetCh || '', sheetCh || '', sheetCh || ''];
     const wi = s.wi ?? (screen === 'best-char-write' ? 1 : 0);
     const wInk = s.wInk ?? (screen === 'best-char-write' ? PROMPTS[wi] : '');
     const nCh = sheetCh ? FN[sheetCh] || 0 : 0;
     const pickV = VER.filter(v => !outV.includes(v.id)).slice(0, 2);
+    // the opened sample: the whole word, this character picked out, what the tablet read when it was written
+    const oS = open != null ? ALL[open] : null, oWord = oS ? oS.slice(0, 3).join('') : '', oBad = !!(oS && oS[4]), oOut = open != null && outS.includes(open);
+    const vSel = vList != null ? VER.find(v => v.id === vList) : null;
+    const listed = vSel && open == null;
+    const backTo = () => u({ open: null, redo: false, asking: false, redone: false });
+    const drill = open != null || listed;
     const sh = {
       ch: sheetCh || '', title: sheetCh ? kindOf(sheetCh) : '', chW: land ? 56 : 64, chF: (land ? "400 40px " : "400 46px ") + "'Kalam',cursive",
       sub: !sheetCh ? '' : chCov && !model ? 'Enough samples · its versions come once your letters are learned' : chCov ? 'In your font · ' + nAllS + ' samples · ' + VER.length + ' ways you write it' : 'Not in your font yet · ' + nCh + ' of ' + MIN + ' samples',
-      close: () => u({ sheet: null, fstate: chCov && model && fstate !== 'current' ? 'relearn' : fstate, relearnCh: chCov && model ? sheetCh : null, screen: screen.startsWith('best-char') ? 'best-font-relearn' : screen }),
+      close: () => u({ sheet: null, open: null, vList: null, redo: false, asking: false, redone: false, fstate: chCov && model && fstate !== 'current' ? 'relearn' : fstate, relearnCh: chCov && model ? sheetCh : null, screen: screen.startsWith('best-char') ? 'best-font-relearn' : screen }),
       top: land ? '0' : '10px', side: land ? '0' : '10px', r: land ? '0' : k.cardR, pad: land ? '14px 24px 14px' : '18px 22px 16px',
       segs: [['versions', 'Versions'], ['samples', 'Samples'], ['write', 'Write more'], ['pick', 'Compare']].map(([id, label]) =>
         chip(label, sseg === id, () => u({ seg: id }), !shown && (id === 'versions' || id === 'pick'))),
@@ -871,14 +927,36 @@ class Component extends DCLogic {
         : { ink: '', empty: 'to write', aria: 'Still to write', bg: 'transparent', border: '1.5px dashed var(--il-ink-soft)' }).map((x, i) => ({ ...x, empty: x.empty ? String(i + 1) : '' })),
       needT: (MIN - nCh) + ' more, and ' + (sheetCh || '') + ' is in your font',
       needSub: 'Write it with care, on its own or in a word. Until then, apps show the usual font’s ' + (sheetCh || '') + '.',
-      isVersions: shown && sseg === 'versions', vCols: Math.max(2, VER.length), inkH: land ? 88 : 150, vNoteShow: !land, glyphFs: land ? 70 : 110, versions,
+      tabs: !drill, isVersions: shown && sseg === 'versions' && !drill, vCols: Math.max(2, VER.length), inkH: land ? 88 : 150, vBtnCols: land ? 'minmax(0,1fr) minmax(0,1fr)' : 'minmax(0,1fr)', vNoteShow: !land, glyphFs: land ? 70 : 110, versions,
       vNote: 'Your font switches between the ways you write ' + (sheetCh || '') + ', each about as often as you do. A favourite is used more. Leaving one out doesn’t delete anything.',
-      isSamples: sseg === 'samples', sCols: land ? 6 : 4, tileH: land ? 84 : 96, samples,
+      isSamples: sseg === 'samples' && !drill, sCols: land ? 6 : 4, tileH: land ? 84 : 96, samples,
       sCount: (nAllS - nBad - nOut) + ' of ' + nAllS + ' samples count towards ' + (sheetCh || '') + (nBad ? ' · ' + nBad + ' can’t be used' : '') + (nOut ? ' · ' + nOut + ' left out' : ''),
       hasUndo: nOut > 0, noUndo: nOut === 0,
       undoT: lastOut ? '“' + lastOut.slice(0, 3).join('') + '” is left out of your font. It isn’t deleted: it stays in Samples and still helps the tablet read you.' : '',
       undo: () => u(st => ({ outS: (st.outS ?? outS).slice(0, -1) })),
-      isWrite: sseg === 'write',
+      isOpen: open != null && !redo, back: open != null ? backTo : () => u({ vList: null, open: null }),
+      backLabel: open != null ? (vSel ? 'Version ' + vSel.id : 'Samples') : 'Versions',
+      oPre: oS ? oS[0] : '', oCh: oS ? oS[1] : '', oPost: oS ? oS[2] : '', oWord, oInkH: land ? 130 : 176, oFs: land ? 76 : 100,
+      oRows: !oS ? [] : [['Written for', '“' + oWord + '”'], ['The tablet read', '“' + (READ[open] || oWord) + '”'],
+        ['Written', (open < 6 ? 'Today, 14:0' + (5 - open) : open < 12 ? 'Yesterday' : 'Last week') + ', ' + (open % 3 ? 'careful' : 'quick')],
+        ['In your font', oBad ? 'Can’t be used: ' + oS[4].charAt(0).toLowerCase() + oS[4].slice(1) : oOut ? 'Left out' : 'Counts towards ' + oS[1] + ' · version ' + oS[3]]].map(([label, value]) => ({ label, value })),
+      oNote: oBad ? 'Writing it again is how it can count.' : oOut ? 'Left out, not deleted: it still helps the tablet read you. Put back returns it to your font.' : 'Leaving it out of the font doesn’t delete it: it stays in Samples and still helps the tablet read you.',
+      oNoteShow: !asking, redone: !!s.redone, redoneT: 'Written again. The new “' + oWord + '” took the old one’s place.',
+      oCanOut: !oBad, oOutIcon: oOut ? 'undo' : 'block', oOutLabel: oOut ? 'Put back' : 'Leave out of the font',
+      onOOut: () => u({ outS: oOut ? outS.filter(x => x !== open) : [...outS, open], redone: false }),
+      onRedo: () => u({ redo: true, asking: false, redone: false, inkN: 0 }), onDel: () => u({ asking: true, redone: false }),
+      // writing it again: the old sample is replaced only once the new one passes its check and is kept
+      isRedo: open != null && redo, rInk: s.inkN || s.redo ? '' : oWord, rHint: s.inkN || !s.redo ? '' : 'Write here with the pen',
+      rNote: 'The same ' + (oWord.length > 1 ? 'word' : 'letter') + ' again, slowly and with care. The old one stays until this one is kept.',
+      rBtns: [btn('Clear', () => u(st => ({ clear: st.clear + 1, inkN: 0, redo: true }))), btn('Cancel', () => u({ redo: false })),
+        btn('Done', () => u(st => ({ clear: st.clear + 1, inkN: 0, redo: false, redone: true })), 'pri')],
+      asking, delText: 'The whole word “' + oWord + '” goes for good, with all its letters: from your font, from what the tablet learns to read you, and from your contribution. It’s the same as deleting it in Samples.',
+      keep: () => u({ asking: false }), del: () => u({ delS: [...delS, open], outS: outS.filter(x => x !== open), open: null, asking: false, redo: false }),
+      // a version's own samples: exactly the samples that form it, each opening as above
+      isVList: !!listed, vlD: vSel ? vSel.d || '' : '', vlSvg: isT, vlGlyph: !isT, vlSkew: vSel ? vSel.skew || 0 : 0,
+      vlT: vSel ? 'Version ' + vSel.id + ' · ' + (outV.includes(vSel.id) ? 'left out' : freq(vSel.n)) : '', vlSub: vSel ? (vSel.how + ' · ' + vSel.n + ' samples') : '',
+      vSamples: vSel ? ALL.map((x, i) => [x, i]).filter(([x, i]) => x[3] === vSel.id && !delS.includes(i)).map(([x, i]) => tile(x, i)) : [],
+      isWrite: sseg === 'write' && !drill,
       steps: PROMPTS.map((p2, i) => { const on = i === wi, done = i < wi;
         return on ? { label: (i + 1) + ' ' + p2, fw: '600', iconD: 'none', ...k.segOn } : { label: (i + 1) + ' ' + p2, fw: '400', iconD: done ? 'inline' : 'none', bg: 'transparent', fg: done ? ink : 'var(--il-ink-soft)', sh: 'inset 0 0 0 1px var(--il-rule)' }; }),
       prompt: PROMPTS[wi] || '', wNote: PROMPTS[wi] && PROMPTS[wi].length === 1 ? 'On its own, slowly and with care.' : 'In a word, slowly and with care.',
@@ -887,7 +965,7 @@ class Component extends DCLogic {
       wBtns: [btn('Clear', wInk || s.inkN ? () => u(st => ({ clear: st.clear + 1, inkN: 0, wInk: '' })) : null),
         btn('Skip', wInk || s.inkN ? null : () => u({ wi: (wi + 1) % PROMPTS.length, wInk: '' })),
         btn(wi === PROMPTS.length - 1 ? 'Done' : 'Next', wInk || s.inkN ? () => u(st => ({ clear: st.clear + 1, inkN: 0, wInk: '', wi: (wi + 1) % PROMPTS.length })) : null, 'pri')],
-      isPick: shown && sseg === 'pick', pLead: 'Two of the ways you write ' + (sheetCh || '') + '. Tap the one you like better.',
+      isPick: shown && sseg === 'pick' && !drill, pLead: 'Two of the ways you write ' + (sheetCh || '') + '. Tap the one you like better.',
       pTiles: (isT ? pickV : []).map((v, i) => ({ d: v.d, label: 'Version ' + v.id, chosen: s.chosen === i, sh: s.chosen === i ? k.cardOnSh : k.cardFlat, on: () => u({ chosen: i }) })),
       pNote: (s.chosen != null ? 3 : 2) + ' picks for ' + (sheetCh || '') + ' so far',
       pBtns: [btn('Both fine', () => u({ chosen: null })), btn('Skip', () => u({ chosen: null }))],
@@ -1007,7 +1085,7 @@ class Component extends DCLogic {
       samples: 'Samples', sample: 'Sample', 'sample-delete': 'Delete?', coverage: 'Coverage',
       'learn-few': 'Too few', 'learn-waiting': 'Waiting', 'learn-running': 'Learning', 'learn-better': 'Better', 'learn-kept': 'Not better', 'best-intro': 'Your handwriting', 'best-write': 'Your best', 'best-quick': 'Quick', 'best-careful': 'Careful', 'best-pick': 'Which one?',
       'best-font-none': 'Font · not learned', 'best-font-learning': 'Font · learning', 'best-font': 'Font', 'best-font-installed': 'Font · installed', 'best-font-outdated': 'Font · out of date', 'best-font-rename': 'Font · rename', 'best-font-relearn': 'Font · relearning',
-      'best-char': 'Character', 'best-char-samples': 'Its samples', 'best-char-write': 'Write more', 'best-char-pick': 'Compare', 'best-char-missing': 'Not covered', 'best-neat': 'Neaten', 'best-neat-original': 'Original', 'best-neat-unlearned': 'Neaten · not learned',
+      'best-char': 'Character', 'best-char-samples': 'Its samples', 'best-char-write': 'Write more', 'best-char-pick': 'Compare', 'best-char-missing': 'Not covered', 'best-char-sample': 'A sample', 'best-char-redo': 'Write it again', 'best-char-delete': 'Delete?', 'best-char-version-samples': 'A version’s samples', 'best-neat': 'Neaten', 'best-neat-original': 'Original', 'best-neat-unlearned': 'Neaten · not learned',
       'donate-off': 'Contribute off', 'donate-licence': 'Licence', 'donate-earlier': 'Earlier samples', 'donate-on': 'Contribute on', 'donate-saved': 'Saved',
       others: 'Writers', 'others-empty': 'No writers', 'others-add': 'Add', 'others-rename': 'Rename', 'others-taken': 'Name taken', 'others-remove': 'Remove?', 'others-remove-plain': 'Remove? · nothing unsaved', 'others-done': 'After Finish', 'others-done-kept': 'After Finish · not contributing',
       'guest-hello': '1 Hello', 'guest-try': '2 Try one', 'guest-share': '3 Contribute?', 'guest-age': '3 18 or older', 'guest-licence': '3 Licence', 'guest-write': 'Write', 'guest-sets': 'Sets', 'guest-samples': 'Samples', 'guest-coverage': 'Coverage', 'guest-contribute-off': 'Contribute off', 'guest-contribute': 'Contribute on' };

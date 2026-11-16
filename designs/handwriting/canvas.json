@@ -43,6 +43,14 @@
    "name": "Contribute"
   },
   {
+   "id": "others",
+   "name": "Other writers"
+  },
+  {
+   "id": "guest",
+   "name": "A guest’s session"
+  },
+  {
    "id": "parts",
    "name": "Parts"
   }
@@ -579,6 +587,222 @@
    "page": "donate",
    "is_interactive": true
   },
+  "others.list.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "Someone else writes · the writers",
+   "page": "others",
+   "is_interactive": true
+  },
+  "others.empty.dc.html": {
+   "x": 904,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "Someone else writes · nobody yet",
+   "page": "others",
+   "is_interactive": true
+  },
+  "others.add.dc.html": {
+   "x": 1808,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "Someone else writes · add a writer",
+   "page": "others",
+   "is_interactive": true
+  },
+  "others.rename.dc.html": {
+   "x": 2712,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "Someone else writes · rename",
+   "page": "others",
+   "is_interactive": true
+  },
+  "others.taken.dc.html": {
+   "x": 3616,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "Someone else writes · name taken",
+   "page": "others",
+   "is_interactive": true
+  },
+  "others.remove.dc.html": {
+   "x": 4520,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "Remove a writer · with an unsaved contribution",
+   "page": "others",
+   "is_interactive": true
+  },
+  "others.remove-plain.dc.html": {
+   "x": 5424,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "Remove a writer · nothing unsaved",
+   "page": "others",
+   "is_interactive": true
+  },
+  "others.done.dc.html": {
+   "x": 6328,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "After Finish · contribution saved",
+   "page": "others",
+   "is_interactive": true
+  },
+  "others.done-kept.dc.html": {
+   "x": 7232,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "After Finish · not contributing",
+   "page": "others",
+   "is_interactive": true
+  },
+  "others.landscape.dc.html": {
+   "x": 8136,
+   "y": 0,
+   "w": 1058,
+   "h": 1266,
+   "title": "Someone else writes · turned",
+   "page": "others",
+   "is_interactive": true
+  },
+  "guest.hello.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "A guest · hello",
+   "page": "guest",
+   "is_interactive": true
+  },
+  "guest.try.dc.html": {
+   "x": 904,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "A guest · try one",
+   "page": "guest",
+   "is_interactive": true
+  },
+  "guest.share.dc.html": {
+   "x": 1808,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "A guest · contribute?",
+   "page": "guest",
+   "is_interactive": true
+  },
+  "guest.age.dc.html": {
+   "x": 2712,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "A guest · 18 or older",
+   "page": "guest",
+   "is_interactive": true
+  },
+  "guest.licence.dc.html": {
+   "x": 3616,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "A guest · licence",
+   "page": "guest",
+   "is_interactive": true
+  },
+  "guest.write.dc.html": {
+   "x": 4520,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "A guest · writing",
+   "page": "guest",
+   "is_interactive": true
+  },
+  "guest.sets.dc.html": {
+   "x": 5424,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "A guest · what to write",
+   "page": "guest",
+   "is_interactive": true
+  },
+  "guest.samples.dc.html": {
+   "x": 6328,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "A guest · samples",
+   "page": "guest",
+   "is_interactive": true
+  },
+  "guest.coverage.dc.html": {
+   "x": 7232,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "A guest · coverage",
+   "page": "guest",
+   "is_interactive": true
+  },
+  "guest.contribute-off.dc.html": {
+   "x": 8136,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "A guest · contributing off",
+   "page": "guest",
+   "is_interactive": true
+  },
+  "guest.contribute.dc.html": {
+   "x": 9040,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "A guest · contributing on",
+   "page": "guest",
+   "is_interactive": true
+  },
+  "guest.hello.landscape.dc.html": {
+   "x": 9944,
+   "y": 0,
+   "w": 1058,
+   "h": 1266,
+   "title": "A guest · hello, turned",
+   "page": "guest",
+   "is_interactive": true
+  },
+  "guest.write.landscape.dc.html": {
+   "x": 11082,
+   "y": 0,
+   "w": 1058,
+   "h": 1266,
+   "title": "A guest · writing, turned",
+   "page": "guest",
+   "is_interactive": true
+  },
+  "guest.contribute.landscape.dc.html": {
+   "x": 12220,
+   "y": 0,
+   "w": 1058,
+   "h": 1266,
+   "title": "A guest · contributing, turned",
+   "page": "guest",
+   "is_interactive": true
+  },
   "Handwriting.dc.html": {
    "x": 0,
    "y": 0,
@@ -689,6 +913,24 @@
    "w": 240,
    "maxW": 5658
   },
+  "title_others": {
+   "kind": "title1",
+   "page": "others",
+   "text": "Other writers · the owner’s list, adding, removing, after Finish",
+   "x": 0,
+   "y": -300,
+   "w": 240,
+   "maxW": 9274
+  },
+  "title_guest": {
+   "kind": "title1",
+   "page": "guest",
+   "text": "A guest’s session · their introduction, writing and contributing",
+   "x": 0,
+   "y": -300,
+   "w": 240,
+   "maxW": 13358
+  },
   "title_parts": {
    "kind": "title1",
    "page": "parts",
@@ -759,6 +1001,30 @@
   "donate.on.dc.html",
   "donate.saved.dc.html",
   "donate.landscape.dc.html",
+  "others.list.dc.html",
+  "others.empty.dc.html",
+  "others.add.dc.html",
+  "others.rename.dc.html",
+  "others.taken.dc.html",
+  "others.remove.dc.html",
+  "others.remove-plain.dc.html",
+  "others.done.dc.html",
+  "others.done-kept.dc.html",
+  "others.landscape.dc.html",
+  "guest.hello.dc.html",
+  "guest.try.dc.html",
+  "guest.share.dc.html",
+  "guest.age.dc.html",
+  "guest.licence.dc.html",
+  "guest.write.dc.html",
+  "guest.sets.dc.html",
+  "guest.samples.dc.html",
+  "guest.coverage.dc.html",
+  "guest.contribute-off.dc.html",
+  "guest.contribute.dc.html",
+  "guest.hello.landscape.dc.html",
+  "guest.write.landscape.dc.html",
+  "guest.contribute.landscape.dc.html",
   "Handwriting.dc.html",
   "Paper.dc.html",
   "ThemeBar.dc.html"

@@ -1,21 +1,45 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="white-paper">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Board</title>
+<link rel="stylesheet" href="../ds/web/tokens.css">
+<link rel="stylesheet" href="../ds/web/bundle.css">
 <link rel="stylesheet" href="preview.css">
 </head>
-<body class="view-page">
-<header class="bar">
-  <a href="./" id="back">Canvas</a>
-  <strong id="title"></strong>
-  <span id="state" class="state"></span>
-  <span class="grow"></span>
-  <form id="controls" class="controls"></form>
-  <a id="full" target="_blank" rel="noopener">Full window</a>
-</header>
-<main id="stage"><iframe id="frame" title="Board"></iframe></main>
+<body class="vw view-page">
+<div class="vw-body vw-body--wide">
+  <section class="vw-desk" aria-label="The board">
+    <div class="vw-desk__top">
+      <a class="vw-back" id="back" href="index.html" title="Back to the canvas (Esc)"><svg class="vw-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg><span id="back-t">Canvas</span></a>
+      <span id="mark" class="vw-mks"></span>
+      <h1 class="vw-desk__title" id="name"></h1>
+      <span class="vw-tag" id="file"></span>
+      <span id="state" class="vw-small"></span>
+      <span class="vw-grow"></span>
+      <div class="vw-seg" id="zoomseg" role="group" aria-label="Size on screen"></div>
+      <div class="vw-seg" id="lookseg" role="group" aria-label="Look"></div>
+      <a class="vw-btn vw-btn--flat" id="full" target="_blank" rel="noopener" title="The board alone, in its own window">Alone ↗</a>
+    </div>
+    <div class="vw-midwrap">
+    <div class="vw-desk__mid" id="stage">
+      <button type="button" class="vw-step" id="prev" aria-label="Previous board on the page (K)" title="Previous board on the page (K)" aria-keyshortcuts="k"><svg class="vw-ico" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"></path></svg></button>
+      <div class="vw-holder" id="holder"><div class="vw-sheet" id="sheet"><iframe id="frame" title="Board"></iframe></div></div>
+      <button type="button" class="vw-step" id="next" aria-label="Next board on the page (J)" title="Next board on the page (J)" aria-keyshortcuts="j"><svg class="vw-ico" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"></path></svg></button>
+    </div>
+    <div class="vw-pos" id="pos"></div>
+    <div class="vw-devnote" id="devnote" hidden><b>Device frame</b> · the board in the E-ink scheme, in greys, in a frame of the panel it is drawn for. The size on screen is not the panel's.</div>
+    </div>
+    <div class="vw-film" id="film" hidden></div>
+  </section>
+  <aside class="vw-insp vw-insp--view" id="side" aria-label="Render, props and links">
+    <form id="controls" class="controls" onsubmit="return false"></form>
+    <section class="vw-links" id="links"></section>
+    <section id="check"></section>
+    <section><div class="vw-actions"><button type="button" class="vw-btn" id="copy-link">Copy link</button><button type="button" class="vw-btn" id="copy-shot">Copy shot command</button></div><code class="vw-cmd" id="cmd"></code></section>
+  </aside>
+</div>
 <script src="preview-common.js"></script>
 <script src="view.js"></script>
 </body>

@@ -283,13 +283,13 @@ async function main() {
         await p.goto(srv.url + '_boards/', { waitUntil: 'load' });
         await p.waitForSelector('.board');
         assert.strictEqual(await p.$$eval('.board', (b) => b.length), 3);
-        assert.match(await p.$eval('#pages', (n) => n.textContent), /Screens \(3\)Parts \(4\)/);
+        assert.deepStrictEqual(await p.$$eval('#pages a', (a) => a.map((x) => [x.querySelector('.vw-t').textContent, x.querySelector('.vw-n').textContent])), [['Screens', '3'], ['Parts', '4']]);
         await p.goto(srv.url + '_boards/view.html?board=Main.dc.html&voice=stationery', { waitUntil: 'load' });
-        await p.waitForSelector('#controls select');
+        await p.waitForSelector('#controls button[name]');
         const f = await (await p.$('#frame')).contentFrame();
         await f.waitForFunction('window.__boards && window.__boards.settled', { polling: 100 });
         assert.match(await f.$eval('#settings', (e) => e.textContent), /voice=stationery/);
-        assert.deepStrictEqual(await p.$$eval('#controls [name]', (c) => c.map((x) => x.name)), ['voice', 'scheme', 'pen', 'compact']);
+        assert.deepStrictEqual(await p.$$eval('#controls [name]', (c) => Array.from(new Set(c.map((x) => x.name)))), ['voice', 'scheme', 'pen', 'compact']);
         await Promise.all([p.waitForFunction(() => /board=Counter/.test(location.search), { polling: 100 }), f.$eval('#to-counter', (a) => a.click())]);
         assert.deepStrictEqual(errs, []);
       } finally { await p.close(); }
@@ -360,7 +360,7 @@ async function main() {
         assert.strictEqual(links.length, 6);
         assert.ok(links.every((h) => h.startsWith(base + '_boards/view.html?board=')), JSON.stringify(links));
         await p.goto(base + '_boards/view.html?board=Main.dc.html&voice=stationery', { waitUntil: 'load' });
-        await p.waitForSelector('#controls select');
+        await p.waitForSelector('#controls button[name]');
         const f = await (await p.$('#frame')).contentFrame();
         await f.waitForFunction('window.__boards && window.__boards.settled', { polling: 100 });
         assert.strictEqual(await f.evaluate(() => window.__boards.board), 'Main.dc.html');

@@ -497,6 +497,42 @@
    "page": "char",
    "is_interactive": true
   },
+  "char.sample.dc.html": {
+   "x": 5658,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "A character · one of its samples",
+   "page": "char",
+   "is_interactive": true
+  },
+  "char.redo.dc.html": {
+   "x": 6562,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "A character · write a sample again",
+   "page": "char",
+   "is_interactive": true
+  },
+  "char.delete.dc.html": {
+   "x": 7466,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "A character · delete a sample?",
+   "page": "char",
+   "is_interactive": true
+  },
+  "char.version-samples.dc.html": {
+   "x": 8370,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "A character · a version’s samples",
+   "page": "char",
+   "is_interactive": true
+  },
   "neat.write.dc.html": {
    "x": 0,
    "y": 0,
@@ -889,11 +925,11 @@
   "title_char": {
    "kind": "title1",
    "page": "char",
-   "text": "A character · its versions, samples, more of it, which is nicer",
+   "text": "A character · its versions, samples, more of it, which is nicer, one sample opened",
    "x": 0,
    "y": -300,
    "w": 240,
-   "maxW": 5658
+   "maxW": 9194
   },
   "title_neat": {
    "kind": "title1",
@@ -991,6 +1027,10 @@
   "char.pick.dc.html",
   "char.missing.dc.html",
   "char.landscape.dc.html",
+  "char.sample.dc.html",
+  "char.redo.dc.html",
+  "char.delete.dc.html",
+  "char.version-samples.dc.html",
   "neat.write.dc.html",
   "neat.original.dc.html",
   "neat.unlearned.dc.html",

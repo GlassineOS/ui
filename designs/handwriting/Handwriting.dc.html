@@ -310,7 +310,7 @@
 
 <sc-if value="{{ is.neat }}" hint-placeholder-val="{{ false }}"><div style="flex:1;min-height:0;display:flex;flex-direction:{{ nt.dir }};gap:18px">
 <div style="flex:none;width:{{ nt.ctlW }};order:{{ nt.ctlOrder }};min-width:0;display:flex;flex-direction:column;gap:12px">
-<sc-if value="{{ nt.unlearned }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:10px;padding:12px 16px;border-radius:{{ k.cardR }};box-shadow:{{ k.noteSh }}"><div style="display:flex;align-items:flex-start;gap:12px"><span style="font:400 24px/1 'Material Symbols Outlined'">info</span><span style="flex:1;min-width:0;font:{{ k.sub }};text-wrap:pretty">Your letters aren’t learned yet, so for now it only straightens the lines and evens out sizes and spacing. Each letter keeps its shape.</span></div><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-left:36px"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ nt.learn }}" style="height:48px;padding:0 18px;display:flex;align-items:center;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }};white-space:nowrap">Learn letters now</div><span style="flex:1;min-width:120px;font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">Or it learns them on its own while charging.</span></div></div></sc-if>
+<sc-if value="{{ nt.unlearned }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 12px 10px 16px;border-radius:{{ k.cardR }};box-shadow:{{ k.noteSh }}"><span style="font:400 24px/1 'Material Symbols Outlined'">info</span><span style="flex:1;min-width:180px;font:{{ k.sub }};text-wrap:pretty">Letters not learned yet: for now it only straightens the lines and evens out sizes and spacing.</span><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ nt.learn }}" style="height:48px;padding:0 18px;display:flex;align-items:center;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }};white-space:nowrap">Learn letters now</div></div></sc-if>
 <div style="display:flex;flex-direction:column;gap:8px"><span style="font:{{ k.lbl }};font-variant:{{ k.lblVar }};text-transform:{{ k.lblCase }};letter-spacing:{{ k.lblLs }};color:{{ k.lblC }}">Strength</span><div role="radiogroup" aria-label="Strength" style="display:grid;grid-template-columns:repeat({{ nt.sCols }},minmax(0,1fr));gap:6px"><sc-for list="{{ nt.strengths }}" as="c" hint-placeholder-count="4"><div tabindex="0" role="radio" aria-checked="{{ c.sel }}" aria-disabled="{{ c.dis }}" onKeyDown="{{ ilKey }}" onClick="{{ c.on }}" style="height:48px;padding:0 6px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;cursor:{{ c.cur }};border-radius:{{ k.segR }};font:{{ k.row }};font-weight:{{ c.fw }};background:{{ c.bg }};color:{{ c.fg }};box-shadow:{{ c.sh }};white-space:nowrap">{{ c.label }}</div></sc-for></div></div>
 <div style="display:flex;align-items:center;gap:10px"><div role="radiogroup" aria-label="Show" style="display:flex;gap:6px"><sc-for list="{{ nt.views }}" as="c" hint-placeholder-count="2"><div tabindex="0" role="radio" aria-checked="{{ c.sel }}" onKeyDown="{{ ilKey }}" onClick="{{ c.on }}" style="height:48px;padding:0 16px;box-sizing:border-box;display:flex;align-items:center;cursor:pointer;border-radius:{{ k.segR }};font:{{ k.row }};font-weight:{{ c.fw }};background:{{ c.bg }};color:{{ c.fg }};box-shadow:{{ c.sh }};white-space:nowrap">{{ c.label }}</div></sc-for></div><span style="flex:1"></span><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ nt.clear.on }}" aria-disabled="{{ nt.clear.dis }}" style="height:48px;padding:0 18px;display:flex;align-items:center;cursor:{{ nt.clear.cur }};border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ nt.clear.bg }};color:{{ nt.clear.fg }};box-shadow:{{ nt.clear.sh }};white-space:nowrap">Clear</div></div>
 <div role="status" style="display:flex;flex-direction:column;gap:2px"><span style="font:{{ k.row }};text-wrap:pretty">{{ nt.read }}</span><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">{{ nt.readSub }}</span></div>
@@ -668,18 +668,20 @@ class Component extends DCLogic {
     const showHand = ['current', 'installed', 'outdated', 'relearn'].includes(fstate);
     const sheetDefault = screen === 'best-char-missing' ? 'Q' : screen.startsWith('best-char') ? 't' : null;
     const sheetCh = s.sheet !== undefined ? s.sheet : sheetDefault;
-    const pct = fstate === 'learning' ? 60 : fstate === 'relearn' ? 40 : 0;
+    const relearning = fstate === 'relearn' || (fstate === 'current' && !!s.relearnCh);
+    const model = fstate !== 'none' && fstate !== 'learning';
+    const pct = fstate === 'learning' ? 60 : relearning ? 40 : 0;
     const SENT = 'The quick brown fox jumps over the lazy dog.';
     const fontName = s.renamed ? 'Garden letters' : 'My handwriting';
     const fp = {
       land, port: !land, dir: land ? 'row' : 'column', gap: land ? '22px' : '10px', leftW: land ? '270px' : 'auto', prevH: land ? '190px' : 'auto',
-      note: { current: 'Plain letters aren’t in it yet', installed: 'Plain letters aren’t in it yet', none: 'Not learned yet', learning: 'Learning your letters… ' + pct + '%', outdated: 'You wrote more since', relearn: 'Learning ' + (s.relearnCh || 't') + ' again… ' + pct + '%' }[fstate] || '',
-      hasBar: fstate === 'learning' || fstate === 'relearn', pct: String(pct), bar: Array.from({ length: 10 }, (_, i) => ({ bg: i < pct / 10 ? 'var(--il-ink)' : 'var(--il-paper)' })),
+      note: relearning ? 'Learning ' + (s.relearnCh || 't') + ' again… ' + pct + '%' : { current: 'Plain letters aren’t in it yet', installed: 'Plain letters aren’t in it yet', none: 'Not learned yet', learning: 'Learning your letters… ' + pct + '%', outdated: 'You wrote more since', relearn: 'Learning ' + (s.relearnCh || 't') + ' again… ' + pct + '%' }[fstate] || '',
+      hasBar: fstate === 'learning' || relearning, pct: String(pct), bar: Array.from({ length: 10 }, (_, i) => ({ bg: i < pct / 10 ? 'var(--il-ink)' : 'var(--il-paper)' })),
       hasHand: showHand, sentence: SENT, fs: land ? 27 : 31,
       chars: SENT.split('').map(c => { const hand = c === ' ' || covered(c);
         return { t: c, ff: hand ? "'Kalam',cursive" : k.F, fz: hand ? '1em' : '0.72em', col: hand ? 'var(--il-pen)' : 'var(--il-ink-soft)' }; }),
-      hasText: !showHand || fstate === 'relearn',
-      text: { none: 'The counts below come straight from your samples. The preview comes once your letters are learned.',
+      hasText: !showHand || relearning,
+      text: relearning ? 'The preview shows the new ' + (s.relearnCh || 't') + ' when this is done.' + (installed ? ' Your installed font stays as it is until you update it.' : '') : { none: 'The counts below come straight from your samples. The preview comes once your letters are learned.',
         learning: 'The preview comes when this is done. You can go on using the tablet meanwhile.',
         relearn: 'The preview shows the new ' + (s.relearnCh || 't') + ' when this is done. Your installed font stays as it is until you update it.' }[fstate] || '',
       hasAct: fstate === 'none' || fstate === 'outdated',
@@ -708,22 +710,23 @@ class Component extends DCLogic {
     const chip = (label, on, onClick, dis) => dis ? { label, sel: 'false', dis: 'true', on: null, cur: 'default', fw: '400', bg: 'transparent', fg: 'var(--il-dim)', sh: 'inset 0 0 0 1px var(--il-dim)' }
       : { label, sel: String(on), dis: 'false', on: onClick, cur: 'pointer', fw: on ? '600' : '400', ...(on ? k.segOn : segOff) };
     const chCov = sheetCh != null && covered(sheetCh);
-    const sseg = s.seg ?? ({ 'best-char-samples': 'samples', 'best-char-write': 'write', 'best-char-pick': 'pick' }[screen] || (chCov ? 'versions' : 'write'));
+    const shown = chCov && model;
+    const sseg = s.seg ?? ({ 'best-char-samples': 'samples', 'best-char-write': 'write', 'best-char-pick': 'pick' }[screen] || (shown ? 'versions' : chCov ? 'samples' : 'write'));
     const kindOf = c => /[a-z]/.test(c) ? 'Small ' + c : /[A-Z]/.test(c) ? 'Capital ' + c : 'The digit ' + c;
     // three ways of writing a small t, drawn as made-up pen paths (viewBox 120 x 150, baseline at 120)
     const TV = [
-      { id: 'A', n: 6, how: 'Stem with a foot, then the bar', d: 'M58 30 C57 58 56 92 58 108 C60 121 72 124 84 113 M34 66 C50 64 68 63 86 64' },
-      { id: 'B', n: 3, how: 'In one go, with a loop', d: 'M30 112 C46 106 60 76 63 40 C64 28 54 27 53 40 C51 64 53 96 57 110 C61 123 77 121 90 104' },
-      { id: 'C', n: 1, how: 'Bar first, then a straight stem', d: 'M32 58 C50 57 70 56 90 55 M61 26 C61 56 60 90 60 120' }];
-    const GV = [{ id: 'A', n: 7, how: 'The way you write it most', skew: 0 }, { id: 'B', n: 3, how: 'Leaning more', skew: -14 }];
+      { id: 'A', n: 13, how: 'Stem with a foot, then the bar', d: 'M58 30 C57 58 56 92 58 108 C60 121 72 124 84 113 M34 66 C50 64 68 63 86 64' },
+      { id: 'B', n: 6, how: 'In one go, with a loop', d: 'M30 112 C46 106 60 76 63 40 C64 28 54 27 53 40 C51 64 53 96 57 110 C61 123 77 121 90 104' },
+      { id: 'C', n: 3, how: 'Bar first, then a straight stem', d: 'M32 58 C50 57 70 56 90 55 M61 26 C61 56 60 90 60 120' }];
+    const GV = [{ id: 'A', n: 5, how: 'The way you write it most', skew: 0 }, { id: 'B', n: 2, how: 'Leaning more', skew: -14 }];
     const isT = sheetCh === 't';
     const VER = isT ? TV : GV;
     const fav = s.fav !== undefined ? s.fav : (isT ? 'A' : null);
     const outV = s.outV ?? (isT && screen === 'best-char' ? ['C'] : []);
-    const freq = n => n + ' in 10';
+    const vTot = VER.reduce((a, v) => a + v.n, 0), freq = n => Math.max(1, Math.round(10 * n / vTot)) + ' in 10';
     const versions = VER.map(v => { const out = outV.includes(v.id), isFav = fav === v.id && !out;
       return { svg: isT, glyph: !isT, d: v.d || '', g: sheetCh || '', skew: v.skew || 0, isFav,
-        freq: out ? 'Left out' : freq(v.n), how: out ? 'Not in your font. Its ' + v.n + ' sample' + (v.n === 1 ? ' stays' : 's stay') + ' in Samples.' : v.how + ' · ' + v.n * 2 + ' samples',
+        freq: out ? 'Left out' : freq(v.n), how: out ? 'Not in your font. Its ' + v.n + ' sample' + (v.n === 1 ? ' stays' : 's stay') + ' in Samples.' : v.how + ' · ' + v.n + ' samples',
         sh: out ? 'none' : isFav ? k.cardOnSh : k.cardFlat, border: out ? '1.5px dashed var(--il-ink-soft)' : 'none',
         favSel: String(isFav), favDis: String(out), favCur: out ? 'default' : 'pointer', fill: isFav ? '1' : '0', favLabel: 'Favourite',
         favBg: out ? 'transparent' : isFav ? k.priBg : k.btnBg, favFg: out ? 'var(--il-dim)' : isFav ? k.priFg : ink, favSh: out ? 'inset 0 0 0 1.5px var(--il-dim)' : isFav ? k.priSh : k.btnSh,
@@ -749,17 +752,17 @@ class Component extends DCLogic {
     const pickV = VER.filter(v => !outV.includes(v.id)).slice(0, 2);
     const sh = {
       ch: sheetCh || '', title: sheetCh ? kindOf(sheetCh) : '', chW: land ? 56 : 64, chF: (land ? "400 40px " : "400 46px ") + "'Kalam',cursive",
-      sub: !sheetCh ? '' : chCov ? 'In your font · ' + nAllS + ' samples · ' + VER.length + ' ways you write it' : 'Not in your font yet · ' + nCh + ' of ' + MIN + ' samples',
-      close: () => u({ sheet: null, fstate: chCov ? 'relearn' : fstate, relearnCh: sheetCh, screen: screen.startsWith('best-char') ? 'best-font-relearn' : screen }),
+      sub: !sheetCh ? '' : chCov && !model ? 'Enough samples · its versions come once your letters are learned' : chCov ? 'In your font · ' + nAllS + ' samples · ' + VER.length + ' ways you write it' : 'Not in your font yet · ' + nCh + ' of ' + MIN + ' samples',
+      close: () => u({ sheet: null, fstate: chCov && model && fstate !== 'current' ? 'relearn' : fstate, relearnCh: chCov && model ? sheetCh : null, screen: screen.startsWith('best-char') ? 'best-font-relearn' : screen }),
       top: land ? '0' : '10px', side: land ? '0' : '10px', r: land ? '0' : k.cardR, pad: land ? '14px 24px 14px' : '18px 22px 16px',
       segs: [['versions', 'Versions'], ['samples', 'Samples'], ['write', 'Write more'], ['pick', 'Compare']].map(([id, label]) =>
-        chip(label, sseg === id, () => u({ seg: id }), !chCov && (id === 'versions' || id === 'pick'))),
+        chip(label, sseg === id, () => u({ seg: id }), !shown && (id === 'versions' || id === 'pick'))),
       isNeed: !chCov && sheetCh != null,
       slots: Array.from({ length: MIN }, (_, i) => i < nCh ? { ink: sheetCh, empty: '', aria: 'Sample ' + (i + 1), bg: 'var(--il-sheet)', border: 'none' }
         : { ink: '', empty: 'to write', aria: 'Still to write', bg: 'transparent', border: '1.5px dashed var(--il-ink-soft)' }).map((x, i) => ({ ...x, empty: x.empty ? String(i + 1) : '' })),
       needT: (MIN - nCh) + ' more, and ' + (sheetCh || '') + ' is in your font',
       needSub: 'Write it with care, on its own or in a word. Until then, apps show the usual font’s ' + (sheetCh || '') + '.',
-      isVersions: chCov && sseg === 'versions', vCols: Math.max(2, VER.length), inkH: land ? 88 : 150, vNoteShow: !land, glyphFs: land ? 70 : 110, versions,
+      isVersions: shown && sseg === 'versions', vCols: Math.max(2, VER.length), inkH: land ? 88 : 150, vNoteShow: !land, glyphFs: land ? 70 : 110, versions,
       vNote: 'Your font switches between the ways you write ' + (sheetCh || '') + ', each about as often as you do. A favourite is used more. Leaving one out doesn’t delete anything.',
       isSamples: sseg === 'samples', sCols: land ? 6 : 4, tileH: land ? 84 : 96, samples,
       sCount: (nAllS - nBad - nOut) + ' of ' + nAllS + ' samples count towards ' + (sheetCh || '') + (nBad ? ' · ' + nBad + ' can’t be used' : '') + (nOut ? ' · ' + nOut + ' left out' : ''),
@@ -775,11 +778,11 @@ class Component extends DCLogic {
       wBtns: [btn('Clear', wInk || s.inkN ? () => u(st => ({ clear: st.clear + 1, inkN: 0, wInk: '' })) : null),
         btn('Skip', wInk || s.inkN ? null : () => u({ wi: (wi + 1) % PROMPTS.length, wInk: '' })),
         btn(wi === PROMPTS.length - 1 ? 'Done' : 'Next', wInk || s.inkN ? () => u(st => ({ clear: st.clear + 1, inkN: 0, wInk: '', wi: (wi + 1) % PROMPTS.length })) : null, 'pri')],
-      isPick: chCov && sseg === 'pick', pLead: 'Two of the ways you write ' + (sheetCh || '') + '. Tap the one you like better.',
+      isPick: shown && sseg === 'pick', pLead: 'Two of the ways you write ' + (sheetCh || '') + '. Tap the one you like better.',
       pTiles: (isT ? pickV : []).map((v, i) => ({ d: v.d, label: 'Version ' + v.id, chosen: s.chosen === i, sh: s.chosen === i ? k.cardOnSh : k.cardFlat, on: () => u({ chosen: i }) })),
       pNote: (s.chosen != null ? 3 : 2) + ' picks for ' + (sheetCh || '') + ' so far',
       pBtns: [btn('Both fine', () => u({ chosen: null })), btn('Skip', () => u({ chosen: null }))],
-      foot: chCov ? 'When you close this, ' + sheetCh + ' is learned again in the background and the preview shows it. Your installed font changes only when you update it.'
+      foot: chCov && !model ? 'Its versions are made when your letters are learned; then they show here and in the preview.' : chCov ? 'When you close this, ' + sheetCh + ' is learned again in the background and the preview shows it. Your installed font changes only when you update it.'
         : 'What you write here counts at once. Once ' + (sheetCh || '') + ' has ' + MIN + ' samples, it is learned in the background and comes into the preview.'
     };
 
@@ -791,7 +794,7 @@ class Component extends DCLogic {
     const strength = s.strength ?? 0.5;
     const nFs = land ? 40 : 44, nLine = 90;
     // each word: text, how far off the line (px), its tilt, its slant, the gap after it
-    const NW = [[['Call', 7, -4, -4, 30], ['Anna', -9, 5, -18, 4], ['about', 10, -3, -2, 0]], [['the', -8, 4, -16, 2], ['train', 11, -5, 0, 34], ['at', -5, 3, -20, 8], ['ten', 9, -4, -6, 0]]];
+    const NW = [[['Call', 7, -4, -4, 30], ['back', -9, 5, -18, 4], ['about', 10, -3, -2, 0]], [['the', -8, 4, -16, 2], ['train', 11, -5, 0, 34], ['at', -5, 3, -20, 8], ['ten', 9, -4, -6, 0]]];
     const kk = nOrig ? 1 : Math.pow(1 - strength, 1.6);
     const lines = s.nClear ? [] : NW.map((line, li) => ({ x: Math.round(30 + (li ? 16 * kk : 0)), top: Math.round(nLine * 2 / 3 + li * nLine - nFs * 0.72),
       words: line.map(([t, dy, rot, skew, gap]) => ({ t, fs: Math.round(nFs * (1 + (dy / 70) * kk)), dy: (dy * kk).toFixed(1), rot: (rot * kk).toFixed(1),
@@ -805,11 +808,11 @@ class Component extends DCLogic {
       views: [['Neatened', false], ['Original', true]].map(([label, o]) => chip(label, nOrig === o, () => u({ orig: o }))),
       clear: btn('Clear', hasNeatInk ? () => u(st => ({ nClear: 1, inkN: 0, clear: st.clear + 1 })) : null),
       clearN: String(s.clear), onInk: n => u({ inkN: n }), hint: words.length ? '' : 'Write anything here with the pen',
-      lines, aria: words.length ? 'Call Anna about the train at ten' : '',
-      read: !words.length ? 'Nothing written yet' : 'Read as “Call Anna about the train at ten”',
+      lines, aria: words.length ? 'Call back about the train at ten' : '',
+      read: !words.length ? 'Nothing written yet' : 'Read as “Call back about the train at ten”',
       readSub: !words.length ? 'When you pause, it shows neater. Nothing here becomes a sample.'
         : nOrig ? 'Showing what you wrote. Neatened brings the neat version back.'
-        : unlearned ? 'Letters not learned yet: lines and sizes only.' : 'Shown in your own letters. Nothing here becomes a sample.',
+        : unlearned ? 'Each letter keeps its shape. Nothing here becomes a sample.' : 'Shown in your own letters. Nothing here becomes a sample.',
       back: go('best-intro')
     };
 

@@ -40,7 +40,7 @@
   },
   {
    "id": "donate",
-   "name": "Donate"
+   "name": "Contribute"
   },
   {
    "id": "parts",
@@ -98,7 +98,7 @@
    "y": 0,
    "w": 824,
    "h": 1593,
-   "title": "The invitation to donate",
+   "title": "The invitation to contribute",
    "page": "wizard",
    "is_interactive": true
   },
@@ -530,7 +530,7 @@
    "y": 0,
    "w": 824,
    "h": 1545,
-   "title": "Donate · off",
+   "title": "Contribute · off",
    "page": "donate",
    "is_interactive": true
   },
@@ -539,7 +539,7 @@
    "y": 0,
    "w": 824,
    "h": 1545,
-   "title": "Donate · choose a licence",
+   "title": "Contribute · choose a licence",
    "page": "donate",
    "is_interactive": true
   },
@@ -548,7 +548,7 @@
    "y": 0,
    "w": 824,
    "h": 1569,
-   "title": "Donate · add earlier samples",
+   "title": "Contribute · add earlier samples",
    "page": "donate",
    "is_interactive": true
   },
@@ -557,7 +557,7 @@
    "y": 0,
    "w": 824,
    "h": 1569,
-   "title": "Donate · on",
+   "title": "Contribute · on",
    "page": "donate",
    "is_interactive": true
   },
@@ -566,7 +566,7 @@
    "y": 0,
    "w": 824,
    "h": 1545,
-   "title": "Donate · saved",
+   "title": "Contribute · saved",
    "page": "donate",
    "is_interactive": true
   },
@@ -575,7 +575,7 @@
    "y": 0,
    "w": 1058,
    "h": 1266,
-   "title": "Donate · turned",
+   "title": "Contribute · turned",
    "page": "donate",
    "is_interactive": true
   },
@@ -683,7 +683,7 @@
   "title_donate": {
    "kind": "title1",
    "page": "donate",
-   "text": "Donate · off until chosen, licence once",
+   "text": "Contribute · off until chosen, licence once",
    "x": 0,
    "y": -300,
    "w": 240,

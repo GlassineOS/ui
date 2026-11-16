@@ -577,6 +577,37 @@ tools/in-alpine CMD...      # CMD in alpine:3.24 with the pinned Chromium and no
   `support.js`), the embedded `ds/` copy (in any folder) and symbolic links (never followed), removes
   `designSystems` from `canvas.json`, and lists what it left out.
 
+### Preview
+
+The pages at `_boards/` (spec 003 FR-010, FR-051..FR-054, FR-058, FR-061), the same from `tools/boards
+preview` and from an export under any sub-path, drawn with Interleaf's web form in White paper or night
+(`T`; kept in `localStorage` `boards.chrome`), whatever voice the boards are shown in. Every page has the
+bar: the design, `main` or the proposal (`#N`, from `api/review.json`), the views Canvas, Flow, Matrix (and
+Review when there is a proposal), the render picker (voice, scheme and pen, each by a picture; "Own" keeps
+each board's own) and search (`⌘K` or `/`: boards by title and file, states by name, pages). The render
+is in the address of every view and remembered in `localStorage` `boards.render`; one board can differ in
+its own view.
+
+| Page | Address (every parameter optional) | Shows |
+|---|---|---|
+| canvas | `index.html?page=ID&board=FILE&state=ID&voice=&scheme=&pen=&p.NAME=` | the pages in a rail with the boards of the page by name and a filter (`F`), the boards at their places with their marks, the title notes as section heads, a map, fit (`1`), 1:1 (`0`), zoom; the inspector of the chosen board: size, states, its own props, links in and out, issues, the `tools/boards shot` line |
+| board | `view.html?board=FILE&state=ID&voice=&scheme=&pen=&look=sheet\|device&size=WxH\|fill&p.NAME=` | the board on the desk with rulers, the previous and next board of its page (`K`/`J`), its states as a filmstrip, the render, props and sizes on the right; `look=device` frames it in the E-ink scheme (`D`) |
+| matrix | `matrix.html?board=FILE&rows=voice\|scheme\|pen\|state&cols=…&at=R,C` | the board in every combination of two axes, each a live frame, a cell where it raised an error marked "!", the chosen cell large (arrow keys, `⏎` opens it) |
+| flow | `flow.html?page=ID&from=FILE[#STATE]&step=N` | the page as a map: an arrow for each link (solid) and each state step (dashed), labelled; the boards no arrow touches under "Not reached"; a walk from a board (`J`/`K`, `⏎` opens the step) |
+
+Marks differ by shape: interactive ▶, picture only ○, changed ◉, added ⊞ (a filled +), removed ⊟, a
+named state ▭, errors "!" with their count. Keys: `⌘K` or `/` search, `J`/`K` next and previous, `⏎`
+open, `M` matrix, `1` fit, `0` actual size, `Esc` close. On the canvas a click chooses a board, a double
+click or its title opens it (a middle click opens it in a new tab), "Use in place" lets the live boards
+take clicks and keys, "Live" switches the frames for names (`L`, kept in `boards.live`; zoom in
+`boards.zoom`); the middle button drags, ctrl+wheel or a pinch zooms around the pointer. Frames load
+lazily, and only the boards of one page are drawn. A page that is not in a proposal's export (`…/pr-N/…`)
+and whose canvas data names no `review` does not ask for `api/review.json`.
+
+`Boards.bar(mode)` in `preview-common.js` gives another page (the review) the same bar; the same file
+holds the pure logic the node tests use (`test/boards/preview.test.js`), the browser tests are
+`test/boards/preview-e2e.js`.
+
 ### Published boards
 
 The site (`make site`, published by `.github/workflows/reference.yml` with the reference, one
@@ -683,7 +714,7 @@ callers that take screenshots, `isolate()` (no network, Google Fonts from the ve
 `steady()` (no motion, fonts loaded) for any page; `check.js`; `png.js`: PNG and the pixel
 comparison; `references.js`: the reference store, the runner and the board references;
 `previews.js`: the component previews; `review.js`: the review of a proposal),
-`boards/preview/` (the canvas, the board view and the review).
+`boards/preview/` (the preview pages and the review, see "Preview").
 
 - `references` renders every board at its declared sizes in the combinations the design folder lists
   and compares each with its reference image (see "References"); `--update` writes the references.

@@ -27,8 +27,20 @@
    "name": "Your handwriting"
   },
   {
+   "id": "font",
+   "name": "Your font"
+  },
+  {
+   "id": "char",
+   "name": "A character"
+  },
+  {
+   "id": "neat",
+   "name": "Neaten my writing"
+  },
+  {
    "id": "donate",
-   "name": "Donate"
+   "name": "Contribute"
   },
   {
    "id": "parts",
@@ -86,7 +98,7 @@
    "y": 0,
    "w": 824,
    "h": 1593,
-   "title": "The invitation to donate",
+   "title": "The invitation to contribute",
    "page": "wizard",
    "is_interactive": true
   },
@@ -351,12 +363,174 @@
    "page": "best",
    "is_interactive": true
   },
+  "font.none.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "Your font · letters not learned yet",
+   "page": "font",
+   "is_interactive": true
+  },
+  "font.learning.dc.html": {
+   "x": 904,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "Your font · learning the letters",
+   "page": "font",
+   "is_interactive": true
+  },
+  "font.current.dc.html": {
+   "x": 1808,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "Your font · ready, not installed",
+   "page": "font",
+   "is_interactive": true
+  },
+  "font.installed.dc.html": {
+   "x": 2712,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "Your font · installed",
+   "page": "font",
+   "is_interactive": true
+  },
+  "font.outdated.dc.html": {
+   "x": 3616,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "Your font · out of date",
+   "page": "font",
+   "is_interactive": true
+  },
+  "font.rename.dc.html": {
+   "x": 4520,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "Your font · rename",
+   "page": "font",
+   "is_interactive": true
+  },
+  "font.relearn.dc.html": {
+   "x": 5424,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "Your font · after closing a character",
+   "page": "font",
+   "is_interactive": true
+  },
+  "font.landscape.dc.html": {
+   "x": 6328,
+   "y": 0,
+   "w": 1058,
+   "h": 1266,
+   "title": "Your font · turned",
+   "page": "font",
+   "is_interactive": true
+  },
+  "char.versions.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "A character · its versions",
+   "page": "char",
+   "is_interactive": true
+  },
+  "char.samples.dc.html": {
+   "x": 904,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "A character · its samples",
+   "page": "char",
+   "is_interactive": true
+  },
+  "char.write.dc.html": {
+   "x": 1808,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "A character · write more of it",
+   "page": "char",
+   "is_interactive": true
+  },
+  "char.pick.dc.html": {
+   "x": 2712,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "A character · which one is nicer?",
+   "page": "char",
+   "is_interactive": true
+  },
+  "char.missing.dc.html": {
+   "x": 3616,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "A character · not covered yet",
+   "page": "char",
+   "is_interactive": true
+  },
+  "char.landscape.dc.html": {
+   "x": 4520,
+   "y": 0,
+   "w": 1058,
+   "h": 1266,
+   "title": "A character · turned",
+   "page": "char",
+   "is_interactive": true
+  },
+  "neat.write.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "Neaten my writing",
+   "page": "neat",
+   "is_interactive": true
+  },
+  "neat.original.dc.html": {
+   "x": 904,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "Neaten my writing · original",
+   "page": "neat",
+   "is_interactive": true
+  },
+  "neat.unlearned.dc.html": {
+   "x": 1808,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "Neaten my writing · letters not learned yet",
+   "page": "neat",
+   "is_interactive": true
+  },
+  "neat.landscape.dc.html": {
+   "x": 2712,
+   "y": 0,
+   "w": 1058,
+   "h": 1266,
+   "title": "Neaten my writing · turned",
+   "page": "neat",
+   "is_interactive": true
+  },
   "donate.off.dc.html": {
    "x": 0,
    "y": 0,
    "w": 824,
    "h": 1545,
-   "title": "Donate · off",
+   "title": "Contribute · off",
    "page": "donate",
    "is_interactive": true
   },
@@ -365,7 +539,7 @@
    "y": 0,
    "w": 824,
    "h": 1545,
-   "title": "Donate · choose a licence",
+   "title": "Contribute · choose a licence",
    "page": "donate",
    "is_interactive": true
   },
@@ -374,7 +548,7 @@
    "y": 0,
    "w": 824,
    "h": 1569,
-   "title": "Donate · add earlier samples",
+   "title": "Contribute · add earlier samples",
    "page": "donate",
    "is_interactive": true
   },
@@ -383,7 +557,7 @@
    "y": 0,
    "w": 824,
    "h": 1569,
-   "title": "Donate · on",
+   "title": "Contribute · on",
    "page": "donate",
    "is_interactive": true
   },
@@ -392,7 +566,7 @@
    "y": 0,
    "w": 824,
    "h": 1545,
-   "title": "Donate · saved",
+   "title": "Contribute · saved",
    "page": "donate",
    "is_interactive": true
   },
@@ -401,7 +575,7 @@
    "y": 0,
    "w": 1058,
    "h": 1266,
-   "title": "Donate · turned",
+   "title": "Contribute · turned",
    "page": "donate",
    "is_interactive": true
   },
@@ -473,16 +647,43 @@
   "title_best": {
    "kind": "title1",
    "page": "best",
-   "text": "Your handwriting · careful samples and picks (font and neatening come later)",
+   "text": "Your handwriting · careful samples, picks, the font and neatening",
    "x": 0,
    "y": -300,
    "w": 240,
    "maxW": 5658
   },
+  "title_font": {
+   "kind": "title1",
+   "page": "font",
+   "text": "Your font · the letters it has, learning, install",
+   "x": 0,
+   "y": -300,
+   "w": 240,
+   "maxW": 7466
+  },
+  "title_char": {
+   "kind": "title1",
+   "page": "char",
+   "text": "A character · its versions, samples, more of it, which is nicer",
+   "x": 0,
+   "y": -300,
+   "w": 240,
+   "maxW": 5658
+  },
+  "title_neat": {
+   "kind": "title1",
+   "page": "neat",
+   "text": "Neaten my writing · free writing, shown neater",
+   "x": 0,
+   "y": -300,
+   "w": 240,
+   "maxW": 3850
+  },
   "title_donate": {
    "kind": "title1",
    "page": "donate",
-   "text": "Donate · off until chosen, licence once",
+   "text": "Contribute · off until chosen, licence once",
    "x": 0,
    "y": -300,
    "w": 240,
@@ -534,6 +735,24 @@
   "best.careful.dc.html",
   "best.pick.dc.html",
   "best.pick.landscape.dc.html",
+  "font.none.dc.html",
+  "font.learning.dc.html",
+  "font.current.dc.html",
+  "font.installed.dc.html",
+  "font.outdated.dc.html",
+  "font.rename.dc.html",
+  "font.relearn.dc.html",
+  "font.landscape.dc.html",
+  "char.versions.dc.html",
+  "char.samples.dc.html",
+  "char.write.dc.html",
+  "char.pick.dc.html",
+  "char.missing.dc.html",
+  "char.landscape.dc.html",
+  "neat.write.dc.html",
+  "neat.original.dc.html",
+  "neat.unlearned.dc.html",
+  "neat.landscape.dc.html",
   "donate.off.dc.html",
   "donate.licence.dc.html",
   "donate.earlier.dc.html",

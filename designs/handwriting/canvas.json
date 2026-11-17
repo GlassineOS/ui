@@ -443,6 +443,24 @@
    "page": "font",
    "is_interactive": true
   },
+  "font.style-calligraphy.dc.html": {
+   "x": 7466,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "Your font · calligraphy style",
+   "page": "font",
+   "is_interactive": true
+  },
+  "font.style-brush.dc.html": {
+   "x": 8370,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "Your font · brush style",
+   "page": "font",
+   "is_interactive": true
+  },
   "char.versions.dc.html": {
    "x": 0,
    "y": 0,
@@ -1021,6 +1039,8 @@
   "font.rename.dc.html",
   "font.relearn.dc.html",
   "font.landscape.dc.html",
+  "font.style-calligraphy.dc.html",
+  "font.style-brush.dc.html",
   "char.versions.dc.html",
   "char.samples.dc.html",
   "char.write.dc.html",

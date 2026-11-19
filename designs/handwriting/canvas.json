@@ -15,20 +15,12 @@
    "name": "Write"
   },
   {
-   "id": "library",
-   "name": "Samples and coverage"
-  },
-  {
-   "id": "learn",
-   "name": "Learn"
+   "id": "font",
+   "name": "Your font"
   },
   {
    "id": "best",
-   "name": "Your handwriting"
-  },
-  {
-   "id": "font",
-   "name": "Your font"
+   "name": "Write it your best, Which one is nicer?"
   },
   {
    "id": "char",
@@ -37,6 +29,10 @@
   {
    "id": "neat",
    "name": "Neaten my writing"
+  },
+  {
+   "id": "learn",
+   "name": "Learn, Samples and Coverage"
   },
   {
    "id": "donate",
@@ -210,57 +206,57 @@
    "is_interactive": true
   },
   "samples.list.dc.html": {
-   "x": 0,
+   "x": 5658,
    "y": 0,
    "w": 824,
    "h": 1545,
    "title": "Samples",
-   "page": "library",
+   "page": "learn",
    "is_interactive": true
   },
   "samples.detail.dc.html": {
-   "x": 904,
+   "x": 6562,
    "y": 0,
    "w": 824,
    "h": 1545,
    "title": "A sample",
-   "page": "library",
+   "page": "learn",
    "is_interactive": true
   },
   "samples.delete.dc.html": {
-   "x": 1808,
+   "x": 7466,
    "y": 0,
    "w": 824,
    "h": 1545,
    "title": "Delete a sample?",
-   "page": "library",
+   "page": "learn",
    "is_interactive": true
   },
   "samples.landscape.dc.html": {
-   "x": 2712,
+   "x": 8370,
    "y": 0,
    "w": 1058,
    "h": 1266,
    "title": "Samples · turned",
-   "page": "library",
+   "page": "learn",
    "is_interactive": true
   },
   "coverage.dc.html": {
-   "x": 3850,
+   "x": 9508,
    "y": 0,
    "w": 824,
    "h": 1569,
    "title": "Coverage",
-   "page": "library",
+   "page": "learn",
    "is_interactive": true
   },
   "coverage.landscape.dc.html": {
-   "x": 4754,
+   "x": 10412,
    "y": 0,
    "w": 1058,
    "h": 1266,
    "title": "Coverage · turned",
-   "page": "library",
+   "page": "learn",
    "is_interactive": true
   },
   "learn.few.dc.html": {
@@ -317,17 +313,8 @@
    "page": "learn",
    "is_interactive": true
   },
-  "best.intro.dc.html": {
-   "x": 0,
-   "y": 0,
-   "w": 824,
-   "h": 1569,
-   "title": "Your handwriting",
-   "page": "best",
-   "is_interactive": true
-  },
   "best.write.dc.html": {
-   "x": 904,
+   "x": 0,
    "y": 0,
    "w": 824,
    "h": 1545,
@@ -336,7 +323,7 @@
    "is_interactive": true
   },
   "best.quick.dc.html": {
-   "x": 1808,
+   "x": 904,
    "y": 0,
    "w": 824,
    "h": 1545,
@@ -345,7 +332,7 @@
    "is_interactive": true
   },
   "best.careful.dc.html": {
-   "x": 2712,
+   "x": 1808,
    "y": 0,
    "w": 824,
    "h": 1545,
@@ -354,7 +341,7 @@
    "is_interactive": true
   },
   "best.pick.dc.html": {
-   "x": 3616,
+   "x": 2712,
    "y": 0,
    "w": 824,
    "h": 1569,
@@ -363,7 +350,7 @@
    "is_interactive": true
   },
   "best.pick.landscape.dc.html": {
-   "x": 4520,
+   "x": 3616,
    "y": 0,
    "w": 1058,
    "h": 1266,
@@ -794,26 +781,8 @@
    "page": "guest",
    "is_interactive": true
   },
-  "guest.samples.dc.html": {
-   "x": 6328,
-   "y": 0,
-   "w": 824,
-   "h": 1569,
-   "title": "A guest · samples",
-   "page": "guest",
-   "is_interactive": true
-  },
-  "guest.coverage.dc.html": {
-   "x": 7232,
-   "y": 0,
-   "w": 824,
-   "h": 1569,
-   "title": "A guest · coverage",
-   "page": "guest",
-   "is_interactive": true
-  },
   "guest.contribute-off.dc.html": {
-   "x": 8136,
+   "x": 7232,
    "y": 0,
    "w": 824,
    "h": 1569,
@@ -822,7 +791,7 @@
    "is_interactive": true
   },
   "guest.contribute.dc.html": {
-   "x": 9040,
+   "x": 8136,
    "y": 0,
    "w": 824,
    "h": 1569,
@@ -831,7 +800,7 @@
    "is_interactive": true
   },
   "guest.hello.landscape.dc.html": {
-   "x": 9944,
+   "x": 9040,
    "y": 0,
    "w": 1058,
    "h": 1266,
@@ -840,7 +809,7 @@
    "is_interactive": true
   },
   "guest.write.landscape.dc.html": {
-   "x": 11082,
+   "x": 10178,
    "y": 0,
    "w": 1058,
    "h": 1266,
@@ -849,7 +818,7 @@
    "is_interactive": true
   },
   "guest.contribute.landscape.dc.html": {
-   "x": 12220,
+   "x": 11316,
    "y": 0,
    "w": 1058,
    "h": 1266,
@@ -883,6 +852,15 @@
    "title": "Component · ThemeBar",
    "page": "parts",
    "is_interactive": true
+  },
+  "guest.samples.dc.html": {
+   "x": 6328,
+   "y": 0,
+   "w": 824,
+   "h": 1569,
+   "title": "A guest · their samples",
+   "page": "guest",
+   "is_interactive": true
   }
  },
  "notes": {
@@ -904,37 +882,28 @@
    "w": 240,
    "maxW": 7700
   },
-  "title_library": {
-   "kind": "title1",
-   "page": "library",
-   "text": "Samples and coverage",
-   "x": 0,
-   "y": -300,
-   "w": 240,
-   "maxW": 5892
-  },
   "title_learn": {
    "kind": "title1",
    "page": "learn",
-   "text": "Learn · progress and learning while charging",
+   "text": "Learn · how the reader learns, with its Samples and Coverage beneath",
    "x": 0,
    "y": -300,
    "w": 240,
-   "maxW": 5658
+   "maxW": 11550
   },
   "title_best": {
    "kind": "title1",
    "page": "best",
-   "text": "Your handwriting · careful samples, picks, the font and neatening",
+   "text": "Write it your best, Which one is nicer? · rows below the font page",
    "x": 0,
    "y": -300,
    "w": 240,
-   "maxW": 5658
+   "maxW": 4754
   },
   "title_font": {
    "kind": "title1",
    "page": "font",
-   "text": "Your font · the letters it has, learning, install",
+   "text": "Your font · the tab: the font page, its letters, learning, install",
    "x": 0,
    "y": -300,
    "w": 240,
@@ -983,7 +952,7 @@
    "x": 0,
    "y": -300,
    "w": 240,
-   "maxW": 13358
+   "maxW": 12454
   },
   "title_parts": {
    "kind": "title1",
@@ -1013,24 +982,6 @@
   "write.sets.dc.html",
   "write.landscape.dc.html",
   "write.check.landscape.dc.html",
-  "samples.list.dc.html",
-  "samples.detail.dc.html",
-  "samples.delete.dc.html",
-  "samples.landscape.dc.html",
-  "coverage.dc.html",
-  "coverage.landscape.dc.html",
-  "learn.few.dc.html",
-  "learn.waiting.dc.html",
-  "learn.running.dc.html",
-  "learn.better.dc.html",
-  "learn.kept.dc.html",
-  "learn.landscape.dc.html",
-  "best.intro.dc.html",
-  "best.write.dc.html",
-  "best.quick.dc.html",
-  "best.careful.dc.html",
-  "best.pick.dc.html",
-  "best.pick.landscape.dc.html",
   "font.none.dc.html",
   "font.learning.dc.html",
   "font.current.dc.html",
@@ -1041,6 +992,11 @@
   "font.landscape.dc.html",
   "font.style-calligraphy.dc.html",
   "font.style-brush.dc.html",
+  "best.write.dc.html",
+  "best.quick.dc.html",
+  "best.careful.dc.html",
+  "best.pick.dc.html",
+  "best.pick.landscape.dc.html",
   "char.versions.dc.html",
   "char.samples.dc.html",
   "char.write.dc.html",
@@ -1055,6 +1011,18 @@
   "neat.original.dc.html",
   "neat.unlearned.dc.html",
   "neat.landscape.dc.html",
+  "learn.few.dc.html",
+  "learn.waiting.dc.html",
+  "learn.running.dc.html",
+  "learn.better.dc.html",
+  "learn.kept.dc.html",
+  "learn.landscape.dc.html",
+  "samples.list.dc.html",
+  "samples.detail.dc.html",
+  "samples.delete.dc.html",
+  "samples.landscape.dc.html",
+  "coverage.dc.html",
+  "coverage.landscape.dc.html",
   "donate.off.dc.html",
   "donate.licence.dc.html",
   "donate.earlier.dc.html",
@@ -1079,7 +1047,6 @@
   "guest.write.dc.html",
   "guest.sets.dc.html",
   "guest.samples.dc.html",
-  "guest.coverage.dc.html",
   "guest.contribute-off.dc.html",
   "guest.contribute.dc.html",
   "guest.hello.landscape.dc.html",

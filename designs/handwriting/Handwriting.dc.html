@@ -34,8 +34,8 @@
 <div style="flex:1;min-height:0;position:relative;overflow:hidden;padding:{{ bodyPad }};box-sizing:border-box;display:flex;flex-direction:column;gap:16px">
 
 <sc-if value="{{ pg.show }}" hint-placeholder-val="{{ true }}"><div style="flex:none;display:flex;flex-direction:column;gap:8px">
-<span style="font:{{ k.lbl }};font-variant:{{ k.lblVar }};text-transform:{{ k.lblCase }};letter-spacing:{{ k.lblLs }};color:{{ k.lblC }}">{{ pg.eyebrow }}</span>
-<span style="font:{{ pg.font }};letter-spacing:{{ k.displayLs }};text-wrap:balance">{{ pg.title }}</span>
+<sc-if value="{{ pg.hasEyebrow }}" hint-placeholder-val="{{ true }}"><span style="font:{{ k.lbl }};font-variant:{{ k.lblVar }};text-transform:{{ k.lblCase }};letter-spacing:{{ k.lblLs }};color:{{ k.lblC }}">{{ pg.eyebrow }}</span></sc-if>
+<div style="display:flex;align-items:center;gap:14px"><span style="flex:1;min-width:0;font:{{ pg.font }};letter-spacing:{{ k.displayLs }};text-wrap:balance">{{ pg.title }}</span><sc-if value="{{ pg.hasBack }}" hint-placeholder-val="{{ false }}"><div style="flex:none;margin:-8px 0"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ pg.back }}" style="height:48px;padding:0 18px 0 12px;display:flex;align-items:center;gap:6px;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }};white-space:nowrap"><span style="font:400 22px/1 'Material Symbols Outlined'">arrow_back</span>{{ pg.backL }}</div></div></sc-if></div>
 <sc-if value="{{ pg.hasLead }}" hint-placeholder-val="{{ true }}"><span style="font:{{ k.lead }};color:var(--il-ink-soft);max-width:620px;text-wrap:pretty">{{ pg.lead }}</span></sc-if>
 </div></sc-if>
 
@@ -87,7 +87,7 @@
 <span style="font:{{ k.display }};letter-spacing:{{ k.displayLs }}">Ready when you are.</span>
 <span style="font:{{ k.lead }};color:var(--il-ink-soft);text-wrap:pretty">Write a few words whenever you like. A handful today and a handful tomorrow is just as good as many at once.</span>
 <div style="display:flex;flex-direction:column;border-top:{{ k.sep }}"><sc-for list="{{ ready.rows }}" as="r" hint-placeholder-count="3"><div style="min-height:60px;padding:8px 0;box-sizing:border-box;display:flex;align-items:center;gap:14px;border-bottom:{{ k.sep }}"><span style="width:26px;flex:none;font:400 24px/1 'Material Symbols Outlined'">{{ r.icon }}</span><span style="width:132px;flex:none;font:{{ k.lbl }};font-variant:{{ k.lblVar }};text-transform:{{ k.lblCase }};letter-spacing:{{ k.lblLs }};color:{{ k.lblC }}">{{ r.label }}</span><span style="flex:1;min-width:0;font:{{ k.row }};text-wrap:pretty">{{ r.value }}</span></div></sc-for></div>
-<span style="display:flex;align-items:center;gap:10px;font:{{ k.sub }};color:var(--il-ink-soft)"><span style="font:400 20px/1 'Material Symbols Outlined'">draw</span>You can also teach it your nicest handwriting, any time, from Learn.</span>
+<span style="display:flex;align-items:center;gap:10px;font:{{ k.sub }};color:var(--il-ink-soft)"><span style="font:400 20px/1 'Material Symbols Outlined'">draw</span>You can also make a font of your handwriting, any time, in Your font.</span>
 </div></sc-if>
 
 <sc-if value="{{ done.show }}" hint-placeholder-val="{{ false }}"><div role="status" style="flex:none;display:flex;align-items:center;gap:14px;padding:12px 16px;border-radius:{{ k.cardR }};box-shadow:{{ k.noteSh }};flex-wrap:wrap"><span style="font:400 26px/1 'Material Symbols Outlined'">{{ done.icon }}</span><div style="flex:1;min-width:260px;display:flex;flex-direction:column;gap:3px"><span style="font:{{ k.row }};font-weight:600">{{ done.title }}</span><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">{{ done.text }}</span></div><div style="display:flex;gap:10px"><sc-for list="{{ done.btns }}" as="b" hint-placeholder-count="2"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ b.on }}" aria-disabled="{{ b.dis }}" style="height:48px;padding:0 18px;display:flex;align-items:center;cursor:{{ b.cur }};border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ b.bg }};color:{{ b.fg }};box-shadow:{{ b.sh }};white-space:nowrap">{{ b.label }}</div></sc-for></div></div></sc-if>
@@ -123,16 +123,6 @@
 <sc-if value="{{ is.sets }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:4px">
 <sc-for list="{{ sets }}" as="st" hint-placeholder-count="7"><div tabindex="0" role="radio" aria-checked="{{ st.sel }}" onKeyDown="{{ ilKey }}" onClick="{{ st.on }}" style="min-height:{{ setsNote.rowH }};padding:8px 16px;box-sizing:border-box;display:flex;align-items:center;gap:14px;cursor:pointer;border-radius:{{ k.rowR }};background:{{ st.bg }};color:{{ st.fg }};box-shadow:{{ st.sh }}"><span style="width:26px;flex:none;font:400 24px/1 'Material Symbols Outlined'">{{ st.icon }}</span><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font:{{ k.row }}">{{ st.name }}</span><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">{{ st.desc }}</span></div><span style="width:24px;font:400 22px/1 'Material Symbols Outlined';visibility:{{ st.vis }}">check</span></div></sc-for>
 <sc-if value="{{ setsNote.show }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:flex-start;gap:14px;margin-top:6px;padding:10px 16px;border-radius:{{ k.cardR }};background:var(--il-sheet)"><span style="font:400 22px/1 'Material Symbols Outlined'">info</span><span style="font:{{ k.sub }};text-wrap:pretty">{{ setsNote.text }}</span></div></sc-if>
-</div></sc-if>
-
-<sc-if value="{{ is.bestIntro }}" hint-placeholder-val="{{ false }}"><div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:14px">
-<sc-for list="{{ best.modes }}" as="m" hint-placeholder-count="2"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ m.on }}" style="display:flex;align-items:center;gap:18px;padding:16px 18px;cursor:pointer;border-radius:{{ k.cardR }};box-shadow:{{ k.cardFlat }}">
-<div style="width:132px;height:76px;flex:none;position:relative;overflow:hidden;border-radius:{{ k.rowR }};background:var(--il-sheet)"><sc-for list="{{ m.inks }}" as="i" hint-placeholder-count="1"><span style="position:absolute;left:{{ i.x }}px;top:{{ i.y }}px;font:400 {{ i.fs }}px/1 'Kalam',cursive;color:var(--il-pen);white-space:nowrap;transform:skewX({{ i.slant }}deg)">{{ i.t }}</span></sc-for></div>
-<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px"><span style="font:{{ k.packF }};font-variant:{{ k.packVar }};letter-spacing:{{ k.packLs }}">{{ m.name }}</span><span style="font:{{ k.sub }};text-wrap:pretty">{{ m.desc }}</span></div>
-<span style="font:400 24px/1 'Material Symbols Outlined'">chevron_right</span>
-</div></sc-for>
-<span style="flex:1"></span>
-<span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">{{ best.counts }}</span>
 </div></sc-if>
 
 <sc-if value="{{ is.pick }}" hint-placeholder-val="{{ false }}"><div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:18px">
@@ -202,7 +192,7 @@
 <sc-if value="{{ ln.hasBar }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:6px;padding-left:44px"><div style="display:flex;gap:4px"><sc-for list="{{ ln.bar }}" as="b" hint-placeholder-count="10"><div style="flex:1;height:14px;border-radius:{{ k.barR }};background:{{ b.bg }};box-shadow:inset 0 0 0 1.5px var(--il-ink)"></div></sc-for></div><span style="font:{{ k.mono }}">{{ ln.barText }}</span></div></sc-if>
 </div>
 <div style="display:flex;flex-direction:column;border-top:{{ k.sep }}"><sc-for list="{{ ln.rows }}" as="r" hint-placeholder-count="2"><div style="min-height:56px;padding:8px 0;box-sizing:border-box;display:flex;align-items:center;gap:14px;border-bottom:{{ k.sep }}"><span style="width:26px;flex:none;font:400 22px/1 'Material Symbols Outlined'">{{ r.icon }}</span><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font:{{ k.row }}">{{ r.label }}</span><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">{{ r.sub }}</span></div></div></sc-for></div>
-<div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ ln.toBest }}" style="min-height:64px;padding:10px 16px;box-sizing:border-box;display:flex;align-items:center;gap:14px;cursor:pointer;border-radius:{{ k.cardR }};background:var(--il-sheet)"><span style="width:26px;flex:none;font:400 24px/1 'Material Symbols Outlined'">draw</span><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font:{{ k.row }}">Your handwriting</span><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">Teach it what your nicest writing looks like</span></div><span style="font:400 24px/1 'Material Symbols Outlined'">chevron_right</span></div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px"><sc-for list="{{ ln.links }}" as="l" hint-placeholder-count="2"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ l.on }}" style="min-height:72px;padding:10px 14px 10px 16px;box-sizing:border-box;display:flex;align-items:center;gap:14px;cursor:pointer;border-radius:{{ k.cardR }};background:var(--il-sheet)"><span style="width:26px;flex:none;font:400 24px/1 'Material Symbols Outlined'">{{ l.icon }}</span><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font:{{ k.row }}">{{ l.label }}</span><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">{{ l.sub }}</span></div><span style="font:400 24px/1 'Material Symbols Outlined'">chevron_right</span></div></sc-for></div>
 <span style="flex:1"></span>
 <div style="display:flex;align-items:center;gap:10px"><span style="flex:1;min-width:0;font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">{{ ln.foot }}</span><sc-for list="{{ ln.btns }}" as="b" hint-placeholder-count="2"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ b.on }}" aria-disabled="{{ b.dis }}" style="height:48px;padding:0 18px;display:flex;align-items:center;cursor:{{ b.cur }};border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ b.bg }};color:{{ b.fg }};box-shadow:{{ b.sh }};white-space:nowrap">{{ b.label }}</div></sc-for></div>
 </div></sc-if>
@@ -219,7 +209,8 @@
 <sc-for list="{{ share.cols }}" as="c" hint-placeholder-count="2"><div style="display:flex;flex-direction:column;gap:8px;padding:14px 16px;border-radius:{{ k.cardR }};box-shadow:{{ k.cardFlat }};background:{{ c.bg }}"><span style="font:{{ k.lbl }};font-variant:{{ k.lblVar }};text-transform:{{ k.lblCase }};letter-spacing:{{ k.lblLs }};color:{{ k.lblC }};padding-bottom:6px;border-bottom:{{ k.sep }}">{{ c.head }}</span><sc-for list="{{ c.items }}" as="it" hint-placeholder-count="3"><div style="display:flex;align-items:flex-start;gap:10px"><span style="width:20px;flex:none;font:400 20px/1.2 'Material Symbols Outlined'">{{ c.icon }}</span><span style="font:{{ k.sub }};color:var(--il-ink);text-wrap:pretty">{{ it }}</span></div></sc-for></div></sc-for>
 </div></sc-if>
 <sc-if value="{{ dn.howShow }}" hint-placeholder-val="{{ true }}"><div style="display:flex;gap:14px;padding:12px 16px;border-radius:{{ k.cardR }};background:var(--il-sheet)"><span style="font:400 24px/1 'Material Symbols Outlined'">folder</span><span style="font:{{ k.sub }};text-wrap:pretty">{{ dn.howTo }}</span></div></sc-if>
-<sc-if value="{{ dn.on }}" hint-placeholder-val="{{ false }}"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ dn.toEarlier }}" style="min-height:60px;padding:8px 16px;box-sizing:border-box;display:flex;align-items:center;gap:14px;cursor:pointer;border-radius:{{ k.cardR }};box-shadow:{{ k.cardFlat }}"><span style="width:26px;flex:none;font:400 24px/1 'Material Symbols Outlined'">library_add</span><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font:{{ k.row }}">Add earlier samples</span><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">{{ dn.earlierT }}</span></div><span style="font:400 24px/1 'Material Symbols Outlined'">chevron_right</span></div></sc-if>
+<div style="display:grid;grid-template-columns:{{ dn.rowCols }};gap:12px"><sc-if value="{{ dn.mine }}" hint-placeholder-val="{{ false }}"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ dn.toMine }}" style="min-height:60px;padding:8px 16px;box-sizing:border-box;display:flex;align-items:center;gap:14px;cursor:pointer;border-radius:{{ k.cardR }};box-shadow:{{ k.cardFlat }}"><span style="width:26px;flex:none;font:400 24px/1 'Material Symbols Outlined'">grid_view</span><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font:{{ k.row }}">Your samples</span><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">{{ dn.mineT }}</span></div><span style="font:400 24px/1 'Material Symbols Outlined'">chevron_right</span></div></sc-if>
+<sc-if value="{{ dn.on }}" hint-placeholder-val="{{ false }}"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ dn.toEarlier }}" style="min-height:60px;padding:8px 16px;box-sizing:border-box;display:flex;align-items:center;gap:14px;cursor:pointer;border-radius:{{ k.cardR }};box-shadow:{{ k.cardFlat }}"><span style="width:26px;flex:none;font:400 24px/1 'Material Symbols Outlined'">library_add</span><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font:{{ k.row }}">Add earlier samples</span><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">{{ dn.earlierT }}</span></div><span style="font:400 24px/1 'Material Symbols Outlined'">chevron_right</span></div></sc-if></div>
 <span style="flex:1"></span>
 <div style="display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap"><sc-for list="{{ dn.btns }}" as="b" hint-placeholder-count="3"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ b.on }}" style="height:48px;padding:0 18px;display:flex;align-items:center;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ b.bg }};color:{{ b.fg }};box-shadow:{{ b.sh }};white-space:nowrap">{{ b.label }}</div></sc-for></div>
 </div></sc-if>
@@ -243,7 +234,8 @@
 <sc-if value="{{ fp.port }}" hint-placeholder-val="{{ true }}"><div style="min-height:64px;padding:6px 0;box-sizing:border-box;display:flex;align-items:center;gap:14px;border-top:{{ k.sep }};border-bottom:{{ k.sep }}"><span style="width:56px;flex:none;font:{{ k.lbl }};font-variant:{{ k.lblVar }};text-transform:{{ k.lblCase }};letter-spacing:{{ k.lblLs }};color:{{ k.lblC }}">Name</span><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px"><span style="font:{{ k.row }};font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ fp.name }}</span><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty"><span style="color:var(--il-ink)">{{ fp.inst }}.</span> {{ fp.instSub }}</span></div><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ fp.rename }}" style="height:48px;padding:0 18px;display:flex;align-items:center;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }};white-space:nowrap">Rename</div></div></sc-if>
 </div>
 </div>
-<div style="flex:none;display:flex;align-items:center;gap:10px"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ fp.back }}" style="height:48px;padding:0 18px 0 12px;display:flex;align-items:center;gap:6px;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }};white-space:nowrap"><span style="font:400 22px/1 'Material Symbols Outlined'">arrow_back</span>Back</div><sc-if value="{{ fp.land }}" hint-placeholder-val="{{ false }}"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ fp.writeMissing }}" style="height:48px;padding:0 18px 0 14px;display:flex;align-items:center;gap:8px;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }};white-space:nowrap"><span style="font:400 22px/1 'Material Symbols Outlined'">edit</span>Write these now</div></sc-if><sc-if value="{{ fp.nibFoot }}" hint-placeholder-val="{{ false }}"><span style="flex:1"></span><div role="group" aria-label="{{ fp.nibAria }}" style="flex:none;display:flex;align-items:center;gap:8px"><span style="font:{{ k.sub }};color:var(--il-ink-soft);white-space:nowrap">Nib angle</span><div tabindex="0" role="button" aria-label="Smaller angle" onKeyDown="{{ ilKey }}" onClick="{{ fp.nibLess }}" style="width:48px;height:48px;flex:none;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:{{ k.btnR }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }}"><span style="font:400 22px/1 'Material Symbols Outlined'">remove</span></div><span style="min-width:40px;text-align:center;font:{{ k.row }};font-weight:600">{{ fp.nibT }}</span><div tabindex="0" role="button" aria-label="Larger angle" onKeyDown="{{ ilKey }}" onClick="{{ fp.nibMore }}" style="width:48px;height:48px;flex:none;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:{{ k.btnR }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }}"><span style="font:400 22px/1 'Material Symbols Outlined'">add</span></div></div></sc-if><span style="flex:1"></span><sc-for list="{{ fp.btns }}" as="b" hint-placeholder-count="2"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ b.on }}" aria-disabled="{{ b.dis }}" style="height:48px;padding:0 20px;display:flex;align-items:center;cursor:{{ b.cur }};border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ b.bg }};color:{{ b.fg }};box-shadow:{{ b.sh }};white-space:nowrap">{{ b.label }}</div></sc-for></div>
+<div style="flex:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px"><sc-for list="{{ fp.parts }}" as="r" hint-placeholder-count="3"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ r.on }}" style="min-height:50px;padding:4px 10px 4px 14px;box-sizing:border-box;display:flex;align-items:center;gap:10px;cursor:pointer;border-radius:{{ k.cardR }};background:var(--il-sheet)"><span style="flex:none;font:400 22px/1 'Material Symbols Outlined'">{{ r.icon }}</span><span style="flex:1;min-width:0;font:{{ k.row }};text-wrap:balance">{{ r.label }}</span><span style="flex:none;font:400 22px/1 'Material Symbols Outlined'">chevron_right</span></div></sc-for></div>
+<div style="flex:none;display:flex;align-items:center;gap:10px"><sc-if value="{{ fp.land }}" hint-placeholder-val="{{ false }}"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ fp.writeMissing }}" style="height:48px;padding:0 18px 0 14px;display:flex;align-items:center;gap:8px;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }};white-space:nowrap"><span style="font:400 22px/1 'Material Symbols Outlined'">edit</span>Write these now</div></sc-if><sc-if value="{{ fp.nibFoot }}" hint-placeholder-val="{{ false }}"><span style="flex:1"></span><div role="group" aria-label="{{ fp.nibAria }}" style="flex:none;display:flex;align-items:center;gap:8px"><span style="font:{{ k.sub }};color:var(--il-ink-soft);white-space:nowrap">Nib angle</span><div tabindex="0" role="button" aria-label="Smaller angle" onKeyDown="{{ ilKey }}" onClick="{{ fp.nibLess }}" style="width:48px;height:48px;flex:none;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:{{ k.btnR }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }}"><span style="font:400 22px/1 'Material Symbols Outlined'">remove</span></div><span style="min-width:40px;text-align:center;font:{{ k.row }};font-weight:600">{{ fp.nibT }}</span><div tabindex="0" role="button" aria-label="Larger angle" onKeyDown="{{ ilKey }}" onClick="{{ fp.nibMore }}" style="width:48px;height:48px;flex:none;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:{{ k.btnR }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }}"><span style="font:400 22px/1 'Material Symbols Outlined'">add</span></div></div></sc-if><span style="flex:1"></span><sc-for list="{{ fp.btns }}" as="b" hint-placeholder-count="2"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ b.on }}" aria-disabled="{{ b.dis }}" style="height:48px;padding:0 20px;display:flex;align-items:center;cursor:{{ b.cur }};border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ b.bg }};color:{{ b.fg }};box-shadow:{{ b.sh }};white-space:nowrap">{{ b.label }}</div></sc-for></div>
 
 <sc-if value="{{ fp.renaming }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;gap:16px;padding:{{ bodyPad }};box-sizing:border-box;background:var(--il-paper)">
 <div role="dialog" aria-label="Name of your font" style="display:flex;flex-direction:column;gap:14px;padding:20px 22px;box-sizing:border-box;border-radius:{{ k.cardR }};background:var(--il-paper);box-shadow:{{ k.dialogSh }}">
@@ -361,7 +353,7 @@
 <div style="display:flex;align-items:center;gap:10px"><div role="radiogroup" aria-label="Show" style="display:flex;gap:6px"><sc-for list="{{ nt.views }}" as="c" hint-placeholder-count="2"><div tabindex="0" role="radio" aria-checked="{{ c.sel }}" onKeyDown="{{ ilKey }}" onClick="{{ c.on }}" style="height:48px;padding:0 16px;box-sizing:border-box;display:flex;align-items:center;cursor:pointer;border-radius:{{ k.segR }};font:{{ k.row }};font-weight:{{ c.fw }};background:{{ c.bg }};color:{{ c.fg }};box-shadow:{{ c.sh }};white-space:nowrap">{{ c.label }}</div></sc-for></div><span style="flex:1"></span><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ nt.clear.on }}" aria-disabled="{{ nt.clear.dis }}" style="height:48px;padding:0 18px;display:flex;align-items:center;cursor:{{ nt.clear.cur }};border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ nt.clear.bg }};color:{{ nt.clear.fg }};box-shadow:{{ nt.clear.sh }};white-space:nowrap">Clear</div></div>
 <div role="status" style="display:flex;flex-direction:column;gap:2px"><span style="font:{{ k.row }};text-wrap:pretty">{{ nt.read }}</span><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">{{ nt.readSub }}</span></div>
 <sc-if value="{{ nt.side }}" hint-placeholder-val="{{ false }}"><span style="flex:1"></span></sc-if>
-<div style="display:flex"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ nt.back }}" style="height:48px;padding:0 18px 0 12px;display:flex;align-items:center;gap:6px;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }};white-space:nowrap"><span style="font:400 22px/1 'Material Symbols Outlined'">arrow_back</span>Your handwriting</div></div>
+<div style="display:flex"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ nt.back }}" style="height:48px;padding:0 18px 0 12px;display:flex;align-items:center;gap:6px;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }};white-space:nowrap"><span style="font:400 22px/1 'Material Symbols Outlined'">arrow_back</span>Your font</div></div>
 </div>
 <div style="flex:1;min-height:0;min-width:0;position:relative;order:1">
 <dc-import name="Paper" voice="{{ voice }}" ink="" line="90" size="44" height="700" hint="{{ nt.hint }}" live="{{ yes }}" clear="{{ nt.clearN }}" on-ink="{{ nt.onInk }}" style="width:100%;height:100%" hint-size="100%,400px"></dc-import>
@@ -431,7 +423,7 @@
 <div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ chips }}" as="tb" hint-placeholder-count="12"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ tb.on }}" style="font:500 11.5px 'IBM Plex Mono';padding:7px 11px;border-radius:6px;border:1px solid rgba(0,0,0,.2);cursor:pointer;background:{{ tb.bg }};color:{{ tb.fg }}">{{ tb.label }}</div></sc-for></div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview": {"width": 760, "height": 1080}, "theme": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "scheme": {"editor": "enum", "options": ["paper", "night", "eink"], "default": "eink"}, "pen": {"editor": "enum", "options": ["1", "2", "3"], "default": "1"}, "orient": {"editor": "enum", "options": ["portrait", "landscape"], "default": "portrait"}, "screen": {"editor": "enum", "options": ["w-welcome", "w-try", "w-try-done", "w-private", "w-learning", "w-share", "w-licence", "w-ready", "write", "write-ink", "write-kept", "write-check", "write-sentence", "write-sets", "samples", "sample", "sample-delete", "coverage", "learn-few", "learn-waiting", "learn-running", "learn-better", "learn-kept", "best-intro", "best-write", "best-quick", "best-careful", "best-pick", "best-font-none", "best-font-learning", "best-font", "best-font-installed", "best-font-outdated", "best-font-rename", "best-font-relearn", "best-font-style-calligraphy", "best-font-style-brush", "best-char", "best-char-samples", "best-char-write", "best-char-pick", "best-char-missing", "best-char-sample", "best-char-redo", "best-char-delete", "best-char-version-samples", "best-neat", "best-neat-original", "best-neat-unlearned", "donate-off", "donate-licence", "donate-earlier", "donate-on", "donate-saved", "others", "others-empty", "others-add", "others-rename", "others-taken", "others-remove", "others-remove-plain", "others-done", "others-done-kept", "guest-hello", "guest-try", "guest-share", "guest-age", "guest-licence", "guest-write", "guest-sets", "guest-samples", "guest-coverage", "guest-contribute-off", "guest-contribute"], "default": "w-welcome"}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview": {"width": 760, "height": 1080}, "theme": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "scheme": {"editor": "enum", "options": ["paper", "night", "eink"], "default": "eink"}, "pen": {"editor": "enum", "options": ["1", "2", "3"], "default": "1"}, "orient": {"editor": "enum", "options": ["portrait", "landscape"], "default": "portrait"}, "screen": {"editor": "enum", "options": ["w-welcome", "w-try", "w-try-done", "w-private", "w-learning", "w-share", "w-licence", "w-ready", "write", "write-ink", "write-kept", "write-check", "write-sentence", "write-sets", "samples", "sample", "sample-delete", "coverage", "learn-few", "learn-waiting", "learn-running", "learn-better", "learn-kept", "best-write", "best-quick", "best-careful", "best-pick", "best-font-none", "best-font-learning", "best-font", "best-font-installed", "best-font-outdated", "best-font-rename", "best-font-relearn", "best-font-style-calligraphy", "best-font-style-brush", "best-char", "best-char-samples", "best-char-write", "best-char-pick", "best-char-missing", "best-char-sample", "best-char-redo", "best-char-delete", "best-char-version-samples", "best-neat", "best-neat-original", "best-neat-unlearned", "donate-off", "donate-licence", "donate-earlier", "donate-on", "donate-saved", "others", "others-empty", "others-add", "others-rename", "others-taken", "others-remove", "others-remove-plain", "others-done", "others-done-kept", "guest-hello", "guest-try", "guest-share", "guest-age", "guest-licence", "guest-write", "guest-sets", "guest-samples", "guest-contribute-off", "guest-contribute"], "default": "w-welcome"}}'>
 class Component extends DCLogic {
   state = { screen: null, donating: null, licence: null, tried: 0, inkN: 0, clear: 0, picked: null, out: [] };
 
@@ -494,11 +486,11 @@ class Component extends DCLogic {
   screens() {
     return ['w-welcome', 'w-try', 'w-try-done', 'w-private', 'w-learning', 'w-share', 'w-licence', 'w-ready',
       'write', 'write-ink', 'write-kept', 'write-check', 'write-sentence', 'write-sets', 'samples', 'sample', 'sample-delete', 'coverage',
-      'learn-few', 'learn-waiting', 'learn-running', 'learn-better', 'learn-kept', 'best-intro', 'best-write', 'best-quick', 'best-careful', 'best-pick',
+      'learn-few', 'learn-waiting', 'learn-running', 'learn-better', 'learn-kept', 'best-write', 'best-quick', 'best-careful', 'best-pick',
       'best-font-none', 'best-font-learning', 'best-font', 'best-font-installed', 'best-font-outdated', 'best-font-rename', 'best-font-relearn', 'best-font-style-calligraphy', 'best-font-style-brush', 'best-char', 'best-char-samples', 'best-char-write', 'best-char-pick', 'best-char-missing', 'best-char-sample', 'best-char-redo', 'best-char-delete', 'best-char-version-samples', 'best-neat', 'best-neat-original', 'best-neat-unlearned',
       'donate-off', 'donate-licence', 'donate-earlier', 'donate-on', 'donate-saved',
       'others', 'others-empty', 'others-add', 'others-rename', 'others-taken', 'others-remove', 'others-remove-plain', 'others-done', 'others-done-kept',
-      'guest-hello', 'guest-try', 'guest-share', 'guest-age', 'guest-licence', 'guest-write', 'guest-sets', 'guest-samples', 'guest-coverage', 'guest-contribute-off', 'guest-contribute'];
+      'guest-hello', 'guest-try', 'guest-share', 'guest-age', 'guest-licence', 'guest-write', 'guest-sets', 'guest-samples', 'guest-contribute-off', 'guest-contribute'];
   }
 
   renderVals() {
@@ -513,7 +505,7 @@ class Component extends DCLogic {
     // pages for that writer alone: the guest- screens are the owner's screens with G on, and G
     // stays on while the guest moves around, until Finish.
     const GBASE = { 'guest-hello': 'w-ghello', 'guest-try': 'w-try', 'guest-share': 'w-share', 'guest-age': 'w-gage', 'guest-licence': 'w-licence', 'guest-write': 'write',
-      'guest-sets': 'write-sets', 'guest-samples': 'samples', 'guest-coverage': 'coverage', 'guest-contribute-off': 'donate-off', 'guest-contribute': 'donate-on',
+      'guest-sets': 'write-sets', 'guest-samples': 'samples', 'guest-contribute-off': 'donate-off', 'guest-contribute': 'donate-on',
       'others-done': 'write', 'others-done-kept': 'write' };
     const G = raw.startsWith('guest-') || (!raw.startsWith('others') && !!s.guest);
     const screen = GBASE[raw] || raw;
@@ -560,10 +552,14 @@ class Component extends DCLogic {
     const LEARN_T = { 'learn-few': 'Learn', 'learn-waiting': 'Learn', 'learn-running': 'Learn', 'learn-better': 'Learn', 'learn-kept': 'Learn' };
 
     // ---- the app's tabs
-    const TABS = [['write', 'Write', 'edit'], ['samples', 'Samples', 'grid_view'], ['coverage', 'Coverage', 'abc'], ['learn', 'Learn', 'school'], ['donate', 'Contribute', 'volunteer_activism']];
-    const tabOf = G && screen.startsWith('best') ? 'write' : screen.startsWith('write') ? 'write' : screen.startsWith('sample') ? 'samples' : screen.startsWith('learn') || screen.startsWith('best') ? 'learn' : screen.startsWith('donate') ? 'donate' : screen;
-    const FIRST = { write: 'write', samples: 'samples', coverage: 'coverage', learn: 'learn-waiting', donate: donating ? 'donate-on' : 'donate-off' };
-    const tabs = TABS.filter(([id]) => !G || id !== 'learn').map(([id, label, icon]) => { const on = id === tabOf, x = on ? k.segOn : { bg: 'transparent', fg: ink, sh: 'none' };
+    // Write teaches the reader; Your font opens on the font page, with careful samples, picks and
+    // neatening as rows below it; Learn is the reader's learning with Samples and Coverage beneath
+    // it. A guest's session has Write and Contribute only, their own samples a row in Contribute
+    // (handwriting spec 002 FR-018).
+    const TABS = [['write', 'Write', 'edit'], ['font', 'Your font', 'font_download'], ['learn', 'Learn', 'school'], ['donate', 'Contribute', 'volunteer_activism']];
+    const tabOf = G && screen.startsWith('best') ? 'write' : G && screen.startsWith('sample') ? 'donate' : screen.startsWith('write') ? 'write' : screen.startsWith('best') ? 'font' : screen.startsWith('learn') || screen.startsWith('sample') || screen === 'coverage' ? 'learn' : screen.startsWith('donate') ? 'donate' : screen;
+    const FIRST = { write: 'write', font: 'best-font-installed', learn: 'learn-waiting', donate: donating ? 'donate-on' : 'donate-off' };
+    const tabs = TABS.filter(([id]) => !G || id === 'write' || id === 'donate').map(([id, label, icon]) => { const on = id === tabOf, x = on ? k.segOn : { bg: 'transparent', fg: ink, sh: 'none' };
       return { label, icon, iconD: land ? 'inline' : 'none', sel: String(on), on: go(FIRST[id]), fw: on ? '600' : '400', ...x }; });
 
     // ---- the page head (title block) per screen
@@ -572,9 +568,8 @@ class Component extends DCLogic {
       samples: ['312 samples', 'Everything you have written here, newest first. Tap one to look at it or delete it.'],
       coverage: ['How much of each character', 'The number is how many of your samples have it. Shaded ones could use more; a dot marks the ones it often reads wrong.'],
       learn: ['How it’s learning', ''],
-      'best-intro': ['Your handwriting', 'Show it what your nicest writing looks like: a few words written with care, and now and then a choice between two of your own versions.'],
       'best-pick': ['Which one is nicer?', ''],
-      'best-font': ['Your font', 'A character is in it once it has 3 good samples. Tap any key to see how you write it.'],
+      'best-font': ['Your handwriting as a font', 'A character is in it once it has 3 good samples. Tap any key to see how you write it.'],
       'best-neat': ['Neaten my writing', 'Write anything below, in a hurry if you like. When you pause, it shows neater, in your own hand. Nothing you write here is kept.'],
       'donate-off': ['Help the reader for everyone', 'The handwriting reader is open source. It learns from handwriting people choose to contribute. Contributing is off unless you turn it on.'],
       'donate-on': ['Thank you for contributing', 'Every sample you keep for a word or sentence the app shows is added. Samples you wrote before can be added too, below.'],
@@ -597,10 +592,15 @@ class Component extends DCLogic {
     if (wizard && G && GPAGES[screen]) pg = { show: true, eyebrow: k.eyebrow(gsi + 1, GNAMES[GSTEPS[gsi]], 3), title: GPAGES[screen][0], lead: GPAGES[screen][1], font: land ? k.displayS : k.display };
     else if (wizard && PAGES[screen] && PAGES[screen][0]) pg = { show: true, eyebrow: k.eyebrow(si + 1, NAMES[STEPS[si]]), title: PAGES[screen][0], lead: PAGES[screen][1], font: land ? k.displayS : k.display };
     else if (!wizard && APP_HEAD[headKey]) pg = { show: true, eyebrow: '', title: APP_HEAD[headKey][0], lead: APP_HEAD[headKey][1], font: k.displayS };
-    if (screen === 'sample' || screen === 'sample-delete' || (land && (screen === 'donate-on' || screen === 'donate-saved' || screen.startsWith('learn')))) pg = { show: false };
-    pg.hasLead = !!pg.lead && screen !== 'donate-saved' && !(G && land && screen === 'w-ghello') && !(G && screen === 'donate-on') && !(land && !wizard && screen !== 'write-sets' && screen !== 'best-intro');
-    if (pg.show && !pg.eyebrow) pg.eyebrow = { 'best-intro': 'Learn', 'best-pick': 'Your handwriting', 'best-font': 'Your handwriting', 'best-neat': 'Your handwriting', 'write-sets': 'Write', samples: 'Samples', coverage: 'Coverage', learn: 'Learn', 'donate-off': 'Contribute', 'donate-on': 'Contribute', 'donate-licence': 'Contribute', 'donate-earlier': 'Contribute' }[headKey] || '';
+    if (screen === 'sample' || screen === 'sample-delete' || (land && (screen === 'donate-on' || screen === 'donate-saved' || screen.startsWith('learn') || headKey === 'best-font'))) pg = { show: false };
+    pg.hasLead = !!pg.lead && screen !== 'donate-saved' && !(G && land && screen === 'w-ghello') && !(G && screen === 'donate-on') && !(land && !wizard && screen !== 'write-sets') && headKey !== 'best-font';
+    if (pg.show && !pg.eyebrow) pg.eyebrow = { 'best-pick': 'Your font', 'best-neat': 'Your font', 'write-sets': 'Write', learn: 'Learn', 'donate-off': 'Contribute', 'donate-on': 'Contribute', 'donate-licence': 'Contribute', 'donate-earlier': 'Contribute' }[headKey] || '';
     if (pg.show && othersList) pg.eyebrow = 'Other writers';
+    pg.hasEyebrow = !!pg.eyebrow;
+    // Samples and Coverage sit beneath Learn; a guest's samples beneath their Contribute tab
+    pg.hasBack = pg.show && (screen === 'samples' || screen === 'coverage');
+    pg.backL = G ? 'Contribute' : 'Learn';
+    pg.back = G ? go(donating ? 'donate-on' : 'donate-off') : go('learn-waiting');
     if (voice !== 'white' && pg.eyebrow && !wizard) pg.eyebrow = pg.eyebrow.toLowerCase();
 
     // ---- wizard pages
@@ -620,7 +620,7 @@ class Component extends DCLogic {
 
     const LISTS = {
       'w-private': { artIcon: 'tablet', art: 'Kept on this tablet only. The app doesn’t use the internet.', rows: [
-        ['grid_view', 'Look at any sample', 'Samples shows everything you have written here.'],
+        ['grid_view', 'Look at any sample', 'Samples, in Learn, shows everything you have written here.'],
         ['delete', 'Delete what you don’t want', 'One at a time, or all at once.'],
         ['folder', 'Take a copy with you', 'Export saves them all as one file in your Documents.'],
         ['volunteer_activism', 'Share only if you choose to', 'Next, you can decide about contributing. It is off unless you turn it on.']] },
@@ -650,6 +650,7 @@ class Component extends DCLogic {
     };
 
     if (G) share.note = 'Nothing is sent by itself. Contributing sets a copy aside on the tablet. Finish, or Save as a file, puts it in one file in this tablet’s Documents, for the owner to send to the project.';
+    if (G) share.cols[0].items = share.cols[0].items.map(x => x.startsWith('Quick or careful') ? 'Quick or careful' : x);
     if (G) share.cols[1].items = ['Your name, or the name this tablet knows you by', 'Your age, or anything else about you', 'Anything about this tablet or its owner', 'Dates and times', 'Anything you write outside this session'];
     const LIC = [['CC0-1.0', 'Free for anyone', 'CC0', 'Anyone may use, change and share your samples for anything, with no conditions.'],
       ['CC-BY-4.0', 'Free, with a mention', 'CC BY 4.0', 'Anyone may use, change and share them, as long as they say the handwriting was contributed to GlassineOS. Your name is not in it.']];
@@ -679,7 +680,7 @@ class Component extends DCLogic {
       steps: screen === 'best-write' ? [] : [seg('1 Quick', screen === 'best-quick', screen === 'best-careful'), seg('2 Careful', screen === 'best-careful', false)],
       note: screen === 'best-quick' ? 'First, write it quickly, the way you would in a note.' : screen === 'best-careful' ? 'Now once more, slowly. Write it the way you like it best.' : 'Take your time. Write it the way you like it best.',
       slant: screen === 'best-quick' ? '-14' : '0', lastSlant: screen === 'best-careful' ? '-14' : '0',
-      prompt: PROMPT[screen] || '', promptFont: sentence ? k.promptS : k.prompt, setName: isBest ? (G ? 'Write it your best' : 'Your handwriting') : sentence ? 'Sentences' : 'What needs practice', toSets: go(isBest && !G ? 'best-intro' : 'write-sets'),
+      prompt: PROMPT[screen] || '', promptFont: sentence ? k.promptS : k.prompt, setName: isBest ? (G ? 'Write it your best' : 'Your font') : sentence ? 'Sentences' : 'What needs practice', toSets: go(isBest && !G ? 'best-font-installed' : 'write-sets'),
       hasLast: screen === 'write-kept' || screen === 'best-careful', isCheck: screen === 'write-check',
       lastInk: screen === 'best-careful' ? 'garden' : 'quiet', lastState: screen === 'best-careful' ? 'The quick one' : 'Kept', lastRead: screen === 'best-careful' ? 'Kept. Now the careful one.' : 'Read as “quiet”',
       lastBtns: screen === 'best-careful' ? [btn('Redo', go('best-quick'))] : [btn('Redo', go('write')), btn('Discard', go('write'))],
@@ -688,7 +689,7 @@ class Component extends DCLogic {
       clear: String(s.clear), onInk: n => u({ inkN: n }),
       counts: G ? (isBest ? '3 careful samples today' : 'Today 6 · 48 in all') : isBest ? '9 careful samples today' : 'Today 24 · 312 in all · 58 new to learn from',
       btns: [btn('Clear', hasInk ? () => u(st => ({ clear: st.clear + 1, inkN: 0, screen: screen === 'write-ink' ? 'write' : screen })) : null),
-        btn('Skip', hasInk || screen === 'write-check' ? null : go(isBest && !G ? 'best-intro' : isBest ? 'write' : 'write-kept')),
+        btn('Skip', hasInk || screen === 'write-check' ? null : go(isBest && !G ? 'best-font-installed' : isBest ? 'write' : 'write-kept')),
         btn(screen === 'best-quick' ? 'Next: careful' : 'Next', hasInk ? () => u(st => ({ clear: st.clear + 1, inkN: 0, screen: screen === 'best-quick' ? 'best-careful' : isBest ? 'best-pick' : 'write-kept' })) : null, 'pri')],
       dir: land ? 'row' : 'column', leftFlex: land ? 'none' : 'none', leftW: land ? '300px' : 'auto', side: land, below: !land, wrap: land ? 'wrap' : 'nowrap'
     };
@@ -698,24 +699,13 @@ class Component extends DCLogic {
       ['pangrams', 'Pangrams', 'Sentences that use every letter', 'abc'], ['letters', 'Single letters', 'Each letter, small and capital', 'match_case'],
       ['digits', 'Digits and punctuation', '0 to 9, and marks like , . ? ! :', 'pin'],
       ['own', 'My own words', 'A list you keep in your files. Never contributed.', 'person_edit']];
-    // a guest has no word list of their own (it is a file among the owner's files) and no Learn
-    // tab, so the careful samples and the picks are sets here
-    const GSETS = [['best', 'Write it your best', 'A word written slowly and carefully, sometimes once quickly first', 'draw'], ['pick', 'Which one is nicer?', 'Two of your own versions side by side; tap the nicer one', 'compare']];
+    // a guest has no word list of their own (it is a file among the owner's files) and no Your
+    // font tab, so the careful samples are a set here; the picks aren't offered to a guest
+    const GSETS = [['best', 'Write it your best', 'A word written slowly and carefully, sometimes once quickly first', 'draw']];
     const sets = (G ? [['auto', 'What needs practice', 'A mix, weighted towards what you have written least', 'auto_awesome'], ...SETS.filter(x => x[0] !== 'own' && x[0] !== 'auto'), ...GSETS] : SETS).map(([id, name, desc, icon]) => { const on = id === 'auto', x = on ? k.sel : { bg: 'transparent', fg: ink, sh: 'none' };
       return { name, desc, icon, sel: String(on), vis: on ? 'visible' : 'hidden', on: go(id === 'best' ? 'best-write' : id === 'pick' ? 'best-pick' : 'write'), ...x }; });
     const setsNote = { rowH: G ? '54px' : '62px', show: G, text: 'No learning, font, neatening or own word list here: those are the owner’s.' };
 
-    // ---- Your handwriting: careful samples and picks
-    const best = { counts: '31 careful samples and 12 picks so far. They are kept like your other samples. If you contribute, a pick goes along only with both of its versions; a font made from your writing never does.',
-      modes: [
-        { name: 'Write it your best', desc: 'A word written slowly and carefully. Sometimes once quickly first, then once with care.', on: go('best-write'),
-          inks: [{ t: 'Thursday', x: 12, y: 22, fs: 30, slant: 0 }] },
-        { name: 'Which one is nicer?', desc: 'Two of your own versions side by side. Tap the one you like better.', on: go('best-pick'),
-          inks: [{ t: 'g', x: 26, y: 14, fs: 40, slant: -12 }, { t: 'g', x: 82, y: 14, fs: 40, slant: 0 }] },
-        { name: 'Your font', desc: 'Your letters as a font for any app. See which ones it has, then install it.', on: go('best-font-installed'),
-          inks: [{ t: 'Aa Bb', x: 14, y: 18, fs: 34, slant: 0 }] },
-        { name: 'Neaten my writing', desc: 'Write anything, in a hurry if you like. It comes back neater, in your own hand.', on: go('best-neat'),
-          inks: [{ t: 'neat', x: 24, y: 18, fs: 34, slant: -8 }] }] };
     const chosen = s.picked;
     const pick = { word: 'g', fs: land ? 150 : 170, guide: '60%', inkTop: land ? 'calc(60% - 112px)' : 'calc(60% - 128px)', note: (chosen != null ? 13 : 12) + ' picks today',
       tiles: [{ slant: -12, rot: 2, label: 'This one (left)' }, { slant: 0, rot: 0, label: 'This one (right)' }].map((t, i) => ({ ...t, chosen: chosen === i,
@@ -766,13 +756,14 @@ class Component extends DCLogic {
       'learn-kept': { stats: ['24', '312', '0'], icon: 'info', title: 'It kept what it had', text: 'It tried, but it didn’t read you better this time (6 letters in 100 misread before, 7 with the new try), so nothing changed. More samples usually help.',
         rows: [['person', 'What it uses now', 'What it learned from your handwriting, on Tuesday']], foot: '', btns: [btn('Write more', go('write'), 'pri')] }
     }[screen] || { stats: ['', '', ''], rows: [], btns: [] };
-    const ln = { ...LS, toBest: go('best-intro'), stats: [['today', 0], ['in all', 1], ['new since it last learned', 2]].map(([label, i]) => ({ n: LS.stats[i], label, bl: i ? k.sepStrong.replace(/^/, '') : 'none' })),
+    const ln = { ...LS, links: [['grid_view', 'Samples', '312, newest first. Look at one, delete or export them', 'samples'],
+      ['abc', 'Coverage', 'How much of each character it has seen from you', 'coverage']].map(([icon, label, sub, to]) => ({ icon, label, sub, on: go(to) })), stats: [['today', 0], ['in all', 1], ['new since it last learned', 2]].map(([label, i]) => ({ n: LS.stats[i], label, bl: i ? k.sepStrong.replace(/^/, '') : 'none' })),
       hasBar: !!LS.bar, bar: Array.from({ length: LS.bar || 0 }, (_, i) => ({ bg: i < LS.barOn ? 'var(--il-ink)' : 'var(--il-paper)' })),
       rows: (LS.rows || []).map(([icon, label, sub]) => ({ icon, label, sub })) };
     ln.stats.forEach((x, i) => { x.bl = i ? k.sep : 'none'; });
 
     // ---- Contribute
-    const dn = { toEarlier: go('donate-earlier'), howShow: !donating, on: donating, saved: screen === 'donate-saved', icon: donating ? 'volunteer_activism' : 'toggle_off',
+    const dn = { toEarlier: go('donate-earlier'), rowCols: G && donating ? 'minmax(0,1fr) minmax(0,1fr)' : 'minmax(0,1fr)', mine: G, toMine: go('samples'), mineT: G && donating ? '48. Look at, delete or export them.' : '48 samples. Look at one, delete or export them.', howShow: !donating, on: donating, saved: screen === 'donate-saved', icon: donating ? 'volunteer_activism' : 'toggle_off',
       state: donating ? 'Contributing is on' : 'Contributing is off', stateBg: donating ? 'var(--il-sheet)' : 'transparent',
       stateSub: donating ? 'Free for anyone (CC0). New samples are added as you write.' : 'Nothing is set aside. Your samples stay yours alone.',
       howTo: donating ? 'Save as a file puts your contribution in Documents › Handwriting contributions. From there, you send it to the project yourself.'
@@ -899,8 +890,8 @@ class Component extends DCLogic {
       actRow: fstate === 'none' || (fstate === 'outdated' && land),
       act: fstate === 'none' ? btn('Learn letters now', () => u({ fstate: 'learning' }), 'pri') : btn('Update letters', () => u({ fstate: 'relearn', relearnCh: 'your letters' })),
       actNote: 'Or it does this on its own while the tablet charges.',
-      countLbl: (fstate === 'none' || fstate === 'learning' ? 'Enough samples: ' : 'In your font: ') + have + ' of ' + FCH.length,
-      cols: land ? 12 : 13, keyH: land ? 44 : 46,
+      countLbl: 'Letters · ' + have + ' of ' + FCH.length + (fstate === 'none' || fstate === 'learning' ? ' with enough samples' : ' in your font'),
+      cols: land ? 12 : 13, keyH: land ? 40 : 43,
       keys: FCH.map(c => { const n = FN[c] || 0, ok = n >= MIN;
         return { ch: c, hasN: !ok, n: n + '/' + MIN, aria: c + (ok ? ', in your font' : ', ' + n + ' of ' + MIN + ' samples'), fg: ink,
           bg: ok ? 'var(--il-paper)' : n ? 'var(--il-highlight)' : 'transparent', sh: ok ? 'inset 0 0 0 1px var(--il-rule)' : 'inset 0 0 0 1.5px var(--il-ink-soft)',
@@ -913,7 +904,8 @@ class Component extends DCLogic {
       instSub: installed && nib !== nibAt && fstate === 'installed' ? 'Update puts the new nib angle in it.' : { installed: 'Apps list it under this one name, in all three styles.',
         outdated: 'Update makes all three styles again, under the same name.',
         relearn: 'Update puts the new letters in all three styles.' }[fstate] || (fstate === 'current' ? 'Install puts in all three styles, under this one name. Only you have it; it is never contributed.' : 'Only you have it, on this tablet. It is never contributed.'),
-      back: go('best-intro'),
+      parts: [['draw', 'Write it your best', 'best-write'], ['compare', 'Which one is nicer?', 'best-pick'], ['edit_note', 'Neaten my writing', 'best-neat']]
+        .map(([icon, label, to]) => ({ icon, label, on: go(to) })),
       btns: installed ? [btn('Remove', () => {}), btn('Update', fstate === 'installed' && nib === nibAt ? null : () => u({ fstate: 'installed', nibAt: nib }), 'pri')]
         : [btn('Install', fstate === 'current' ? () => u({ fstate: 'installed' }) : null, 'pri')]
     };
@@ -1065,7 +1057,7 @@ class Component extends DCLogic {
       readSub: !words.length ? 'When you pause, it shows neater. Nothing here becomes a sample.'
         : nOrig ? 'Showing what you wrote. Neatened brings the neat version back.'
         : unlearned ? 'Each letter keeps its shape. Nothing here becomes a sample.' : 'Shown in your own letters. Nothing here becomes a sample.',
-      back: go('best-intro')
+      back: go('best-font-installed')
     };
 
     // ---- the wizard's footer
@@ -1148,22 +1140,22 @@ class Component extends DCLogic {
     const LABEL = { 'w-welcome': '1 Welcome', 'w-try': '2 Try one', 'w-try-done': '2 Tried', 'w-private': '3 Your samples', 'w-learning': '4 Learning', 'w-share': '5 Contributing', 'w-licence': '5 Licence', 'w-ready': 'Ready',
       write: 'Write', 'write-ink': 'Ink', 'write-kept': 'Kept', 'write-check': 'Check failed', 'write-sentence': 'Sentence', 'write-sets': 'Sets',
       samples: 'Samples', sample: 'Sample', 'sample-delete': 'Delete?', coverage: 'Coverage',
-      'learn-few': 'Too few', 'learn-waiting': 'Waiting', 'learn-running': 'Learning', 'learn-better': 'Better', 'learn-kept': 'Not better', 'best-intro': 'Your handwriting', 'best-write': 'Your best', 'best-quick': 'Quick', 'best-careful': 'Careful', 'best-pick': 'Which one?',
+      'learn-few': 'Too few', 'learn-waiting': 'Waiting', 'learn-running': 'Learning', 'learn-better': 'Better', 'learn-kept': 'Not better', 'best-write': 'Your best', 'best-quick': 'Quick', 'best-careful': 'Careful', 'best-pick': 'Which one?',
       'best-font-none': 'Font · not learned', 'best-font-learning': 'Font · learning', 'best-font': 'Font', 'best-font-installed': 'Font · installed', 'best-font-outdated': 'Font · out of date', 'best-font-rename': 'Font · rename', 'best-font-relearn': 'Font · relearning', 'best-font-style-calligraphy': 'Font · calligraphy', 'best-font-style-brush': 'Font · brush',
       'best-char': 'Character', 'best-char-samples': 'Its samples', 'best-char-write': 'Write more', 'best-char-pick': 'Compare', 'best-char-missing': 'Not covered', 'best-char-sample': 'A sample', 'best-char-redo': 'Write it again', 'best-char-delete': 'Delete?', 'best-char-version-samples': 'A version’s samples', 'best-neat': 'Neaten', 'best-neat-original': 'Original', 'best-neat-unlearned': 'Neaten · not learned',
       'donate-off': 'Contribute off', 'donate-licence': 'Licence', 'donate-earlier': 'Earlier samples', 'donate-on': 'Contribute on', 'donate-saved': 'Saved',
       others: 'Writers', 'others-empty': 'No writers', 'others-add': 'Add', 'others-rename': 'Rename', 'others-taken': 'Name taken', 'others-remove': 'Remove?', 'others-remove-plain': 'Remove? · nothing unsaved', 'others-done': 'After Finish', 'others-done-kept': 'After Finish · not contributing',
-      'guest-hello': '1 Hello', 'guest-try': '2 Try one', 'guest-share': '3 Contribute?', 'guest-age': '3 18 or older', 'guest-licence': '3 Licence', 'guest-write': 'Write', 'guest-sets': 'Sets', 'guest-samples': 'Samples', 'guest-coverage': 'Coverage', 'guest-contribute-off': 'Contribute off', 'guest-contribute': 'Contribute on' };
+      'guest-hello': '1 Hello', 'guest-try': '2 Try one', 'guest-share': '3 Contribute?', 'guest-age': '3 18 or older', 'guest-licence': '3 Licence', 'guest-write': 'Write', 'guest-sets': 'Sets', 'guest-samples': 'Your samples', 'guest-contribute-off': 'Contribute off', 'guest-contribute': 'Contribute on' };
     // the screens of this part, and one chip to jump to each other part
-    const AREAS = [['First start', 'w-'], ['Write', 'write'], ['Samples', 'sample', 'coverage'], ['Learn', 'learn', 'best-intro', 'best-write', 'best-quick', 'best-careful', 'best-pick'],
-      ['Font and neatening', 'best-font', 'best-char', 'best-neat'], ['Contribute', 'donate'], ['Other writers', 'others'], ['A guest’s session', 'guest-']];
+    const AREAS = [['First start', 'w-'], ['Write', 'write'], ['Your font', 'best-font', 'best-write', 'best-quick', 'best-careful', 'best-pick'],
+      ['A character and neatening', 'best-char', 'best-neat'], ['Learn', 'learn', 'sample', 'coverage'], ['Contribute', 'donate'], ['Other writers', 'others'], ['A guest’s session', 'guest-']];
     const areaOf = id => AREAS.findIndex(([, ...ps]) => ps.some(x => id.startsWith(x)));
     const here = areaOf(raw);
     const chips = [...all.filter(id => areaOf(id) === here).map(id => ({ label: LABEL[id], on: go(id, false), bg: id === raw ? '#111111' : '#ffffff', fg: id === raw ? '#ffffff' : '#111111' })),
       ...AREAS.map(([name], i) => i === here ? null : { label: '→ ' + name, on: go(all.find(id => areaOf(id) === i), false), bg: '#ffffff', fg: '#111111' }).filter(Boolean)];
 
     const W = land ? 936 : 702, H = land ? 702 : 936;
-    const is = { earlier: screen === 'donate-earlier', bestIntro: screen === 'best-intro', pick: screen === 'best-pick', wWelcome: screen === 'w-welcome', wTry: screen === 'w-try' || screen === 'w-try-done', wList: !!LISTS[screen], share: screen === 'w-share', licence: screen === 'w-licence' || screen === 'donate-licence',
+    const is = { earlier: screen === 'donate-earlier', pick: screen === 'best-pick', wWelcome: screen === 'w-welcome', wTry: screen === 'w-try' || screen === 'w-try-done', wList: !!LISTS[screen], share: screen === 'w-share', licence: screen === 'w-licence' || screen === 'donate-licence',
       pickLicence: screen === 'donate-licence', ready: screen === 'w-ready', write: isW, sets: screen === 'write-sets', samples: screen === 'samples', sample: screen === 'sample' || screen === 'sample-delete',
       font: fontScr, sheet: fontScr && sheetCh != null, neat: neatScr,
       coverage: screen === 'coverage', learn: screen.startsWith('learn'), donate: screen === 'donate-off' || screen === 'donate-on' || screen === 'donate-saved',
@@ -1173,7 +1165,7 @@ class Component extends DCLogic {
       ilv: this.ilVars(voice, 'eink', '1'), k, voice, yes: true, W, H, frameW: W + 58, bezel: land ? '29px 44px 29px 28px' : '28px 29px 44px',
       bodyPad: wizard ? (land ? '16px 32px 12px' : '24px 32px 18px') : (land ? '18px 24px 18px' : '20px 28px 20px'),
       isWiz: wizard, isApp: !wizard, showTabs: !wizard && !othersList, wiz: { steps: wizSteps }, tabs, hdr, bar, pg, is, foot, chips, done, setsNote, ow, nm, rm, ga,
-      wel, tryP, wl, share, lic, ready, wr, sets, sm, sd, cov, ln, dn, best, pick, er, fp, sh, nt };
+      wel, tryP, wl, share, lic, ready, wr, sets, sm, sd, cov, ln, dn, pick, er, fp, sh, nt };
   }
 
   ilVars(voice, scheme, pen) {

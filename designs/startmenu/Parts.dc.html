@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Parts</title>
+<script src="./support.js"></script>
+<script src="data/menu.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="startmenu.css">
+<style>
+.smp { width: 1404px; height: 1500px; padding: 72px; background: var(--paper); color: var(--ink); font-family: var(--font-plex); box-sizing: border-box; }
+.smp h2 { font-size: 56px; line-height: 68px; font-weight: 600; margin: 0 0 32px; }
+.smp-icons { display: grid; grid-template-columns: repeat(5, 1fr); gap: 32px 24px; margin-bottom: 64px; }
+.smp-icon { display: flex; flex-direction: column; align-items: center; gap: 12px; font-size: 32px; line-height: 40px; color: var(--ink-soft); }
+.smp-icon svg { width: 96px; height: 96px; }
+.smp-icon path { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.smp-icon .sm-mark { width: 96px; height: 96px; }
+.smp-type { margin-bottom: 56px; }
+.smp-type .n { font-size: 56px; line-height: 64px; font-weight: 600; }
+.smp-type .l { font-size: 40px; line-height: 50px; color: var(--ink-soft); }
+.smp-greys { display: flex; gap: 24px; font-size: 32px; line-height: 40px; margin-bottom: 56px; }
+.smp-greys span { display: inline-block; width: 120px; height: 80px; border: 4px solid var(--ink); border-radius: 12px; vertical-align: middle; margin-right: 16px; }
+.smp-sizes { font-size: 32px; line-height: 44px; color: var(--ink-soft); columns: 2; margin: 0; padding-left: 36px; }
+</style>
+</helmet>
+<div class="smp" data-theme="white-eink">
+  <h2>Icons</h2>
+  <div class="smp-icons">
+    <div class="smp-icon"><svg class="sm-mark" viewBox="0 0 48 48" aria-hidden="true"><rect class="o" x="2" y="4" width="30" height="34" rx="5"></rect><g transform="rotate(6 29 27)"><rect class="leaf" x="14" y="10" width="30" height="34" rx="5"></rect><path class="pen" d="M20 30C26 24 30 34 38 26"></path></g></svg><span>GlassineOS</span></div>
+    <sc-for list="{{ icons }}" as="i" hint-placeholder-count="8">
+      <div class="smp-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="{{ i.d }}"></path></svg><span>{{ i.name }}</span></div>
+    </sc-for>
+  </div>
+  <h2>Type</h2>
+  <div class="smp-type"><div class="n">Name · IBM Plex Sans SemiBold 56</div><div class="l">Line, reason and foot · IBM Plex Sans Regular 40</div></div>
+  <h2>Greys</h2>
+  <div class="smp-greys">
+    <div><span style="background: var(--ink)"></span>ink #111111</div>
+    <div><span style="background: var(--shade)"></span>offset #bbbbbb</div>
+    <div><span style="background: var(--highlight)"></span>mark #cccccc</div>
+    <div><span style="background: var(--paper)"></span>paper #ffffff</div>
+  </div>
+  <h2>Sizes (panel pixels)</h2>
+  <ul class="smp-sizes">
+    <li>gutter 72</li><li>mark 112 at y 96, title beside it</li><li>reason line at y 256, two lines at most</li>
+    <li>cards from y 400, 176 high, 24 apart, 1260 wide</li><li>keyline 4, default 6, radius 24</li><li>default offset 10, 10</li>
+    <li>icon 96 at x 40 in the card</li><li>text at x 176 in the card</li><li>foot: dotted rule 4, 72 above the bottom</li><li>six cards at most; Back stays</li>
+  </ul>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1404,"height":1500}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const I = window.STARTMENU.icons;
+    return { icons: Object.keys(I).map((k) => ({ name: k, d: I[k] })) };
+  }
+}
+</script>
+</body>
+</html>

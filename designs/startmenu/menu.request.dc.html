@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>1 On request · Start GlassineOS</title>
+<script src="./support.js"></script>
+<script src="data/menu.js"></script>
+</head>
+<body>
+<x-dc>
+<dc-import name="Menu" screen="request" touch="{{ touch }}" hint-size="1404px,1872px"></dc-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"touch": {"editor": "enum", "options": ["on", "off"], "default": "on"}, "$preview": {"width": 1404, "height": 1872}, "$states": [{"id": "touch", "name": "Touch works", "props": {"touch": "on"}}, {"id": "notouch", "name": "No touch: it can only wait", "props": {"touch": "off"}, "from": [{"state": "touch", "label": "the controller didn’t come up"}]}]}'>
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    return { touch: p.touch ?? 'on' };
+  }
+}
+</script>
+</body>
+</html>

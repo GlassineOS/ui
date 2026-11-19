@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PC · More deployments</title>
+<script src="./support.js"></script>
+<script src="data/menu.js"></script>
+</head>
+<body>
+<x-dc>
+<dc-import name="Menu" machine="pc" screen="more" focus="deploy0" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" hint-size="1280px,800px"></dc-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "scheme": {"editor": "enum", "options": ["paper", "night"], "default": "paper"}, "pen": {"editor": "enum", "options": ["1", "2", "3"], "default": "1"}, "$preview": {"width": 1280, "height": 800}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    return { voice: p.voice ?? 'white', scheme: p.scheme ?? 'paper', pen: p.pen ?? '1' };
+  }
+}
+</script>
+</body>
+</html>

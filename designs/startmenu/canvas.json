@@ -1,0 +1,223 @@
+{
+ "v": 3,
+ "title": "GlassineOS start menu",
+ "launch": {
+  "view": "canvas",
+  "page": "eink"
+ },
+ "pages": [
+  {
+   "id": "eink",
+   "name": "Note Air · e-ink"
+  },
+  {
+   "id": "variants",
+   "name": "Variants"
+  },
+  {
+   "id": "pc",
+   "name": "PC"
+  },
+  {
+   "id": "parts",
+   "name": "Parts"
+  }
+ ],
+ "boards": {
+  "menu.request.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1404,
+   "h": 1872,
+   "title": "1 On request (state: no touch)",
+   "page": "eink"
+  },
+  "menu.more.dc.html": {
+   "x": 1524,
+   "y": 0,
+   "w": 1404,
+   "h": 1872,
+   "title": "2 More deployments",
+   "page": "eink"
+  },
+  "menu.failed.dc.html": {
+   "x": 3048,
+   "y": 0,
+   "w": 1404,
+   "h": 1872,
+   "title": "3 After a start that didn’t finish",
+   "page": "eink"
+  },
+  "menu.picked.dc.html": {
+   "x": 4572,
+   "y": 0,
+   "w": 1404,
+   "h": 1872,
+   "title": "4 A card tapped (GlassineOS)",
+   "page": "eink"
+  },
+  "menu.waiting.dc.html": {
+   "x": 6096,
+   "y": 0,
+   "w": 1404,
+   "h": 1872,
+   "title": "5 Waiting for the default",
+   "page": "eink"
+  },
+  "menu.timeout.dc.html": {
+   "x": 7620,
+   "y": 0,
+   "w": 1404,
+   "h": 1872,
+   "title": "5 The minute is up: the default taken",
+   "page": "eink"
+  },
+  "menu.android.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1404,
+   "h": 1872,
+   "title": "Variant · with Android (dual boot)",
+   "page": "variants"
+  },
+  "menu.picked.recovery.dc.html": {
+   "x": 1524,
+   "y": 0,
+   "w": 1404,
+   "h": 1872,
+   "title": "Variant · Recovery tapped",
+   "page": "variants"
+  },
+  "menu.more.picked.dc.html": {
+   "x": 3048,
+   "y": 0,
+   "w": 1404,
+   "h": 1872,
+   "title": "Variant · a deployment tapped",
+   "page": "variants"
+  },
+  "menu.more.many.dc.html": {
+   "x": 4572,
+   "y": 0,
+   "w": 1404,
+   "h": 1872,
+   "title": "Variant · more deployments than fit",
+   "page": "variants"
+  },
+  "pc.list.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 800,
+   "title": "PC · the list over the splash (focus on the default)",
+   "page": "pc"
+  },
+  "pc.focus.dc.html": {
+   "x": 1400,
+   "y": 0,
+   "w": 1280,
+   "h": 800,
+   "title": "PC · focus moved with the arrow keys",
+   "page": "pc"
+  },
+  "pc.more.dc.html": {
+   "x": 4200,
+   "y": 0,
+   "w": 1280,
+   "h": 800,
+   "title": "PC · More deployments",
+   "page": "pc"
+  },
+  "Parts.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1404,
+   "h": 1500,
+   "title": "Parts · icons, type, greys, sizes",
+   "page": "parts"
+  },
+  "pc.picked.dc.html": {
+   "x": 2800,
+   "y": 0,
+   "w": 1280,
+   "h": 800,
+   "title": "PC · Enter on Previous deployment",
+   "page": "pc"
+  }
+ },
+ "order": [
+  "menu.request.dc.html",
+  "menu.more.dc.html",
+  "menu.failed.dc.html",
+  "menu.picked.dc.html",
+  "menu.waiting.dc.html",
+  "menu.timeout.dc.html",
+  "menu.android.dc.html",
+  "menu.picked.recovery.dc.html",
+  "menu.more.picked.dc.html",
+  "menu.more.many.dc.html",
+  "pc.list.dc.html",
+  "pc.focus.dc.html",
+  "pc.picked.dc.html",
+  "pc.more.dc.html",
+  "Parts.dc.html"
+ ],
+ "notes": {
+  "t-eink": {
+   "x": 0,
+   "y": -200,
+   "page": "eink",
+   "kind": "title1",
+   "text": "Note Air · e-ink"
+  },
+  "n-eink": {
+   "x": 0,
+   "y": -560,
+   "w": 2400,
+   "page": "eink",
+   "text": "The loader’s start menu on the Note Air (GlassineOS/loader spec 004), a proposal for GlassineOS/ui#57. One board pixel is one panel pixel (portrait 1404 × 1872, 227 dpi), so every size is the loader’s. Calm, visual, clear: the GlassineOS mark and a plain title; one card per entry with an icon, its name and one line about what it does; the default card has a heavier keyline and White’s flat offset; a tap turns only that card black (one rectangle refresh, about 0.8 s), then the splash. Black and white with two flat greys (#bbbbbb offset, #cccccc in the mark). No red, no warning signs, no numbers but the deployments’ own. Nothing moves while it waits: a countdown would refresh the panel every second. No touch (the controller didn’t come up) is a state of board 1: every card but the default is drawn disabled (flat sheet grey, dim keyline, muted text and icon), the default keeps its ink and says it starts by itself in a minute. The loader follows these boards."
+  },
+  "t-variants": {
+   "x": 0,
+   "y": -200,
+   "page": "variants",
+   "kind": "title1",
+   "text": "Variants"
+  },
+  "n-variants": {
+   "x": 0,
+   "y": -560,
+   "w": 2400,
+   "page": "variants",
+   "text": "Android shows only where the board and the ABL offer it, before Recovery. Six cards fit; with more deployments than fit, the last ones are left out, Back always stays and the foot says so. Previous kernel is a PC entry (the Note Air’s parent boots no kernel set)."
+  },
+  "t-pc": {
+   "x": 0,
+   "y": -200,
+   "page": "pc",
+   "kind": "title1",
+   "text": "PC"
+  },
+  "n-pc": {
+   "x": 0,
+   "y": -560,
+   "w": 2400,
+   "page": "pc",
+   "text": "The PC: the same layout through GOP, in colour, over the splash, in a GlassineOS colour theme (the voice and scheme pickers: White, Editorial, Stationery in paper and night; White paper by default). Ink on paper; the default card on the highlight (behind ink text only) with the heavier keyline; the keyboard focus a 3px ring in the focus colour, 3px off the card; Enter fills the card with the accent, its text in on-accent. Meaning is never colour alone: the default has its keyline, the focus is a ring, the pick a full fill. Contrast (WCAG 2.2 AA) in all six themes: text 4.5:1 or more on paper, highlight and accent, the focus ring 3:1 or more on paper. E-ink stays black and white. The PC list (loader spec 001) follows these boards in a later change; the e-ink menu first."
+  },
+  "t-parts": {
+   "x": 0,
+   "y": -200,
+   "page": "parts",
+   "kind": "title1",
+   "text": "Parts"
+  },
+  "n-parts": {
+   "x": 0,
+   "y": -560,
+   "w": 2400,
+   "page": "parts",
+   "text": "Every icon is a stroke on a 24-unit grid, 1.5 units wide, drawn by the loader as a 96-pixel mask. The mark is the documentation site’s (two sheets, the front one turned 6°, a pen stroke), as the splash draws it."
+  }
+ }
+}

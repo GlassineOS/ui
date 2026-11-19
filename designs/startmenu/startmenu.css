@@ -3,6 +3,7 @@
  * white with two flat ladder greys: --shade (#bbbbbb, the default card's offset) and
  * --highlight (#cccccc, the mark's front sheet). No gradient, no shadow blur, no
  * animation. Text: IBM Plex Sans, two styles only (name 56 px semibold, line 40 px). */
+html, body { margin: 0; }
 .sm {
   --pad: 72px; --mark: 112px; --title: 56px; --title-lh: 68px; --text: 40px; --text-lh: 50px;
   --card-h: 176px; --gap: 24px; --icon: 96px; --icon-x: 40px; --text-x: 176px;
@@ -51,19 +52,38 @@
 .sm-foot path { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 .sm-foot p { margin: 0; font-size: var(--text); line-height: var(--text-lh); }
 
-/* The PC: the same design on the screen through GOP, over the splash, at screen sizes
- * (1280 x 800 here). It keeps the e-ink look; the only colour is the mark's own
- * (White paper: highlight and pen). */
+/* No touch (the controller didn't come up): the menu can only wait. Every card but the
+ * default is drawn as disabled: a flat --sheet fill, a --dim keyline, muted text and
+ * icon. The default keeps its ink and offset: it is what will start. */
+.sm.is-notouch .sm-card:not(.is-default) { background: var(--sheet); border-color: var(--dim); color: var(--ink-soft); }
+.sm.is-notouch .sm-card:not(.is-default) .sm-line { color: var(--ink-soft); }
+.sm.is-notouch .sm-card:not(.is-default) .sm-icon path { stroke: var(--dim); }
+
+/* The PC: the same layout on the screen through GOP, in colour, over the splash, at
+ * screen sizes (1280 x 800 here). The theme is a GlassineOS colour theme (the voice and
+ * scheme pickers; White paper by default): ink on paper, the default card on the
+ * highlight (behind ink text only), the keyboard focus a 3px ring in --focus, a picked
+ * card in --accent with --on-accent text. Meaning never by colour alone: the default
+ * also has the heavier keyline, the focus is a ring, the pick a full fill. */
 .sm-pc { width: 1280px; height: 800px; position: relative; overflow: hidden; background: var(--paper); font-family: var(--font-plex); }
 .sm-pc .sm-splash { position: absolute; left: 50%; top: 44%; width: 328px; height: 328px; margin: -164px 0 0 -164px; }
 .sm-pc .sm { --pad: 28px; --mark: 44px; --title: 24px; --title-lh: 32px; --text: 16px; --text-lh: 22px;
-  --card-h: 68px; --gap: 8px; --icon: 32px; --icon-x: 16px; --text-x: 64px;
+  --card-h: 68px; --gap: 12px; --icon: 32px; --icon-x: 16px; --text-x: 64px;
   --border: 1.5px; --default-border: 2.5px; --radius: 12px; --cap: 3px; --cards-top: 118px; --foot-icon: 22px;
   position: absolute; left: 50%; top: 50%; width: 640px; height: var(--sheet-h, 640px); transform: translate(-50%, -50%);
-  border: 1.5px solid var(--ink); border-radius: 16px; box-shadow: 3px 3px 0 0 var(--shade); }
+  border: 1.5px solid var(--ink); border-radius: 16px; box-shadow: 3px 3px 0 0 var(--shade); font-family: var(--v-text, var(--font-plex)); }
 .sm-pc .sm-head { top: 28px; gap: 16px; }
 .sm-pc .sm-reason { top: 84px; }
 .sm-pc .sm-name { line-height: 26px; font-size: 19px; }
 .sm-pc .sm-foot { bottom: 24px; padding-top: 14px; border-top-width: 1.5px; gap: 10px; }
 .sm-pc .sm-foot svg { margin-top: 0; }
 .sm-pc .sm-text { right: 16px; }
+.sm-pc .sm-card.is-default { background: var(--highlight); box-shadow: none; }
+.sm-pc .sm-card.is-default .sm-line { color: var(--ink); }
+.sm-pc .sm-card.is-focus { border-width: var(--border); box-shadow: none; outline: 3px solid var(--focus); outline-offset: 3px; }
+.sm-pc .sm-card.is-default.is-focus { border-width: var(--default-border); }
+.sm-pc .sm-card.is-picked { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.sm-pc .sm-card.is-picked .sm-line { color: var(--on-accent); }
+.sm-pc .sm-card.is-picked .sm-icon path { stroke: var(--on-accent); }
+.sm-pc .sm-card.is-picked .sm-mark .o { stroke: var(--on-accent); }
+.sm-pc .sm-card.is-default .sm-mark .leaf { fill: var(--paper); }

@@ -69,6 +69,7 @@ window.STARTMENU = (function () {
       more: 'Choose a version to start once.'
     },
     foot: 'If you don’t choose, GlassineOS starts by itself in a minute.',
+    lineNoTouch: 'Starts by itself in a minute',
     footNoTouch: 'Touch isn’t working this time. GlassineOS starts by itself in a minute.',
     footCut: 'Older versions that don’t fit here stay kept.',
     footPc: '\u2191 \u2193 to choose, Enter to start, Esc to close the list.'

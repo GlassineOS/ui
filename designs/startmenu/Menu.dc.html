@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="startmenu.css">
 </helmet>
 <sc-if value="{{ pc }}" hint-placeholder-val="{{ false }}">
-<div class="sm-pc" data-theme="white-paper">
+<div class="sm-pc" data-theme="{{ theme }}" data-pen="{{ pen }}">
   <svg class="sm-splash sm-mark" viewBox="0 0 48 48" aria-hidden="true"><rect class="o" x="2" y="4" width="30" height="34" rx="5"></rect><g transform="rotate(6 29 27)"><rect class="leaf" x="14" y="10" width="30" height="34" rx="5"></rect><path class="pen" d="M20 30C26 24 30 34 38 26"></path></g></svg>
   <div class="sm" style="--sheet-h: {{ sheetH }}px">
     <header class="sm-head"><svg class="sm-mark" viewBox="0 0 48 48" aria-hidden="true"><rect class="o" x="2" y="4" width="30" height="34" rx="5"></rect><g transform="rotate(6 29 27)"><rect class="leaf" x="14" y="10" width="30" height="34" rx="5"></rect><path class="pen" d="M20 30C26 24 30 34 38 26"></path></g></svg><h1 class="sm-title">{{ title }}</h1></header>
@@ -29,7 +29,7 @@
 </div>
 </sc-if>
 <sc-if value="{{ eink }}" hint-placeholder-val="{{ true }}">
-<div class="sm" data-theme="white-eink">
+<div class="{{ smCls }}" data-theme="white-eink">
   <header class="sm-head"><svg class="sm-mark" viewBox="0 0 48 48" aria-hidden="true"><rect class="o" x="2" y="4" width="30" height="34" rx="5"></rect><g transform="rotate(6 29 27)"><rect class="leaf" x="14" y="10" width="30" height="34" rx="5"></rect><path class="pen" d="M20 30C26 24 30 34 38 26"></path></g></svg><h1 class="sm-title">{{ title }}</h1></header>
   <p class="sm-reason">{{ reason }}</p>
   <ol class="sm-cards">
@@ -41,11 +41,11 @@
 </div>
 </sc-if>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"machine":{"editor":"enum","options":["eink","pc"],"default":"eink"},"screen":{"editor":"enum","options":["request","failed","more","more-many","picked","waiting","timeout","notouch","android"],"default":"request"},"picked":{"editor":"enum","options":["none","glassineos","previous","more","recovery","android","deploy1","back"],"default":"none"},"focus":{"editor":"enum","options":["none","glassineos","previous","more","kernel","recovery"],"default":"none"},"$preview":{"width":1404,"height":1872}}'>
+<script type="text/x-dc" data-dc-script data-props='{"machine":{"editor":"enum","options":["eink","pc"],"default":"eink"},"screen":{"editor":"enum","options":["request","failed","more","more-many","picked","waiting","timeout","android"],"default":"request"},"picked":{"editor":"enum","options":["none","glassineos","previous","more","recovery","android","deploy1","back"],"default":"none"},"focus":{"editor":"enum","options":["none","glassineos","previous","more","kernel","recovery","deploy0"],"default":"none"},"touch":{"editor":"enum","options":["on","off"],"default":"on"},"voice":{"editor":"enum","options":["white","editorial","stationery"],"default":"white"},"scheme":{"editor":"enum","options":["paper","night"],"default":"paper"},"pen":{"editor":"enum","options":["1","2","3"],"default":"1"},"$preview":{"width":1404,"height":1872}}'>
 class Component extends DCLogic {
   renderVals() {
     const p = this.props, M = window.STARTMENU, T = M.text;
-    const pc = (p.machine ?? 'eink') === 'pc', screen = p.screen ?? 'request';
+    const pc = (p.machine ?? 'eink') === 'pc', screen = p.screen ?? 'request', notouch = !pc && p.touch === 'off';
     const isMore = screen === 'more' || screen === 'more-many';
     let entries = isMore ? M.more({ many: screen === 'more-many' })
       : M.main({ android: screen === 'android', kernel: pc });
@@ -58,15 +58,15 @@ class Component extends DCLogic {
     const hrefs = { more: 'menu.more.dc.html', back: 'menu.request.dc.html', glassineos: 'menu.picked.dc.html' };
     const cards = entries.map((e) => {
       const cls = ['sm-card'];
-      if (!pc && e.isDefault) cls.push('is-default');
+      if (e.isDefault) cls.push('is-default');
       if (pc && e.id === focus) cls.push('is-focus');
       if (e.id === picked) cls.push('is-picked');
-      return { cls: cls.join(' '), name: e.name, line: e.line, isMark: e.icon === 'mark', isIcon: e.icon !== 'mark',
+      return { cls: cls.join(' '), name: e.name, line: notouch && e.isDefault ? T.lineNoTouch : e.line, isMark: e.icon === 'mark', isIcon: e.icon !== 'mark',
         d: M.icons[e.icon] || '', href: pc ? '#' : (hrefs[e.id] || '#') };
     });
     const reason = isMore ? T.reason.more : screen === 'failed' ? T.reason.failed : T.reason.request;
-    const foot = pc ? T.footPc : screen === 'notouch' ? T.footNoTouch : cut ? T.footCut + ' ' + T.foot : T.foot;
-    return { pc, eink: !pc, cards, title: isMore ? T.titleMore : T.title, reason, foot, footIcon: M.icons.clock,
+    const foot = pc ? T.footPc : notouch ? T.footNoTouch : cut ? T.footCut + ' ' + T.foot : T.foot;
+    return { pc, eink: !pc, smCls: notouch ? 'sm is-notouch' : 'sm', theme: (p.voice ?? 'white') + '-' + (p.scheme === 'night' ? 'night' : 'paper'), pen: p.pen ?? '1', cards, title: isMore ? T.titleMore : T.title, reason, foot, footIcon: M.icons.clock,
       sheetH: 118 + cards.length * 76 + 76 };
   }
 }

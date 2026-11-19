@@ -15,12 +15,12 @@
    "name": "Write"
   },
   {
-   "id": "best",
+   "id": "font",
    "name": "Your font"
   },
   {
-   "id": "font",
-   "name": "Font and letters"
+   "id": "best",
+   "name": "Write it your best, Which one is nicer?"
   },
   {
    "id": "char",
@@ -313,17 +313,8 @@
    "page": "learn",
    "is_interactive": true
   },
-  "best.intro.dc.html": {
-   "x": 0,
-   "y": 0,
-   "w": 824,
-   "h": 1569,
-   "title": "Your font",
-   "page": "best",
-   "is_interactive": true
-  },
   "best.write.dc.html": {
-   "x": 904,
+   "x": 0,
    "y": 0,
    "w": 824,
    "h": 1545,
@@ -332,7 +323,7 @@
    "is_interactive": true
   },
   "best.quick.dc.html": {
-   "x": 1808,
+   "x": 904,
    "y": 0,
    "w": 824,
    "h": 1545,
@@ -341,7 +332,7 @@
    "is_interactive": true
   },
   "best.careful.dc.html": {
-   "x": 2712,
+   "x": 1808,
    "y": 0,
    "w": 824,
    "h": 1545,
@@ -350,7 +341,7 @@
    "is_interactive": true
   },
   "best.pick.dc.html": {
-   "x": 3616,
+   "x": 2712,
    "y": 0,
    "w": 824,
    "h": 1569,
@@ -359,7 +350,7 @@
    "is_interactive": true
   },
   "best.pick.landscape.dc.html": {
-   "x": 4520,
+   "x": 3616,
    "y": 0,
    "w": 1058,
    "h": 1266,
@@ -791,7 +782,7 @@
    "is_interactive": true
   },
   "guest.contribute-off.dc.html": {
-   "x": 6328,
+   "x": 7232,
    "y": 0,
    "w": 824,
    "h": 1569,
@@ -800,7 +791,7 @@
    "is_interactive": true
   },
   "guest.contribute.dc.html": {
-   "x": 7232,
+   "x": 8136,
    "y": 0,
    "w": 824,
    "h": 1569,
@@ -809,7 +800,7 @@
    "is_interactive": true
   },
   "guest.hello.landscape.dc.html": {
-   "x": 8136,
+   "x": 9040,
    "y": 0,
    "w": 1058,
    "h": 1266,
@@ -818,7 +809,7 @@
    "is_interactive": true
   },
   "guest.write.landscape.dc.html": {
-   "x": 9274,
+   "x": 10178,
    "y": 0,
    "w": 1058,
    "h": 1266,
@@ -827,7 +818,7 @@
    "is_interactive": true
   },
   "guest.contribute.landscape.dc.html": {
-   "x": 10412,
+   "x": 11316,
    "y": 0,
    "w": 1058,
    "h": 1266,
@@ -862,13 +853,13 @@
    "page": "parts",
    "is_interactive": true
   },
-  "best.intro.landscape.dc.html": {
-   "x": 5658,
+  "guest.samples.dc.html": {
+   "x": 6328,
    "y": 0,
-   "w": 1058,
-   "h": 1266,
-   "title": "Your font · turned",
-   "page": "best",
+   "w": 824,
+   "h": 1569,
+   "title": "A guest · their samples",
+   "page": "guest",
    "is_interactive": true
   }
  },
@@ -903,16 +894,16 @@
   "title_best": {
    "kind": "title1",
    "page": "best",
-   "text": "Your font · the tab: the font, careful samples, picks and neatening",
+   "text": "Write it your best, Which one is nicer? · rows below the font page",
    "x": 0,
    "y": -300,
    "w": 240,
-   "maxW": 6796
+   "maxW": 4754
   },
   "title_font": {
    "kind": "title1",
    "page": "font",
-   "text": "Font and letters · the letters it has, learning, install",
+   "text": "Your font · the tab: the font page, its letters, learning, install",
    "x": 0,
    "y": -300,
    "w": 240,
@@ -961,7 +952,7 @@
    "x": 0,
    "y": -300,
    "w": 240,
-   "maxW": 11550
+   "maxW": 12454
   },
   "title_parts": {
    "kind": "title1",
@@ -991,13 +982,6 @@
   "write.sets.dc.html",
   "write.landscape.dc.html",
   "write.check.landscape.dc.html",
-  "best.intro.dc.html",
-  "best.write.dc.html",
-  "best.quick.dc.html",
-  "best.careful.dc.html",
-  "best.pick.dc.html",
-  "best.pick.landscape.dc.html",
-  "best.intro.landscape.dc.html",
   "font.none.dc.html",
   "font.learning.dc.html",
   "font.current.dc.html",
@@ -1008,6 +992,11 @@
   "font.landscape.dc.html",
   "font.style-calligraphy.dc.html",
   "font.style-brush.dc.html",
+  "best.write.dc.html",
+  "best.quick.dc.html",
+  "best.careful.dc.html",
+  "best.pick.dc.html",
+  "best.pick.landscape.dc.html",
   "char.versions.dc.html",
   "char.samples.dc.html",
   "char.write.dc.html",
@@ -1057,6 +1046,7 @@
   "guest.licence.dc.html",
   "guest.write.dc.html",
   "guest.sets.dc.html",
+  "guest.samples.dc.html",
   "guest.contribute-off.dc.html",
   "guest.contribute.dc.html",
   "guest.hello.landscape.dc.html",

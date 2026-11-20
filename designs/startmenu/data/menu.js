@@ -1,7 +1,9 @@
 /* The start menu's texts, icons and sample record (GlassineOS/loader spec 004; the
  * deployment list as glassine-deploy writes it into the loader record, each labelled
- * "<base> <date>"). The loader's menu follows these boards: every text, icon and size
- * here is the one it draws. */
+ * "<version> <date>": the base's image version, YYYY.MM.DD, and the day the deployment
+ * was made; where two labels would read the same, both also carry the time it was made,
+ * "HH:MM", or "HH:MM:SS" when the minute matches too). The loader's menu follows these
+ * boards: every text, icon and size here is the one it draws. */
 window.STARTMENU = (function () {
   /* Icons: strokes on a 24-unit grid, 1.5 units wide, round ends, no fill (Interleaf:
    * stroke icons in ink). The loader draws each as a 96-pixel mask (6-pixel strokes). */
@@ -16,15 +18,17 @@ window.STARTMENU = (function () {
     clock: 'M12 3.5a8.5 8.5 0 1 1 0 17a8.5 8.5 0 1 1 0-17zM12 7.5V12l3 2'
   };
 
-  /* The record of the samples (loader tests/qemu/run.py DEPLOY_LIST). */
+  /* The sample record, in the form glassine-deploy writes (GlassineOS/boot
+   * docs/boot-partition.md, deploy<n>). The two kept ones of 28 October share a base
+   * and a day, so their labels carry the time. */
   var record = {
-    previous: 'e4ffb6ec 2026-11-15',
+    previous: '2026.11.12 2026-11-15',
     more: [
-      { state: 'candidate', label: 'f00dcafe 2026-11-18' },
-      { state: 'failed', label: 'f00dcafe 2026-11-16' },
-      { state: 'kept', label: 'e4ffb6ec 2026-11-01' }
+      { state: 'candidate', label: '2026.11.18 2026-11-18' },
+      { state: 'failed', label: '2026.11.16 2026-11-16' },
+      { state: 'kept', label: '2026.11.01 2026-11-01' }
     ],
-    manyKept: ['e4ffb6ec 2026-10-28', 'd31a7700 2026-10-20', 'd31a7700 2026-10-12', 'c0ffee11 2026-10-02']
+    manyKept: ['2026.10.28 2026-10-28 09:12', '2026.10.28 2026-10-28 16:40', '2026.10.20 2026-10-20', '2026.10.02 2026-10-12']
   };
 
   /* One card per entry: the icon, the name (the entry's own word) and one plain line

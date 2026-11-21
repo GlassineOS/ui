@@ -353,8 +353,6 @@
 [data-theme^="editorial"] .il-agenda__ev { border-width: 1px 1px 1px 4px; }
 [data-theme^="stationery"] .il-agenda__ev { border-radius: 3px; border-width: 1px; border-color: var(--ink-soft); }
 .il-agenda__when { flex: none; padding-top: 2px; font-family: var(--font-mono); font-size: 11px; color: var(--ink-soft); }
-.il-agenda__ev.is-held { border: 3px solid var(--ink); }
-.il-agenda__ev.is-held .il-agenda__when { color: var(--ink); }
 .il-agenda__ev.is-ghost { background: transparent; border: 1.5px dashed var(--ink-soft); }
 .il-agenda__now { position: absolute; left: 38px; right: 0; z-index: 2; border-top: 2px solid var(--ink); }
 .il-agenda__now::before { content: ""; position: absolute; left: -4px; top: -5px; width: 8px; height: 8px; border-radius: 50%; background: var(--ink); }

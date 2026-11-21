@@ -8,11 +8,12 @@ steps by dragging it, and its length by dragging its lower edge. A title is the 
   with its label in `b`, the events (`il-agenda__ev`, placed by `top`/`height` from the hour
   pitch) with the title ink and the time in `il-agenda__when`, the now line (`il-agenda__now`),
   and a count for events outside the shown hours (`il-agenda__edge`, "2 later").
-- **While held:** `is-held` (a 3px edge; no fill behind the ink) and an `is-ghost` (dashed)
-  where it was. No animation; each step redraws only the strip the block leaves and enters.
+- **While held:** the block looks as it will when released; its only mark is an `is-ghost`
+  (a dashed outline) where it was. No animation; each step redraws only the strip the block
+  leaves and enters, and the release redraws only where the outline was.
 - **White:** a 1.5px edge. **Editorial:** 1px with a 3px rule on the left. **Stationery:** a 1px
   `ink-soft` edge, 3px corners.
 - **E-ink:** the hour pitch may shrink to a minimum; below it the agenda shows a window of hours
   and counts the rest at its edge.
-- Don't: ask for times in handwriting, or move an event without the drag look.
+- Don't: ask for times in handwriting, or give a dragged block a look of its own.
 - **In libglassine-ui:** yes; Home's "Next" widget and a calendar app draw the same hours.

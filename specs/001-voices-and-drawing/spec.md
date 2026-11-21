@@ -57,6 +57,15 @@ all four.
   grey step (host render test).
 - **FR-013**: The drawing code never animates and never redraws by itself; it draws what it is asked once.
 
+**What a frame is**
+- **FR-014**: A program drawn with this repository can tell an e-ink panel what its next frame is, so the
+  panel shows it right the first time: the answer to a tap is a page (one exact refresh), a step of a drag
+  or a scroll is motion (shown fast, the exact picture after it). The rule is the same for every program
+  and kept here: each holds for one frame, a page wins over a step, a frame that is not shown drops it.
+- **FR-015**: A program drawn in Python in one window gets this without code of its own; it can name a
+  repaint itself where it knows better, and it can be switched off from outside. A native program calls the
+  rule from its own input handling. Programs that do not use this repository are not affected.
+
 **Packaging**
 - **FR-020**: The repository builds and installs on its own: a shared C library with headers and a
   pkg-config file, a Python package, and the voice data.

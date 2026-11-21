@@ -75,6 +75,7 @@ renders the boards changed and keeps the images as the `design-shots` artifact (
   combinations, every link and source resolves. No browser.
 - `test/ci-scope.sh`: which changed paths `tools/ci-scope` sends to the library checks.
 - `test/test_paint.py`: the Python drawing API call by call.
+- `test/test_content.py`: what importing the package asks of the session's GTK module, and `content.say`.
 - `test/c-api.sh`: a separate program built with `pkg-config glassine-ui` against an installed copy.
 - `test/pc-prefix.sh`: the installed `.pc` names the prefix it was installed with.
 - `test/contrast/*.test.js` (node): the contrast check's arithmetic (WCAG ratios and targets, the
@@ -365,6 +366,13 @@ Contract: C API, version 1 (`GLASSINE_UI_API` in `glassine-ui.h`). `#include <gl
   and cached), `ui_icon_material` (an icon named as the design names it, in Material Symbols, through
   the same map as the Python `ICONS`/`ISCALE`, generated into `src/glassine-ui-icons.c`), `ui_hatch`
   (parallel lines inside a rounded rect: the design's hatched outlines), `ui_font_with`, `ui_font_px`.
+- What a frame is (`UiContent`: `ui_content_page`, `ui_content_step`, `ui_content_end`,
+  `ui_content_frame`; `UI_CONTENT_NONE`, `_PAGE`, `_MOTION`): the rule a program follows to tell an
+  e-ink panel what its next frame is, so the panel does not have to find out by watching. The answer
+  to a tap is a page, a step of a drag or a scroll is motion, each for one frame, a page wins, and a
+  frame that is not sent drops it. The library has no surface and sees no input: the program calls
+  it from its own input code and sends the answer with the frame (the values are those of
+  `glassine_ink_surface_v1.set_content`, GlassineOS/protocols).
 - Nothing animates or redraws by itself: a call draws once. In the layout pass (`paint = 0`) the
   calls only measure, and `ui_icon` answers as in the paint pass. The calls leave the context's line
   width and dash as they were.
@@ -385,6 +393,13 @@ Contract: Python API, version 1 (`glassine_ui.API`).
   there is such an icon. `box` draws nothing for a width or height <= 0, as in C; `box`, `rule` and
   `icon` leave the context's line width, cap, join and dash as they were; `font` raises `ValueError`
   for anything that isn't a CSS font shorthand, as `tools/gen-voices` does.
+
+- `glassine_ui.content`: importing `glassine_ui` asks the session's GTK module (GlassineOS/shell) to
+  name this process's repaints for an e-ink panel: the repaint that answers a tap is a page, a
+  repaint while a finger or the pen drags is motion. A program drawn with this package needs no code
+  for it; `content.say(widget, 'page' | 'motion' | 'none')` names the next repaint of the widget's
+  window itself. `GLASSINE_CONTENT=off` in the environment keeps it off. Programs that do not import
+  the package are left as they are.
 
 ### Where C and Python differ
 

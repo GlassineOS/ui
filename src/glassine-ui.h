@@ -149,6 +149,26 @@ void ui_hatch(UiGc *g, double x, double y, double w, double h, double r, double 
 UiFont ui_font_with(const UiFont *f, int weight);
 UiFont ui_font_px(const UiFont *f, float px);
 
+/* What a frame is, for a panel that chooses its refresh by it (an e-ink panel: the
+ * values are those of glassine_ink_surface_v1.set_content, GlassineOS/protocols). The
+ * library keeps the rule; the program tells it what happened and sends the answer
+ * with the frame, on its own surface:
+ *   - the answer to a tap that changes the picture (another page or view, a sheet or
+ *     a popover opened or closed) is a page: shown once and exact;
+ *   - a step of a movement the program drives (a drag, a list scrolled) is motion:
+ *     shown fast, and the first frame after it that is no step brings the exact one;
+ *   - anything else says nothing, and is shown as before.
+ * Each holds for one frame; a page wins over a step. A program that knows better
+ * sends another value itself. */
+enum { UI_CONTENT_NONE = 0, UI_CONTENT_PAGE = 1, UI_CONTENT_MOTION = 2 };
+typedef struct { int next; } UiContent;    /* zeroed: nothing said */
+void ui_content_page(UiContent *c);        /* the next frame answers a tap */
+void ui_content_step(UiContent *c);        /* the next frame is a step of a movement */
+void ui_content_end(UiContent *c);         /* the movement ended: its result is no step */
+/* a frame is made now (sent: it changes the picture and goes out): what it is.
+ * Forgets it, so the frames after it say nothing until told again. */
+int ui_content_frame(UiContent *c, int sent);
+
 #ifdef __cplusplus
 }
 #endif

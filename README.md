@@ -806,7 +806,13 @@ tools/previews [--update] [--component NAME]... [--width desktop|phone]... [--co
   then `tools/in-alpine` and CI fail to install the pin. Bumping it: set the new version in
   `tools/chromium.pin`, run `tools/in-alpine make references-update` (and the same in each
   repository with board references when it moves to this ui version), look at what changed, and
-  commit the pin and the references together.
+  commit the pin and the references together. `tools/chromium-bump` does all but the looking: it
+  takes the newest `chromium` of the Alpine release, moves the pin and this README, renders every
+  reference, runs the boards checks, and says which cases changed (exit 0: none, 3: some, 4: the
+  pin is the newest). The `chromium-bump` workflow runs it every Monday (and by hand) and opens or
+  updates one pull request from the branch `chromium-bump`: the pin alone when every reference
+  renders pixel-identical, the pin and the new references, with the changed cases listed and the
+  differences as a run artifact, when not.
 - **The text packages are recorded, not pinned.** Alpine's Chromium draws text with the system's
   freetype, harfbuzz and fontconfig, and falls back to font-dejavu and font-opensans. These float
   within 3.24, and old versions disappear from the mirrors, so a pin would break CI on its own. The

@@ -1,0 +1,341 @@
+/* The planner (GlassineOS/planner spec 001) on e-ink. Tokens and voice variables only from the
+ * web form on main (ds/web/tokens.css, ds/web/bundle.css), so the boards render the same on the
+ * published site. One device pixel is two panel pixels (the handwriting boards' scale): 702 x 936
+ * portrait, 936 x 702 turned. E-ink: ladder greys only, no gradient, no blur, nothing moves.
+ * Ink: Kalam in the pen colour with a wobble per word (synthetic). Autograph, the person's font,
+ * is the same face set straight on the line (.pl-w--set): the boards say in words where it is. */
+html, body { margin: 0; }
+.pl { position: relative; font-family: var(--v-text); color: var(--ink); -webkit-font-smoothing: antialiased; }
+.pl *, .pl *::before, .pl *::after { box-sizing: border-box; }
+.pl svg { display: block; }
+.pl-ico path, .pl-ico circle, .pl-ico rect { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- The device ---------- */
+.pl-bezel { background: #262626; border-radius: 28px; padding: 28px 29px 44px; display: inline-block; }
+.pl-bezel.is-land { padding: 29px 44px 29px 28px; }
+.pl-screen { position: relative; overflow: hidden; background: var(--paper); display: flex; flex-direction: column; }
+.pl-status { flex: none; height: 40px; display: flex; align-items: center; gap: 12px; padding: 0 16px; border-bottom: 1.5px solid var(--ink);
+  font: 500 13px/1 var(--font-mono); background: var(--paper); color: var(--ink); }
+.pl-status .pl-ico { width: 20px; height: 20px; }
+.pl-status .sp { flex: 1; }
+
+/* ---------- The planner's bar: Month, Week, Day; previous, today, next; the period. Nothing else. ---------- */
+.pl-bar { flex: none; height: 60px; display: flex; align-items: center; gap: 12px; padding: 0 12px 0 16px;
+  background: var(--v-bar-bg); color: var(--v-bar-fg); border-bottom: var(--v-bar-rule); }
+[data-theme^="stationery"] .pl-bar { border-bottom: 0; box-shadow: inset 0 -6px 0 -4.5px var(--gilt); }
+.pl-title { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.pl-title b { font: var(--v-h1-style) var(--v-h1-w) 22px/1.1 var(--v-head); letter-spacing: var(--v-h1-ls); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pl-title span { font: 400 13px/1.2 var(--v-text); opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+[data-theme^="stationery"] .pl-title span { font-style: italic; font-size: 14px; }
+.pl-seg { display: flex; flex: none; height: 40px; border-radius: var(--v-ui-radius); box-shadow: inset 0 0 0 1.5px currentColor; overflow: hidden; }
+[data-theme^="editorial"] .pl-seg { box-shadow: inset 0 0 0 1px currentColor; }
+.pl-seg a, .pl-nav a { display: flex; align-items: center; justify-content: center; color: inherit; text-decoration: none;
+  font-family: var(--v-label); font-size: var(--v-label-size); font-weight: var(--v-label-w); text-transform: var(--v-label-case);
+  font-variant: var(--v-label-variant); letter-spacing: var(--v-label-ls); }
+.pl-seg a { min-width: 58px; padding: 0 10px; }
+.pl-seg a + a { box-shadow: inset 1.5px 0 0 currentColor; }
+.pl-seg a.is-on { background: var(--v-bar-fg); color: var(--v-bar-bg); }
+.pl-nav { display: flex; flex: none; gap: 6px; }
+.pl-nav a { height: 40px; min-width: 40px; padding: 0 10px; border-radius: var(--v-ui-radius); box-shadow: inset 0 0 0 1.5px currentColor; }
+[data-theme^="editorial"] .pl-nav a { box-shadow: inset 0 0 0 1px currentColor; }
+.pl-nav .pl-ico { width: 20px; height: 20px; }
+.pl-nav a.is-here { box-shadow: none; opacity: .75; }
+
+/* The (i) and, as variant, search: quiet icons beside the navigation, outside its groups, no edge.
+   The hint: a small count of the entries this layout doesn't show. Open: the (i) gets the edge. */
+.pl-tools { display: flex; flex: none; gap: 2px; margin-left: 2px; }
+.pl-tool { position: relative; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: inherit; text-decoration: none; border-radius: var(--v-ui-radius); }
+.pl-tool .pl-ico { width: 22px; height: 22px; }
+.pl-tool.is-open { box-shadow: inset 0 0 0 1.5px currentColor; }
+[data-theme^="editorial"] .pl-tool.is-open { box-shadow: inset 0 0 0 1px currentColor; }
+.pl-tool.has-badge { width: 48px; justify-content: flex-start; padding-left: 7px; }
+.pl-badge { position: absolute; top: 4px; left: 25px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 9px; background: var(--v-bar-fg); color: var(--v-bar-bg); box-shadow: 0 0 0 2px var(--v-bar-bg); font: 600 10.5px/17px var(--font-mono); text-align: center; }
+
+/* ---------- The page: the template's widgets on the fluid grid ---------- */
+.pl-page { position: relative; flex: 1; min-height: 0; overflow: hidden; }
+.pl-content { position: absolute; }
+.pl-wg { position: absolute; overflow: hidden; background: var(--paper); border-radius: var(--v-card-radius); box-shadow: inset 0 0 0 1.5px var(--ink); }
+[data-theme^="editorial"] .pl-wg { box-shadow: inset 0 0 0 1px var(--ink); }
+[data-theme^="stationery"] .pl-wg { box-shadow: inset 0 0 0 1px var(--ink-soft); border-radius: 3px; }
+.pl-wg.is-bare { box-shadow: none; }
+.pl-wg-head { position: absolute; left: 0; right: 0; top: 0; height: 34px; display: flex; align-items: center; gap: 8px; padding: 0 10px; border-bottom: var(--v-row-rule); }
+.pl-wg-head .lbl { font-family: var(--v-label); font-size: var(--v-label-size); font-weight: var(--v-label-w); text-transform: var(--v-label-case);
+  font-variant: var(--v-label-variant); letter-spacing: var(--v-label-ls); color: var(--ink); white-space: nowrap; }
+[data-theme^="white"] .pl-wg-head .lbl { font-size: 11px; font-weight: 600; }
+[data-theme^="editorial"] .pl-wg-head .lbl, [data-theme^="stationery"] .pl-wg-head .lbl { font-size: 15px; }
+.pl-wg-head .tag { font: 400 11px/1 var(--font-mono); color: var(--ink-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+[data-theme^="editorial"] .pl-wg-head .tag, [data-theme^="stationery"] .pl-wg-head .tag { font: italic 400 13px/1 var(--v-text); }
+.pl-wg-body { position: absolute; left: 0; right: 0; top: 34px; bottom: 0; }
+
+/* Ink: the person's own writing (synthetic here). Set words (Autograph) sit straight on the line. */
+.pl-w { display: inline-block; font-family: var(--font-hand); font-weight: 400; line-height: 1; color: var(--pen); white-space: nowrap; transform-origin: left bottom; }
+.pl-ink { display: flex; align-items: flex-end; flex-wrap: nowrap; min-width: 0; overflow: visible; }
+
+/* Rows (to-do, priorities): one ink line each, the last one always empty to write in */
+.pl-rows { position: absolute; left: 0; right: 0; top: 0; }
+.pl-row { position: relative; height: 34px; display: flex; align-items: flex-end; gap: 8px; padding: 0 8px 5px 10px; border-bottom: var(--v-row-rule); }
+.pl-row .tick { flex: none; width: 17px; height: 17px; margin-bottom: 2px; border-radius: 3px; box-shadow: inset 0 0 0 1.5px var(--ink); position: relative; }
+[data-theme^="editorial"] .pl-row .tick { border-radius: 0; }
+[data-theme^="stationery"] .pl-row .tick { border-radius: 50%; }
+.pl-row.is-done .tick::after { content: ""; position: absolute; left: 5px; top: 1px; width: 5px; height: 10px; border: solid var(--ink); border-width: 0 2px 2px 0; transform: rotate(40deg); }
+.pl-row.is-done .pl-ink { opacity: 1; }
+.pl-row.is-done .pl-w { text-decoration: line-through; text-decoration-thickness: 1.5px; }
+.pl-row .num { flex: none; width: 16px; font: 600 14px/1 var(--v-head); color: var(--ink); margin-bottom: 3px; }
+[data-theme^="editorial"] .pl-row .num, [data-theme^="stationery"] .pl-row .num { font-style: italic; font-weight: 400; font-size: 17px; }
+.pl-row.is-empty .tick { box-shadow: inset 0 0 0 1.5px var(--ink-soft); }
+.pl-row.is-empty .num { color: var(--ink-soft); font-weight: 400; }
+
+/* the "+n more" mark: quiet (ink-soft, small), on its own line, a tap opens the whole list */
+.pl-more { display: block; height: 24px; padding: 6px 10px 0; font: 500 12px/1 var(--font-mono); color: var(--ink-soft); text-decoration: none; }
+[data-theme^="editorial"] .pl-more, [data-theme^="stationery"] .pl-more { font: italic 400 14px/1 var(--v-text); }
+
+/* Notes: ruled lines (the region's lines) with ink on them */
+.pl-guide { position: absolute; left: 10px; right: 10px; border-top: var(--v-row-rule); }
+[data-theme^="white"] .pl-guide { border-top: 1.5px dotted var(--rule); }
+.pl-lines { position: absolute; left: 12px; right: 10px; top: 0; }
+.pl-line { height: 34px; display: flex; align-items: flex-end; padding-bottom: 7px; }
+
+/* Habits: the habits against the days of the period; a tap marks a day */
+.pl-hab-head, .pl-hab-row { display: flex; align-items: center; height: 30px; padding: 0 8px 0 10px; }
+.pl-hab-head { height: 22px; font: 500 10.5px/1 var(--font-mono); color: var(--ink-soft); }
+.pl-hab-name { flex: 1; min-width: 0; overflow: hidden; }
+.pl-hab-cells { display: flex; flex: none; }
+.pl-hab-cells span { display: flex; justify-content: center; }
+.pl-hab-head .is-today { color: var(--ink); font-weight: 700; }
+.pl-hab { width: 13px; height: 13px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--ink); }
+.pl-hab.is-on { background: var(--ink); }
+.pl-hab.is-ahead { box-shadow: inset 0 0 0 1px var(--ink-soft); }
+[data-theme^="editorial"] .pl-hab { border-radius: 0; }
+.pl-hab-row + .pl-hab-row { border-top: var(--v-row-rule); }
+.pl-hab-row.is-add { color: var(--ink-soft); font: 400 12px/1 var(--font-mono); }
+
+/* Mini month: days marking entries; a tap opens the day. Large: each day with its events in ink */
+.pl-mm { position: absolute; left: 8px; right: 8px; top: 0; bottom: 6px; display: grid; grid-template-columns: repeat(7, 1fr); }
+.pl-mm-h { display: flex; align-items: center; justify-content: center; height: 22px; font: 500 10.5px/1 var(--font-mono); color: var(--ink-soft); }
+.pl-mm-d { position: relative; display: flex; align-items: center; justify-content: center; font: 500 13px/1 var(--v-text); color: var(--ink); }
+.pl-mm-d.is-out { visibility: hidden; }
+.pl-mm-d.has::after { content: ""; position: absolute; bottom: 1px; left: 50%; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: var(--ink); }
+.pl-mm-d.is-today { font-weight: 700; }
+.pl-mm-d.is-today > b { box-shadow: 0 0 0 1.5px var(--ink); border-radius: 50%; }
+.pl-mm-d > b { font-weight: inherit; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
+.pl-mm-d.in-week { background: var(--highlight); }
+.pl-mm.is-large .pl-mm-d { align-items: flex-start; justify-content: flex-start; flex-direction: column; padding: 3px 4px; gap: 1px; border-top: var(--v-row-rule); overflow: hidden; }
+.pl-mm.is-large .pl-mm-d.has::after { display: none; }
+.pl-mm.is-large .pl-mm-d > b { width: 22px; height: 20px; justify-content: flex-start; padding-left: 2px; }
+.pl-mm.is-large .pl-mm-d.is-today > b { justify-content: center; padding: 0; }
+.pl-mm-ev { height: 19px; display: flex; align-items: flex-end; overflow: hidden; max-width: 100%; }
+.pl-mm-more { font: 500 10.5px/1 var(--font-mono); color: var(--ink-soft); }
+
+/* Week overview: the days of the week, their events and to-dos in short */
+.pl-wk-day { position: relative; display: flex; gap: 8px; padding: 2px 10px 0; border-bottom: var(--v-row-rule); overflow: hidden; }
+.pl-wk-day .d { flex: none; width: 54px; height: 22px; display: flex; align-items: baseline; gap: 5px; padding-top: 4px; font: 500 11px/1 var(--font-mono); color: var(--ink-soft); }
+.pl-wk-day .d b { font: 600 16px/1 var(--v-head); color: var(--ink); }
+.pl-wk-day .pl-mm-more { position: absolute; right: 10px; top: 7px; }
+.pl-wk-day.is-today .d b { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.pl-wk-evs { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.pl-wk-ev { height: 22px; display: flex; align-items: flex-end; gap: 8px; }
+.pl-wk-ev .t { flex: none; width: 40px; font: 400 11px/1 var(--font-mono); color: var(--ink-soft); padding-bottom: 4px; }
+
+/* Day agenda: the hours, timed events as blocks, all-day events above. Compresses its pitch. */
+.pl-hr { position: absolute; left: 0; right: 0; border-top: 1px solid var(--rule); }
+.pl-hr.is-half { left: 40px; border-top: 1px dotted var(--rule); }
+.pl-hr span { position: absolute; left: 6px; top: 2px; font: 500 10.5px/1 var(--font-mono); color: var(--ink-soft); }
+.pl-wg.is-compact .pl-hr span { left: 3px; font-size: 9.5px; }
+.pl-allday { position: absolute; left: 40px; right: 6px; height: 24px; display: flex; gap: 6px; align-items: center; }
+.pl-allday .pl-ad { height: 20px; padding: 0 8px; display: flex; align-items: flex-end; border-radius: 10px; box-shadow: inset 0 0 0 1px var(--ink); }
+.pl-ev { position: absolute; left: 40px; right: 6px; background: var(--paper); border-radius: var(--v-ui-radius); box-shadow: inset 0 0 0 1.5px var(--ink); overflow: hidden; padding: 2px 8px 0; display: flex; align-items: flex-start; gap: 6px; }
+[data-theme^="editorial"] .pl-ev { box-shadow: inset 0 0 0 1px var(--ink), inset 3px 0 0 var(--ink); }
+[data-theme^="stationery"] .pl-ev { box-shadow: inset 0 0 0 1px var(--ink-soft); border-radius: 3px; }
+.pl-wg.is-compact .pl-ev { left: 16px; right: 2px; padding: 1px 3px 0; }
+.pl-ev .when { position: absolute; right: 6px; top: 3px; font: 400 10px/1 var(--font-mono); color: var(--ink-soft); }
+.pl-wg.is-compact .pl-ev .when { display: none; }
+.pl-ev.is-short .when { display: none; }
+/* while dragged: a heavier edge; where it was, a dashed ghost (no fill behind the ink: pen on highlight is under 4.5:1 in one scheme) */
+.pl-ev.is-grab, .pl-ev.is-resize { box-shadow: inset 0 0 0 3px var(--ink); }
+.pl-ev.is-ghost { background: transparent; box-shadow: none; border: 1.5px dashed var(--ink-soft); }
+.pl-ev.is-new { background: transparent; box-shadow: none; border: 2px dashed var(--ink); }
+.pl-ev .grip { position: absolute; left: 50%; bottom: 2px; width: 28px; height: 4px; margin-left: -14px; border-radius: 2px; background: var(--ink); }
+.pl-agenda-edge { position: absolute; right: 8px; height: 18px; padding: 0 4px; display: flex; align-items: center; z-index: 1; font: 500 10.5px/1 var(--font-mono); color: var(--ink-soft); background: var(--paper); }
+.pl-now { position: absolute; left: 34px; right: 0; border-top: 2px solid var(--ink); }
+.pl-now::before { content: ""; position: absolute; left: -4px; top: -5px; width: 8px; height: 8px; border-radius: 50%; background: var(--ink); }
+/* the time readout in the hour gutter while a block is drawn or dragged */
+.pl-readout { position: absolute; left: 2px; padding: 2px 3px; font: 600 10px/1 var(--font-mono); z-index: 3; background: var(--ink); color: var(--paper); border-radius: 3px; white-space: nowrap; }
+
+/* ---------- The cog (in the (i) popover head) ---------- */
+.pl-cog { flex: none; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; color: var(--ink-soft); text-decoration: none; }
+.pl-cog .pl-ico { width: 19px; height: 19px; }
+.pl-cog.is-open { color: var(--ink); }
+.pl-cog.is-open .pl-ico { width: 21px; height: 21px; }
+
+/* The (i) popover: this page's details and the hidden counts; the cog in its head turns the same
+   rectangle into the maintenance menu. One rectangle refresh to open, one to close. */
+.pl-pop { position: absolute; z-index: 5; width: 340px; background: var(--paper); color: var(--ink); border-radius: var(--v-card-radius); box-shadow: var(--v-card-edge); padding: 0 0 6px; font-family: var(--v-text); }
+[data-theme^="stationery"] .pl-pop { box-shadow: 0 0 0 1px var(--ink), 0 3px 0 var(--shade); }
+.pl-pop-h { display: flex; align-items: center; gap: 4px; height: 46px; padding: 0 4px 0 16px; border-bottom: var(--v-row-rule); }
+.pl-pop-h .lbl { font-family: var(--v-label); font-size: var(--v-label-size); font-weight: var(--v-label-w); text-transform: var(--v-label-case); font-variant: var(--v-label-variant); letter-spacing: var(--v-label-ls); color: var(--ink-soft); }
+.pl-pop-h .sp { flex: 1; }
+.pl-pop-h .pl-cog { width: 40px; height: 40px; border-radius: var(--v-ui-radius); }
+.pl-pop-h .pl-cog.is-open { box-shadow: inset 0 0 0 1.5px var(--ink); }
+.pl-pop-back { width: 32px; height: 40px; margin-left: -12px; display: flex; align-items: center; justify-content: center; color: var(--ink); }
+.pl-pop-back .pl-ico { width: 20px; height: 20px; }
+.pl-pop-search { display: flex; align-items: center; gap: 10px; margin: 10px 12px 4px; height: 40px; padding: 0 12px; border-radius: var(--v-ui-radius); box-shadow: inset 0 0 0 1.5px var(--ink); color: var(--ink-soft); text-decoration: none; font-size: 15px; }
+.pl-pop-search .pl-ico { width: 18px; height: 18px; color: var(--ink); }
+.pl-pop-fact { display: flex; gap: 12px; padding: 10px 16px 8px; border-bottom: var(--v-row-rule); }
+.pl-pop-fact .k { flex: none; width: 74px; padding-top: 2px; font: 500 11px/1.3 var(--font-mono); color: var(--ink-soft); }
+.pl-pop-fact .v { flex: 1; display: flex; flex-direction: column; gap: 2px; font-size: 16px; line-height: 1.25; }
+.pl-pop-fact .v small { font-size: 12.5px; color: var(--ink-soft); }
+.pl-pop-k { padding: 12px 16px 4px; font-family: var(--v-label); font-size: var(--v-label-size); font-weight: var(--v-label-w); text-transform: var(--v-label-case); font-variant: var(--v-label-variant); letter-spacing: var(--v-label-ls); color: var(--ink-soft); }
+.pl-pop-row { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 16px; color: var(--ink); text-decoration: none; font-size: 15px; }
+.pl-pop-row + .pl-pop-row { border-top: var(--v-row-rule); }
+.pl-pop-row .pl-ico { width: 18px; height: 18px; flex: none; color: var(--ink-soft); }
+.pl-pop-row .tx { flex: 1; }
+.pl-pop-row .end, .pl-pop .pl-mi .end { font: 400 12px/1 var(--font-mono); color: var(--ink-soft); }
+.pl-pop-none { padding: 6px 16px 8px; font-size: 14px; color: var(--ink-soft); }
+.pl-pop .pl-mi + .pl-mi { border-top: var(--v-row-rule); }
+
+.pl-menu { position: absolute; width: 330px; background: var(--paper); color: var(--ink); border-radius: var(--v-card-radius); box-shadow: var(--v-card-edge); padding: 6px 0; font-family: var(--v-text); }
+[data-theme^="stationery"] .pl-menu { box-shadow: 0 0 0 1px var(--ink), 0 3px 0 var(--shade); }
+.pl-menu-h { padding: 8px 16px 6px; font-family: var(--v-label); font-size: var(--v-label-size); font-weight: var(--v-label-w); text-transform: var(--v-label-case); font-variant: var(--v-label-variant); letter-spacing: var(--v-label-ls); color: var(--ink-soft); }
+.pl-mi { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 6px 16px; color: var(--ink); text-decoration: none; font-size: 16px; line-height: 1.25; }
+.pl-mi + .pl-mi { border-top: var(--v-row-rule); }
+.pl-mi .pl-ico { width: 20px; height: 20px; flex: none; }
+.pl-mi .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.pl-mi .tx small { font-size: 12.5px; color: var(--ink-soft); }
+[data-theme^="stationery"] .pl-mi { font-size: 18px; }
+.pl-mi .end { font: 400 12px/1 var(--font-mono); color: var(--ink-soft); }
+.pl-mi.is-dev { border-top: 1.5px dashed var(--ink-soft) !important; }
+.pl-tog { flex: none; width: 40px; height: 22px; border-radius: 11px; box-shadow: inset 0 0 0 1.5px var(--ink); position: relative; }
+.pl-tog::after { content: ""; position: absolute; left: 4px; top: 4px; width: 14px; height: 14px; border-radius: 50%; background: var(--ink-soft); }
+.pl-tog.is-on { background: var(--ink); }
+.pl-tog.is-on::after { left: 22px; background: var(--paper); }
+[data-theme^="editorial"] .pl-tog, [data-theme^="editorial"] .pl-tog::after { border-radius: 0; }
+
+.pl-sheet { position: absolute; left: 0; right: 0; bottom: 0; background: var(--paper); border-top: 1.5px solid var(--ink); display: flex; flex-direction: column; }
+[data-theme^="editorial"] .pl-sheet { border-top: var(--stroke-double) var(--ink); }
+.pl-sheet-h { flex: none; display: flex; align-items: center; gap: 12px; padding: 14px 16px 10px; }
+.pl-sheet-h h2 { margin: 0; flex: 1; font: var(--v-h1-style) var(--v-h1-w) 21px/1.2 var(--v-head); }
+.pl-sheet-h p { margin: 0; }
+.pl-sheet-lead { margin: 0; padding: 0 16px 10px; font-size: 14px; line-height: 1.4; color: var(--ink-soft); }
+.pl-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 0 14px; border-radius: var(--v-ui-radius); background: var(--paper); color: var(--ink); text-decoration: none; box-shadow: inset 0 0 0 1.5px var(--ink);
+  font-family: var(--v-label); font-size: var(--v-label-size); font-weight: var(--v-label-w); text-transform: var(--v-label-case); font-variant: var(--v-label-variant); letter-spacing: var(--v-label-ls); white-space: nowrap; }
+[data-theme^="white"] .pl-btn { font-size: 11.5px; font-weight: 600; }
+[data-theme^="editorial"] .pl-btn { box-shadow: inset 0 0 0 1px var(--ink); font-size: 16px; }
+[data-theme^="stationery"] .pl-btn { box-shadow: 0 0 0 1px var(--ink); font-size: 17px; }
+.pl-btn.is-primary { background: var(--ink); color: var(--paper); }
+.pl-btn.is-quiet { box-shadow: none; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; padding: 0 6px; }
+.pl-btn.is-off { box-shadow: inset 0 0 0 1.5px var(--ink-soft); color: var(--ink-soft); border: 1.5px dashed var(--ink-soft); }
+.pl-btn .pl-ico { width: 18px; height: 18px; }
+
+/* Hidden entries, listed in ink, per kind */
+.pl-hl { flex: 1; min-height: 0; overflow: hidden; padding: 0 16px; }
+.pl-hl-k { padding: 10px 0 2px; font-family: var(--v-label); font-size: var(--v-label-size); font-weight: var(--v-label-w); text-transform: var(--v-label-case); font-variant: var(--v-label-variant); letter-spacing: var(--v-label-ls); color: var(--ink); display: flex; gap: 8px; align-items: baseline; }
+[data-theme^="white"] .pl-hl-k { font-size: 11px; font-weight: 600; }
+.pl-hl-k span { font: 400 12px/1 var(--font-mono); color: var(--ink-soft); text-transform: none; letter-spacing: 0; font-variant: normal; }
+.pl-hl-i { display: flex; align-items: center; gap: 10px; min-height: 46px; border-bottom: var(--v-row-rule); }
+.pl-hl-i .pl-ink { flex: 1; min-width: 0; }
+.pl-hl-i .when { flex: none; font: 400 11.5px/1 var(--font-mono); color: var(--ink-soft); }
+.pl-hl-i .acts { flex: none; display: flex; gap: 2px; }
+.pl-hl-i .acts a { font: 500 12px/1 var(--v-text); color: var(--ink); text-decoration: underline; text-underline-offset: 3px; padding: 10px 6px; }
+
+/* Text mode: one field as an ordinary text field over the system keyboard */
+.pl-tf { position: absolute; left: 4px; right: 4px; height: 40px; display: flex; align-items: center; padding: 0 10px; background: var(--paper); border-radius: var(--v-ui-radius); box-shadow: inset 0 0 0 2px var(--ink);
+  font: 400 16px/1 var(--font-plex); color: var(--ink); white-space: nowrap; overflow: hidden; }
+.pl-tf .caret { display: inline-block; width: 2px; height: 20px; background: var(--ink); margin: 0 1px; vertical-align: -4px; }
+.pl-tf .sel { background: var(--highlight); }
+.pl-tbar { position: absolute; left: 0; right: 0; height: 46px; display: flex; align-items: center; gap: 8px; padding: 0 10px; background: var(--paper); border-top: var(--v-row-rule); }
+.pl-tbar .lbl { font: 400 12px/1.2 var(--font-mono); color: var(--ink-soft); flex: 1; }
+[data-theme^="editorial"] .pl-tbar .lbl, [data-theme^="stationery"] .pl-tbar .lbl { font: italic 400 14px/1.2 var(--v-text); }
+.pl-kbd { position: absolute; left: 0; right: 0; bottom: 0; background: var(--sheet); border-top: 1.5px solid var(--ink); padding: 8px 6px; display: flex; flex-direction: column; gap: 6px; }
+.pl-kbd .kr { display: flex; gap: 5px; justify-content: center; }
+.pl-kbd .k { flex: 1; max-width: 62px; height: 46px; border-radius: 6px; background: var(--paper); box-shadow: inset 0 0 0 1px var(--ink-soft); display: flex; align-items: center; justify-content: center; font: 400 16px/1 var(--font-plex); color: var(--ink); }
+.pl-kbd .k.w { max-width: 300px; flex: 5; }
+.pl-kbd .cap { font: 400 11px/1 var(--font-mono); color: var(--ink-soft); text-align: center; padding-top: 2px; }
+
+/* The view-wide text mode: each field shows its reading in a text box; time widgets stay */
+.pl-textrow { position: absolute; left: 34px; right: 8px; height: 26px; bottom: 4px; display: flex; align-items: center; padding: 0 8px; border-radius: 4px; box-shadow: inset 0 0 0 1px var(--ink); font: 400 14px/1 var(--font-plex); color: var(--ink); white-space: nowrap; overflow: hidden; background: var(--paper); }
+
+/* Writing in progress: the pen's tip, and the held layout (design marks, not drawn by the planner) */
+.pl-pen { position: absolute; width: 46px; height: 46px; pointer-events: none; color: var(--ink); }
+.pl-mark { position: absolute; border: 2px dashed var(--ink); pointer-events: none; }
+.pl-mark span { position: absolute; left: -2px; top: -22px; padding: 3px 6px; background: var(--ink); color: var(--paper); font: 600 11px/1 var(--font-mono); white-space: nowrap; }
+.pl-mark.is-below span { top: auto; bottom: -22px; }
+
+/* ---------- The template editor ---------- */
+.pl-wg.is-edit { box-shadow: inset 0 0 0 1.5px var(--ink); }
+.pl-wg.is-edit::after { content: ""; position: absolute; inset: 0; background: transparent; border: 1.5px dashed var(--ink-soft); border-radius: inherit; }
+.pl-wg.is-sel { box-shadow: inset 0 0 0 3.5px var(--ink); }
+.pl-ed-h { position: absolute; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; background: var(--paper); box-shadow: inset 0 0 0 2.5px var(--ink); }
+.pl-ed-h.is-bar { width: 44px; height: 12px; margin: -6px 0 0 -22px; border-radius: 6px; background: var(--ink); box-shadow: none; }
+.pl-ed-h.is-vbar { width: 12px; height: 44px; margin: -22px 0 0 -6px; border-radius: 6px; background: var(--ink); box-shadow: none; }
+.pl-ed-tag { position: absolute; display: flex; align-items: center; gap: 6px; padding: 4px 6px 4px 10px; background: var(--ink); color: var(--paper); border-radius: 18px; font: 500 12px/1 var(--font-mono); white-space: nowrap; }
+.pl-ed-tag a { color: var(--paper); text-decoration: none; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 15px; box-shadow: inset 0 0 0 1.5px var(--paper); font-size: 16px; }
+.pl-ed-bar { flex: none; display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-top: 1.5px solid var(--ink); background: var(--paper); }
+.pl-ed-bar .sp { flex: 1; }
+.pl-warn { position: absolute; left: 12px; right: 12px; display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; background: var(--paper); box-shadow: inset 0 0 0 2.5px var(--ink); border-radius: var(--v-ui-radius); font-size: 14px; line-height: 1.35; }
+.pl-warn .pl-ico { width: 20px; height: 20px; flex: none; margin-top: 1px; }
+.pl-warn b { display: block; }
+/* a widget in the Add sheet: its name, what it shows, its sizes */
+.pl-add { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 16px 16px; }
+.pl-add a { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: var(--v-ui-radius); box-shadow: inset 0 0 0 1.5px var(--ink); color: var(--ink); text-decoration: none; }
+[data-theme^="editorial"] .pl-add a { box-shadow: inset 0 0 0 1px var(--ink); }
+.pl-add .pl-ico { width: 22px; height: 22px; flex: none; }
+.pl-add b { display: block; font-size: 15px; font-weight: 600; }
+.pl-add small { display: block; font: 400 11px/1.35 var(--font-mono); color: var(--ink-soft); margin-top: 3px; }
+
+/* ---------- Template picker and the year ---------- */
+.pl-pick { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.pl-scope { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 16px 12px; }
+.pl-scope a { display: flex; align-items: center; min-height: 38px; padding: 0 12px; border-radius: var(--v-ui-radius); box-shadow: inset 0 0 0 1.5px var(--ink); color: var(--ink); text-decoration: none; font-size: 14px; }
+.pl-scope a.is-on { background: var(--ink); color: var(--paper); }
+.pl-tl { display: flex; flex-direction: column; padding: 0 16px; }
+.pl-ti { display: flex; gap: 14px; align-items: center; padding: 10px 0; border-bottom: var(--v-row-rule); color: var(--ink); text-decoration: none; }
+.pl-ti .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.pl-ti .tx b { font-size: 17px; font-weight: 600; }
+[data-theme^="stationery"] .pl-ti .tx b, [data-theme^="editorial"] .pl-ti .tx b { font-weight: 500; font-size: 19px; }
+.pl-ti .tx small { font-size: 13px; color: var(--ink-soft); line-height: 1.35; }
+.pl-ti .uses { font: 400 11.5px/1.3 var(--font-mono); color: var(--ink-soft); }
+.pl-ti.is-on .pl-thumb { box-shadow: inset 0 0 0 3px var(--ink); }
+.pl-ti .on { font: 600 11px/1 var(--font-mono); padding: 5px 8px; border-radius: 12px; background: var(--ink); color: var(--paper); }
+.pl-thumb { position: relative; flex: none; background: var(--paper); box-shadow: inset 0 0 0 1.5px var(--ink); border-radius: 4px; overflow: hidden; }
+.pl-thumb i { position: absolute; display: block; background: var(--sheet); box-shadow: inset 0 0 0 1px var(--ink-soft); border-radius: 2px; }
+.pl-thumb i.is-ag { background: var(--sheet); box-shadow: inset 0 0 0 1px var(--ink-soft), inset 6px 0 0 var(--rule); }
+.pl-ti-acts { display: flex; gap: 4px; }
+.pl-year { padding: 0 16px; display: flex; flex-direction: column; gap: 4px; }
+.pl-ym { display: flex; align-items: center; gap: 8px; height: 34px; }
+.pl-ym .m { width: 34px; font: 500 12px/1 var(--font-mono); color: var(--ink-soft); }
+.pl-ym .ws { flex: 1; display: flex; gap: 3px; }
+.pl-ym .w { flex: 1; height: 26px; display: flex; align-items: center; justify-content: center; font: 600 11px/1 var(--font-mono); border-radius: 3px; box-shadow: inset 0 0 0 1px var(--ink); color: var(--ink); }
+.pl-ym .w.is-a { background: var(--paper); }
+.pl-ym .w.is-b { background: var(--highlight); }
+.pl-ym .w.is-c { background: var(--ink); color: var(--paper); }
+.pl-ym .w.is-one { box-shadow: inset 0 0 0 2.5px var(--ink); }
+.pl-ym .w.is-now { outline: 2px solid var(--ink); outline-offset: 1px; }
+.pl-ykey { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 6px 16px 10px; font-size: 13px; }
+.pl-ykey span { display: flex; align-items: center; gap: 6px; }
+.pl-ykey i { width: 22px; height: 16px; border-radius: 3px; box-shadow: inset 0 0 0 1px var(--ink); display: inline-flex; align-items: center; justify-content: center; font: 600 10px/1 var(--font-mono); font-style: normal; }
+.pl-ykey i.is-b { background: var(--highlight); }
+.pl-ykey i.is-c { background: var(--ink); color: var(--paper); }
+.pl-ranges { margin: 4px 16px 0; border-top: var(--v-row-rule); }
+.pl-range { display: flex; align-items: center; gap: 10px; min-height: 44px; border-bottom: var(--v-row-rule); font-size: 14px; }
+.pl-range .r { flex: 1; }
+.pl-range .r small { display: block; font-size: 12px; color: var(--ink-soft); }
+
+/* ---------- The start refusal ---------- */
+.pl-refuse { flex: 1; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 18px; padding: 0 56px 60px; }
+.pl-refuse .pl-ico { width: 64px; height: 64px; }
+.pl-refuse .pl-ico path, .pl-refuse .pl-ico rect, .pl-refuse .pl-ico circle { stroke-width: 1.2; }
+.pl-refuse h1 { margin: 0; font: var(--v-h1-style) var(--v-h1-w) 30px/1.2 var(--v-head); letter-spacing: var(--v-h1-ls); text-wrap: balance; }
+.pl-refuse p { margin: 0; font-size: var(--v-body); line-height: var(--v-lh); max-width: 520px; color: var(--ink); }
+.pl-refuse p.soft { color: var(--ink-soft); font-size: 15px; line-height: 1.5; }
+.pl-refuse .acts { display: flex; gap: 10px; padding-top: 6px; }
+
+/* ---------- The refresh map (a design mark: what one step redraws) ---------- */
+.pl-refresh { position: absolute; border: 2px dashed var(--ink); background: transparent; pointer-events: none; }
+.pl-refresh span { position: absolute; right: -2px; top: -24px; padding: 4px 7px; background: var(--ink); color: var(--paper); font: 600 11px/1 var(--font-mono); white-space: nowrap; }
+
+/* ---------- Widget sheets (one widget at its preferred and its minimum size) ---------- */
+.pl-ws { position: relative; background: var(--paper); padding: 20px; display: flex; gap: 28px; align-items: flex-start; }
+.pl-ws-col { display: flex; flex-direction: column; gap: 10px; }
+.pl-ws-col .cap { font: 500 12px/1.45 var(--font-mono); color: var(--ink-soft); }
+.pl-ws-col .cap b { color: var(--ink); font-weight: 600; }
+.pl-ws-box { position: relative; }

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Where search goes · two answers</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div data-spec-id="info.search" style="width:824px;height:1352px;box-sizing:border-box;padding:28px 32px;display:flex;flex-direction:column;gap:18px;background:#e6e6e6;color:#1b1b1b;font-family:'IBM Plex Sans',sans-serif">
+<div style="display:flex;flex-direction:column;gap:6px">
+<span style="font:500 13px/1.2 'IBM Plex Mono',monospace;color:#3d3d3d">info.search</span>
+<h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">Where search goes · two answers</h1>
+<p style="margin:0;max-width:760px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">Spec 001 FR-050 asks for search across the planner’s text. A: a second quiet icon in the bar beside the (i); one tap to search, 40 px of the bar. B: a search field at the top of the (i) popover; the bar keeps only the (i), search costs a second tap.</p>
+</div>
+<dc-import name="ThemeBar" voice="{{ voice }}" on-pick="{{ pick }}" hint-size="100%,112px"></dc-import>
+<dc-import name="Planner" voice="{{ voice }}" orient="portrait" tmpl="day-lists" search="{{ search }}" overlay="{{ overlay }}" hint-size="760px,1008px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "search": {"editor": "enum", "options": ["bar", "popup"], "default": "bar"}, "overlay": {"editor": "enum", "options": ["none", "info"], "default": "none"}, "$preview": {"width": 824, "height": 1352}, "$states": [{"id": "bar", "name": "A · in the bar", "props": {"search": "bar", "overlay": "none"}}, {"id": "popup", "name": "B · in the popover", "props": {"search": "popup", "overlay": "info"}}]}'>
+class Component extends DCLogic {
+  state = {};
+  renderVals() {
+    const s = this.state, p = this.props;
+    return { voice: s.voice ?? p.voice ?? 'white', pick: (k, v) => this.setState({ [k]: v }), search: p.search ?? "bar", overlay: p.overlay ?? "none" };
+  }
+}
+</script>
+</body>
+</html>

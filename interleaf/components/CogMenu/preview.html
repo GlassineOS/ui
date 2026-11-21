@@ -1,0 +1,18 @@
+<!-- @dsCard group="Controls" height=380 subtitle="The cog and its menu: a toggle, rows that open more, a developer row" -->
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Cog menu — preview</title></head>
+<body style="margin:0">
+<div class="il-page" style="padding:24px 32px;display:flex;gap:24px;align-items:flex-start">
+  <button class="il-cog" type="button" aria-label="Planner settings" aria-expanded="true" aria-controls="cm"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"></path></svg></button>
+  <div class="il-cogmenu" id="cm" role="menu" aria-label="Planner">
+    <div class="il-cogmenu__h">Planner</div>
+    <button class="il-cogmenu__row" type="button" role="menuitemcheckbox" aria-checked="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h18v10H3z M6 10h1 M9 10h1 M12 10h1 M15 10h1 M7 14h10"></path></svg><span>Text mode for this view<small>every field as text, with the keyboard</small></span><i class="il-cogmenu__switch" aria-hidden="true"></i></button>
+    <button class="il-cogmenu__row" type="button" role="menuitem"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4z M4 10h16 M10 10v10"></path></svg><span>Template<small>choose another, or plan ahead</small></span>›</button>
+    <button class="il-cogmenu__row" type="button" role="menuitem"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg><span>Settings<small>how ink is shown, the agenda’s hours</small></span>›</button>
+    <button class="il-cogmenu__row is-dev" type="button" role="menuitem"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8h8v10H8z M12 4v4 M4 12h4 M16 12h4"></path></svg><span>Debug<small>developer build only</small></span>›</button>
+  </div>
+</div>
+<script>/* static preview */</script>
+</body>
+</html>

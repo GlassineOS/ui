@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Planner</title>
+<script src="./support.js"></script>
+<script src="data/planner.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="planner.css">
+</helmet>
+<div class="pl" data-theme="{{ theme }}" data-pen="1" data-widget="planner">
+
+<sc-if value="{{ isSheet }}" hint-placeholder-val="{{ false }}">
+<div class="pl-ws" style="width:{{ sheet.W }}px;height:{{ sheet.H }}px">
+<sc-for list="{{ sheet.cols }}" as="sc" hint-placeholder-count="2"><div class="pl-ws-col" style="width:{{ sc.w }}px"><div class="cap"><b>{{ sc.head }}</b><br>{{ sc.cap }}</div></div></sc-for>
+<div class="pl-content" style="left:20px;top:{{ sheet.top }}px;width:{{ sheet.W }}px;height:{{ sheet.H }}px">
+<sc-for list="{{ widgets }}" as="g" hint-placeholder-count="3"><dc-import name="Widget" g="{{ g }}" style="position:absolute;left:{{ g.x }}px;top:{{ g.y }}px;width:{{ g.w }}px;height:{{ g.h }}px" hint-size="200px,120px"></dc-import>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isDevice }}" hint-placeholder-val="{{ true }}">
+<div class="{{ bezelCls }}">
+<div class="pl-screen" style="width:{{ W }}px;height:{{ H }}px">
+<div class="pl-status" aria-label="Status bar"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.home }}"></path></svg><span class="sp"></span><span>14:20</span><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.wifi }}"></path></svg><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.battery }}"></path></svg><span>74 %</span></div>
+
+<sc-if value="{{ showBar }}" hint-placeholder-val="{{ true }}">
+<nav class="pl-bar" aria-label="Planner">
+<div class="pl-title"><b>{{ bar.main }}</b><span>{{ bar.sub }}</span></div>
+<div class="pl-seg" role="tablist"><sc-for list="{{ bar.kinds }}" as="k" hint-placeholder-count="3"><a class="{{ k.cls }}" href="{{ k.href }}" role="tab" aria-selected="{{ k.on }}">{{ k.t }}</a></sc-for></div>
+<div class="pl-nav"><a href="#" aria-label="{{ bar.prevLabel }}"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.chevL }}"></path></svg></a><a class="{{ bar.todayCls }}" href="#">{{ bar.today }}</a><a href="#" aria-label="{{ bar.nextLabel }}"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.chevR }}"></path></svg></a></div>
+</nav>
+</sc-if>
+
+<sc-if value="{{ showEdHead }}" hint-placeholder-val="{{ false }}">
+<div class="pl-bar"><div class="pl-title"><b>{{ ed.title }}</b><span>{{ ed.sub }}</span></div><a class="pl-btn is-quiet" href="#" style="color:inherit">Cancel</a><a class="{{ ed.saveCls }}" href="#">Save</a></div>
+</sc-if>
+
+<sc-if value="{{ showRefuse }}" hint-placeholder-val="{{ false }}">
+<div class="pl-refuse">
+<svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.hand }}"></path></svg>
+<h1>{{ refuse.title }}</h1>
+<p>{{ refuse.body }}</p>
+<p class="soft">{{ refuse.why }}</p>
+<div class="acts"><sc-for list="{{ refuse.acts }}" as="a" hint-placeholder-count="2"><a class="{{ a.cls }}" href="#">{{ a.t }}</a></sc-for></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ showPage }}" hint-placeholder-val="{{ true }}">
+<div class="pl-page">
+<sc-if value="{{ countTop }}" hint-placeholder-val="{{ false }}"><div class="pl-foot" style="position:absolute;left:0;right:0;top:0;border-top:0;border-bottom:var(--v-row-rule)">{{ hiddenNone }}</div></sc-if>
+<div class="pl-content" style="left:{{ cx }}px;top:{{ cy }}px;width:{{ cw }}px;height:{{ ch }}px">
+<sc-for list="{{ widgets }}" as="g" hint-placeholder-count="3"><dc-import name="Widget" g="{{ g }}" style="position:absolute;left:{{ g.x }}px;top:{{ g.y }}px;width:{{ g.w }}px;height:{{ g.h }}px" hint-size="200px,120px"></dc-import>
+</sc-for>
+<sc-for list="{{ handles }}" as="hd" hint-placeholder-count="0"><span class="{{ hd.cls }}" style="left:{{ hd.x }}px;top:{{ hd.y }}px"></span></sc-for>
+<sc-for list="{{ tags }}" as="tg" hint-placeholder-count="0"><span class="pl-ed-tag" style="left:{{ tg.x }}px;top:{{ tg.y }}px">{{ tg.t }}<sc-for list="{{ tg.btns }}" as="tb" hint-placeholder-count="2"><a href="#" aria-label="{{ tb.label }}">{{ tb.t }}</a></sc-for></span></sc-for>
+<sc-for list="{{ marks }}" as="mk" hint-placeholder-count="0"><div class="{{ mk.cls }}" style="left:{{ mk.x }}px;top:{{ mk.y }}px;width:{{ mk.w }}px;height:{{ mk.h }}px"><span>{{ mk.t }}</span></div></sc-for>
+<sc-if value="{{ pen.on }}" hint-placeholder-val="{{ false }}"><svg class="pl-pen" viewBox="0 0 46 46" style="left:{{ pen.x }}px;top:{{ pen.y }}px"><path d="M3 43l5-14 26-26 9 9-26 26z M8 29l9 9 M30 7l9 9" fill="var(--paper)" stroke="var(--ink)" stroke-width="2" stroke-linejoin="round"></path></svg></sc-if>
+<sc-if value="{{ tf.on }}" hint-placeholder-val="{{ false }}"><div class="pl-tf" style="left:{{ tf.x }}px;top:{{ tf.y }}px;width:{{ tf.w }}px">{{ tf.pre }}<span class="caret"></span>{{ tf.post }}</div></sc-if>
+</div>
+<sc-if value="{{ corner }}" hint-placeholder-val="{{ false }}"><a class="pl-corner is-left pl-hidden" href="#">{{ hiddenText }}</a><a class="pl-corner is-right pl-cog" href="#" aria-label="Planner menu"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.cog }}"></path></svg></a></sc-if>
+
+
+
+<sc-if value="{{ menu.on }}" hint-placeholder-val="{{ false }}">
+<div class="pl-menu" role="menu" style="right:8px;bottom:{{ menu.bottom }}px;top:{{ menu.top }}">
+<div class="pl-menu-h">{{ menu.head }}</div>
+<sc-for list="{{ menu.items }}" as="mi" hint-placeholder-count="5"><a class="{{ mi.cls }}" href="#" role="menuitem"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ mi.icon }}"></path></svg><span class="tx">{{ mi.t }}<small>{{ mi.sub }}</small></span><sc-if value="{{ mi.tog }}" hint-placeholder-val="{{ false }}"><span class="{{ mi.togCls }}"></span></sc-if><span class="end">{{ mi.end }}</span></a></sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ sheetOv.on }}" hint-placeholder-val="{{ false }}">
+<div class="pl-sheet" style="height:{{ sheetOv.h }}px">
+<div class="pl-sheet-h"><h2>{{ sheetOv.title }}</h2><a class="pl-btn" href="#">Close</a></div>
+<p class="pl-sheet-lead">{{ sheetOv.lead }}</p>
+<sc-if value="{{ sheetOv.isHidden }}" hint-placeholder-val="{{ false }}"><div class="pl-hl"><sc-for list="{{ sheetOv.groups }}" as="hg" hint-placeholder-count="2"><div class="pl-hl-k">{{ hg.head }}<span>{{ hg.count }}</span></div><sc-for list="{{ hg.items }}" as="it" hint-placeholder-count="2"><div class="pl-hl-i"><span class="pl-ink"><sc-for list="{{ it.words }}" as="w" hint-placeholder-count="3"><span class="{{ w.cls }}" style="{{ w.st }}">{{ w.t }}</span></sc-for></span><span class="when">{{ it.when }}</span><span class="acts"><a href="#">Open</a><a href="#">Move</a><a href="#">Delete</a></span></div></sc-for></sc-for></div></sc-if>
+<sc-if value="{{ sheetOv.isAdd }}" hint-placeholder-val="{{ false }}"><div class="pl-add"><sc-for list="{{ sheetOv.wgs }}" as="aw" hint-placeholder-count="7"><a href="#"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ aw.icon }}"></path></svg><span><b>{{ aw.t }}</b><small>{{ aw.sub }}</small></span></a></sc-for></div></sc-if>
+<sc-if value="{{ sheetOv.isSettings }}" hint-placeholder-val="{{ false }}"><div class="pl-hl"><sc-for list="{{ sheetOv.rows }}" as="sr" hint-placeholder-count="4"><div class="pl-hl-k">{{ sr.head }}</div><sc-for list="{{ sr.items }}" as="si" hint-placeholder-count="2"><div class="pl-mi" style="padding-left:0;padding-right:0"><span class="tx">{{ si.t }}<small>{{ si.sub }}</small></span><sc-if value="{{ si.tog }}" hint-placeholder-val="{{ false }}"><span class="{{ si.togCls }}"></span></sc-if><span class="end">{{ si.end }}</span></div></sc-for></sc-for></div></sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ dialog.on }}" hint-placeholder-val="{{ false }}">
+<div class="pl-scrim" style="background:var(--paper);opacity:.0"></div>
+<div class="pl-menu" style="left:40px;right:40px;width:auto;top:{{ dialog.top }}px;padding:18px 20px">
+<div class="pl-sheet-h" style="padding:0 0 8px"><h2>{{ dialog.title }}</h2></div>
+<p style="margin:0 0 8px;font-size:15px;line-height:1.45">{{ dialog.body }}</p>
+<p style="margin:0 0 16px;font-size:13.5px;line-height:1.45;color:var(--ink-soft)">{{ dialog.soft }}</p>
+<div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap"><sc-for list="{{ dialog.acts }}" as="da" hint-placeholder-count="3"><a class="{{ da.cls }}" href="#">{{ da.t }}</a></sc-for></div>
+</div>
+</sc-if>
+
+<sc-for list="{{ warns }}" as="wn" hint-placeholder-count="0"><div class="pl-warn" style="top:{{ wn.y }}px"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.info }}"></path></svg><span><b>{{ wn.t }}</b>{{ wn.sub }}</span></div></sc-for>
+</div>
+
+<sc-if value="{{ foot.on }}" hint-placeholder-val="{{ true }}">
+<div class="pl-foot">
+<sc-if value="{{ foot.line }}" hint-placeholder-val="{{ true }}"><a class="pl-hidden" href="#" aria-label="Not shown in this layout"><sc-if value="{{ foot.hasHidden }}" hint-placeholder-val="{{ true }}"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.hidden }}"></path></svg></sc-if>{{ hiddenText }}</a></sc-if>
+<sc-if value="{{ foot.chips }}" hint-placeholder-val="{{ false }}"><sc-for list="{{ hidden }}" as="hc" hint-placeholder-count="2"><a class="pl-hchip" href="#">{{ hc.label }}</a></sc-for></sc-if>
+<sc-if value="{{ foot.back }}" hint-placeholder-val="{{ false }}"><a class="pl-btn" href="#" style="min-height:28px;padding:0 10px">Back to ink</a></sc-if>
+<span class="sp"></span>
+<a class="{{ foot.cogCls }}" href="#" aria-label="Planner menu"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.cog }}"></path></svg></a>
+</div>
+</sc-if>
+
+<sc-if value="{{ edBar.on }}" hint-placeholder-val="{{ false }}">
+<div class="pl-ed-bar"><sc-for list="{{ edBar.btns }}" as="eb" hint-placeholder-count="4"><a class="{{ eb.cls }}" href="#"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ eb.icon }}"></path></svg>{{ eb.t }}</a></sc-for><span class="sp"></span><span style="font:400 12px/1.3 var(--font-mono);color:var(--ink-soft)">{{ edBar.note }}</span></div>
+</sc-if>
+<sc-if value="{{ kbd.on }}" hint-placeholder-val="{{ false }}">
+<div class="pl-tbar" style="bottom:{{ kbd.h }}px"><span class="lbl">{{ kbd.label }}</span><sc-for list="{{ kbd.btns }}" as="kb" hint-placeholder-count="2"><a class="{{ kb.cls }}" href="#"><sc-if value="{{ kb.tog }}" hint-placeholder-val="{{ false }}"><span class="{{ kb.togCls }}"></span></sc-if>{{ kb.t }}</a></sc-for></div>
+<div class="pl-kbd" style="height:{{ kbd.h }}px"><sc-for list="{{ kbd.rows }}" as="kr" hint-placeholder-count="4"><div class="kr"><sc-for list="{{ kr.keys }}" as="ky" hint-placeholder-count="10"><span class="{{ ky.cls }}">{{ ky.t }}</span></sc-for></div></sc-for><div class="cap">the system keyboard (GlassineOS/shell); not part of these boards</div></div>
+</sc-if>
+</sc-if>
+
+<sc-if value="{{ showPicker }}" hint-placeholder-val="{{ false }}">
+<div class="pl-pick">
+<div class="pl-sheet-h"><h2>{{ pick.title }}</h2><a class="pl-btn" href="#">Close</a></div>
+<p class="pl-sheet-lead">{{ pick.lead }}</p>
+<div class="pl-scope" role="radiogroup"><sc-for list="{{ pick.scopes }}" as="s" hint-placeholder-count="4"><a class="{{ s.cls }}" href="#" role="radio" aria-checked="{{ s.on }}">{{ s.t }}</a></sc-for></div>
+<sc-if value="{{ pick.isList }}" hint-placeholder-val="{{ true }}"><div class="pl-tl"><sc-for list="{{ pick.items }}" as="ti" hint-placeholder-count="3"><div class="{{ ti.cls }}"><span class="pl-thumb" style="width:{{ ti.tw }}px;height:{{ ti.th }}px"><sc-for list="{{ ti.boxes }}" as="bx" hint-placeholder-count="3"><i class="{{ bx.cls }}" style="left:{{ bx.x }}px;top:{{ bx.y }}px;width:{{ bx.w }}px;height:{{ bx.h }}px"></i></sc-for></span><span class="tx"><b>{{ ti.name }}</b><small>{{ ti.note }}</small><span class="uses">{{ ti.uses }}</span></span><sc-if value="{{ ti.on }}" hint-placeholder-val="{{ false }}"><span class="on">in use</span></sc-if></div></sc-for></div>
+<div style="display:flex;gap:8px;padding:14px 16px;flex-wrap:wrap"><sc-for list="{{ pick.acts }}" as="pa" hint-placeholder-count="3"><a class="pl-btn" href="#"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ pa.icon }}"></path></svg>{{ pa.t }}</a></sc-for></div></sc-if>
+<sc-if value="{{ pick.isYear }}" hint-placeholder-val="{{ false }}"><div class="pl-ykey"><sc-for list="{{ pick.key }}" as="yk" hint-placeholder-count="3"><span><i class="{{ yk.cls }}">{{ yk.l }}</i>{{ yk.t }}</span></sc-for></div><div class="pl-year"><sc-for list="{{ pick.months }}" as="ym" hint-placeholder-count="12"><div class="pl-ym"><span class="m">{{ ym.m }}</span><span class="ws"><sc-for list="{{ ym.weeks }}" as="yw" hint-placeholder-count="4"><span class="{{ yw.cls }}">{{ yw.l }}</span></sc-for></span></div></sc-for></div><div class="pl-ranges"><sc-for list="{{ pick.ranges }}" as="rg" hint-placeholder-count="3"><div class="pl-range"><span class="r">{{ rg.t }}<small>{{ rg.sub }}</small></span><a class="pl-btn is-quiet" href="#">{{ rg.act }}</a></div></sc-for></div></sc-if>
+</div>
+</sc-if>
+
+</div>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "orient": {"editor": "enum", "options": ["portrait", "landscape"], "default": "portrait"}, "screen": {"editor": "enum", "options": ["view", "refused", "sheet", "picker", "year", "editor"], "default": "view"}, "tmpl": {"editor": "enum", "options": ["day-lists", "day-diary", "day-agenda", "week-columns", "week-spread", "week-lists", "month-grid", "month-goals"], "default": "day-lists"}, "cog": {"editor": "enum", "options": ["foot", "corner"], "default": "foot"}, "count": {"editor": "enum", "options": ["line", "chips"], "default": "line"}, "overlay": {"editor": "enum", "options": ["none", "cog", "hidden", "settings", "add", "used"], "default": "none"}, "dev": {"editor": "boolean", "default": false}, "ink": {"editor": "enum", "options": ["raw", "neat", "font"], "default": "raw"}, "write": {"editor": "enum", "options": ["none", "writing", "settled"], "default": "none"}, "text": {"editor": "enum", "options": ["none", "field", "back", "view"], "default": "none"}, "leave": {"editor": "enum", "options": ["done", "outside"], "default": "done"}, "drag": {"editor": "enum", "options": ["none", "draw", "drawn", "titled", "grab", "moved", "resize", "released"], "default": "none"}, "title": {"editor": "enum", "options": ["grow", "clip"], "default": "grow"}, "longTitle": {"editor": "boolean", "default": false}, "edit": {"editor": "enum", "options": ["select", "weight", "short", "land"], "default": "select"}, "refuse": {"editor": "enum", "options": ["missing", "off"], "default": "missing"}, "refresh": {"editor": "boolean", "default": false}, "widget": {"editor": "enum", "options": ["agenda", "todo", "notes", "habits", "minimonth", "weekov", "priorities"], "default": "todo"}, "fill": {"editor": "enum", "options": ["empty", "full", "more"], "default": "full"}, "$preview": {"width": 760, "height": 1008}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props, PL = window.PLANNER;
+    const voice = ['white', 'editorial', 'stationery'].includes(p.voice) ? p.voice : 'white';
+    const land = p.orient === 'landscape', screen = p.screen || 'view';
+    const W = land ? 936 : 702, H = land ? 702 : 936;
+    const ic = Component.IC;
+    let tid = PL.T[p.tmpl] ? p.tmpl : 'day-lists';
+    if (screen === 'editor' && p.edit === 'weight' && tid === 'day-lists') tid = 'day-lists-w';
+    const t = PL.T[tid], kind = t.kind;
+    const overlay = p.overlay || 'none', text = p.text || 'none', drag = p.drag || 'none', write = p.write || 'none';
+    const cogCorner = p.cog === 'corner';
+    const editing = screen === 'editor';
+    const kbdOn = text === 'field' || text === 'view';
+    const KBD = 236;
+
+    if (screen === 'sheet') return this.sheet(voice, p, PL);
+
+    // ---- the page area: below the status bar (40) and the bar (60); the foot (34) unless corner
+    const footOn = !cogCorner && !editing && screen === 'view';
+    const pageH = H - 40 - 60 - (footOn ? 34 : 0) - (editing ? 57 : 0);
+    const pad = 12;
+    let cw = W - 2 * pad, ch = pageH - 2 * pad - (cogCorner ? 22 : 0);
+    // the keyboard covers the lower part of the screen (one refresh of that area); nothing is laid out again
+    const eLand = land || (editing && p.edit === 'land');
+
+    // ---- entries changed by the state shown
+    const o = { tmpl: tid, W: cw, H: ch, land: eLand, inkMode: p.ink || 'raw', fs: 19 };
+    if (write === 'writing') o.add = { t: 'buy milk', partial: 'buy mi' };
+    if (write === 'settled') o.add = { t: 'buy milk', settled: true };
+    if (text === 'back') o.edit = { t: 'call the bank about the card', words: { 2: 'bank' } };
+    if (text === 'field' || text === 'view') o.textMode = text === 'view';
+    if (drag === 'grab' || drag === 'moved' || drag === 'resize' || drag === 'released') {
+      const mv = { grab: [28, 30], moved: [29, 31], resize: [29, 32], released: [29, 32] }[drag];
+      o.move = { id: 'e3', s: mv[0], e: mv[1], look: drag === 'released' ? '' : drag === 'resize' ? 'resize' : 'grab' };
+    }
+    if (editing && p.edit === 'short') { o.W = cw; }
+    const pg = PL.page(o);
+    const widgets = pg.widgets.map(g => this.decorate(g, p, editing));
+
+    // ---- marks over the page: the pen, held layouts, the refresh map, text fields, editor handles
+    const marks = [], handles = [], tags = [], warns = [];
+    let pen = { on: false }, tf = { on: false };
+    const find = (kind2, title) => widgets.find(g => g.kind === kind2 && (!title || g.title === title));
+    const agenda = find('agenda');
+    if (agenda && drag !== 'none') this.dragMarks(agenda, drag, p, marks, pen, cw, ch, W, H);
+    if (write !== 'none') {
+      const td = find('todo', 'Today');
+      if (td) {
+        const rowI = td.list.length - 1, y = td.y + 34 + rowI * 34;
+        if (write === 'writing') {
+          pen = { on: true, x: td.x + 150, y: y - 30 };
+          marks.push({ cls: 'pl-mark', x: td.x - 4, y: td.y - 4, w: td.w + 8, h: td.h + 8, t: 'layout held while the pen writes' });
+        } else marks.push({ cls: 'pl-mark is-below', x: td.x - 4, y: td.y - 4, w: td.w + 8, h: td.h + 8, t: 'settled once, after the pause' });
+      }
+    }
+    if (text === 'field') {
+      const td = find('todo', 'Today');
+      if (td) {
+        const i = td.list.findIndex(r => r.value && r.value.startsWith('call the'));
+        tf = { on: true, x: td.x + 30, y: td.y + 34 + Math.max(0, i) * 34 - 3, w: td.w - 36, pre: 'call the b', post: 'onk about the card' };
+      }
+    }
+    if (editing) this.editMarks(widgets, p, handles, tags, warns, pg, cw, ch);
+
+    // ---- hidden counts (FR-028)
+    const hidden = pg.hidden;
+    const hiddenText = hidden.length ? hidden.map(h => h.label).join(' · ') : '';
+    const countChips = p.count === 'chips';
+
+    // ---- the cog menu and the other overlays
+    const menu = { on: overlay === 'cog' };
+    if (menu.on) Object.assign(menu, this.cogMenu(p, t, cogCorner));
+    const sheetOv = { on: overlay === 'hidden' || overlay === 'add' || overlay === 'settings' };
+    if (overlay === 'hidden') Object.assign(sheetOv, this.hiddenSheet(hidden, kind, pageH));
+    if (overlay === 'add') Object.assign(sheetOv, this.addSheet(PL, pageH));
+    if (overlay === 'settings') Object.assign(sheetOv, this.settingsSheet(pageH, p));
+    const dialog = { on: overlay === 'used' };
+    if (dialog.on) Object.assign(dialog, { top: 170, title: 'Edit “' + t.name + '” for every day?',
+      body: 'This template is used by 143 days, past days included. An edit changes all of them at once.',
+      soft: 'Copy it first to keep the old arrangement for some days; give those days the copy. Nothing written on any day changes either way.',
+      acts: [{ t: 'Cancel', cls: 'pl-btn is-quiet' }, { t: 'Copy first', cls: 'pl-btn' }, { t: 'Edit for every day', cls: 'pl-btn is-primary' }] });
+
+    // ---- the keyboard (text mode)
+    const leaveOutside = p.leave === 'outside';
+    const kbd = { on: kbdOn, h: KBD, rows: Component.KEYS,
+      label: text === 'view' ? 'Text mode for the whole view: every field shows its text' : leaveOutside ? 'Tap outside the field or write with the pen to go back' : 'Text mode for this to-do',
+      btns: text === 'view' ? [{ t: 'Back to ink', cls: 'pl-btn is-primary' }]
+        : (leaveOutside ? [] : []).concat([
+          { t: 'Neaten', cls: 'pl-btn is-quiet', tog: true, togCls: 'pl-tog' },
+          { t: 'Set in Autograph', cls: 'pl-btn is-quiet', tog: true, togCls: 'pl-tog' }]).concat(leaveOutside ? [] : [{ t: 'Done', cls: 'pl-btn is-primary' }]) };
+
+    // ---- the bar
+    const kinds = [['month', 'Month'], ['week', 'Week'], ['day', 'Day']].map(([id, label]) => ({ t: label, on: String(id === kind), cls: id === kind ? 'is-on' : '', href: '#' }));
+    const ttl = pg.title;
+    const isToday = true;
+    const bar = { main: ttl.main, sub: ttl.sub + ' · ' + t.name, kinds, today: 'Today', todayCls: isToday ? 'is-here' : '',
+      prevLabel: 'Previous ' + kind, nextLabel: 'Next ' + kind };
+
+    const ed = { title: 'Editing “' + t.name + '”', sub: 'A ' + kind + ' template · shown with this ' + kind + '’s entries · used by 143 days',
+      saveCls: p.edit === 'short' ? 'pl-btn is-off' : 'pl-btn is-primary' };
+    const edBar = { on: editing, note: p.edit === 'land' ? 'previewing turned: the root column is a row' : 'drag a widget to move it · drag an edge to resize',
+      btns: [{ t: 'Add widget', icon: ic.plus, cls: 'pl-btn' }, { t: 'Remove', icon: ic.trash, cls: 'pl-btn' }, { t: eLand ? 'Upright' : 'Turned', icon: ic.rotate, cls: 'pl-btn' }] };
+
+    const refuse = p.refuse === 'off'
+      ? { title: 'The planner needs handwriting', body: 'Handwriting is turned off on this tablet. Everything in the planner is written with the pen, and the handwriting service reads it so that you can search it later.',
+          why: 'Turn handwriting on in Settings, then open the planner again. Nothing written in the planner is lost while it is off.',
+          acts: [{ t: 'Open Handwriting settings', cls: 'pl-btn is-primary' }, { t: 'Close', cls: 'pl-btn' }] }
+      : { title: 'The planner needs handwriting', body: 'This system has no handwriting service. Everything in the planner is written with the pen, and the planner can’t read what you write without it.',
+          why: 'There is no keyboard-only planner. Install handwriting from Software, then open the planner again.',
+          acts: [{ t: 'Open Software', cls: 'pl-btn is-primary' }, { t: 'Close', cls: 'pl-btn' }] };
+
+    return {
+      theme: voice + '-eink', ic, W, H, isSheet: false, isDevice: true, bezelCls: land ? 'pl-bezel is-land' : 'pl-bezel',
+      showBar: screen === 'view', showEdHead: editing, showRefuse: screen === 'refused', showPage: screen === 'view' || editing,
+      showPicker: screen === 'picker' || screen === 'year', pick: screen === 'picker' || screen === 'year' ? this.picker(PL, kind, tid, screen === 'year') : {},
+      cx: pad, cy: pad, cw, ch, widgets, marks, handles, tags, warns, pen, tf, menu, sheetOv, dialog, kbd, bar, ed, edBar, refuse,
+      hidden, hiddenText: hiddenText || 'everything is shown', countTop: false, hiddenNone: '',
+      corner: cogCorner && screen === 'view',
+      foot: { on: footOn, line: !countChips, chips: countChips, back: false, hasHidden: hidden.length > 0,
+        cogCls: overlay === 'cog' || overlay === 'settings' ? 'pl-cog is-open' : 'pl-cog' }
+    };
+  }
+
+  /* a widget's look: its class, the flags the template reads, the more link */
+  decorate(g, p, editing) {
+    const isList = g.kind === 'todo' || g.kind === 'priorities';
+    const cls = ['pl-wg'];
+    if (g.compact) cls.push('is-compact');
+    if (editing) cls.push(g.sel || g.path === (Component.SEL[p.tmpl] || '') ? 'is-sel' : 'is-edit');
+    const out = Object.assign({}, g, { cls: cls.join(' '), isList, isNotes: g.kind === 'notes', isHabits: g.kind === 'habits', isMonth: g.kind === 'minimonth', isWeek: g.kind === 'weekov',
+      isAgenda: g.kind === 'agenda' || g.kind === 'cagenda', moreHref: '#', more: g.more > 0, readouts: g.readouts || [] });
+    if (out.isMonth) out.mmCls = g.large ? 'pl-mm is-large' : 'pl-mm';
+    if (out.isHabits) {
+      out.heads = g.heads.map(h => ({ t: h.t, cls: h.today ? 'is-today' : '' }));
+      out.habits = g.habits.map(h => ({ words: h.words, cells: h.cells, cls: 'pl-hab-row' + (h.add ? ' is-add' : ''), addLabel: h.add ? '+ a habit' : '' }));
+    }
+    if (out.isAgenda) {
+      out.hrs = g.hrs.map(h => ({ ...h, showHalf: !h.last && !g.compact }));
+      const now = 14 + 20 / 60; // 14:20
+      out.nowY = g.today && now > g.from && now < g.from + g.hrs.length - 1 ? Math.round(g.top + (now - g.from) * g.pitch) : 0;
+      out.blocks = g.blocks.map(b => ({ ...b, extra: '' }));
+      if (p.title === 'clip' || p.title === 'grow') {
+        const b = out.blocks.find(x => x.id === 'e4');
+        if (b && p.longTitle) {
+          b.words = window.PLANNER.ink('pick up the parcel at the post office', { fs: 19, salt: 'e4' });
+          if (p.title === 'grow') { b.h = Math.max(b.h, 56); b.cls += ' is-grown'; b.extra = 'box-shadow:inset 0 0 0 1.5px var(--ink);border-bottom:2px dotted var(--ink);flex-wrap:wrap;align-content:flex-start'; }
+          else { b.extra = 'white-space:nowrap'; b.words = b.words.slice(0, 4).concat([{ t: '…', st: 'font-size:15px;color:var(--ink-soft)', cls: 'pl-w' }]); }
+        }
+      }
+    }
+    if (out.isNotes) {
+      out.lines = g.lines.map(l => ({ ...l, text: p.text === 'view', value: l.words.map(w => w.t).join(' ') }));
+      out.doodle = g.title === 'Notes' && g.lines.length > 0 && g.h > 120;
+      out.doodleY = 34 + 2;
+    }
+    if (isList) out.list = g.list.map(r => ({ ...r, text: p.text === 'view' && !r.empty }));
+    return out;
+  }
+
+  dragMarks(ag, drag, p, marks, pen, cw, ch, W, H) {
+    const top = ag.top, pitch = ag.pitch, y = hh => ag.y + 34 + top + (hh / 2 - ag.from) * pitch;
+    const yL = hh => top + (hh / 2 - ag.from) * pitch;
+    const PL = window.PLANNER;
+    if (drag === 'draw' || drag === 'drawn' || drag === 'titled') {
+      const s = 32, e = 34; // 16:00-17:00, in free time
+      const blk = { id: 'new', y: Math.round(yL(s)) + 1, h: Math.round(yL(e) - yL(s)) - 2, when: PL.hm(s) + '–' + PL.hm(e),
+        cls: drag === 'draw' ? 'pl-ev is-new' : 'pl-ev', words: drag === 'titled' ? PL.ink('bike repair', { fs: 19, salt: 'new' }) : [], extra: drag === 'drawn' ? 'box-shadow:inset 0 0 0 2.5px var(--ink)' : '' };
+      ag.blocks = ag.blocks.concat([blk]);
+      if (drag === 'draw') { ag.readouts = [{ y: Math.round(yL(s)) - 8, t: PL.hm(s) }, { y: Math.round(yL(e)) - 8, t: PL.hm(e) }]; Object.assign(pen, { on: true, x: ag.x + ag.w - 120, y: y(e) - 40 }); }
+      if (drag === 'drawn') { ag.readouts = []; marks.push({ cls: 'pl-mark is-below', x: ag.x + 36, y: Math.round(y(s)) - 4, w: ag.w - 38, h: Math.round(y(e) - y(s)) + 8, t: 'a new event, 16:00–17:00: write its title in it' }); }
+      if (drag === 'titled') Object.assign(pen, { on: true, x: ag.x + 150, y: y(s) - 22 });
+    }
+    if (drag === 'grab' || drag === 'moved' || drag === 'resize') {
+      const ghost = { id: 'ghost', y: Math.round(yL(28)) + 1, h: Math.round(yL(30) - yL(28)) - 2, cls: 'pl-ev is-ghost', words: [], when: '', extra: '' };
+      ag.blocks = [ghost].concat(ag.blocks);
+      const mv = { grab: [28, 30], moved: [29, 31], resize: [29, 32] }[drag];
+      ag.readouts = drag === 'resize' ? [{ y: Math.round(yL(mv[1])) - 8, t: PL.hm(mv[1]) }] : [{ y: Math.round(yL(mv[0])) - 8, t: PL.hm(mv[0]) }];
+      if (p.refresh) {
+        const a = drag === 'grab' ? [28, 30] : drag === 'moved' ? [28, 31] : [31, 32];
+        const r = { x: ag.x + 36, y: Math.round(y(a[0])) - 2, w: ag.w - 38, h: Math.round(y(a[1]) - y(a[0])) + 4 };
+        const pct = Math.max(1, Math.round(100 * (r.w * r.h) / (W * H)));
+        marks.push({ cls: 'pl-refresh', ...r, t: (drag === 'grab' ? 'the grab' : 'one 30-minute step') + ': about ' + pct + ' % of the panel' });
+      }
+    }
+    if (drag === 'released' && p.refresh) {
+      const r = { x: ag.x + 36, y: Math.round(y(29)) - 2, w: ag.w - 38, h: Math.round(y(32) - y(29)) + 4 };
+      marks.push({ cls: 'pl-refresh', ...r, t: 'on release: once more, the drag look goes' });
+    }
+  }
+
+  editMarks(widgets, p, handles, tags, warns, pg, cw, ch) {
+    const sel = widgets.find(g => g.cls.includes('is-sel'));
+    if (sel) {
+      const cx = sel.x + sel.w / 2, cy = sel.y + sel.h / 2;
+      handles.push({ cls: 'pl-ed-h is-bar', x: cx, y: sel.y + sel.h }, { cls: 'pl-ed-h is-vbar', x: sel.x, y: cy }, { cls: 'pl-ed-h is-vbar', x: sel.x + sel.w, y: cy });
+      const w = (Component.WEIGHT[p.tmpl] || 3) + (p.edit === 'weight' ? 1 : 0);
+      tags.push({ x: sel.x + 10, y: sel.y + 42, t: sel.title + ' · weight ' + w, btns: [{ t: '−', label: 'Less weight' }, { t: '+', label: 'More weight' }, { t: '⋯', label: 'Widget settings' }] });
+    }
+    if (p.edit === 'short') warns.push({ y: 12, t: 'These widgets need ' + (pg.deficit || 0) + ' px more height than the page has.', sub: ' Every widget keeps its minimum, so the template can’t be saved like this: remove a widget or put two side by side.' });
+  }
+
+  cogMenu(p, t, corner) {
+    const ic = Component.IC;
+    const items = [
+      { t: 'Text mode for this view', sub: 'every field as text, with the keyboard', icon: ic.keyboard, tog: true, togCls: 'pl-tog', end: '' },
+      { t: 'Template', sub: t.name + ' · choose another, or plan ahead', icon: ic.layout, end: '›' },
+      { t: 'Edit this template', sub: 'add, move and resize widgets', icon: ic.edit, end: '›' },
+      { t: 'Settings', sub: 'how ink is shown, the agenda’s hours', icon: ic.sliders, end: '›' }
+    ];
+    if (p.dev) items.push({ t: 'Debug', sub: 'developer build only: layout boxes, refresh counts', icon: ic.bug, end: '›', dev: true });
+    return { head: 'Planner', bottom: corner ? 40 : 6, top: 'auto', items: items.map(i => ({ ...i, tog: !!i.tog, cls: 'pl-mi' + (i.dev ? ' is-dev' : '') })) };
+  }
+
+  hiddenSheet(hidden, kind, pageH) {
+    const PL = window.PLANNER;
+    const groups = hidden.map(h => ({ head: h.kind === 'note' ? (h.slot === 'notes' ? 'Notes' : h.slot[0].toUpperCase() + h.slot.slice(1) + ' notes') : h.many[0].toUpperCase() + h.many.slice(1),
+      count: String(h.n), items: h.items.map(it => ({ words: PL.ink(it.t, { fs: 19 }), when: it.when })) }));
+    return { isHidden: true, h: Math.round(pageH * 0.66), title: 'Not shown in this layout', groups,
+      lead: 'Kept as written. They show again in any ' + kind + ' template that has a place for them; or open, move or delete one here.' };
+  }
+
+  addSheet(PL, pageH) {
+    const ic = Component.IC, W = PL.WG;
+    const ids = ['agenda', 'todo', 'notes', 'habits', 'minimonth', 'weekov', 'priorities'];
+    const sub = { agenda: 'compresses · min 200 w', todo: 'truncates · min 180 w', notes: 'a named slot · min 200 w', habits: 'truncates · min 240 w', minimonth: 'compresses · min 170 w', weekov: 'truncates · min 260 w', priorities: 'ranked · min 180 w' };
+    return { isAdd: true, h: Math.round(pageH * 0.6), title: 'Add a widget', lead: 'It goes where the dashed box is; drag it elsewhere afterwards. Each one takes its minimum, then grows with its content and its weight.',
+      wgs: ids.map(id => ({ t: W[id].name, sub: sub[id], icon: ic['w_' + id] })) };
+  }
+
+  settingsSheet(pageH, p) {
+    return { isSettings: true, h: pageH - 20, title: 'Planner settings', lead: 'Ink is always kept as written; these change only how it is shown.',
+      rows: [
+        { head: 'Ink in every field', items: [
+          { t: 'Neaten', sub: 'straighter lines, a steady slant, even sizes · Medium', tog: true, togCls: 'pl-tog' },
+          { t: 'Set in Autograph', sub: 'each word that was read, in your font', tog: true, togCls: 'pl-tog' },
+          { t: 'One field’s own choice wins', sub: 'set it in that field’s text mode', end: '' }] },
+        { head: 'Agenda', items: [{ t: 'Hours shown', sub: 'per template; this one: 07:00–21:00', end: '07–21' }, { t: 'Steps', sub: 'moving and stretching an event', end: '30 min' }] },
+        { head: 'From the system', items: [{ t: 'First day of the week, date and time', sub: 'follow Settings › Language and region', end: 'Monday' }] }
+      ] };
+  }
+
+  picker(PL, kind, tid, year) {
+    const ic = Component.IC;
+    const name = kind === 'day' ? 'Thursday 11' : kind === 'week' ? 'week 10' : 'March';
+    const scopes = (year ? ['Only ' + name, 'A range of ' + kind + 's', 'From ' + name + ' on', 'The default'] : ['Only ' + name, 'A range of ' + kind + 's', 'From ' + name + ' on', 'The default']).map((s, i) => ({ t: s, on: String(i === (year ? 1 : 0)), cls: i === (year ? 1 : 0) ? 'is-on' : '' }));
+    if (year) {
+      const M = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const months = M.map((m, mi) => ({ m, weeks: [0, 1, 2, 3].concat(mi % 3 === 2 ? [4] : []).map(wi => {
+        const n = mi * 4.33 + wi;
+        const l = mi < 3 ? 'A' : 'B';
+        const one = mi === 4 && wi === 2, now = mi === 2 && wi === 1;
+        return { l: one ? 'C' : l, cls: 'w is-' + (one ? 'c' : l.toLowerCase()) + (one ? ' is-one' : '') + (now ? ' is-now' : '') };
+      }) }));
+      return { isYear: true, isList: false, title: 'Plan the weeks ahead', lead: 'Each week shows the template planned for it. A single week’s own choice wins over a range; change any week at any time, past weeks too.', scopes,
+        key: [{ l: 'A', cls: '', t: 'Seven columns' }, { l: 'B', cls: 'is-b', t: 'Spread' }, { l: 'C', cls: 'is-c', t: 'Lists and notes' }],
+        months, ranges: [{ t: 'January to March: Seven columns', sub: 'a range', act: 'Change' }, { t: 'From April on: Spread', sub: 'every week from a date', act: 'Change' }, { t: 'Week 20: Lists and notes', sub: 'that week only · wins over the range', act: 'Remove' }] };
+    }
+    const ids = PL.byKind(kind);
+    const uses = { 'day-lists': 'the default · 143 days', 'day-diary': '28 days', 'day-agenda': '2 days', 'week-columns': 'January to March', 'week-spread': 'from April on', 'week-lists': 'week 20 only', 'month-grid': 'the default', 'month-goals': 'not used yet' };
+    const items = ids.map(id => {
+      const tw = kind === 'month' || kind === 'week' ? 96 : 84, th = Math.round(tw * 4 / 3);
+      const r = PL.layout(id, 678, 762, {});
+      const sx = (tw - 8) / 678, sy = (th - 8) / 762;
+      const boxes = r.map(b => ({ x: Math.round(4 + b.x * sx), y: Math.round(4 + b.y * sy), w: Math.max(3, Math.round(b.w * sx)), h: Math.max(3, Math.round(b.h * sy)), cls: b.n.wg === 'agenda' || b.n.wg === 'cagenda' ? 'is-ag' : '' }));
+      return { name: PL.T[id].name, note: PL.T[id].note, uses: uses[id] || '', on: id === tid, cls: 'pl-ti' + (id === tid ? ' is-on' : ''), tw, th, boxes };
+    });
+    return { isList: true, isYear: false, title: 'Template for ' + name, lead: 'Switching shows the same entries in another layout; nothing written changes.', scopes, items,
+      acts: [{ t: 'New', icon: ic.plus }, { t: 'Copy', icon: ic.copy }, { t: 'Edit', icon: ic.edit }, { t: 'Plan ahead', icon: ic.calendar }] };
+  }
+
+  /* a widget alone, at its preferred and at its minimum size, empty, full or past full */
+  sheet(voice, p, PL) {
+    const id = p.widget || 'todo', fill = p.fill || 'full', D = PL.WG[id];
+    const node = Component.SHEETNODE[id];
+    const tmp = 'sheet-' + id;
+    PL.T[tmp] = { kind: node.period || 'day', name: D.name, root: { k: 'col', c: [Object.assign({}, node, { grow: true })] } };
+    // the sizes the widget declares: preferred width and the height its content needs; its minimum
+    const c = id === 'agenda' ? { hours: node.to - node.from, allDay: false } : { n: fill === 'empty' ? 0 : Component.SHEETN[id] };
+    const need = D.needH(c), min = D.minH(c);
+    const sizes = [[D.prefW, fill === 'more' ? Math.max(min + 20, Math.round(need * 0.62)) : need], [D.minW, min]];
+    const widgets = [];
+    let x = 0;
+    const cols = [];
+    sizes.forEach(([w, h], i) => {
+      const pg = PL.page({ tmpl: tmp, W: w, H: h, empty: fill === 'empty', fs: 19 });
+      pg.widgets.forEach(g => widgets.push(this.decorate(Object.assign(g, { x: g.x + x, y: g.y }), p, false)));
+      cols.push({ w, head: (i === 0 ? (fill === 'more' ? 'Too small for its content' : 'Preferred size') : 'Minimum size') + ' · ' + w + ' × ' + h,
+        cap: i === 0 ? D.kind + ' · width: min ' + D.minW + ', preferred ' + D.prefW : 'never smaller; ink is never shrunk' });
+      x += w + 28;
+    });
+    const H = Math.max(...sizes.map(s => s[1])) + 90;
+    return { theme: voice + '-eink', ic: Component.IC, isSheet: true, isDevice: false, widgets, sheet: { W: x - 28 + 40, H: H + 16, top: 86, cols } };
+  }
+}
+Component.IC = {
+  chevL: 'M15 5l-7 7 7 7', chevR: 'M9 5l7 7-7 7',
+  cog: 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z M19.4 13.4l1.7 1.3-1.9 3.3-2-.8a7.4 7.4 0 0 1-1.8 1l-.3 2.1h-3.8l-.3-2.1a7.4 7.4 0 0 1-1.8-1l-2 .8-1.9-3.3 1.7-1.3a7.6 7.6 0 0 1 0-2.8L3.3 9.3l1.9-3.3 2 .8a7.4 7.4 0 0 1 1.8-1l.3-2.1h3.8l.3 2.1a7.4 7.4 0 0 1 1.8 1l2-.8 1.9 3.3-1.7 1.3a7.6 7.6 0 0 1 0 2.8z',
+  home: 'M4 11l8-7 8 7v9h-5v-6h-6v6H4z', wifi: 'M2.5 9a14 14 0 0 1 19 0 M5.5 12.5a9.5 9.5 0 0 1 13 0 M8.5 16a5 5 0 0 1 7 0 M12 19.5h.01', battery: 'M3 8h16v8H3z M21 11v2 M5.5 10.5h9v3h-9z',
+  hidden: 'M3 3l18 18 M10.6 6.1A9.8 9.8 0 0 1 12 6c5 0 9 6 9 6a15.6 15.6 0 0 1-2.6 3.1 M6.6 7.6C4.3 9.2 3 12 3 12s4 6 9 6a8.7 8.7 0 0 0 4-1 M9.9 9.9a3 3 0 0 0 4.2 4.2',
+  keyboard: 'M3 6h18v12H3z M7 10h.01 M11 10h.01 M15 10h.01 M7 14h10', layout: 'M4 4h16v16H4z M4 10h16 M10 10v10', edit: 'M4 20h4L19 9l-4-4L4 16z M13.5 6.5l4 4',
+  sliders: 'M4 7h10 M18 7h2 M4 17h4 M12 17h8 M16 5v4 M10 15v4', bug: 'M8 9a4 4 0 0 1 8 0v5a4 4 0 0 1-8 0z M4 12h4 M16 12h4 M5 7l3 2 M19 7l-3 2 M5 18l3-2 M19 18l-3-2',
+  calendar: 'M4 6h16v14H4z M4 10h16 M8 3v5 M16 3v5', plus: 'M12 5v14 M5 12h14', trash: 'M5 7h14 M9 7V4h6v3 M7 7l1 13h8l1-13', copy: 'M8 8h12v12H8z M4 16V4h12',
+  rotate: 'M4 9h11v11H4z M14 3a7 7 0 0 1 6 6 M20 5v4h-4', info: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M12 11v6 M12 7.5h.01',
+  hand: 'M3 21h12 M4 17c2-4 3.5-4 4.5-.5s3 2.5 5-1.5 M14 13l6.5-6.5 2 2L16 15l-3 1z',
+  w_agenda: 'M4 5h16v15H4z M8 3v4 M16 3v4 M8 11h5 M8 15h8', w_todo: 'M4 6h3v3H4z M10 7.5h10 M4 14h3v3H4z M10 15.5h10', w_notes: 'M5 4h14v16H5z M8 9h8 M8 13h8 M8 17h5',
+  w_habits: 'M5 7a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0z M11 7a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0z M17 7a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0z M5 14a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0z M11 14a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0z',
+  w_minimonth: 'M4 6h16v14H4z M4 10h16 M8 14h.01 M12 14h.01 M16 14h.01 M8 17h.01 M12 17h.01', w_weekov: 'M3 5h18v14H3z M3 9h18 M3 13h18 M3 17h18', w_priorities: 'M5 6h2 M10 6h9 M5 12h2 M10 12h9 M5 18h2 M10 18h9'
+};
+Component.KEYS = [['q', 'w', 'e', 'r', 't', 'z', 'u', 'i', 'o', 'p'], ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'], ['⇧', 'y', 'x', 'c', 'v', 'b', 'n', 'm', '⌫'], ['123', ',', 'space', '.', '⏎']]
+  .map(r => ({ keys: r.map(k => ({ t: k === 'space' ? '' : k, cls: k === 'space' ? 'k w' : 'k' })) }));
+Component.SEL = { 'day-lists': 'r.0.0', 'day-diary': 'r.1.0', 'week-columns': 'r.0', 'week-spread': 'r.0', 'month-grid': 'r.0', 'month-goals': 'r.1', 'day-agenda': 'r.0', 'week-lists': 'r.1' };
+Component.WEIGHT = { 'day-lists': 3, 'day-diary': 1, 'week-columns': 3, 'week-spread': 3, 'month-grid': 3, 'month-goals': 1 };
+Component.SHEETNODE = {
+  agenda: { wg: 'agenda', from: 8, to: 18 }, todo: { wg: 'todo', period: 'week', title: 'This week' }, notes: { wg: 'notes', period: 'day', slot: 'evening', title: 'Evening' },
+  habits: { wg: 'habits', period: 'week', title: 'Habits' }, minimonth: { wg: 'minimonth', title: 'March' }, weekov: { wg: 'weekov', period: 'week' }, priorities: { wg: 'priorities', period: 'week', title: 'Priorities' }
+};
+Component.SHEETN = { todo: 7, notes: 4, habits: 4, priorities: 3, weekov: 7, minimonth: 0 };
+Component.SHEETSIZE = {
+  agenda: [[[360, 420], [200, 160]], [[360, 300], [200, 160]]], todo: [[[300, 320], [180, 102]], [[300, 200], [180, 102]]], notes: [[[400, 220], [200, 102]], [[400, 110], [200, 102]]],
+  habits: [[[360, 240], [240, 116]], [[360, 150], [240, 116]]], minimonth: [[[230, 212], [170, 188]], [[230, 212], [170, 188]]], weekov: [[[420, 440], [260, 244]], [[420, 300], [260, 244]]],
+  priorities: [[[300, 180], [180, 102]], [[300, 120], [180, 102]]]
+};
+</script>
+</body>
+</html>

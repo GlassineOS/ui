@@ -109,6 +109,9 @@ static const UiVoice v_white = {
     .gripLip = 0,
     .divStitch = 0,
     .divStitchC = UI_RGB(0x111111),
+    .bodyPx = 17,
+    .rowPx = 16,
+    .subPx = 13.5,
 };
 
 static const UiVoice v_editorial = {
@@ -217,6 +220,9 @@ static const UiVoice v_editorial = {
     .gripLip = 0,
     .divStitch = 0,
     .divStitchC = UI_RGB(0x111111),
+    .bodyPx = 18.5,
+    .rowPx = 17.5,
+    .subPx = 14.5,
 };
 
 static const UiVoice v_stationery = {
@@ -325,6 +331,9 @@ static const UiVoice v_stationery = {
     .gripLip = UI_RGB(0xbbbbbb),
     .divStitch = 1,
     .divStitchC = UI_RGB(0x999999),
+    .bodyPx = 20,
+    .rowPx = 19,
+    .subPx = 16,
 };
 
 const UiVoice *const ui_voices[] = { &v_white, &v_editorial, &v_stationery };

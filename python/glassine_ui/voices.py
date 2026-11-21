@@ -2,12 +2,14 @@
 
     NAMES                 ('white', 'editorial', 'stationery')
     voice(name)           the voice called name; unknown names give White:
-                          {'name', 'title', 'scheme', 'shell', 'c', 'card', 'setup'}
+                          {'name', 'title', 'scheme', 'type', 'shell', 'c', 'card',
+                           'setup', 'inline', 'apps'}
     title(name)           'White' | 'Editorial' | 'Stationery'
 
 Values are the design's CSS (colours '#rrggbb', box-shadow lists, borders,
 font shorthands, radii) with every var(--il-*) resolved; glassine_ui.paint draws
-them. The sections: scheme = the E-ink scheme's tokens, shell = the desktop
+them. The sections: scheme = the E-ink scheme's tokens, type = the voice's body
+size (glassine_ui.size), shell = the desktop
 shell's surfaces, card = the settings card, setup = the first-run setup, c = the
 few values the C table takes instead of the CSS value. The dicts are shared:
 copy one before changing it.

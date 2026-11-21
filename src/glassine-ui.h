@@ -2,8 +2,8 @@
  * drawing built on them, for cairo + pango programs. Contract: C API v1
  * (README "C API"); pkg-config name glassine-ui.
  *
- * Every value is a design value in logical px (the design canvas is 702x936; a
- * program scales its cairo context to the panel). Colours are 0xAARRGGBB,
+ * Every value is a design value in logical px (design pixels; a program scales
+ * its cairo context by its output's factor, see "the size of the interface" below). Colours are 0xAARRGGBB,
  * 0 = transparent. The voices have hard edges only: every "shadow" of the
  * design is an unblurred ring or offset (UiRing), drawn as a flat fill.
  *
@@ -13,6 +13,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later */
 #ifndef GLASSINE_UI_H
 #define GLASSINE_UI_H
+#include <stddef.h>
 #include <stdint.h>
 #include <cairo.h>
 
@@ -95,6 +96,10 @@ typedef struct {
     ui_col divBg, divDrag; float divEdgeW; ui_col divEdgeC;
     float gripW, gripH; ui_col gripBg, gripDrag; int gripRound, grips; float gripGap; ui_col gripLip;
     int divStitch; ui_col divStitchC;
+    /* the text sizes of the interface size (below): the voice's Interleaf body size
+     * (section "type"), and the smaller of the settings card's and the setup's row
+     * label and secondary text (sections "card" and "setup": row, sub) */
+    float bodyPx, rowPx, subPx;
 } UiVoice;
 
 extern const UiVoice *const ui_voices[];   /* white, editorial, stationery */
@@ -148,6 +153,110 @@ int ui_icon_material(UiGc *g, const char *name, double px, double cx, double cy,
 void ui_hatch(UiGc *g, double x, double y, double w, double h, double r, double angle, double lw, double step, ui_col c);
 UiFont ui_font_with(const UiFont *f, int weight);
 UiFont ui_font_px(const UiFont *f, float px);
+
+/* ---- whole device pixels -------------------------------------------------------
+ * A context scaled by a whole number puts the design's values on whole device pixels
+ * as they are. At a fractional scale (an interface factor of 1.6, 1.8, 2.4) the
+ * calls above do it themselves: ui_fill_rect, ui_rrect, ui_box, ui_box_bg,
+ * ui_stroke_rrect and ui_hline put their outer edges on the nearest device pixel
+ * edge, and every border, ring and rule is a whole number of device pixels thick,
+ * never under one; ui_hatch's lines are at least one device pixel thick. At a whole
+ * scale, and under a matrix that turns or shears, they draw the values as given.
+ * The scale is the context's matrix times its target's device scale.
+ * For a program's own shapes: */
+double ui_dev_scale(cairo_t *cr);               /* device px per logical px (x) */
+double ui_snap_x(cairo_t *cr, double x);        /* the nearest x on a device pixel edge */
+double ui_snap_y(cairo_t *cr, double y);
+/* the nearest length that is a whole number of device pixels, at least one for
+ * len > 0 (its sign kept; 0 stays 0) */
+double ui_snap_len(cairo_t *cr, double len);
+/* a logical length in device pixels at a factor, rounded: a buffer for a surface
+ * logical px wide is ui_device_px(logical, factor) wide */
+int ui_device_px(double logical, double factor);
+
+/* ---- the size of the interface (README "Interface size") ------------------------
+ * A design pixel has a length: UI_MM_PER_PX millimetres at the interface size
+ * Default, times the size's percentage otherwise. An output's density (the pixels
+ * of its mode, not turned, not scaled, per millimetre) turns that into its factor:
+ * device pixels per design pixel, the scale the output is given. */
+#define UI_MM_PER_PX 0.224
+#define UI_FALLBACK_DENSITY (1 / UI_MM_PER_PX)  /* an output of unknown size: 4.464 */
+#define UI_FACTOR_SNAP 0.03                     /* a factor this near a whole number is it */
+#define UI_TEXT_MM_ROW 2.8                      /* running text and row labels, em size */
+#define UI_TEXT_MM_MIN 2.0                      /* any other text */
+#define UI_TAP_MM 7.0                           /* a control that takes a tap, both ways */
+extern const int ui_size_steps[];               /* 80, 90, 100, 120 */
+extern const int ui_nsize_steps;
+int ui_size_step_ok(int percent);               /* one of the steps */
+int ui_text_size_ok(int percent);               /* 100..150, a multiple of 5 */
+/* does a reported physical size count? Both ways within 1..100 px/mm, and not the
+ * aspect ratio in centimetres (16 x 9, 16 x 10, 160 x 90, 160 x 100 mm, either way up) */
+int ui_size_plausible(int w_px, int h_px, double w_mm, double h_mm);
+enum { UI_DENSITY_REPORTED, UI_DENSITY_MEASURED, UI_DENSITY_FALLBACK };
+/* an output's density: from its reported size when plausible (w_px / w_mm), else
+ * the kept one (1..100; 0: none), else UI_FALLBACK_DENSITY; *source says which */
+double ui_density(int w_px, int h_px, double w_mm, double h_mm, double kept, int *source);
+const char *ui_density_source_name(int source); /* reported | measured | fallback */
+/* density x UI_MM_PER_PX x percent / 100; within UI_FACTOR_SNAP of a whole number
+ * (1 or more) it is that number. A percent that is no step counts as 100. */
+double ui_factor(double density, int percent);
+/* the millimetres of a design pixel on the glass at a factor: factor / density */
+double ui_mm_per_px(double factor, double density);
+/* an output's key: "MAKE MODEL SERIAL" (a missing part is "Unknown"), or the
+ * connector name when all three are unknown */
+void ui_output_key(const char *make, const char *model, const char *serial, const char *name, char *buf, size_t len);
+
+/* The files. A path of NULL is the file's own place; the *_file calls give it
+ * (0: there is none, as without XDG_RUNTIME_DIR). A write keeps the other lines,
+ * is written beside the file and renamed over it; 0 on success, -1 otherwise.
+ *   $XDG_CONFIG_HOME/glassine/ui-size          PERCENT OUTPUT-KEY
+ *   $XDG_CONFIG_HOME/glassine/text-size        PERCENT
+ *   $XDG_CONFIG_HOME/glassine/output-density   DENSITY OUTPUT-KEY (read only here)
+ *   $XDG_RUNTIME_DIR/glassine/output-scale     FACTOR DENSITY SOURCE OUTPUT-KEY */
+int ui_size_file(char *buf, size_t len);
+int ui_text_size_file(char *buf, size_t len);
+int ui_output_density_file(char *buf, size_t len);
+int ui_output_scale_file(char *buf, size_t len);
+int ui_size_read(const char *path, const char *key);            /* the output's step; 100 without a line */
+int ui_size_write(const char *path, const char *key, int percent);   /* 100 removes the line */
+int ui_text_size_read(const char *path);                        /* 100 without a file or with other content */
+int ui_text_size_write(const char *path, int percent);
+double ui_output_density_read(const char *path, const char *key);    /* 0: none kept */
+typedef struct {
+    double factor, density;
+    int source;                         /* UI_DENSITY_* */
+    char key[256];
+} UiOutputScale;
+/* every output of the file into out[0..max); returns how many it has */
+int ui_output_scale_read(const char *path, UiOutputScale *out, int max);
+int ui_output_scale_find(const char *path, const char *key, UiOutputScale *out);    /* 1: found */
+int ui_output_scale_write(const char *path, const UiOutputScale *v, int n);         /* the whole file */
+
+/* The text size and the minimums: one state for the process, read by every text
+ * call. mm_per_px: the millimetres of a design pixel on the glass (ui_mm_per_px;
+ * 0: unknown, no minimums); text_factor: 1.0 to 1.5; body_px, row_px: the voice's
+ * body size and row label size (UiVoice bodyPx, rowPx). A program that draws for
+ * outputs of different factors sets it before it draws for each. Until it is set:
+ * no minimums, text factor 1. */
+void ui_metrics_set(double mm_per_px, double text_factor, double body_px, double row_px);
+void ui_metrics_voice(const UiVoice *v, double mm_per_px, double text_factor);
+void ui_metrics_get(double *mm_per_px, double *text_factor, double *body_px, double *row_px);
+/* The size a type style of px design pixels is drawn at:
+ *   px x (1 + (text_factor - 1) x min(1, body_px / px)), and at least its minimum:
+ *   UI_TEXT_MM_ROW for px >= row_px, UI_TEXT_MM_MIN for smaller ones (and for
+ *   every style while row_px is 0), in design pixels at mm_per_px.
+ * ui_text, ui_text_w and ui_text_wrap draw every font at this size themselves; these
+ * are for layouts. Never put the result back into a UiFont: it would grow twice. */
+double ui_text_px_at(double px, double text_factor, double body_px, double row_px, double mm_per_px);
+double ui_grown_px(double px);                  /* with the process's metrics */
+float ui_text_px(const UiFont *f);              /* f->px itself when nothing applies */
+/* the height of a box that holds lines of text in f once the text has grown:
+ * h + lines x lh x (ui_text_px(f) - f->px); lh: the line height as a factor of the
+ * font size (<= 0: 1); lines <= 0: one. Spacing and icons keep their size. */
+double ui_grow(double h, const UiFont *f, double lines, double lh);
+/* the least width and height of a control that takes a tap, in design pixels
+ * (UI_TAP_MM); 0 while mm_per_px is unknown */
+double ui_min_tap(void);
 
 #ifdef __cplusplus
 }

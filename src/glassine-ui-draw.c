@@ -125,10 +125,78 @@ static void path_rr4(cairo_t *cr, double x, double y, double w, double h, const 
     cairo_close_path(cr);
 }
 
+/* ---- whole device pixels ---------------------------------------------------------
+ * Device px = logical x s + t, for a context that only scales (by the same factor
+ * both ways) and moves; s includes the target's device scale. */
+typedef struct { double s, tx, ty; } Snap;
+
+static int snap_of(cairo_t *cr, Snap *n)
+{
+    cairo_matrix_t m;
+    double dx = 1, dy = 1;
+    cairo_get_matrix(cr, &m);
+    cairo_surface_get_device_scale(cairo_get_target(cr), &dx, &dy);
+    if (m.xy || m.yx || m.xx <= 0 || m.xx != m.yy || dx != dy || dx <= 0) return 0;
+    n->s = m.xx * dx;
+    n->tx = m.x0 * dx;
+    n->ty = m.y0 * dy;
+    return 1;
+}
+
+/* the same, only at a fractional scale: a whole scale draws the values as given */
+static int snap_frac(cairo_t *cr, Snap *n)
+{
+    return snap_of(cr, n) && fabs(n->s - round(n->s)) > 1e-6;
+}
+
+static double snap_x(const Snap *n, double x) { return (round(x * n->s + n->tx) - n->tx) / n->s; }
+static double snap_y(const Snap *n, double y) { return (round(y * n->s + n->ty) - n->ty) / n->s; }
+
+static double snap_len(const Snap *n, double len)
+{
+    if (len == 0) return 0;
+    double d = round(fabs(len) * n->s);
+    return (len < 0 ? -1 : 1) * (d < 1 ? 1 : d) / n->s;
+}
+
+/* a rect's edges on device pixel edges; a side that had a length keeps at least one pixel */
+static void snap_rect(const Snap *n, double *x, double *y, double *w, double *h)
+{
+    double x0 = snap_x(n, *x), x1 = snap_x(n, *x + *w), y0 = snap_y(n, *y), y1 = snap_y(n, *y + *h);
+    if (*w > 0 && x1 - x0 < 0.5 / n->s) x1 = x0 + 1 / n->s;
+    if (*h > 0 && y1 - y0 < 0.5 / n->s) y1 = y0 + 1 / n->s;
+    *x = x0; *y = y0; *w = x1 - x0; *h = y1 - y0;
+}
+
+double ui_dev_scale(cairo_t *cr)
+{
+    double ux = 1, uy = 0, dx = 1, dy = 1;
+    cairo_user_to_device_distance(cr, &ux, &uy);
+    cairo_surface_get_device_scale(cairo_get_target(cr), &dx, &dy);
+    return hypot(ux, uy) * dx;
+}
+
+double ui_snap_x(cairo_t *cr, double x) { Snap n; return snap_of(cr, &n) ? snap_x(&n, x) : x; }
+double ui_snap_y(cairo_t *cr, double y) { Snap n; return snap_of(cr, &n) ? snap_y(&n, y) : y; }
+double ui_snap_len(cairo_t *cr, double len) { Snap n; return snap_of(cr, &n) ? snap_len(&n, len) : len; }
+
 void ui_box_bg(UiGc *g, double x, double y, double w, double h, const UiBox *b, ui_col bg)
 {
     if (!g->paint || w <= 0 || h <= 0) return;
     cairo_t *cr = g->cr;
+    Snap n;
+    UiBox sb;
+    if (snap_frac(cr, &n)) {            /* edges, border and rings on whole device pixels */
+        snap_rect(&n, &x, &y, &w, &h);
+        sb = *b;
+        sb.bw = snap_len(&n, sb.bw);
+        for (int i = 0; i < sb.nring; i++) {
+            sb.ring[i].x = snap_len(&n, sb.ring[i].x);
+            sb.ring[i].y = snap_len(&n, sb.ring[i].y);
+            sb.ring[i].spread = snap_len(&n, sb.ring[i].spread);
+        }
+        b = &sb;
+    }
     /* outer rings, bottom-most (last) first, never under the box itself */
     for (int i = b->nring - 1; i >= 0; i--) {
         const UiRing *r = &b->ring[i];
@@ -188,6 +256,8 @@ void ui_box(UiGc *g, double x, double y, double w, double h, const UiBox *b) { u
 void ui_fill_rect(UiGc *g, double x, double y, double w, double h, ui_col c)
 {
     if (!g->paint || !c) return;
+    Snap n;
+    if (snap_frac(g->cr, &n)) snap_rect(&n, &x, &y, &w, &h);
     cairo_rectangle(g->cr, x, y, w, h);
     src(g->cr, c);
     cairo_fill(g->cr);
@@ -196,6 +266,8 @@ void ui_fill_rect(UiGc *g, double x, double y, double w, double h, ui_col c)
 void ui_rrect(UiGc *g, double x, double y, double w, double h, double r, ui_col c)
 {
     if (!g->paint || !c) return;
+    Snap n;
+    if (snap_frac(g->cr, &n) && w > 0 && h > 0) snap_rect(&n, &x, &y, &w, &h);
     float r4[4] = { r, r, r, r };
     path_rr4(g->cr, x, y, w, h, r4, 0);
     src(g->cr, c);
@@ -206,6 +278,11 @@ void ui_stroke_rrect(UiGc *g, double x, double y, double w, double h, double r, 
 {
     /* lw <= 0: nothing to stroke, and a { 0, 0 } dash would put cr in an error state */
     if (!g->paint || !c || lw <= 0) return;
+    Snap n;
+    if (snap_frac(g->cr, &n) && w > 0 && h > 0) {
+        snap_rect(&n, &x, &y, &w, &h);
+        lw = snap_len(&n, lw);
+    }
     float r4[4] = { r, r, r, r };
     cairo_save(g->cr);                  /* the caller's line width and dash stay */
     path_rr4(g->cr, x + lw / 2, y + lw / 2, w - lw, h - lw, r4, -lw / 2);
@@ -221,6 +298,16 @@ void ui_stroke_rrect(UiGc *g, double x, double y, double w, double h, double r, 
 void ui_hline(UiGc *g, double x, double y, double w, double lw, ui_col c, int dashed)
 {
     if (!g->paint || !c || lw <= 0) return;
+    Snap n;
+    if (snap_frac(g->cr, &n)) {         /* whole device pixels thick, its top on a pixel edge */
+        lw = snap_len(&n, lw);
+        y = snap_y(&n, y);
+        if (dashed) {
+            double x1 = snap_x(&n, x + w);
+            x = snap_x(&n, x);
+            w = x1 - x;
+        }
+    }
     if (!dashed) { ui_fill_rect(g, x, y, w, lw, c); return; }
     double d[2] = { dashed == 2 ? lw : 3 * lw, dashed == 2 ? lw : 2 * lw };
     cairo_save(g->cr);                  /* the caller's line width and dash stay */
@@ -244,6 +331,8 @@ void ui_hatch(UiGc *g, double x, double y, double w, double h, double r, double 
     /* CSS: 0deg points up, angles turn clockwise; the stripes run across that direction */
     double a = angle * M_PI / 180, dx = sin(a), dy = -cos(a);   /* the gradient's direction */
     double cx = x + w / 2, cy = y + h / 2, half = (fabs(w * dx) + fabs(h * dy)) / 2;
+    Snap n;
+    if (snap_frac(cr, &n) && lw > 0 && lw * n.s < 1) lw = 1 / n.s;
     cairo_set_line_width(cr, lw);
     for (double t = -half; t <= half + step; t += step) {
         double px_ = cx + dx * t, py = cy + dy * t, L = w + h;
@@ -268,12 +357,13 @@ static PangoLayout *layout(UiGc *g, const UiFont *f, const char *s, double maxw)
     pango_font_description_set_family(d, f->family);
     pango_font_description_set_weight(d, f->weight ? f->weight : 400);
     pango_font_description_set_style(d, f->italic ? PANGO_STYLE_ITALIC : PANGO_STYLE_NORMAL);
-    pango_font_description_set_absolute_size(d, f->px * PANGO_SCALE);
+    float px = ui_text_px(f);          /* the text size and the minimums; f->px itself otherwise */
+    pango_font_description_set_absolute_size(d, px * PANGO_SCALE);
     if (f->smallcaps) pango_font_description_set_variant(d, PANGO_VARIANT_SMALL_CAPS);
     pango_layout_set_font_description(l, d);
     pango_font_description_free(d);
     PangoAttrList *al = pango_attr_list_new();
-    if (f->ls) pango_attr_list_insert(al, pango_attr_letter_spacing_new((int)(f->ls * f->px * PANGO_SCALE)));
+    if (f->ls) pango_attr_list_insert(al, pango_attr_letter_spacing_new((int)(f->ls * px * PANGO_SCALE)));
     if (f->tcase == UI_CASE_UPPER) pango_attr_list_insert(al, pango_attr_text_transform_new(PANGO_TEXT_TRANSFORM_UPPERCASE));
     if (f->tcase == UI_CASE_LOWER) pango_attr_list_insert(al, pango_attr_text_transform_new(PANGO_TEXT_TRANSFORM_LOWERCASE));
     pango_layout_set_attributes(l, al);

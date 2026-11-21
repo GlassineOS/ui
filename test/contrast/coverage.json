@@ -17,6 +17,7 @@
   "MoreList": { "text": 5, "focusRing": 1 },
   "Navigation": { "text": 30, "focusRing": 9 },
   "Pagination": { "text": 12, "focusRing": 2 },
+  "Popover": { "text": 20, "focusRing": 4 },
   "SectionHeading": { "text": 7, "focusRing": 0 },
   "Table": { "text": 15, "focusRing": 0 },
   "VerifiedStamp": { "text": 3, "focusRing": 0 }

@@ -532,6 +532,15 @@
    "title": "The days of a year, turned",
    "page": "templates",
    "is_interactive": false
+  },
+  "templates.year.landscape.dc.html": {
+   "x": 10456,
+   "y": 0,
+   "w": 1080,
+   "h": 1104,
+   "title": "The year planned ahead, turned",
+   "page": "templates",
+   "is_interactive": false
   }
  },
  "notes": {
@@ -670,7 +679,7 @@
    "x": 0,
    "y": -200,
    "w": 240,
-   "maxW": 10376
+   "maxW": 11536
   },
   "n-templates": {
    "page": "templates",
@@ -757,6 +766,7 @@
   "cog.strength.dc.html",
   "templates.picker.dc.html",
   "templates.year.dc.html",
+  "templates.year.landscape.dc.html",
   "templates.used.dc.html",
   "templates.editor.dc.html",
   "templates.editor.landscape.dc.html",

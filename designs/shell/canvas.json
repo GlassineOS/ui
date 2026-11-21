@@ -626,6 +626,15 @@
    "x": 3612,
    "y": 8300
   },
+  "settings.appearance.ui-size.dc.html": {
+   "h": 1300,
+   "is_interactive": true,
+   "page": "settings",
+   "title": "settings.appearance.ui-size · Appearance › Interface size at two sizes",
+   "w": 1560,
+   "x": 0,
+   "y": 9960
+  },
   "settings.apps.dc.html": {
    "h": 1540,
    "is_interactive": true,
@@ -1126,6 +1135,7 @@
   "settings.keyboard.languages.dc.html",
   "settings.keyboard.layout-dictionary.dc.html",
   "settings.appearance.screen-size.dc.html",
+  "settings.appearance.ui-size.dc.html",
   "settings.apps.dc.html",
   "settings.app.dc.html",
   "settings.app.eink.dc.html",

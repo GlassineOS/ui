@@ -15,7 +15,7 @@ check() {
     done
     echo "ok   $what: -O1 with -fPIC and -Wall"
 }
-check "make CFLAGS=-O1" make -s -n -B -C "$R" O=out/test/flags CFLAGS=-O1 out/test/flags/libglassine-ui.so.1.4.0
-check "CFLAGS=-O1 make" env CFLAGS=-O1 make -s -n -B -C "$R" O=out/test/flags out/test/flags/libglassine-ui.so.1.4.0
+check "make CFLAGS=-O1" make -s -n -B -C "$R" O=out/test/flags CFLAGS=-O1 out/test/flags/libglassine-ui.so.1.5.0
+check "CFLAGS=-O1 make" env CFLAGS=-O1 make -s -n -B -C "$R" O=out/test/flags out/test/flags/libglassine-ui.so.1.5.0
 echo "build-flags: $([ $fails = 0 ] && echo all passed || echo FAILED)"
 exit $fails

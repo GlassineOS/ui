@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Picking a range on the year</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div data-spec-id="templates.range" style="width:824px;height:1352px;box-sizing:border-box;padding:28px 32px;display:flex;flex-direction:column;gap:18px;background:#e6e6e6;color:#1b1b1b;font-family:'IBM Plex Sans',sans-serif">
+<div style="display:flex;flex-direction:column;gap:6px">
+<span style="font:500 13px/1.2 'IBM Plex Mono',monospace;color:#3d3d3d">templates.range</span>
+<h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">Picking a range on the year</h1>
+<p style="margin:0;max-width:760px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">Two ways into a range. With the template first (Change on a range, or A range of weeks in the list), the lead says what to tap: the first and the last week for that template, then, after the first tap, only the last; the first is dotted beneath until the second tap saves the range. With the weeks first, a tap on a cell dots it beneath and the second tap opens the template list with the scope named after the range (Weeks 12 to 18), and the list asks for the template.</p>
+</div>
+<dc-import name="ThemeBar" voice="{{ voice }}" on-pick="{{ pick }}" hint-size="100%,112px"></dc-import>
+<dc-import name="Planner" voice="{{ voice }}" orient="portrait" tmpl="week-columns" screen="{{ screen }}" range="{{ range }}" hint-size="760px,1008px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "screen": {"editor": "enum", "options": ["year", "picker"], "default": "year"}, "range": {"editor": "enum", "options": ["first", "last", "named"], "default": "first"}, "$preview": {"width": 824, "height": 1352}, "$states": [{"id": "first", "name": "Template first: tap the first and the last", "props": {"screen": "year", "range": "first"}}, {"id": "last", "name": "Then only the last", "props": {"screen": "year", "range": "last"}}, {"id": "named", "name": "Weeks first: the scope names the range", "props": {"screen": "picker", "range": "named"}}]}'>
+class Component extends DCLogic {
+  state = {};
+  renderVals() {
+    const s = this.state, p = this.props;
+    return { voice: s.voice ?? p.voice ?? 'white', pick: (k, v) => this.setState({ [k]: v }), screen: p.screen ?? "year", range: p.range ?? "first" };
+  }
+}
+</script>
+</body>
+</html>

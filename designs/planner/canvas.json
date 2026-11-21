@@ -362,6 +362,15 @@
    "page": "templates",
    "is_interactive": false
   },
+  "templates.new.dc.html": {
+   "x": 4776,
+   "y": 0,
+   "w": 824,
+   "h": 1376,
+   "title": "A new template, or a copy",
+   "page": "templates",
+   "is_interactive": false
+  },
   "event.draw.dc.html": {
    "x": 0,
    "y": 0,
@@ -580,11 +589,11 @@
    "x": 0,
    "y": -200,
    "w": 240,
-   "maxW": 4776
+   "maxW": 5600
   },
   "n-templates": {
    "page": "templates",
-   "text": "Several templates per kind; one chosen per period, a range or from a date on, and a default. An edit applies everywhere the template is used; copying first keeps the old arrangement.",
+   "text": "Several templates per kind; one chosen per period, a range or from a date on, and a default. An edit applies everywhere the template is used; copying first keeps the old arrangement. The editor only arranges widgets: it never creates, changes or deletes an entry.",
    "x": 0,
    "y": -560,
    "w": 2400

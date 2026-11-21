@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Planner widget</title>
+<script src="./support.js"></script>
+<script src="data/planner.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/web/tokens.css">
+<link rel="stylesheet" href="ds/web/bundle.css">
+<link rel="stylesheet" href="planner.css">
+</helmet>
+<div class="{{ g.cls }}" style="left:0;top:0;width:100%;height:100%">
+<div class="pl-wg-head"><span class="lbl">{{ g.title }}</span><span class="tag">{{ g.tag }}</span></div>
+<div class="pl-wg-body">
+<sc-if value="{{ g.isList }}" hint-placeholder-val="{{ false }}"><div class="pl-rows"><sc-for list="{{ g.list }}" as="r" hint-placeholder-count="3"><div class="{{ r.cls }}"><sc-if value="{{ g.ticks }}" hint-placeholder-val="{{ true }}"><span class="tick"></span></sc-if><sc-if value="{{ g.numbered }}" hint-placeholder-val="{{ false }}"><span class="num">{{ r.num }}</span></sc-if><span class="pl-ink"><sc-for list="{{ r.words }}" as="w" hint-placeholder-count="3"><span class="{{ w.cls }}" style="{{ w.st }}">{{ w.t }}</span></sc-for></span><sc-if value="{{ r.text }}" hint-placeholder-val="{{ false }}"><span class="pl-textrow">{{ r.value }}</span></sc-if></div></sc-for><sc-if value="{{ g.more }}" hint-placeholder-val="{{ false }}"><a class="pl-more" href="{{ g.moreHref }}">{{ g.moreLabel }}</a></sc-if></div></sc-if>
+<sc-if value="{{ g.isNotes }}" hint-placeholder-val="{{ false }}"><sc-for list="{{ g.guides }}" as="gl" hint-placeholder-count="3"><div class="pl-guide" style="top:{{ gl.y }}px"></div></sc-for><div class="pl-lines"><sc-for list="{{ g.lines }}" as="l" hint-placeholder-count="2"><div class="pl-line" style="position:relative"><span class="pl-ink"><sc-for list="{{ l.words }}" as="w" hint-placeholder-count="3"><span class="{{ w.cls }}" style="{{ w.st }}">{{ w.t }}</span></sc-for></span><sc-if value="{{ l.text }}" hint-placeholder-val="{{ false }}"><span class="pl-textrow" style="left:-4px;right:0">{{ l.value }}</span></sc-if></div></sc-for><sc-if value="{{ g.more }}" hint-placeholder-val="{{ false }}"><a class="pl-more" href="{{ g.moreHref }}">{{ g.moreLabel }}</a></sc-if></div><sc-if value="{{ g.doodle }}" hint-placeholder-val="{{ false }}"><svg width="70" height="34" viewBox="0 0 70 34" style="position:absolute;right:16px;top:{{ g.doodleY }}px"><path d="M4 26C18 6 34 30 52 12 M44 10l9 2-2 9" fill="none" stroke="var(--pen)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg></sc-if></sc-if>
+<sc-if value="{{ g.isHabits }}" hint-placeholder-val="{{ false }}"><div class="pl-hab-head"><span class="pl-hab-name"></span><span class="pl-hab-cells"><sc-for list="{{ g.heads }}" as="hd" hint-placeholder-count="7"><span class="{{ hd.cls }}" style="width:{{ g.cw }}px">{{ hd.t }}</span></sc-for></span></div><sc-for list="{{ g.habits }}" as="hb" hint-placeholder-count="3"><div class="{{ hb.cls }}"><span class="pl-hab-name"><span class="pl-ink"><sc-for list="{{ hb.words }}" as="w" hint-placeholder-count="2"><span class="{{ w.cls }}" style="{{ w.st }}">{{ w.t }}</span></sc-for></span>{{ hb.addLabel }}</span><span class="pl-hab-cells"><sc-for list="{{ hb.cells }}" as="hc" hint-placeholder-count="7"><span style="width:{{ g.cw }}px"><i class="{{ hc.cls }}"></i></span></sc-for></span></div></sc-for><sc-if value="{{ g.more }}" hint-placeholder-val="{{ false }}"><a class="pl-more" href="{{ g.moreHref }}">{{ g.moreLabel }}</a></sc-if></sc-if>
+<sc-if value="{{ g.isMonth }}" hint-placeholder-val="{{ false }}"><div class="{{ g.mmCls }}" style="grid-template-rows:22px repeat({{ g.rows }},1fr)"><sc-for list="{{ g.heads }}" as="hd" hint-placeholder-count="7"><span class="pl-mm-h">{{ hd.t }}</span></sc-for><sc-for list="{{ g.cells }}" as="c" hint-placeholder-count="35"><span class="{{ c.cls }}"><b>{{ c.t }}</b><sc-for list="{{ c.evs }}" as="ce" hint-placeholder-count="1"><span class="pl-mm-ev"><span class="pl-ink"><sc-for list="{{ ce.words }}" as="w" hint-placeholder-count="2"><span class="{{ w.cls }}" style="{{ w.st }}">{{ w.t }}</span></sc-for></span></span></sc-for><sc-if value="{{ c.more }}" hint-placeholder-val="{{ false }}"><span class="pl-mm-more">{{ c.moreLabel }}</span></sc-if></span></sc-for></div></sc-if>
+<sc-if value="{{ g.isWeek }}" hint-placeholder-val="{{ false }}"><sc-for list="{{ g.days }}" as="dy" hint-placeholder-count="7"><div class="{{ dy.cls }}" style="height:{{ dy.h }}px"><span class="d">{{ dy.name }}<b>{{ dy.num }}</b></span><span class="pl-wk-evs"><sc-for list="{{ dy.evs }}" as="de" hint-placeholder-count="2"><span class="pl-wk-ev"><span class="t">{{ de.when }}</span><span class="pl-ink"><sc-for list="{{ de.words }}" as="w" hint-placeholder-count="2"><span class="{{ w.cls }}" style="{{ w.st }}">{{ w.t }}</span></sc-for></span></span></sc-for><sc-if value="{{ dy.more }}" hint-placeholder-val="{{ false }}"><span class="pl-mm-more">{{ dy.moreLabel }}</span></sc-if></span></div></sc-for></sc-if>
+<sc-if value="{{ g.isAgenda }}" hint-placeholder-val="{{ false }}"><sc-for list="{{ g.hrs }}" as="hr" hint-placeholder-count="8"><div class="pl-hr" style="top:{{ hr.y }}px"><span>{{ hr.t }}</span></div><sc-if value="{{ hr.showHalf }}" hint-placeholder-val="{{ true }}"><div class="pl-hr is-half" style="top:{{ hr.half }}px"></div></sc-if></sc-for><sc-if value="{{ g.hasAllDay }}" hint-placeholder-val="{{ false }}"><div class="pl-allday" style="top:4px"><sc-for list="{{ g.allDay }}" as="ad" hint-placeholder-count="1"><span class="pl-ad"><span class="pl-ink"><sc-for list="{{ ad.words }}" as="w" hint-placeholder-count="2"><span class="{{ w.cls }}" style="{{ w.st }}">{{ w.t }}</span></sc-for></span></span></sc-for></div></sc-if><sc-if value="{{ g.nowY }}" hint-placeholder-val="{{ false }}"><div class="pl-now" style="top:{{ g.nowY }}px"></div></sc-if><sc-for list="{{ g.blocks }}" as="b" hint-placeholder-count="3"><div class="{{ b.cls }}" style="top:{{ b.y }}px;height:{{ b.h }}px;{{ b.extra }}"><span class="pl-ink"><sc-for list="{{ b.words }}" as="w" hint-placeholder-count="2"><span class="{{ w.cls }}" style="{{ w.st }}">{{ w.t }}</span></sc-for></span><span class="when">{{ b.when }}</span><sc-if value="{{ b.handle }}" hint-placeholder-val="{{ false }}"><span class="grip"></span></sc-if></div></sc-for><sc-if value="{{ g.before }}" hint-placeholder-val="{{ false }}"><span class="pl-agenda-edge" style="top:{{ g.top }}px">{{ g.beforeLabel }}</span></sc-if><sc-if value="{{ g.after }}" hint-placeholder-val="{{ false }}"><span class="pl-agenda-edge" style="bottom:0">{{ g.afterLabel }}</span></sc-if><sc-for list="{{ g.readouts }}" as="ro" hint-placeholder-count="1"><span class="pl-readout" style="top:{{ ro.y }}px">{{ ro.t }}</span></sc-for></sc-if>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"g": {"editor": null}, "$preview": {"width": 300, "height": 240}}'>
+class Component extends DCLogic {
+  // One widget of a planner page, drawn from the view model Planner gives it (data/planner.js).
+  // Opened on its own it shows the week's to-do list.
+  renderVals() {
+    const g = this.props.g;
+    if (g && g.kind) return { g };
+    return { g: Component.sample() };
+  }
+  static sample() {
+    const PL = window.PLANNER;
+    PL.T['part-todo'] = PL.T['part-todo'] || { kind: 'week', name: 'part', hidden: true, root: { k: 'col', c: [{ wg: 'todo', period: 'week', title: 'This week', grow: true }] } };
+    const g = PL.page({ tmpl: 'part-todo', W: 300, H: 240 }).widgets[0];
+    return Object.assign(g, { cls: 'pl-wg', isList: true, more: g.more > 0, moreHref: '#', readouts: [] });
+  }
+}
+</script>
+</body>
+</html>

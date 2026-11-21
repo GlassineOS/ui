@@ -33,9 +33,9 @@ body{margin:0}
 
 <section><h2>New Interleaf components</h2>
 <table><tr><th>Component</th><th>What it is</th><th>In libglassine-ui?</th></tr>
-<sc-for list="{{ comps }}" as="c" hint-placeholder-count="5"><tr><td><b>{{ c.name }}</b><br><code>{{ c.cls }}</code></td><td>{{ c.what }}</td><td>{{ c.lib }}</td></tr></sc-for>
+<sc-for list="{{ comps }}" as="c" hint-placeholder-count="6"><tr><td><b>{{ c.name }}</b><br><code>{{ c.cls }}</code></td><td>{{ c.what }}</td><td>{{ c.lib }}</td></tr></sc-for>
 </table>
-<p style="margin-top:12px">Reused, not new: the hidden count is a Chip or one quiet line; dialogs are Dialog; buttons are Button.</p>
+<p style="margin-top:12px">Reused, not new: dialogs are Dialog; buttons are Button; the sheets are the planner’s own for now.</p>
 </section>
 
 <div class="two">
@@ -67,7 +67,8 @@ class Component extends DCLogic {
         { name: 'Ink field', cls: 'il-inkfield', what: 'A handwriting field: its ruled line or lines, the ink in the pen colour, the words set in Autograph in their place, an empty row to write in. In text mode it becomes an ordinary text field.', lib: 'The frame only (rules, the empty row, the text-mode box). The ink and the reading belong to the writing regions (handwriting spec 005) and their client.' },
         { name: 'More list', cls: 'il-morelist', what: 'Rows under rules, one empty row kept at the end, and a quiet “+n more” after the last row that opens the whole list. Rows give way done first, then the oldest open.', lib: 'Yes: Home’s lists and Settings’ long lists (saved networks, paired devices) truncate the same way.' },
         { name: 'Mini month', cls: 'il-minimonth', what: 'Seven columns of days, a dot under days with entries, today ringed, a week shaded; at a large size the month grid with entries in each day.', lib: 'Yes: a Home calendar widget and the date pickers in Settings and the planner.' },
-        { name: 'Cog menu', cls: 'il-cogmenu', what: 'One small cog without an edge, in ink-soft, and the menu it opens: rows with an icon, a name and one line, a toggle or a chevron, a developer row under a dashed rule.', lib: 'Yes: any program that hides its maintenance the same way (Home’s arrange mode, a reader’s settings).' }
+        { name: 'Popover', cls: 'il-popover, il-iconbtn', what: 'A quiet icon button at the end of a bar, with an optional small count, and the card it opens under itself: details (the template in use), a section of rows that lead on (the hidden counts), a tool button in its head. Replaces a permanent foot line.', lib: 'Yes: Home and Settings can hold a page’s details the same way instead of a status line.' },
+        { name: 'Cog menu', cls: 'il-cogmenu', what: 'One small cog without an edge, in ink-soft, and the menu it opens: rows with an icon, a name and one line, a toggle or a chevron, a developer row under a dashed rule. In the planner the cog sits in the Popover’s head and the menu takes the popover’s place.', lib: 'Yes: any program that hides its maintenance the same way (Home’s arrange mode, a reader’s settings).' }
       ],
       grid: [
         'Widths from declarations: each widget declares a minimum and a preferred width; the template adds weight and grow.',
@@ -84,18 +85,20 @@ class Component extends DCLogic {
         { step: 'Settle after the pause', cost: 'once, only the widgets whose size changed' },
         { step: 'Event drag, per 30-minute step', cost: 'the strip the block leaves and enters, a few per cent of the panel (the spike: about 3 %)' },
         { step: 'Release after a drag', cost: 'one more small refresh, as the drag look goes (a drag without that look would save it)' },
-        { step: 'The cog’s menu, the hidden list, a widget’s whole content', cost: 'one rectangle to open, one to close' },
+        { step: 'The (i) popover, the hidden list, a widget’s whole content', cost: 'one rectangle to open, one to close' },
+        { step: 'The cog inside the popover', cost: 'only the popover’s rectangle (it becomes the menu)' },
+        { step: 'The number on the (i)', cost: 'the icon’s own box, only when the count changes' },
         { step: 'Text mode on a field', cost: 'the field and the keyboard’s area; nothing is laid out again' }
       ],
       decisions: [
-        'The cog: in the foot line (A, proposed) or in the page’s lower corner (B).',
-        'The cog’s contents: text mode for the view, the template (choose, plan ahead), edit this template, settings; debug only in developer builds. Anything to add or drop?',
-        'The hidden count: one quiet line (A) or a chip per kind (B).',
+        'The hint on the (i) that entries are hidden: a small number (A, proposed) or none (B, the count only in the popover).',
+        'What the (i) popover holds: the template in use and how this period got it, and the hidden counts by kind with a link to each list. Anything to add or drop?',
+        'The cog’s contents, now inside the popover: text mode for the view, the template (choose, plan ahead), edit this template, settings; debug only in developer builds. Anything to add or drop?',
+        'Search (spec 001 FR-050): a second quiet icon in the bar beside the (i) (A), or a field at the top of the popover (B).',
         'Leaving a field’s text mode: a Done button (A) or a tap outside the field (B).',
         'Where a field’s own opt-ins (Neaten, Set in Autograph) live: on the bar above the keyboard in that field’s text mode (proposed), or somewhere else.',
         'A long title in a short event: the field grows into the free time below (A) or is cut at the block with “…” (B).',
         'The rows that give way: done first, then the oldest open (the spike’s proposal), or something else.',
-        'Search (spec 001 FR-050) has no place yet: the bar holds only the planner. In the cog menu, a gesture, or a fourth item in the bar?',
         'Text mode for the whole view: the keyboard covers the lower screen (proposed, no relayout) or the view gives up the space and lays out again once.',
         'The fluid grid in libglassine-ui once Home uses it (recommended), or the planner keeps it.'
       ]

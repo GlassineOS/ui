@@ -35,8 +35,8 @@
    "name": "Hidden entries · counted, one tap from their list"
   },
   {
-   "id": "cog",
-   "name": "The cog · the only way to maintenance"
+   "id": "info",
+   "name": "The (i) · this page’s details, and the cog inside them"
   },
   {
    "id": "templates",
@@ -254,12 +254,12 @@
    "page": "text",
    "is_interactive": false
   },
-  "hidden.count.dc.html": {
+  "hidden.hint.dc.html": {
    "x": 0,
    "y": 0,
    "w": 824,
    "h": 1352,
-   "title": "The hidden count · two forms",
+   "title": "How the page says entries are hidden · two answers",
    "page": "hidden",
    "is_interactive": false
   },
@@ -272,31 +272,49 @@
    "page": "hidden",
    "is_interactive": false
   },
-  "cog.placement.dc.html": {
+  "info.popup.dc.html": {
    "x": 0,
    "y": 0,
    "w": 824,
-   "h": 1352,
-   "title": "Where the cog sits · two placements",
-   "page": "cog",
+   "h": 1376,
+   "title": "The (i) popover",
+   "page": "info",
    "is_interactive": false
   },
-  "cog.menu.dc.html": {
+  "info.popup.landscape.dc.html": {
    "x": 904,
+   "y": 0,
+   "w": 1080,
+   "h": 1104,
+   "title": "The (i) popover, turned",
+   "page": "info",
+   "is_interactive": false
+  },
+  "info.search.dc.html": {
+   "x": 2064,
    "y": 0,
    "w": 824,
    "h": 1352,
-   "title": "The cog’s menu",
-   "page": "cog",
+   "title": "Where search goes · two answers",
+   "page": "info",
+   "is_interactive": false
+  },
+  "cog.menu.dc.html": {
+   "x": 2968,
+   "y": 0,
+   "w": 824,
+   "h": 1376,
+   "title": "The cog’s menu, inside the popover",
+   "page": "info",
    "is_interactive": false
   },
   "cog.settings.dc.html": {
-   "x": 1808,
+   "x": 3872,
    "y": 0,
    "w": 824,
    "h": 1352,
    "title": "Planner settings",
-   "page": "cog",
+   "page": "info",
    "is_interactive": false
   },
   "templates.picker.dc.html": {
@@ -438,7 +456,7 @@
   },
   "n-day": {
    "page": "day",
-   "text": "The planner for GlassineOS/planner spec 001, a proposal. The bar holds only the planner: the period, Month, Week and Day, and previous, Today and next. Everything else (text mode, templates, settings) is behind the quiet cog at the right end of the foot; the foot’s left end counts what this layout doesn’t show. All ink is synthetic (Kalam with a wobble per word), never anyone’s writing. No reading is ever shown in ink mode. One device pixel is two panel pixels, as on the handwriting boards.",
+   "text": "The planner for GlassineOS/planner spec 001, a proposal. The bar holds only the planner: the period, Month, Week and Day, and previous, Today and next. There is no foot line: one quiet (i) beside the navigation opens this page’s details (the template, what this layout doesn’t show), and the cog inside that popover opens everything else (text mode, templates, settings). All ink is synthetic (Kalam with a wobble per word), never anyone’s writing. No reading is ever shown in ink mode. One device pixel is two panel pixels, as on the handwriting boards.",
    "x": 0,
    "y": -560,
    "w": 2400
@@ -534,23 +552,23 @@
   },
   "n-hidden": {
    "page": "hidden",
-   "text": "Nothing is lost by a layout: what no widget shows is counted per kind (and per slot for notes) and listed in ink one tap away.",
+   "text": "Nothing is lost by a layout: what no widget shows is counted per kind (and per slot for notes) in the (i) popover and listed in ink one tap further. With no foot line, the (i) itself carries the hint.",
    "x": 0,
    "y": -560,
    "w": 2400
   },
-  "t-cog": {
+  "t-info": {
    "kind": "title1",
-   "page": "cog",
-   "text": "The cog · the only way to maintenance",
+   "page": "info",
+   "text": "The (i) · this page’s details, and the cog inside them",
    "x": 0,
    "y": -200,
    "w": 240,
-   "maxW": 2712
+   "maxW": 4776
   },
-  "n-cog": {
-   "page": "cog",
-   "text": "One small cog, no edge, in ink-soft: never beside the navigation. Two placements to choose from; its contents are a proposal.",
+  "n-info": {
+   "page": "info",
+   "text": "One quiet (i) at the end of the bar, outside the Month/Week/Day group and the previous/next group, no edge. A tap opens a popover (one rectangle refresh); its cog turns the same popover into the maintenance menu. Search has no place yet: two answers.",
    "x": 0,
    "y": -560,
    "w": 2400
@@ -636,9 +654,11 @@
   "write.field.dc.html",
   "text.field.dc.html",
   "text.view.dc.html",
-  "hidden.count.dc.html",
+  "hidden.hint.dc.html",
   "hidden.list.dc.html",
-  "cog.placement.dc.html",
+  "info.popup.dc.html",
+  "info.popup.landscape.dc.html",
+  "info.search.dc.html",
   "cog.menu.dc.html",
   "cog.settings.dc.html",
   "templates.picker.dc.html",

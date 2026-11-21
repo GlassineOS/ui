@@ -118,7 +118,7 @@ html, body { margin: 0; }
 .pl-mm-d.is-today { font-weight: 700; }
 .pl-mm-d.is-today > b { box-shadow: 0 0 0 1.5px var(--ink); border-radius: 50%; }
 .pl-mm-d > b { font-weight: inherit; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
-.pl-mm-d.in-week { background: var(--highlight); }
+.pl-mm-d.in-week, .pl-mm-d.is-sel { background: var(--highlight); }
 .pl-mm.is-large .pl-mm-d { align-items: flex-start; justify-content: flex-start; flex-direction: column; padding: 3px 4px; gap: 1px; border-top: var(--v-row-rule); overflow: hidden; }
 .pl-mm.is-large .pl-mm-d.has::after { display: none; }
 .pl-mm.is-large .pl-mm-d > b { width: 22px; height: 20px; justify-content: flex-start; padding-left: 2px; }
@@ -178,6 +178,15 @@ html, body { margin: 0; }
 .pl-pop-back .pl-ico { width: 20px; height: 20px; }
 .pl-pop-search { display: flex; align-items: center; gap: 10px; margin: 10px 12px 4px; height: 40px; padding: 0 12px; border-radius: var(--v-ui-radius); box-shadow: inset 0 0 0 1.5px var(--ink); color: var(--ink-soft); text-decoration: none; font-size: 15px; }
 .pl-pop-search .pl-ico { width: 18px; height: 18px; color: var(--ink); }
+/* search: the field as typed, the entries found */
+.pl-pop-search.is-typed { color: var(--ink); }
+.pl-pop-search .caret { display: inline-block; width: 2px; height: 20px; background: var(--ink); margin-left: 1px; vertical-align: -4px; }
+.pl-pop-res { padding: 0 16px; }
+.pl-pop-res .pl-hl-i { color: var(--ink); text-decoration: none; overflow: hidden; }
+.pl-pop-res .pl-hl-i:last-child { border-bottom: 0; }
+/* an entry shown whole: a card over its place, its ink as written */
+.pl-card { padding: 8px 10px 10px; z-index: 6; }
+.pl-card .pl-ink { flex-wrap: wrap; row-gap: 4px; }
 .pl-pop-fact { display: flex; gap: 12px; padding: 10px 16px 8px; border-bottom: var(--v-row-rule); }
 .pl-pop-fact .k { flex: none; width: 74px; padding-top: 2px; font: 500 11px/1.3 var(--font-mono); color: var(--ink-soft); }
 .pl-pop-fact .v { flex: 1; display: flex; flex-direction: column; gap: 2px; font-size: 16px; line-height: 1.25; }
@@ -233,6 +242,20 @@ html, body { margin: 0; }
 .pl-hl-i .pl-ink { flex: 1; min-width: 0; }
 .pl-hl-i .when { flex: none; font: 400 11.5px/1 var(--font-mono); color: var(--ink-soft); }
 .pl-hl-i .acts { flex: none; display: flex; gap: 2px; }
+.pl-str { color: var(--ink); text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 3px; }
+/* Move: the entry, its month or year, the periods to move it to */
+.pl-mv { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+.pl-mv-e { padding: 0 16px 14px; }
+.pl-mv-g { padding: 0 16px; display: grid; }
+.pl-mv-g .h { display: flex; justify-content: center; height: 22px; font: 400 11px/1 var(--font-mono); color: var(--ink-soft); }
+.pl-mv-g a { display: flex; align-items: center; justify-content: center; color: var(--ink); text-decoration: none; font: 500 13px/1 var(--font-mono); }
+.pl-mv-g.is-days { grid-template-columns: repeat(7, 1fr); grid-auto-rows: 40px; grid-template-rows: 22px; }
+.pl-mv-g.is-days a.is-cur { justify-self: center; width: 32px; height: 32px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--ink); }
+.pl-mv-g.is-weeks { grid-template-columns: 1fr; gap: 4px; }
+.pl-mv-g.is-weeks a { justify-content: flex-start; height: 40px; padding: 0 12px; border-radius: var(--v-ui-radius); box-shadow: inset 0 0 0 1px var(--ink); }
+.pl-mv-g.is-months { grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.pl-mv-g.is-months a { height: 40px; border-radius: var(--v-ui-radius); box-shadow: inset 0 0 0 1px var(--ink); }
+.pl-mv-g.is-weeks a.is-cur, .pl-mv-g.is-months a.is-cur { box-shadow: inset 0 0 0 2.5px var(--ink); }
 .pl-hl-i .acts a { font: 500 12px/1 var(--v-text); color: var(--ink); text-decoration: underline; text-underline-offset: 3px; padding: 10px 6px; }
 
 /* Text mode: one field as an ordinary text field over the system keyboard */
@@ -306,11 +329,11 @@ html, body { margin: 0; }
 .pl-ym .m { width: 34px; font: 500 12px/1 var(--font-mono); color: var(--ink-soft); }
 .pl-ym .ws { flex: 1; display: flex; gap: 3px; }
 .pl-ym .w { flex: 1; height: 26px; display: flex; align-items: center; justify-content: center; font: 600 11px/1 var(--font-mono); border-radius: 3px; box-shadow: inset 0 0 0 1px var(--ink); color: var(--ink); }
-.pl-ym .w.is-a { background: var(--paper); }
-.pl-ym .w.is-b { background: var(--highlight); }
-.pl-ym .w.is-c { background: var(--ink); color: var(--paper); }
-.pl-ym .w.is-one { box-shadow: inset 0 0 0 2.5px var(--ink); }
-.pl-ym .w.is-now { outline: 2px solid var(--ink); outline-offset: 1px; }
+.pl-ym .w.is-a, .pl-ydm .w.is-a { background: var(--paper); }
+.pl-ym .w.is-b, .pl-ydm .w.is-b { background: var(--highlight); }
+.pl-ym .w.is-c, .pl-ydm .w.is-c { background: var(--ink); color: var(--paper); }
+.pl-ym .w.is-one, .pl-ydm .w.is-one { box-shadow: inset 0 0 0 2.5px var(--ink); }
+.pl-ym .w.is-now, .pl-ydm .w.is-now { outline: 2px solid var(--ink); outline-offset: 1px; }
 .pl-ykey { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 6px 16px 10px; font-size: 13px; }
 .pl-ykey span { display: flex; align-items: center; gap: 6px; }
 .pl-ykey i { width: 22px; height: 16px; border-radius: 3px; box-shadow: inset 0 0 0 1px var(--ink); display: inline-flex; align-items: center; justify-content: center; font: 600 10px/1 var(--font-mono); font-style: normal; }
@@ -320,6 +343,23 @@ html, body { margin: 0; }
 .pl-range { display: flex; align-items: center; gap: 10px; min-height: 44px; border-bottom: var(--v-row-rule); font-size: 14px; }
 .pl-range .r { flex: 1; }
 .pl-range .r small { display: block; font-size: 12px; color: var(--ink-soft); }
+/* a period being picked for a range: dotted beneath its cell */
+.pl-ym .w.is-pick, .pl-ydm .w.is-pick { position: relative; }
+.pl-ym .w.is-pick::after, .pl-ydm .w.is-pick::after { content: ""; position: absolute; left: 0; right: 0; bottom: -4px; border-bottom: 2px dotted var(--ink); }
+/* the year's arrows (and the Move sheet's month or year): ‹ 2027 › */
+.pl-ynav { display: flex; align-items: center; gap: 8px; padding: 0 16px 10px; }
+.pl-ynav a { width: 40px; height: 40px; flex: none; display: flex; align-items: center; justify-content: center; border-radius: var(--v-ui-radius); box-shadow: inset 0 0 0 1.5px var(--ink); color: var(--ink); }
+.pl-ynav a .pl-ico { width: 20px; height: 20px; }
+.pl-ynav b { flex: 1; text-align: center; font: 600 14px/1 var(--font-mono); }
+/* the days of a year: a month each, three to a row, a cell per day with its template's letter */
+.pl-yd { padding: 0 16px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px 14px; }
+.pl-ydm { display: flex; flex-direction: column; gap: 2px; }
+.pl-ydm .m { font: 500 12px/1 var(--font-mono); color: var(--ink-soft); padding-bottom: 2px; }
+.pl-ydm .ds { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px 3px; }
+.pl-ydm .h { height: 11px; display: flex; align-items: center; justify-content: center; font: 500 9px/1 var(--font-mono); color: var(--ink-soft); }
+.pl-ydm .w { height: 15px; display: flex; align-items: center; justify-content: center; font: 600 9px/1 var(--font-mono); border-radius: 2px; box-shadow: inset 0 0 0 1px var(--ink); color: var(--ink); }
+.pl-ydm .w.is-out { box-shadow: none; }
+.pl-ydm .w.is-pick::after { bottom: -3px; }
 
 /* ---------- The start refusal ---------- */
 .pl-refuse { flex: 1; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 18px; padding: 0 56px 60px; }

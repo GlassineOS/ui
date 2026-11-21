@@ -451,6 +451,78 @@
    "title": "Component · ThemeBar",
    "page": "parts",
    "is_interactive": false
+  },
+  "hidden.move.dc.html": {
+   "x": 1808,
+   "y": 0,
+   "w": 824,
+   "h": 1352,
+   "title": "Moving a hidden entry",
+   "page": "hidden",
+   "is_interactive": false
+  },
+  "entry.open.dc.html": {
+   "x": 2712,
+   "y": 0,
+   "w": 824,
+   "h": 1352,
+   "title": "An entry shown whole",
+   "page": "hidden",
+   "is_interactive": false
+  },
+  "info.results.dc.html": {
+   "x": 4776,
+   "y": 0,
+   "w": 824,
+   "h": 1352,
+   "title": "Search results in the (i)",
+   "page": "info",
+   "is_interactive": false
+  },
+  "cog.strength.dc.html": {
+   "x": 5680,
+   "y": 0,
+   "w": 824,
+   "h": 1352,
+   "title": "Neaten’s strength",
+   "page": "info",
+   "is_interactive": false
+  },
+  "templates.range.dc.html": {
+   "x": 5680,
+   "y": 0,
+   "w": 824,
+   "h": 1352,
+   "title": "Picking a range on the year",
+   "page": "templates",
+   "is_interactive": false
+  },
+  "templates.year.nav.dc.html": {
+   "x": 6584,
+   "y": 0,
+   "w": 824,
+   "h": 1352,
+   "title": "The year planned ahead, other years",
+   "page": "templates",
+   "is_interactive": false
+  },
+  "templates.year.days.dc.html": {
+   "x": 7488,
+   "y": 0,
+   "w": 824,
+   "h": 1352,
+   "title": "The days of a year planned ahead",
+   "page": "templates",
+   "is_interactive": false
+  },
+  "templates.usage.dc.html": {
+   "x": 8392,
+   "y": 0,
+   "w": 824,
+   "h": 1352,
+   "title": "Where a week template is used · two answers",
+   "page": "templates",
+   "is_interactive": false
   }
  },
  "notes": {
@@ -557,7 +629,7 @@
    "x": 0,
    "y": -200,
    "w": 240,
-   "maxW": 2400
+   "maxW": 3536
   },
   "n-hidden": {
    "page": "hidden",
@@ -573,7 +645,7 @@
    "x": 0,
    "y": -200,
    "w": 240,
-   "maxW": 4776
+   "maxW": 6504
   },
   "n-info": {
    "page": "info",
@@ -589,7 +661,7 @@
    "x": 0,
    "y": -200,
    "w": 240,
-   "maxW": 5600
+   "maxW": 9216
   },
   "n-templates": {
    "page": "templates",
@@ -665,16 +737,24 @@
   "text.view.dc.html",
   "hidden.hint.dc.html",
   "hidden.list.dc.html",
+  "hidden.move.dc.html",
+  "entry.open.dc.html",
   "info.popup.dc.html",
   "info.popup.landscape.dc.html",
   "info.search.dc.html",
   "cog.menu.dc.html",
   "cog.settings.dc.html",
+  "info.results.dc.html",
+  "cog.strength.dc.html",
   "templates.picker.dc.html",
   "templates.year.dc.html",
   "templates.used.dc.html",
   "templates.editor.dc.html",
   "templates.editor.landscape.dc.html",
+  "templates.range.dc.html",
+  "templates.year.nav.dc.html",
+  "templates.year.days.dc.html",
+  "templates.usage.dc.html",
   "event.draw.dc.html",
   "event.drag.dc.html",
   "event.title.dc.html",

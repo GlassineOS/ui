@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Moving a hidden entry</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div data-spec-id="hidden.move" style="width:824px;height:1352px;box-sizing:border-box;padding:28px 32px;display:flex;flex-direction:column;gap:18px;background:#e6e6e6;color:#1b1b1b;font-family:'IBM Plex Sans',sans-serif">
+<div style="display:flex;flex-direction:column;gap:6px">
+<span style="font:500 13px/1.2 'IBM Plex Mono',monospace;color:#3d3d3d">hidden.move</span>
+<h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">Moving a hidden entry</h1>
+<p style="margin:0;max-width:760px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">Move in the hidden list: a sheet over the page with the entry in its ink, then the periods of its own kind to move it to. A day’s entry gets the month’s days (Monday first) with its day ringed; a week’s entry gets the weeks that start in the month, numbered with their dates; a month’s entry gets the year’s twelve months. The arrows step a month (a year for months). One tap moves it and goes back to the hidden list (closed when nothing of that kind is left hidden); the entry keeps its ink and its kind.</p>
+</div>
+<dc-import name="ThemeBar" voice="{{ voice }}" on-pick="{{ pick }}" hint-size="100%,112px"></dc-import>
+<dc-import name="Planner" voice="{{ voice }}" orient="portrait" tmpl="day-agenda" overlay="move" move-kind="{{ moveKind }}" hint-size="760px,1008px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "moveKind": {"editor": "enum", "options": ["day", "week", "month"], "default": "day"}, "$preview": {"width": 824, "height": 1352}, "$states": [{"id": "day", "name": "A day’s to-do", "props": {"moveKind": "day"}}, {"id": "week", "name": "A week’s to-do", "props": {"moveKind": "week"}}, {"id": "month", "name": "A month’s to-do", "props": {"moveKind": "month"}}]}'>
+class Component extends DCLogic {
+  state = {};
+  renderVals() {
+    const s = this.state, p = this.props;
+    return { voice: s.voice ?? p.voice ?? 'white', pick: (k, v) => this.setState({ [k]: v }), moveKind: p.moveKind ?? "day" };
+  }
+}
+</script>
+</body>
+</html>

@@ -357,7 +357,7 @@
         const inWeek = dd >= WEEK.from && dd <= WEEK.to;
         let shownE = [], more = 0;
         if (large) { const capE = Math.max(0, Math.floor(((r.h - HEAD - 22) / 6 - 22) / 20)); shownE = evs.slice(0, capE); more = evs.length - shownE.length; }
-        cells.push({ t: String(dd), cls: 'pl-mm-d' + (dd === MONTH.today ? ' is-today' : '') + (evs.length ? ' has' : '') + (inWeek && view === 'week' ? ' in-week' : ''),
+        cells.push({ t: String(dd), cls: 'pl-mm-d' + (dd === MONTH.today ? ' is-today' : '') + (evs.length ? ' has' : '') + (inWeek && view === 'week' ? ' in-week' : '') + (view === 'day' && dd === (o.day || MONTH.today) ? ' is-sel' : ''),
           dot: !large && evs.length > 0, evs: shownE.map(e => ({ words: ink(e.t, { fs: 14, salt: e.id }) })), more: more > 0, moreLabel: '+' + more });
       }
       while (cells.length % 7) cells.push({ t: '', cls: 'pl-mm-d is-out', evs: [] });

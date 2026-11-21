@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Parts · components, the grid, refresh costs, decisions</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.pp{width:1400px;box-sizing:border-box;padding:28px 32px 40px;background:#e6e6e6;color:#1b1b1b;font-family:'IBM Plex Sans',sans-serif;display:flex;flex-direction:column;gap:22px}
+.pp h1{margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif}
+.pp h2{margin:0 0 10px;font:600 19px/1.25 'IBM Plex Sans',sans-serif}
+.pp p{margin:0;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;max-width:1200px}
+.pp .id{font:500 13px/1.2 'IBM Plex Mono',monospace;color:#3d3d3d}
+.pp section{background:#ffffff;border:1.5px solid #1b1b1b;border-radius:12px;padding:18px 20px}
+.pp table{width:100%;border-collapse:collapse;font:400 14px/1.45 'IBM Plex Sans',sans-serif}
+.pp th{text-align:left;font:600 11.5px/1.2 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;padding:6px 12px 6px 0;border-bottom:1.5px solid #1b1b1b;color:#1b1b1b}
+.pp td{padding:8px 12px 8px 0;border-bottom:1px dotted #8a8a8a;vertical-align:top}
+.pp td code,.pp p code,.pp li code{font:500 13px/1 'IBM Plex Mono',monospace}
+.pp ol,.pp ul{margin:0;padding-left:22px;font:400 15px/1.55 'IBM Plex Sans',sans-serif}
+.pp li+li{margin-top:6px}
+.pp .two{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.pp b{font-weight:600}
+</style>
+</helmet>
+<div class="pp" data-spec-id="parts">
+<div style="display:flex;flex-direction:column;gap:6px"><span class="id">parts</span><h1>Parts · components, the grid, refresh costs, decisions</h1>
+<p>What the planner boards add to Interleaf, where the fluid grid should live, what each step costs on the panel, and what the person decides. The boards draw with <code>planner.css</code> over the web form on main; the components below are the same patterns written as Interleaf components (<code>interleaf/components/</code>), with previews that pass the contrast check in all 27 combinations.</p></div>
+
+<section><h2>New Interleaf components</h2>
+<table><tr><th>Component</th><th>What it is</th><th>In libglassine-ui?</th></tr>
+<sc-for list="{{ comps }}" as="c" hint-placeholder-count="6"><tr><td><b>{{ c.name }}</b><br><code>{{ c.cls }}</code></td><td>{{ c.what }}</td><td>{{ c.lib }}</td></tr></sc-for>
+</table>
+<p style="margin-top:12px">Reused, not new: dialogs are Dialog; buttons are Button; the sheets are the planner’s own for now.</p>
+</section>
+
+<div class="two">
+<section><h2>The fluid grid: should it live in libglassine-ui?</h2>
+<p><b>Recommendation: yes, as a small layout module without drawing, but only once a second program uses it.</b> Home’s widget page (arranging widgets, swapping on shared edges) and Settings’ cards need the same model the planner needs, and one solver keeps them from drifting. Until Home adopts it, the planner keeps its own copy and the interface settles there; moving it later is a version of the library’s contracts, so it should move once, finished. Not implemented here.</p>
+<ul style="margin-top:10px">
+<sc-for list="{{ grid }}" as="g" hint-placeholder-count="6"><li>{{ g }}</li></sc-for>
+</ul>
+</section>
+<section><h2>What each step costs on the panel</h2>
+<table><tr><th>Step</th><th>Refresh</th></tr>
+<sc-for list="{{ costs }}" as="c" hint-placeholder-count="8"><tr><td>{{ c.step }}</td><td>{{ c.cost }}</td></tr></sc-for>
+</table>
+<p style="margin-top:10px">Nothing animates. The figures from the spike are damage counted on the host, not measured panel refreshes.</p>
+</section>
+</div>
+
+<section><h2>Decisions for the person</h2>
+<ol><sc-for list="{{ decisions }}" as="d" hint-placeholder-count="10"><li>{{ d }}</li></sc-for></ol>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview": {"width": 1400, "height": 1700}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      comps: [
+        { name: 'Agenda', cls: 'il-agenda', what: 'The hours of a day as rules, timed events as keyline blocks with their time as the widget’s own text and the title as ink, all-day events above, a now line, a count at the top or bottom edge for events outside the hours. The held look while dragging (a heavier edge and a dashed ghost; no fill behind the ink).', lib: 'Yes: Home’s “Next” widget and a calendar app draw the same hours and blocks.' },
+        { name: 'Ink field', cls: 'il-inkfield', what: 'A handwriting field: its ruled line or lines, the ink in the pen colour, the words set in Autograph in their place, an empty row to write in. In text mode it becomes an ordinary text field.', lib: 'The frame only (rules, the empty row, the text-mode box). The ink and the reading belong to the writing regions (handwriting spec 005) and their client.' },
+        { name: 'More list', cls: 'il-morelist', what: 'Rows under rules, one empty row kept at the end, and a quiet “+n more” after the last row that opens the whole list. Rows give way done first, then the oldest open.', lib: 'Yes: Home’s lists and Settings’ long lists (saved networks, paired devices) truncate the same way.' },
+        { name: 'Mini month', cls: 'il-minimonth', what: 'Seven columns of days, a dot under days with entries, today ringed, a week shaded; at a large size the month grid with entries in each day.', lib: 'Yes: a Home calendar widget and the date pickers in Settings and the planner.' },
+        { name: 'Popover', cls: 'il-popover, il-iconbtn', what: 'A quiet icon button at the end of a bar, with an optional small count, and the card it opens under itself: details (the template in use), a section of rows that lead on (the hidden counts), a tool button in its head. Replaces a permanent foot line.', lib: 'Yes: Home and Settings can hold a page’s details the same way instead of a status line.' },
+        { name: 'Cog menu', cls: 'il-cogmenu', what: 'One small cog without an edge, in ink-soft, and the menu it opens: rows with an icon, a name and one line, a toggle or a chevron, a developer row under a dashed rule. In the planner the cog sits in the Popover’s head and the menu takes the popover’s place.', lib: 'Yes: any program that hides its maintenance the same way (Home’s arrange mode, a reader’s settings).' }
+      ],
+      grid: [
+        'Widths from declarations: each widget declares a minimum and a preferred width; the template adds weight and grow.',
+        'Heights from content: a widget declares a minimum height; its content says how much it needs.',
+        'Three steps per axis: every widget gets its minimum; then it grows towards its need by weight; the rest goes to widgets marked grow.',
+        'A node may change kind by orientation: a column upright, a row turned.',
+        'No relayout while the pen writes: requests are held while the pen is down and for a pause after it lifts, then the page settles once.',
+        'When the minimums don’t fit, the solver says by how much; the editor won’t save that template.'
+      ],
+      costs: [
+        { step: 'Period change (previous, next, Today, Month/Week/Day)', cost: 'one refresh of the page below the status bar' },
+        { step: 'Template switch', cost: 'one refresh; almost the whole panel' },
+        { step: 'Writing', cost: 'the ink’s own box, at the pen’s latency; nothing else' },
+        { step: 'Settle after the pause', cost: 'once, only the widgets whose size changed' },
+        { step: 'Event drag, per 30-minute step', cost: 'the strip the block leaves and enters, a few per cent of the panel (the spike: about 3 %)' },
+        { step: 'Release after a drag', cost: 'one more small refresh, as the drag look goes (a drag without that look would save it)' },
+        { step: 'The (i) popover, the hidden list, a widget’s whole content', cost: 'one rectangle to open, one to close' },
+        { step: 'The cog inside the popover', cost: 'only the popover’s rectangle (it becomes the menu)' },
+        { step: 'The number on the (i)', cost: 'the icon’s own box, only when the count changes' },
+        { step: 'Text mode on a field', cost: 'the field and the keyboard’s area; nothing is laid out again' }
+      ],
+      decisions: [
+        'The hint on the (i) that entries are hidden: a small number (A, proposed) or none (B, the count only in the popover).',
+        'What the (i) popover holds: the template in use and how this period got it, and the hidden counts by kind with a link to each list. Anything to add or drop?',
+        'The cog’s contents, now inside the popover: text mode for the view, the template (choose, plan ahead), edit this template, settings; debug only in developer builds. Anything to add or drop?',
+        'Search (spec 001 FR-050): a second quiet icon in the bar beside the (i) (A), or a field at the top of the popover (B).',
+        'Leaving a field’s text mode: a Done button (A) or a tap outside the field (B).',
+        'Where a field’s own opt-ins (Neaten, Set in Autograph) live: on the bar above the keyboard in that field’s text mode (proposed), or somewhere else.',
+        'A long title in a short event: the field grows into the free time below (A) or is cut at the block with “…” (B).',
+        'The rows that give way: done first, then the oldest open (the spike’s proposal), or something else.',
+        'Text mode for the whole view: the keyboard covers the lower screen (proposed, no relayout) or the view gives up the space and lays out again once.',
+        'The fluid grid in libglassine-ui once Home uses it (recommended), or the planner keeps it.'
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

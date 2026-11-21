@@ -1,0 +1,18 @@
+<!-- @dsCard group="Controls" height=360 subtitle="An (i) with a count, and the card it opens: details, rows, a cog in the head" -->
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Popover — preview</title></head>
+<body style="margin:0">
+<div class="il-page" style="padding:24px 32px;display:flex;gap:24px;align-items:flex-start">
+  <button class="il-iconbtn" type="button" aria-label="About this page: 5 entries not shown" aria-expanded="true" aria-controls="pop"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6 M12 7.5h.01"></path></svg><span class="il-iconbtn__count" aria-hidden="true">5</span></button>
+  <div class="il-popover" id="pop" role="dialog" aria-label="About this page">
+    <div class="il-popover__head"><span class="il-popover__label">This page</span><button class="il-cog" type="button" aria-label="Planner menu" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"></path></svg></button></div>
+    <dl style="margin:0"><div class="il-popover__fact"><dt>Template</dt><dd>Agenda and lists<small>the default for days</small></dd></div></dl>
+    <div class="il-popover__section">Not shown in this layout</div>
+    <a class="il-popover__row" href="#"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6z M4 4l16 16"></path></svg><span>1 morning note</span>›</a>
+    <a class="il-popover__row" href="#"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6z M4 4l16 16"></path></svg><span>2 priorities</span>›</a>
+  </div>
+</div>
+<script>/* static preview */</script>
+</body>
+</html>

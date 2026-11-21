@@ -95,6 +95,16 @@ ok(raises(lambda: gen.scheme(gen.Tokens(rgba), "stationery"), "gilt (stationery-
    "a scheme colour that is not #rrggbb is refused")
 ok(raises(lambda: gen.scheme(tok, "fourth"), "voice fourth"), "a voice without an E-ink theme is refused")
 
+# the voices' body size (GlassineOS/shell spec 012: the size text grows against)
+ok([voices["voices"][n]["type"] for n in ("white", "editorial", "stationery")] == [{"body": "17px"}, {"body": "18.5px"}, {"body": "20px"}],
+   "voices.json's type: the body size of each voice")
+for name, v in voices["voices"].items():
+    ok(gen.type_sizes(tok, name, v["title"]) == v["type"], name + ": its body size is its type group's body style")
+ok(raises(lambda: gen.type_sizes(tok, "fourth", "Fourth"), "no body style"), "a voice without a type group is refused")
+rem = json.loads(json.dumps(tokens))
+rem["type"]["groups"][0]["styles"][2]["fontSize"] = "1.1rem"
+ok(raises(lambda: gen.type_sizes(gen.Tokens(rem), "white", "White"), "not in px"), "a body size that is not in px is refused")
+
 # the web form (002 FR-010)
 css = open(os.path.join(ROOT, "web", "tokens.css")).read()
 bundle = open(os.path.join(ROOT, "web", "bundle.css")).read()
@@ -304,10 +314,28 @@ try:
     run(gv)
     ok("'ink-soft': '#555555'" in open(os.path.join(tmp, "python", "glassine_ui", "_voices.py")).read(),
        "the changed token reaches the Python data")
+    # a changed body size reaches the voice data, the C table and the Python data
+    d2 = json.loads(open(tp).read())
+    for g_ in d2["type"]["groups"]:
+        for st_ in g_["styles"]:
+            if st_["name"] == "ed-body":
+                st_["fontSize"] = "19px"
+    json.dump(d2, open(tp, "w"), indent=2)
+    r = run(gi + ["--check"])
+    ok(r.returncode == 1 and "voices/voices.json" in r.stderr, "--check fails on a changed body size, naming the voices")
+    run(gi)
+    vd = json.load(open(os.path.join(tmp, "voices", "voices.json")))
+    ok(vd["voices"]["editorial"]["type"] == {"body": "19px"} and vd["voices"]["white"]["type"] == {"body": "17px"},
+       "the changed body size is in Editorial's type, White's unchanged")
+    run(gv)
+    ok(".bodyPx = 19," in open(os.path.join(tmp, "src", "glassine-ui-voices.c")).read()
+       and "'type': {'body': '19px'}" in open(os.path.join(tmp, "python", "glassine_ui", "_voices.py")).read(),
+       "the changed body size reaches the C table and the Python data")
     # the voice data outside "scheme" is kept as it is
     vp = os.path.join(tmp, "voices", "voices.json")
     vd["voices"]["editorial"]["shell"]["ink"] = "#222222"
     vd["voices"]["editorial"]["scheme"]["ink"] = "#999999"
+    vd["voices"]["editorial"]["type"]["body"] = "30px"
     json.dump(vd, open(vp, "w"), indent=2)
     r = run(gi + ["--check"])
     ok(r.returncode == 1 and "voices/voices.json" in r.stderr, "--check fails on a scheme edited by hand")
@@ -315,6 +343,7 @@ try:
     vd = json.load(open(vp))
     ok(vd["voices"]["editorial"]["shell"]["ink"] == "#222222" and vd["voices"]["editorial"]["scheme"]["ink"] == "#111111",
        "gen-interleaf: the scheme rewritten from the tokens, shell kept")
+    ok(vd["voices"]["editorial"]["type"] == {"body": "19px"}, "gen-interleaf: a body size edited by hand rewritten from the tokens")
     open(tp, "w").write(good)
     vd["voices"]["editorial"]["shell"]["ink"] = voices["voices"]["editorial"]["shell"]["ink"]
     json.dump(vd, open(vp, "w"), indent=2)

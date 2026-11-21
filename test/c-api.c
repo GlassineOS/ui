@@ -1,6 +1,7 @@
 /* c-api.c: a separate program on the installed library (pkg-config glassine-ui):
  * the voice table, the fallback, a box and a text measured and drawn.
  * SPDX-License-Identifier: GPL-2.0-or-later */
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -81,6 +82,70 @@ int main(int argc, char **argv)
     OK(inked[2] >= 92 && inked[2] <= 108, "a dotted rule: 1 of every 2 pixels");
     cairo_destroy(rcr);
     cairo_surface_destroy(rs);
+
+    /* the interface size from the installed library */
+    OK(UI_MM_PER_PX == 0.224 && ui_nsize_steps == 4 && ui_size_steps[0] == 80 && ui_size_steps[3] == 120 &&
+       ui_size_step_ok(90) && !ui_size_step_ok(110) && ui_text_size_ok(125) && !ui_text_size_ok(112), "the unit, the steps, the text sizes");
+    int src = -1;
+    double dens = ui_density(1404, 1872, 157, 209, 0, &src);
+    OK(src == UI_DENSITY_REPORTED && ui_factor(dens, 100) == 2 && fabs(ui_factor(dens, 80) - 1.6024) < 1e-3 &&
+       ui_density(1920, 1080, 16, 9, 0, &src) == UI_FALLBACK_DENSITY && src == UI_DENSITY_FALLBACK &&
+       ui_factor(UI_FALLBACK_DENSITY, 100) == 1, "density and factor: a reported size, a refused one, the fallback");
+    OK(v->bodyPx == 17 && v->rowPx == 16 && v->subPx == 13.5f && ui_voice_find("stationery")->bodyPx == 20, "the voices' body, row and secondary sizes");
+    /* the text size: every text call draws grown text; cleared, the same measure as before */
+    double wt0 = ui_text_w(&g, &v->nameFont, "Sample", NULL), ht0 = 0;
+    ui_text(&lay, &v->nameFont, "Sample", 0, 0, 0, 0, v->ink, &ht0);
+    OK(ui_text_px(&v->nameFont) == v->nameFont.px && ui_min_tap() == 0 && ui_grow(44, &v->nameFont, 1, 1.3) == 44, "no metrics: the design's sizes");
+    ui_metrics_voice(v, ui_mm_per_px(2, dens), 1.0);
+    OK(ui_text_px(&v->nameFont) == v->nameFont.px && ui_text_px(&v->lbl) == v->lbl.px &&
+       ui_text_w(&g, &v->nameFont, "Sample", NULL) == wt0, "Default at 8.943 px/mm, text 100 %: nothing changes");
+    OK(fabs(ui_min_tap() * ui_mm_per_px(2, dens) - UI_TAP_MM) < 1e-9, "the tap minimum is 7 mm");
+    ui_metrics_voice(v, 0, 1.5);
+    double ht1 = 0, wt1 = ui_text(&lay, &v->nameFont, "Sample", 0, 0, 0, 0, v->ink, &ht1);
+    OK(ui_text_px(&v->nameFont) == 25.5f && ui_text_px(&v->lbl) == 15.75f && fabs(wt1 / wt0 - 1.5) < .04 && fabs(ht1 / ht0 - 1.5) < .04,
+       "text at 150 %: the body size drawn half as large again, measured so");
+    UiFont head = ui_font_px(&v->nameFont, 34);
+    OK(ui_text_px(&head) == 42.5f && fabs(ui_grow(44, &v->nameFont, 1, 1.3) - (44 + 1.3 * 8.5)) < 1e-9 &&
+       ui_text_wrap(&lay, &v->nameFont, para, 0, 0, 120, 2, 0, v->ink) > 1.4 * h2, "a heading twice the body grows by half of it; a box grows with its text; wrapped text too");
+    ui_metrics_voice(v, 0.1792, 1.0);
+    OK(fabs(ui_text_px(&v->lbl) - 2.0 / 0.1792) < 1e-4 && ui_text_px(&v->nameFont) == 17, "Smaller: a 10.5 px label drawn at 2.0 mm, the body as it is");
+    ui_metrics_set(0, 1, 0, 0);
+    OK(ui_text_w(&g, &v->nameFont, "Sample", NULL) == wt0, "the metrics cleared: the same measure as before");
+
+    /* whole device pixels at a fractional scale; a whole scale draws the values as given */
+    cairo_surface_t *fs = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 320, 200);
+    cairo_t *fcr = cairo_create(fs);
+    UiGc fg = { fcr, 1, v };
+    ui_fill_rect(&fg, 0, 0, 320, 200, UI_RGB(0xffffff));
+    cairo_scale(fcr, 1.6, 1.6);
+    UiBox sq = { .bg = UI_RGB(0xeeeeee), .bw = 1.5, .bc = v->ink, .ring = { { 0, 2, 0, UI_RGB(0xbbbbbb), 0 }, { 0, 0, 1, UI_RGB(0x888888), 1 } }, .nring = 2 };
+    ui_box(&fg, 10.3, 10.3, 60.3, 20.3, &sq);
+    ui_fill_rect(&fg, 10.3, 40.3, 50.3, 10.3, v->ink);
+    ui_hline(&fg, 10.3, 60.3, 80.3, 0.5, v->ink, 0);
+    ui_hline(&fg, 10.3, 70.3, 80.3, 1, v->ink, 2);
+    ui_stroke_rrect(&fg, 10.3, 80.3, 60.3, 20.3, 0, 1.5, v->ink, 0);
+    ui_rrect(&fg, 100.3, 10.3, 20.3, 20.3, 0, v->ink);
+    cairo_surface_flush(fs);
+    int between = 0, thin = 0;
+    for (int y = 0; y < 200; y++)
+        for (int x = 0; x < 320; x++) {
+            unsigned p = *(unsigned *)(cairo_image_surface_get_data(fs) + y * cairo_image_surface_get_stride(fs) + x * 4);
+            between += p != 0xffffffffu && p != v->ink && p != 0xffeeeeeeu && p != 0xffbbbbbbu && p != 0xff888888u;
+            thin += y == 96 && p == v->ink;     /* round(60.3 x 1.6): the half-pixel rule's one row */
+        }
+    OK(between == 0, "scale 1.6: box, fill, rules and strokes are whole device pixels (no grey between)");
+    OK(thin >= 128, "scale 1.6: a rule of half a design pixel is one device pixel thick");
+    OK(fabs(ui_dev_scale(fcr) - 1.6) < 1e-12 && fabs(ui_snap_x(fcr, 10.3) * 1.6 - 16) < 1e-9 && fabs(ui_snap_y(fcr, 10.9) * 1.6 - 17) < 1e-9 &&
+       fabs(ui_snap_len(fcr, 1.5) * 1.6 - 2) < 1e-9 && fabs(ui_snap_len(fcr, 0.2) * 1.6 - 1) < 1e-9 && ui_snap_len(fcr, 0) == 0 &&
+       fabs(ui_snap_len(fcr, -1) * 1.6 + 2) < 1e-9, "ui_dev_scale, ui_snap_x, ui_snap_y, ui_snap_len");
+    OK(ui_device_px(702, 1.6) == 1123 && ui_device_px(702, 2) == 1404, "a logical length in device pixels");
+    cairo_rotate(fcr, .3);
+    OK(ui_snap_x(fcr, 10.3) == 10.3 && ui_snap_len(fcr, 1.5) == 1.5, "a turned context: the snaps give the values back");
+    cairo_destroy(fcr);
+    cairo_surface_destroy(fs);
+    char key[64];
+    ui_output_key("", "Unknown", NULL, "HDMI-A-1", key, sizeof key);
+    OK(!strcmp(key, "HDMI-A-1"), "the output key: the connector name when make, model and serial are unknown");
 
     /* the caller's line width and dash stay */
     double dash[1] = { 5 };

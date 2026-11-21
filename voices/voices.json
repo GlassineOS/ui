@@ -379,6 +379,9 @@
           "text-press": "ffffff",
           "text-press-sp": "ffffff"
         }
+      },
+      "type": {
+        "body": "17px"
       }
     },
     "editorial": {
@@ -762,6 +765,9 @@
           "text-press": "ffffff",
           "text-press-sp": "ffffff"
         }
+      },
+      "type": {
+        "body": "18.5px"
       }
     },
     "stationery": {
@@ -1147,6 +1153,9 @@
           "text-press": "ffffff",
           "text-press-sp": "ffffff"
         }
+      },
+      "type": {
+        "body": "20px"
       }
     }
   }

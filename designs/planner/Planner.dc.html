@@ -40,7 +40,7 @@
 </sc-if>
 
 <sc-if value="{{ showEdHead }}" hint-placeholder-val="{{ false }}">
-<div class="pl-bar"><div class="pl-title"><b>{{ ed.title }}</b><span>{{ ed.sub }}</span></div><a class="pl-btn is-quiet" href="#" style="color:inherit">Cancel</a><a class="{{ ed.saveCls }}" href="#">Save</a></div>
+<div class="pl-bar"><div class="pl-title"><sc-if value="{{ ed.naming }}" hint-placeholder-val="{{ false }}"><span class="pl-ed-name" aria-label="The template’s name, written with the pen"><span class="pl-ink"><sc-for list="{{ ed.nameInk }}" as="w" hint-placeholder-count="2"><span class="{{ w.cls }}" style="{{ w.st }}">{{ w.t }}</span></sc-for></span></span></sc-if><sc-if value="{{ ed.notNaming }}" hint-placeholder-val="{{ true }}"><a class="pl-ed-title" href="#" aria-label="Rename this template">{{ ed.title }}</a></sc-if><span>{{ ed.sub }}</span></div><a class="pl-btn is-quiet" href="#" style="color:inherit">Cancel</a><a class="{{ ed.saveCls }}" href="#">Save</a></div>
 </sc-if>
 
 <sc-if value="{{ showRefuse }}" hint-placeholder-val="{{ false }}">
@@ -131,7 +131,7 @@
 </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "orient": {"editor": "enum", "options": ["portrait", "landscape"], "default": "portrait"}, "screen": {"editor": "enum", "options": ["view", "refused", "sheet", "picker", "year", "editor"], "default": "view"}, "tmpl": {"editor": "enum", "options": ["day-lists", "day-diary", "day-agenda", "week-columns", "week-spread", "week-lists", "month-grid", "month-goals"], "default": "day-lists"}, "hint": {"editor": "enum", "options": ["count", "none"], "default": "count"}, "search": {"editor": "enum", "options": ["none", "bar", "popup"], "default": "none"}, "overlay": {"editor": "enum", "options": ["none", "info", "cog", "hidden", "settings", "add", "used"], "default": "none"}, "dev": {"editor": "boolean", "default": false}, "ink": {"editor": "enum", "options": ["raw", "neat", "font"], "default": "raw"}, "write": {"editor": "enum", "options": ["none", "writing", "settled"], "default": "none"}, "text": {"editor": "enum", "options": ["none", "field", "back", "view"], "default": "none"}, "leave": {"editor": "enum", "options": ["done", "outside"], "default": "done"}, "drag": {"editor": "enum", "options": ["none", "draw", "drawn", "titled", "grab", "moved", "resize", "released"], "default": "none"}, "title": {"editor": "enum", "options": ["grow", "shrink", "cut"], "default": "grow"}, "longTitle": {"editor": "boolean", "default": false}, "edit": {"editor": "enum", "options": ["select", "weight", "short", "land"], "default": "select"}, "refuse": {"editor": "enum", "options": ["missing", "off"], "default": "missing"}, "refresh": {"editor": "boolean", "default": false}, "widget": {"editor": "enum", "options": ["agenda", "todo", "notes", "habits", "minimonth", "weekov", "priorities"], "default": "todo"}, "fill": {"editor": "enum", "options": ["empty", "full", "more"], "default": "full"}, "$preview": {"width": 760, "height": 1008}}'>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "orient": {"editor": "enum", "options": ["portrait", "landscape"], "default": "portrait"}, "screen": {"editor": "enum", "options": ["view", "refused", "sheet", "picker", "year", "editor"], "default": "view"}, "tmpl": {"editor": "enum", "options": ["day-lists", "day-diary", "day-agenda", "week-columns", "week-spread", "week-lists", "month-grid", "month-goals"], "default": "day-lists"}, "hint": {"editor": "enum", "options": ["count", "none"], "default": "count"}, "search": {"editor": "enum", "options": ["none", "bar", "popup"], "default": "none"}, "overlay": {"editor": "enum", "options": ["none", "info", "cog", "hidden", "settings", "add", "used", "discard", "wset"], "default": "none"}, "dev": {"editor": "boolean", "default": false}, "ink": {"editor": "enum", "options": ["raw", "neat", "font"], "default": "raw"}, "write": {"editor": "enum", "options": ["none", "writing", "settled"], "default": "none"}, "text": {"editor": "enum", "options": ["none", "field", "back", "view"], "default": "none"}, "leave": {"editor": "enum", "options": ["done", "outside"], "default": "done"}, "drag": {"editor": "enum", "options": ["none", "draw", "drawn", "titled", "grab", "moved", "resize", "released", "edge"], "default": "none"}, "title": {"editor": "enum", "options": ["grow", "shrink", "cut"], "default": "grow"}, "longTitle": {"editor": "boolean", "default": false}, "edit": {"editor": "enum", "options": ["select", "weight", "short", "land", "new", "copy", "name", "move", "remove", "saved"], "default": "select"}, "refuse": {"editor": "enum", "options": ["missing", "off"], "default": "missing"}, "refresh": {"editor": "boolean", "default": false}, "widget": {"editor": "enum", "options": ["agenda", "todo", "notes", "habits", "minimonth", "weekov", "priorities"], "default": "todo"}, "fill": {"editor": "enum", "options": ["empty", "full", "more"], "default": "full"}, "$preview": {"width": 760, "height": 1008}}'>
 class Component extends DCLogic {
   renderVals() {
     const p = this.props, PL = window.PLANNER;
@@ -141,7 +141,12 @@ class Component extends DCLogic {
     const ic = Component.IC;
     let tid = PL.T[p.tmpl] ? p.tmpl : 'day-lists';
     if (screen === 'editor' && p.edit === 'weight' && tid === 'day-lists') tid = 'day-lists-w';
+    if (screen === 'editor' && p.edit === 'new') tid = 'day-new';
+    if (screen === 'editor' && p.edit === 'remove' && tid === 'day-lists') tid = 'day-lists-r';
+    if (p.drag === 'edge') tid = 'day-agenda-up';
+    if (screen === 'picker' && p.edit === 'saved') tid = 'day-lists-c';
     const t = PL.T[tid], kind = t.kind;
+    this._tid = tid;
     const overlay = p.overlay || 'none', text = p.text || 'none', drag = p.drag || 'none', write = p.write || 'none';
     const editing = screen === 'editor';
     const kbdOn = text === 'field' || text === 'view';
@@ -162,8 +167,8 @@ class Component extends DCLogic {
     if (write === 'settled') o.add = { t: 'buy milk', settled: true };
     if (text === 'back') o.edit = { t: 'call the bank about the card', words: { 2: 'bank' } };
     if (text === 'field' || text === 'view') o.textMode = text === 'view';
-    if (drag === 'grab' || drag === 'moved' || drag === 'resize' || drag === 'released') {
-      const mv = { grab: [28, 30], moved: [29, 31], resize: [29, 32], released: [29, 32] }[drag];
+    if (drag === 'grab' || drag === 'moved' || drag === 'resize' || drag === 'released' || drag === 'edge') {
+      const mv = { grab: [28, 30], moved: [29, 31], resize: [29, 32], released: [29, 32], edge: [10, 12] }[drag];
       o.move = { id: 'e3', s: mv[0], e: mv[1] };
     }
     if (editing && p.edit === 'short') { o.W = cw; }
@@ -193,7 +198,7 @@ class Component extends DCLogic {
         tf = { on: true, x: td.x + 30, y: td.y + 34 + Math.max(0, i) * 34 - 3, w: td.w - 36, pre: 'call the b', post: 'onk about the card' };
       }
     }
-    if (editing) this.editMarks(widgets, p, handles, tags, warns, pg, cw, ch);
+    if (editing) this.editMarks(widgets, p, handles, tags, warns, pg, cw, ch, marks);
 
     // ---- hidden counts (FR-028)
     const hidden = pg.hidden;
@@ -203,11 +208,16 @@ class Component extends DCLogic {
     // ---- the (i) popover: this page's details and the hidden counts; its cog turns it into the menu
     const info = { on: overlay === 'info' || overlay === 'cog' };
     if (info.on) Object.assign(info, this.infoPop(p, t, kind, hidden, pg));
-    const sheetOv = { on: overlay === 'hidden' || overlay === 'add' || overlay === 'settings' };
+    const sheetOv = { on: overlay === 'hidden' || overlay === 'add' || overlay === 'settings' || overlay === 'wset' };
+    if (overlay === 'wset') Object.assign(sheetOv, this.widgetSheet(pageH));
     if (overlay === 'hidden') Object.assign(sheetOv, this.hiddenSheet(hidden, kind, pageH));
     if (overlay === 'add') Object.assign(sheetOv, this.addSheet(PL, pageH));
     if (overlay === 'settings') Object.assign(sheetOv, this.settingsSheet(pageH, p));
-    const dialog = { on: overlay === 'used' };
+    const dialog = { on: overlay === 'used' || overlay === 'discard' };
+    if (overlay === 'discard') Object.assign(dialog, { top: 170, title: 'Leave without saving?',
+      body: 'The changes to “' + t.name + '” are dropped; the template stays as it was.',
+      soft: 'Nothing written on any day changes either way: the editor never touches an entry.',
+      acts: [{ t: 'Keep editing', cls: 'pl-btn' }, { t: 'Discard changes', cls: 'pl-btn is-primary' }] });
     if (dialog.on) Object.assign(dialog, { top: 170, title: 'Edit “' + t.name + '” for every day?',
       body: 'This template is used by 143 days, past days included. An edit changes all of them at once.',
       soft: 'Copy it first to keep the old arrangement for some days; give those days the copy. Nothing written on any day changes either way.',
@@ -233,9 +243,12 @@ class Component extends DCLogic {
       infoCls: 'pl-tool' + (badge ? ' has-badge' : '') + (infoOpen ? ' is-open' : ''), infoOpen: String(infoOpen),
       infoLabel: 'About this page' + (nHidden ? ': ' + nHidden + ' entries not shown in this layout' : '') };
 
-    const ed = { title: 'Editing “' + t.name + '”', sub: 'A ' + kind + ' template · shown with this ' + kind + '’s entries · used by 143 days',
+    const fresh = p.edit === 'new' || p.edit === 'copy' || p.edit === 'name';
+    const tname = p.edit === 'new' ? 'New day template' : p.edit === 'copy' ? t.name + ', copy' : t.name;
+    const ed = { title: tname, naming: p.edit === 'name', notNaming: p.edit !== 'name', nameInk: PL.ink('Workdays', { fs: 21, salt: 'name' }),
+      sub: 'A ' + kind + ' template · shown with this ' + kind + '’s entries · ' + (p.edit === 'name' ? 'its name, written with the pen' : fresh ? 'used by no day yet' : 'used by 143 days'),
       saveCls: p.edit === 'short' ? 'pl-btn is-off' : 'pl-btn is-primary' };
-    const edBar = { on: editing, note: p.edit === 'land' ? 'previewing turned: the root column is a row' : 'drag a widget to move it · drag an edge to resize',
+    const edBar = { on: editing, note: p.edit === 'land' ? 'previewing turned: the root column is a row' : p.edit === 'new' ? 'empty: Add widget puts the first one in' : p.edit === 'move' ? 'release over a widget’s edge to put it there' : 'tap a widget to select it · drag it, or its edge',
       btns: [{ t: 'Add widget', icon: ic.plus, cls: 'pl-btn' }, { t: 'Remove', icon: ic.trash, cls: 'pl-btn' }, { t: eLand ? 'Upright' : 'Turned', icon: ic.rotate, cls: 'pl-btn' }] };
 
     const refuse = p.refuse === 'off'
@@ -260,7 +273,7 @@ class Component extends DCLogic {
     const isList = g.kind === 'todo' || g.kind === 'priorities';
     const cls = ['pl-wg'];
     if (g.compact) cls.push('is-compact');
-    if (editing) cls.push(g.sel || g.path === (Component.SEL[p.tmpl] || '') ? 'is-sel' : 'is-edit');
+    if (editing) cls.push(g.sel || g.path === (Component.SEL[p.edit === 'move' ? 'move' : this._tid || p.tmpl] || '') ? 'is-sel' : 'is-edit');
     const out = Object.assign({}, g, { cls: cls.join(' '), isList, isNotes: g.kind === 'notes', isHabits: g.kind === 'habits', isMonth: g.kind === 'minimonth', isWeek: g.kind === 'weekov',
       isAgenda: g.kind === 'agenda' || g.kind === 'cagenda', moreHref: '#', more: g.more > 0, readouts: g.readouts || [] });
     if (out.isMonth) out.mmCls = g.large ? 'pl-mm is-large' : 'pl-mm';
@@ -326,20 +339,31 @@ class Component extends DCLogic {
         marks.push({ cls: 'pl-refresh', ...r, t: (drag === 'grab' ? 'the grab' : 'one 30-minute step') + ': about ' + pct + ' % of the panel' });
       }
     }
+    if (drag === 'edge') {
+      ag.blocks = [{ id: 'ghost', y: Math.round(yL(28)) + 1, h: Math.round(yL(30) - yL(28)) - 2, cls: 'pl-ev is-ghost', words: [], when: '', extra: '' }].concat(ag.blocks);
+      ag.readouts = [{ y: top - 1, t: PL.hm(10) + ' ↑' }];
+      marks.push({ cls: 'pl-mark is-below', x: ag.x + 36, y: ag.y + 34 + top - 2, w: ag.w - 38, h: Math.round(y(12) - y(10)) + 4, t: 'held past 06:00: the hours scroll up a step each step; the readout stays at the gutter’s top' });
+    }
     if (drag === 'released' && p.refresh) {
       const r = { x: ag.x + 36, y: Math.round(y(28)) - 2, w: ag.w - 38, h: Math.round(y(30) - y(28)) + 4 };
       marks.push({ cls: 'pl-refresh', ...r, t: 'on release: only the old place, the outline goes' });
     }
   }
 
-  editMarks(widgets, p, handles, tags, warns, pg, cw, ch) {
+  editMarks(widgets, p, handles, tags, warns, pg, cw, ch, marks) {
     const sel = widgets.find(g => g.cls.includes('is-sel'));
     if (sel) {
       const cx = sel.x + sel.w / 2, cy = sel.y + sel.h / 2;
       handles.push({ cls: 'pl-ed-h is-bar', x: cx, y: sel.y + sel.h }, { cls: 'pl-ed-h is-vbar', x: sel.x, y: cy }, { cls: 'pl-ed-h is-vbar', x: sel.x + sel.w, y: cy });
       const w = (Component.WEIGHT[p.tmpl] || 3) + (p.edit === 'weight' ? 1 : 0);
-      tags.push({ x: sel.x + 10, y: sel.y + 42, t: sel.title + ' · weight ' + w, btns: [{ t: '−', label: 'Less weight' }, { t: '+', label: 'More weight' }, { t: '⋯', label: 'Widget settings' }] });
+      tags.push({ x: sel.x + 10, y: sel.y + 42, t: sel.title + ' · weight ' + w, btns: [{ t: '‹', label: 'Move before the one ahead of it' }, { t: '›', label: 'Move after the one behind it' }, { t: '−', label: 'Less weight' }, { t: '+', label: 'More weight' }, { t: '⋯', label: 'Widget settings' }] });
     }
+    if (p.edit === 'new') marks.push({ cls: 'pl-mark is-below', x: 0, y: 0, w: cw, h: 220, t: 'a new template starts empty: Add widget puts the first one here' });
+    if (p.edit === 'move') {
+      const ag = widgets.find(g => g.kind === 'agenda'), nt = widgets.find(g => g.kind === 'notes');
+      if (ag && nt) marks.push({ cls: 'pl-mark is-below', x: ag.x - 4, y: ag.y + ag.h - 6, w: ag.w + 8, h: 12, t: 'Notes drops here: below the agenda' });
+    }
+    if (p.edit === 'remove') warns.push({ y: ch - 92, t: 'Notes on 12 days stay stored, unchanged.', sub: ' This template no longer shows the slot “notes”; those days name them in their (i). A Notes widget for “notes”, here or in any template, shows them again.' });
     if (p.edit === 'short') warns.push({ y: 12, t: 'These widgets need ' + (pg.deficit || 0) + ' px more height than the page has.', sub: ' Every widget keeps its minimum, so the template can’t be saved like this: remove a widget or put two side by side.' });
   }
 
@@ -398,6 +422,16 @@ class Component extends DCLogic {
       ] };
   }
 
+  widgetSheet(pageH) {
+    return { isSettings: true, h: Math.round(pageH * 0.8), title: 'Agenda in this template', lead: 'These change what the widget shows in this template only; no entry changes.',
+      rows: [
+        { head: 'Hours', items: [{ t: 'First hour', sub: '− and + in whole hours', end: '‹ 07 ›' }, { t: 'Last hour', sub: 'events outside show as a count at the edge', end: '‹ 21 ›' }] },
+        { head: 'Size', items: [{ t: 'Weight', sub: 'its share of what is left after every minimum', end: '‹ 3 ›' }, { t: 'Takes leftover space', sub: '', tog: true, togCls: 'pl-tog is-on' }] },
+        { head: 'Turned', items: [{ t: 'Its row, when the screen is turned', sub: 'stays a row, or becomes a column', end: 'Row' }] },
+        { head: 'For lists and notes', items: [{ t: 'Period', sub: 'a to-do list or notes of the day, the week or the month', end: 'Day' }, { t: 'Slot', sub: 'notes: the slot’s name, shared by every template that uses it', end: 'notes ›' }] }
+      ] };
+  }
+
   picker(PL, kind, tid, year) {
     const ic = Component.IC;
     const name = kind === 'day' ? 'Thursday 11' : kind === 'week' ? 'week 10' : 'March';
@@ -414,14 +448,14 @@ class Component extends DCLogic {
         key: [{ l: 'A', cls: '', t: 'Seven columns' }, { l: 'B', cls: 'is-b', t: 'Spread' }, { l: 'C', cls: 'is-c', t: 'Lists and notes' }],
         months, ranges: [{ t: 'January to March: Seven columns', sub: 'a range', act: 'Change' }, { t: 'From April on: Spread', sub: 'every week from a date', act: 'Change' }, { t: 'Week 20: Lists and notes', sub: 'that week only · wins over the range', act: 'Remove' }] };
     }
-    const ids = PL.byKind(kind);
-    const uses = { 'day-lists': 'the default · 143 days', 'day-diary': '28 days', 'day-agenda': '2 days', 'week-columns': 'January to March', 'week-spread': 'from April on', 'week-lists': 'week 20 only', 'month-grid': 'the default', 'month-goals': 'not used yet' };
+    const ids = PL.byKind(kind).concat(tid === 'day-lists-c' ? [tid] : []);
+    const uses = { 'day-lists': 'the default · 143 days', 'day-diary': '28 days', 'day-agenda': '2 days', 'week-columns': 'January to March', 'week-spread': 'from April on', 'week-lists': 'week 20 only', 'month-grid': 'the default', 'month-goals': 'not used yet', 'day-lists-c': 'saved just now · not used yet' };
     const items = ids.map(id => {
       const tw = kind === 'month' || kind === 'week' ? 96 : 84, th = Math.round(tw * 4 / 3);
       const r = PL.layout(id, 678, 762, {});
       const sx = (tw - 8) / 678, sy = (th - 8) / 762;
       const boxes = r.map(b => ({ x: Math.round(4 + b.x * sx), y: Math.round(4 + b.y * sy), w: Math.max(3, Math.round(b.w * sx)), h: Math.max(3, Math.round(b.h * sy)), cls: b.n.wg === 'agenda' || b.n.wg === 'cagenda' ? 'is-ag' : '' }));
-      return { name: PL.T[id].name, note: PL.T[id].note, uses: uses[id] || '', on: id === tid, cls: 'pl-ti' + (id === tid ? ' is-on' : ''), tw, th, boxes };
+      return { name: PL.T[id].name, note: PL.T[id].note, uses: uses[id] || '', on: id === (tid === 'day-lists-c' ? 'day-lists' : tid), cls: 'pl-ti' + (id === tid ? ' is-on' : ''), tw, th, boxes };
     });
     return { isList: true, isYear: false, title: 'Template for ' + name, lead: 'Switching shows the same entries in another layout; nothing written changes.', scopes, items,
       acts: [{ t: 'New', icon: ic.plus }, { t: 'Copy', icon: ic.copy }, { t: 'Edit', icon: ic.edit }, { t: 'Plan ahead', icon: ic.calendar }] };
@@ -467,7 +501,7 @@ Component.IC = {
 };
 Component.KEYS = [['q', 'w', 'e', 'r', 't', 'z', 'u', 'i', 'o', 'p'], ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'], ['⇧', 'y', 'x', 'c', 'v', 'b', 'n', 'm', '⌫'], ['123', ',', 'space', '.', '⏎']]
   .map(r => ({ keys: r.map(k => ({ t: k === 'space' ? '' : k, cls: k === 'space' ? 'k w' : 'k' })) }));
-Component.SEL = { 'day-lists': 'r.0.0', 'day-diary': 'r.1.0', 'week-columns': 'r.0', 'week-spread': 'r.0', 'month-grid': 'r.0', 'month-goals': 'r.1', 'day-agenda': 'r.0', 'week-lists': 'r.1' };
+Component.SEL = { 'day-lists': 'r.0.0', 'day-lists-w': 'r.0.0', move: 'r.1.1', 'day-lists-r': '-', 'day-new': '-', 'day-diary': 'r.1.0', 'week-columns': 'r.0', 'week-spread': 'r.0', 'month-grid': 'r.0', 'month-goals': 'r.1', 'day-agenda': 'r.0', 'week-lists': 'r.1' };
 Component.WEIGHT = { 'day-lists': 3, 'day-diary': 1, 'week-columns': 3, 'week-spread': 3, 'month-grid': 3, 'month-goals': 1 };
 Component.SHEETNODE = {
   agenda: { wg: 'agenda', from: 8, to: 18 }, todo: { wg: 'todo', period: 'week', title: 'This week' }, notes: { wg: 'notes', period: 'day', slot: 'evening', title: 'Evening' },

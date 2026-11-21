@@ -172,6 +172,15 @@
   T['day-lists-w'].root.c[0].c[0].w = 4;
   T['day-lists-x'] = Object.assign(clone(T['day-lists']), { hidden: true });
   T['day-lists-x'].root.c[0].c[1].c.push({ wg: 'habits', period: 'day', title: 'Habits' }, { wg: 'priorities', period: 'day', title: 'Priorities' }, { wg: 'weekov', title: 'This week' });
+  // the editor's states: a new template starts empty; Notes removed; a saved copy
+  T['day-new'] = { kind: 'day', name: 'New day template', hidden: true, root: { k: 'col', c: [] } };
+  T['day-lists-r'] = Object.assign(clone(T['day-lists']), { hidden: true });
+  T['day-lists-r'].root.c[1].c.pop();
+  T['day-lists-c'] = Object.assign(clone(T['day-lists']), { name: 'Workdays', note: 'A copy of Agenda and lists', hidden: true });
+  // the agenda's hours scrolled up while an event is held past its first hour
+  T['day-agenda-up'] = Object.assign(clone(T['day-agenda']), { hidden: true });
+  T['day-agenda-up'].root.c[0].from = 5;
+  T['day-agenda-up'].root.c[0].to = 22;
   P.T = T;
   P.byKind = kind => Object.keys(T).filter(id => T[id].kind === kind && !T[id].hidden);
 

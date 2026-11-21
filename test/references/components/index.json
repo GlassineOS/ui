@@ -1,7 +1,7 @@
 {
  "contract": 1,
  "kind": "components",
- "chromium": "156.0.8078.79",
+ "chromium": "158.0.8127.36",
  "libraries": {
   "font-dejavu": "2.37-r6",
   "font-opensans": "0_git20210927-r1",

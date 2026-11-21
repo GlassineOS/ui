@@ -164,7 +164,7 @@ class Component extends DCLogic {
     if (text === 'field' || text === 'view') o.textMode = text === 'view';
     if (drag === 'grab' || drag === 'moved' || drag === 'resize' || drag === 'released') {
       const mv = { grab: [28, 30], moved: [29, 31], resize: [29, 32], released: [29, 32] }[drag];
-      o.move = { id: 'e3', s: mv[0], e: mv[1], look: drag === 'released' ? '' : drag === 'resize' ? 'resize' : 'grab' };
+      o.move = { id: 'e3', s: mv[0], e: mv[1] };
     }
     if (editing && p.edit === 'short') { o.W = cw; }
     const pg = PL.page(o);
@@ -317,8 +317,8 @@ class Component extends DCLogic {
       }
     }
     if (drag === 'released' && p.refresh) {
-      const r = { x: ag.x + 36, y: Math.round(y(29)) - 2, w: ag.w - 38, h: Math.round(y(32) - y(29)) + 4 };
-      marks.push({ cls: 'pl-refresh', ...r, t: 'on release: once more, the drag look goes' });
+      const r = { x: ag.x + 36, y: Math.round(y(28)) - 2, w: ag.w - 38, h: Math.round(y(30) - y(28)) + 4 };
+      marks.push({ cls: 'pl-refresh', ...r, t: 'on release: only the old place, the outline goes' });
     }
   }
 

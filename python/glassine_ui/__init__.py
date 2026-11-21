@@ -2,6 +2,7 @@
 drawing built on them, for Python/cairo programs (Python API v1, README "Python API").
 
     from glassine_ui import voices, paint
+    from glassine_ui import size      # the interface size (python3 alone)
 """
 # SPDX-License-Identifier: GPL-2.0-or-later
 API = 1

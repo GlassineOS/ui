@@ -1,8 +1,12 @@
-/* sheet.c VOICE OUT.png CELLS.txt: the sample sheet in C, every element of the
- * voice in its own cell (the same cells as sheet.py, compared by compare.py).
- * Cells: 4 columns of 170 x 90 logical px, drawn at scale 2, element at (20, 20).
+/* sheet.c VOICE OUT.png CELLS.txt [SCALE [MM TEXT]]: the sample sheet in C, every
+ * element of the voice in its own cell (the same cells as sheet.py, compared by
+ * compare.py). Cells: 4 columns of 170 x 90 logical px, drawn at scale 2 (or SCALE),
+ * element at (20, 20). MM TEXT: with the voice's metrics set (the millimetres of a
+ * design pixel, the text factor).
  * SPDX-License-Identifier: GPL-2.0-or-later */
+#include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "glassine-ui.h"
 
@@ -49,9 +53,11 @@ int main(int argc, char **argv)
     const UiVoice *t = ui_voice_find(argv[1]);
     names = fopen(argv[3], "w");
     ui_draw_init();
-    cairo_surface_t *s = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, CW * COLS * 2, CH * (NCELL / COLS) * 2);
+    double sc = argc > 4 ? atof(argv[4]) : 2;
+    if (argc > 6) ui_metrics_voice(t, atof(argv[5]), atof(argv[6]));
+    cairo_surface_t *s = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, (int)ceil(CW * COLS * sc), (int)ceil(CH * (NCELL / COLS) * sc));
     cairo_t *cr = cairo_create(s);
-    cairo_scale(cr, 2, 2);
+    cairo_scale(cr, sc, sc);
     g = (UiGc){ cr, 1, t };
     ui_fill_rect(&g, 0, 0, CW * COLS, CH * (NCELL / COLS), UI_RGB(0xffffff));
     B("card", &t->card, 120, 50);

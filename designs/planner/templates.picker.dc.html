@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Choosing a template</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div data-spec-id="templates.picker" style="width:824px;height:1352px;box-sizing:border-box;padding:28px 32px;display:flex;flex-direction:column;gap:18px;background:#e6e6e6;color:#1b1b1b;font-family:'IBM Plex Sans',sans-serif">
+<div style="display:flex;flex-direction:column;gap:6px">
+<span style="font:500 13px/1.2 'IBM Plex Mono',monospace;color:#3d3d3d">templates.picker</span>
+<h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">Choosing a template</h1>
+<p style="margin:0;max-width:760px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">From the cog: the kind’s templates, each drawn as its layout, with where it is used. The scope decides what the choice applies to: only this period, a range, every period from this one on, or the kind’s default. New, Copy and Edit work on the template; switching never changes an entry.</p>
+</div>
+<dc-import name="ThemeBar" voice="{{ voice }}" on-pick="{{ pick }}" hint-size="100%,112px"></dc-import>
+<dc-import name="Planner" voice="{{ voice }}" orient="portrait" screen="picker" tmpl="{{ tmpl }}" hint-size="760px,1008px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "tmpl": {"editor": "enum", "options": ["day-lists", "week-columns", "month-grid"], "default": "day-lists"}, "$preview": {"width": 824, "height": 1352}, "$states": [{"id": "day", "name": "Day templates", "props": {"tmpl": "day-lists"}}, {"id": "week", "name": "Week templates", "props": {"tmpl": "week-columns"}}, {"id": "month", "name": "Month templates", "props": {"tmpl": "month-grid"}}]}'>
+class Component extends DCLogic {
+  state = {};
+  renderVals() {
+    const s = this.state, p = this.props;
+    return { voice: s.voice ?? p.voice ?? 'white', pick: (k, v) => this.setState({ [k]: v }), tmpl: p.tmpl ?? "day-lists" };
+  }
+}
+</script>
+</body>
+</html>

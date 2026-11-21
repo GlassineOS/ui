@@ -16,7 +16,7 @@
   },
   {
    "id": "font",
-   "name": "Your font"
+   "name": "Autograph"
   },
   {
    "id": "best",
@@ -363,7 +363,7 @@
    "y": 0,
    "w": 824,
    "h": 1569,
-   "title": "Your font · letters not learned yet",
+   "title": "Autograph · nothing written yet",
    "page": "font",
    "is_interactive": true
   },
@@ -372,7 +372,7 @@
    "y": 0,
    "w": 824,
    "h": 1569,
-   "title": "Your font · learning the letters",
+   "title": "Autograph · learning the letters",
    "page": "font",
    "is_interactive": true
   },
@@ -381,7 +381,7 @@
    "y": 0,
    "w": 824,
    "h": 1569,
-   "title": "Your font · ready, not installed",
+   "title": "Autograph · the tab’s page",
    "page": "font",
    "is_interactive": true
   },
@@ -390,7 +390,7 @@
    "y": 0,
    "w": 824,
    "h": 1569,
-   "title": "Your font · installed",
+   "title": "Autograph · up to date",
    "page": "font",
    "is_interactive": true
   },
@@ -399,7 +399,7 @@
    "y": 0,
    "w": 824,
    "h": 1569,
-   "title": "Your font · out of date",
+   "title": "Autograph · out of date",
    "page": "font",
    "is_interactive": true
   },
@@ -408,7 +408,7 @@
    "y": 0,
    "w": 824,
    "h": 1569,
-   "title": "Your font · rename",
+   "title": "Autograph · export",
    "page": "font",
    "is_interactive": true
   },
@@ -417,7 +417,7 @@
    "y": 0,
    "w": 824,
    "h": 1569,
-   "title": "Your font · after closing a character",
+   "title": "Autograph · after closing a character",
    "page": "font",
    "is_interactive": true
   },
@@ -426,7 +426,7 @@
    "y": 0,
    "w": 1058,
    "h": 1266,
-   "title": "Your font · turned",
+   "title": "Autograph · turned",
    "page": "font",
    "is_interactive": true
   },
@@ -435,7 +435,7 @@
    "y": 0,
    "w": 824,
    "h": 1569,
-   "title": "Your font · calligraphy style",
+   "title": "Autograph · calligraphy style",
    "page": "font",
    "is_interactive": true
   },
@@ -444,7 +444,7 @@
    "y": 0,
    "w": 824,
    "h": 1569,
-   "title": "Your font · brush style",
+   "title": "Autograph · brush style",
    "page": "font",
    "is_interactive": true
   },
@@ -930,7 +930,7 @@
   "title_font": {
    "kind": "title1",
    "page": "font",
-   "text": "Your font · the tab: the font page, its letters, learning, install",
+   "text": "Autograph · the tab: the font page, its letters, learning, update, export",
    "x": 0,
    "y": -300,
    "w": 240,

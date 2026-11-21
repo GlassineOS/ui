@@ -87,7 +87,7 @@
 <span style="font:{{ k.display }};letter-spacing:{{ k.displayLs }}">Ready when you are.</span>
 <span style="font:{{ k.lead }};color:var(--il-ink-soft);text-wrap:pretty">Write a few words whenever you like. A handful today and a handful tomorrow is just as good as many at once.</span>
 <div style="display:flex;flex-direction:column;border-top:{{ k.sep }}"><sc-for list="{{ ready.rows }}" as="r" hint-placeholder-count="3"><div style="min-height:60px;padding:8px 0;box-sizing:border-box;display:flex;align-items:center;gap:14px;border-bottom:{{ k.sep }}"><span style="width:26px;flex:none;font:400 24px/1 'Material Symbols Outlined'">{{ r.icon }}</span><span style="width:132px;flex:none;font:{{ k.lbl }};font-variant:{{ k.lblVar }};text-transform:{{ k.lblCase }};letter-spacing:{{ k.lblLs }};color:{{ k.lblC }}">{{ r.label }}</span><span style="flex:1;min-width:0;font:{{ k.row }};text-wrap:pretty">{{ r.value }}</span></div></sc-for></div>
-<span style="display:flex;align-items:center;gap:10px;font:{{ k.sub }};color:var(--il-ink-soft)"><span style="font:400 20px/1 'Material Symbols Outlined'">draw</span>You can also make a font of your handwriting, any time, in Your font.</span>
+<span style="display:flex;align-items:center;gap:10px;font:{{ k.sub }};color:var(--il-ink-soft)"><span style="font:400 20px/1 'Material Symbols Outlined'">draw</span>You can also make a font of your handwriting, any time, in Autograph.</span>
 </div></sc-if>
 
 <sc-if value="{{ done.show }}" hint-placeholder-val="{{ false }}"><div role="status" style="flex:none;display:flex;align-items:center;gap:14px;padding:12px 16px;border-radius:{{ k.cardR }};box-shadow:{{ k.noteSh }};flex-wrap:wrap"><span style="font:400 26px/1 'Material Symbols Outlined'">{{ done.icon }}</span><div style="flex:1;min-width:260px;display:flex;flex-direction:column;gap:3px"><span style="font:{{ k.row }};font-weight:600">{{ done.title }}</span><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">{{ done.text }}</span></div><div style="display:flex;gap:10px"><sc-for list="{{ done.btns }}" as="b" hint-placeholder-count="2"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ b.on }}" aria-disabled="{{ b.dis }}" style="height:48px;padding:0 18px;display:flex;align-items:center;cursor:{{ b.cur }};border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ b.bg }};color:{{ b.fg }};box-shadow:{{ b.sh }};white-space:nowrap">{{ b.label }}</div></sc-for></div></div></sc-if>
@@ -226,23 +226,23 @@
 <sc-if value="{{ fp.actHead }}" hint-placeholder-val="{{ false }}"><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">{{ fp.actLine }}</span></sc-if>
 <sc-if value="{{ fp.actRow }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ fp.act.on }}" style="height:48px;padding:0 18px;display:flex;align-items:center;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ fp.act.bg }};color:{{ fp.act.fg }};box-shadow:{{ fp.act.sh }};white-space:nowrap">{{ fp.act.label }}</div><span style="flex:1;min-width:140px;font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">{{ fp.actNote }}</span></div></sc-if>
 </div>
-<sc-if value="{{ fp.land }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:10px;padding:10px 0;border-top:{{ k.sep }};border-bottom:{{ k.sep }}"><div style="display:flex;align-items:baseline;gap:12px"><span style="flex:none;font:{{ k.lbl }};font-variant:{{ k.lblVar }};text-transform:{{ k.lblCase }};letter-spacing:{{ k.lblLs }};color:{{ k.lblC }}">Name</span><span style="flex:1;min-width:0;font:{{ k.row }};font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ fp.name }}</span></div><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty"><span style="color:var(--il-ink)">{{ fp.inst }}.</span> {{ fp.instSub }}</span><div style="display:flex"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ fp.rename }}" style="height:48px;padding:0 18px;display:flex;align-items:center;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }};white-space:nowrap">Rename</div></div></div></sc-if>
+<sc-if value="{{ fp.land }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:10px;padding:10px 0;border-top:{{ k.sep }};border-bottom:{{ k.sep }}"><div style="display:flex;align-items:baseline;gap:12px"><span style="flex:none;font:{{ k.lbl }};font-variant:{{ k.lblVar }};text-transform:{{ k.lblCase }};letter-spacing:{{ k.lblLs }};color:{{ k.lblC }}">Name</span><span style="flex:1;min-width:0;font:{{ k.row }};font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ fp.name }}</span></div><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty"><span style="color:var(--il-ink)">{{ fp.inst }}.</span> {{ fp.instSub }}</span><div style="display:flex"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ fp.rename }}" style="height:48px;padding:0 18px;display:flex;align-items:center;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }};white-space:nowrap">Export</div></div></div></sc-if>
 </div>
 <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px">
 <div style="display:flex;align-items:center;gap:12px"><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font:{{ k.lbl }};font-variant:{{ k.lblVar }};text-transform:{{ k.lblCase }};letter-spacing:{{ k.lblLs }};color:{{ k.lblC }}">{{ fp.countLbl }}</span><span style="font:{{ k.sub }};color:var(--il-ink-soft)">{{ fp.missT }}</span></div><sc-if value="{{ fp.stHead }}" hint-placeholder-val="{{ false }}"><div style="flex:none;width:320px;display:flex"><div role="tablist" aria-label="Style" style="flex:1;min-width:0;height:48px;display:flex;align-items:stretch;gap:{{ k.tabGap }}"><sc-for list="{{ fp.styles }}" as="sg" hint-placeholder-count="3"><div tabindex="0" role="tab" aria-selected="{{ sg.sel }}" onKeyDown="{{ ilKey }}" onClick="{{ sg.on }}" style="flex:1;min-width:0;padding:0 6px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:{{ k.segR }};font:{{ k.row }};font-weight:{{ sg.fw }};background:{{ sg.bg }};color:{{ sg.fg }};box-shadow:{{ sg.sh }};white-space:nowrap">{{ sg.label }}</div></sc-for></div></div></sc-if><sc-if value="{{ fp.port }}" hint-placeholder-val="{{ true }}"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ fp.writeMissing }}" style="height:48px;padding:0 18px 0 14px;display:flex;align-items:center;gap:8px;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }};white-space:nowrap"><span style="font:400 22px/1 'Material Symbols Outlined'">edit</span>Write these now</div></sc-if></div>
 <div style="display:grid;grid-template-columns:repeat({{ fp.cols }},minmax(0,1fr));gap:5px"><sc-for list="{{ fp.keys }}" as="c" hint-placeholder-count="62"><div tabindex="0" role="button" aria-label="{{ c.aria }}" onKeyDown="{{ ilKey }}" onClick="{{ c.on }}" style="height:{{ fp.keyH }}px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;border-radius:{{ k.cellR }};background:{{ c.bg }};box-shadow:{{ c.sh }}"><span style="font:{{ k.cellF }};line-height:1;color:{{ c.fg }}">{{ c.ch }}</span><sc-if value="{{ c.hasN }}" hint-placeholder-val="{{ false }}"><span style="font:500 11px/1 'IBM Plex Mono',monospace;color:var(--il-ink)">{{ c.n }}</span></sc-if></div></sc-for></div>
-<sc-if value="{{ fp.port }}" hint-placeholder-val="{{ true }}"><div style="min-height:64px;padding:6px 0;box-sizing:border-box;display:flex;align-items:center;gap:14px;border-top:{{ k.sep }};border-bottom:{{ k.sep }}"><span style="width:56px;flex:none;font:{{ k.lbl }};font-variant:{{ k.lblVar }};text-transform:{{ k.lblCase }};letter-spacing:{{ k.lblLs }};color:{{ k.lblC }}">Name</span><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px"><span style="font:{{ k.row }};font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ fp.name }}</span><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty"><span style="color:var(--il-ink)">{{ fp.inst }}.</span> {{ fp.instSub }}</span></div><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ fp.rename }}" style="height:48px;padding:0 18px;display:flex;align-items:center;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }};white-space:nowrap">Rename</div></div></sc-if>
+<sc-if value="{{ fp.port }}" hint-placeholder-val="{{ true }}"><div style="min-height:64px;padding:6px 0;box-sizing:border-box;display:flex;align-items:center;gap:14px;border-top:{{ k.sep }};border-bottom:{{ k.sep }}"><span style="width:56px;flex:none;font:{{ k.lbl }};font-variant:{{ k.lblVar }};text-transform:{{ k.lblCase }};letter-spacing:{{ k.lblLs }};color:{{ k.lblC }}">Name</span><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px"><span style="font:{{ k.row }};font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ fp.name }}</span><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty"><span style="color:var(--il-ink)">{{ fp.inst }}.</span> {{ fp.instSub }}</span></div><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ fp.rename }}" style="height:48px;padding:0 18px;display:flex;align-items:center;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }};white-space:nowrap">Export</div></div></sc-if>
 </div>
 </div>
 <div style="flex:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px"><sc-for list="{{ fp.parts }}" as="r" hint-placeholder-count="3"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ r.on }}" style="min-height:50px;padding:4px 10px 4px 14px;box-sizing:border-box;display:flex;align-items:center;gap:10px;cursor:pointer;border-radius:{{ k.cardR }};background:var(--il-sheet)"><span style="flex:none;font:400 22px/1 'Material Symbols Outlined'">{{ r.icon }}</span><span style="flex:1;min-width:0;font:{{ k.row }};text-wrap:balance">{{ r.label }}</span><span style="flex:none;font:400 22px/1 'Material Symbols Outlined'">chevron_right</span></div></sc-for></div>
 <div style="flex:none;display:flex;align-items:center;gap:10px"><sc-if value="{{ fp.land }}" hint-placeholder-val="{{ false }}"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ fp.writeMissing }}" style="height:48px;padding:0 18px 0 14px;display:flex;align-items:center;gap:8px;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }};white-space:nowrap"><span style="font:400 22px/1 'Material Symbols Outlined'">edit</span>Write these now</div></sc-if><sc-if value="{{ fp.nibFoot }}" hint-placeholder-val="{{ false }}"><span style="flex:1"></span><div role="group" aria-label="{{ fp.nibAria }}" style="flex:none;display:flex;align-items:center;gap:8px"><span style="font:{{ k.sub }};color:var(--il-ink-soft);white-space:nowrap">Nib angle</span><div tabindex="0" role="button" aria-label="Smaller angle" onKeyDown="{{ ilKey }}" onClick="{{ fp.nibLess }}" style="width:48px;height:48px;flex:none;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:{{ k.btnR }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }}"><span style="font:400 22px/1 'Material Symbols Outlined'">remove</span></div><span style="min-width:40px;text-align:center;font:{{ k.row }};font-weight:600">{{ fp.nibT }}</span><div tabindex="0" role="button" aria-label="Larger angle" onKeyDown="{{ ilKey }}" onClick="{{ fp.nibMore }}" style="width:48px;height:48px;flex:none;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:{{ k.btnR }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }}"><span style="font:400 22px/1 'Material Symbols Outlined'">add</span></div></div></sc-if><span style="flex:1"></span><sc-for list="{{ fp.btns }}" as="b" hint-placeholder-count="2"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ b.on }}" aria-disabled="{{ b.dis }}" style="height:48px;padding:0 20px;display:flex;align-items:center;cursor:{{ b.cur }};border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ b.bg }};color:{{ b.fg }};box-shadow:{{ b.sh }};white-space:nowrap">{{ b.label }}</div></sc-for></div>
 
 <sc-if value="{{ fp.renaming }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;gap:16px;padding:{{ bodyPad }};box-sizing:border-box;background:var(--il-paper)">
-<div role="dialog" aria-label="Name of your font" style="display:flex;flex-direction:column;gap:14px;padding:20px 22px;box-sizing:border-box;border-radius:{{ k.cardR }};background:var(--il-paper);box-shadow:{{ k.dialogSh }}">
-<span style="font:{{ k.packF }};font-variant:{{ k.packVar }};letter-spacing:{{ k.packLs }}">Name of your font</span>
-<div role="textbox" aria-label="Name" style="height:56px;padding:0 16px;box-sizing:border-box;display:flex;align-items:center;border-radius:{{ k.btnR }};box-shadow:inset 0 0 0 2px var(--il-ink);font:{{ k.row }}">Garden letters<span style="display:inline-block;width:2px;height:26px;margin-left:2px;background:var(--il-ink)"></span></div>
-<span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">Apps list your font under this name. It is installed, so “Use this name” makes it again under the new name; your letters stay as they are.</span>
-<div style="display:flex;justify-content:flex-end;gap:10px"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ fp.renameDone }}" style="height:48px;padding:0 18px;display:flex;align-items:center;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }}">Cancel</div><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ fp.renameDone }}" style="height:48px;padding:0 18px;display:flex;align-items:center;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.priBg }};color:{{ k.priFg }};box-shadow:{{ k.priSh }}">Use this name</div></div>
+<div role="dialog" aria-label="Export Autograph as" style="display:flex;flex-direction:column;gap:14px;padding:20px 22px;box-sizing:border-box;border-radius:{{ k.cardR }};background:var(--il-paper);box-shadow:{{ k.dialogSh }}">
+<span style="font:{{ k.packF }};font-variant:{{ k.packVar }};letter-spacing:{{ k.packLs }}">Export Autograph as</span>
+<div role="textbox" aria-label="Name" style="height:56px;padding:0 16px;box-sizing:border-box;display:flex;align-items:center;border-radius:{{ k.btnR }};box-shadow:inset 0 0 0 2px var(--il-ink);font:{{ k.row }}">{{ fp.exportName }}<span style="display:inline-block;width:2px;height:26px;margin-left:2px;background:var(--il-ink)"></span></div>
+<span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">Export saves Autograph’s three styles under this name in Documents › Handwriting, to keep or install elsewhere. The installed Autograph stays as it is.</span>
+<div style="display:flex;justify-content:flex-end;gap:10px"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ fp.renameDone }}" style="height:48px;padding:0 18px;display:flex;align-items:center;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }}">Cancel</div><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ fp.renameDone }}" style="height:48px;padding:0 18px;display:flex;align-items:center;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.priBg }};color:{{ k.priFg }};box-shadow:{{ k.priSh }}">Export</div></div>
 </div>
 <div aria-label="On-screen keyboard" style="height:{{ fp.kbH }};flex:none;display:flex;align-items:center;justify-content:center;gap:12px;border-radius:{{ k.cardR }};background:var(--il-sheet);box-shadow:{{ k.cardFlat }};font:{{ k.sub }};color:var(--il-ink-soft)"><span style="font:400 28px/1 'Material Symbols Outlined';color:var(--il-ink)">keyboard</span>The keyboard comes up here</div>
 </div></sc-if>
@@ -353,7 +353,7 @@
 <div style="display:flex;align-items:center;gap:10px"><div role="radiogroup" aria-label="Show" style="display:flex;gap:6px"><sc-for list="{{ nt.views }}" as="c" hint-placeholder-count="2"><div tabindex="0" role="radio" aria-checked="{{ c.sel }}" onKeyDown="{{ ilKey }}" onClick="{{ c.on }}" style="height:48px;padding:0 16px;box-sizing:border-box;display:flex;align-items:center;cursor:pointer;border-radius:{{ k.segR }};font:{{ k.row }};font-weight:{{ c.fw }};background:{{ c.bg }};color:{{ c.fg }};box-shadow:{{ c.sh }};white-space:nowrap">{{ c.label }}</div></sc-for></div><span style="flex:1"></span><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ nt.clear.on }}" aria-disabled="{{ nt.clear.dis }}" style="height:48px;padding:0 18px;display:flex;align-items:center;cursor:{{ nt.clear.cur }};border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ nt.clear.bg }};color:{{ nt.clear.fg }};box-shadow:{{ nt.clear.sh }};white-space:nowrap">Clear</div></div>
 <div role="status" style="display:flex;flex-direction:column;gap:2px"><span style="font:{{ k.row }};text-wrap:pretty">{{ nt.read }}</span><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">{{ nt.readSub }}</span></div>
 <sc-if value="{{ nt.side }}" hint-placeholder-val="{{ false }}"><span style="flex:1"></span></sc-if>
-<div style="display:flex"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ nt.back }}" style="height:48px;padding:0 18px 0 12px;display:flex;align-items:center;gap:6px;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }};white-space:nowrap"><span style="font:400 22px/1 'Material Symbols Outlined'">arrow_back</span>Your font</div></div>
+<div style="display:flex"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ nt.back }}" style="height:48px;padding:0 18px 0 12px;display:flex;align-items:center;gap:6px;cursor:pointer;border-radius:{{ k.btnR }};font:{{ k.btnF }};background:{{ k.btnBg }};box-shadow:{{ k.btnSh }};white-space:nowrap"><span style="font:400 22px/1 'Material Symbols Outlined'">arrow_back</span>Autograph</div></div>
 </div>
 <div style="flex:1;min-height:0;min-width:0;position:relative;order:1">
 <dc-import name="Paper" voice="{{ voice }}" ink="" line="90" size="44" height="700" hint="{{ nt.hint }}" live="{{ yes }}" clear="{{ nt.clearN }}" on-ink="{{ nt.onInk }}" style="width:100%;height:100%" hint-size="100%,400px"></dc-import>
@@ -552,7 +552,7 @@ class Component extends DCLogic {
     const LEARN_T = { 'learn-few': 'Learn', 'learn-waiting': 'Learn', 'learn-running': 'Learn', 'learn-better': 'Learn', 'learn-kept': 'Learn' };
 
     // ---- the app's tabs
-    // Write teaches the reader; Your font opens on the font page, with careful samples, picks and
+    // Write teaches the reader; Autograph opens on the font page, with careful samples, picks and
     // neatening as rows below it; Learn is the reader's learning with Samples and Coverage beneath
     // it. A guest's session has Write and Contribute only, their own samples a row in Contribute
     // (handwriting spec 002 FR-018).
@@ -594,7 +594,7 @@ class Component extends DCLogic {
     else if (!wizard && APP_HEAD[headKey]) pg = { show: true, eyebrow: '', title: APP_HEAD[headKey][0], lead: APP_HEAD[headKey][1], font: k.displayS };
     if (screen === 'sample' || screen === 'sample-delete' || (land && (screen === 'donate-on' || screen === 'donate-saved' || screen.startsWith('learn') || headKey === 'best-font'))) pg = { show: false };
     pg.hasLead = !!pg.lead && screen !== 'donate-saved' && !(G && land && screen === 'w-ghello') && !(G && screen === 'donate-on') && !(land && !wizard && screen !== 'write-sets') && headKey !== 'best-font';
-    if (pg.show && !pg.eyebrow) pg.eyebrow = { 'best-pick': 'Your font', 'best-neat': 'Your font', 'write-sets': 'Write', learn: 'Learn', 'donate-off': 'Contribute', 'donate-on': 'Contribute', 'donate-licence': 'Contribute', 'donate-earlier': 'Contribute' }[headKey] || '';
+    if (pg.show && !pg.eyebrow) pg.eyebrow = { 'best-pick': 'Autograph', 'best-neat': 'Autograph', 'write-sets': 'Write', learn: 'Learn', 'donate-off': 'Contribute', 'donate-on': 'Contribute', 'donate-licence': 'Contribute', 'donate-earlier': 'Contribute' }[headKey] || '';
     if (pg.show && othersList) pg.eyebrow = 'Other writers';
     pg.hasEyebrow = !!pg.eyebrow;
     // Samples and Coverage sit beneath Learn; a guest's samples beneath their Contribute tab
@@ -680,7 +680,7 @@ class Component extends DCLogic {
       steps: screen === 'best-write' ? [] : [seg('1 Quick', screen === 'best-quick', screen === 'best-careful'), seg('2 Careful', screen === 'best-careful', false)],
       note: screen === 'best-quick' ? 'First, write it quickly, the way you would in a note.' : screen === 'best-careful' ? 'Now once more, slowly. Write it the way you like it best.' : 'Take your time. Write it the way you like it best.',
       slant: screen === 'best-quick' ? '-14' : '0', lastSlant: screen === 'best-careful' ? '-14' : '0',
-      prompt: PROMPT[screen] || '', promptFont: sentence ? k.promptS : k.prompt, setName: isBest ? (G ? 'Write it your best' : 'Your font') : sentence ? 'Sentences' : 'What needs practice', toSets: go(isBest && !G ? 'best-font-installed' : 'write-sets'),
+      prompt: PROMPT[screen] || '', promptFont: sentence ? k.promptS : k.prompt, setName: isBest ? (G ? 'Write it your best' : 'Autograph') : sentence ? 'Sentences' : 'What needs practice', toSets: go(isBest && !G ? 'best-font-installed' : 'write-sets'),
       hasLast: screen === 'write-kept' || screen === 'best-careful', isCheck: screen === 'write-check',
       lastInk: screen === 'best-careful' ? 'garden' : 'quiet', lastState: screen === 'best-careful' ? 'The quick one' : 'Kept', lastRead: screen === 'best-careful' ? 'Kept. Now the careful one.' : 'Read as “quiet”',
       lastBtns: screen === 'best-careful' ? [btn('Redo', go('best-quick'))] : [btn('Redo', go('write')), btn('Discard', go('write'))],
@@ -791,8 +791,10 @@ class Component extends DCLogic {
           on: () => u(st => { const o = st.out || []; return { out: o.includes(i) ? o.filter(x => x !== i) : [...o, i] }; }) }; }),
       btns: [btn('Not now', go('donate-on')), btn(nIn ? 'Add ' + nIn + ' samples' : 'Add none', go('donate-on'))] };
 
-    // ---- Your font (handwriting spec 003 Scenario 3, FR-006 to FR-012, FR-030). The counts come
-    // from the samples, so the page is never empty before the letters are learned. All ink here is
+    // ---- Autograph (handwriting spec 003 Scenario 3, FR-006 to FR-012, FR-030). The counts come
+    // from the samples, so the page is never empty. Autograph is always installed (FR-009): with
+    // nothing written it is the base alone, and it rebuilds itself while the tablet charges (FR-011),
+    // so there is no Install or Remove, only Update to rebuild it at once. All ink here is
     // made up for the boards (Kalam, or the paths below), never anyone's writing.
     const fontScr = screen.startsWith('best-font') || screen.startsWith('best-char');
     const FSTATE = { 'best-font-none': 'none', 'best-font-learning': 'learning', 'best-font': 'current', 'best-font-installed': 'installed',
@@ -802,17 +804,19 @@ class Component extends DCLogic {
     const FN = { t: 24, q: 2, x: 1, z: 0, A: 6, B: 4, C: 3, D: 5, E: 7, F: 2, G: 1, H: 4, I: 9, J: 0, K: 1, L: 3, M: 5, N: 3, O: 4, P: 3,
       Q: 1, R: 3, S: 4, T: 8, U: 2, V: 0, W: 3, X: 0, Y: 1, Z: 0, '0': 5, '1': 8, '2': 4, '3': 3, '4': 3, '5': 4, '6': 3, '7': 2, '8': 1, '9': 3 };
     'abcdefghijklmnopqrsuvwy'.split('').forEach((c, i) => { if (FN[c] == null) FN[c] = 4 + ((i * 7) % 13); });
+    if (fstate === 'none') FCH.forEach(c => { FN[c] = 0; });
     const covered = c => (FN[c] || 0) >= MIN;
     const have = FCH.filter(covered).length, miss = FCH.length - have;
-    const installed = ['installed', 'outdated', 'relearn'].includes(fstate);
-    const showHand = ['current', 'installed', 'outdated', 'relearn'].includes(fstate);
+    const installed = true;
+    const stale = ['outdated', 'relearn'].includes(fstate);
+    const showHand = ['none', 'current', 'installed', 'outdated', 'relearn'].includes(fstate);
     const sheetDefault = screen === 'best-char-missing' ? 'Q' : screen.startsWith('best-char') ? 't' : null;
     const sheetCh = s.sheet !== undefined ? s.sheet : sheetDefault;
     const relearning = fstate === 'relearn' || (fstate === 'current' && !!s.relearnCh);
     const model = fstate !== 'none' && fstate !== 'learning';
     const pct = fstate === 'learning' ? 60 : relearning ? 40 : 0;
     const SENT = 'The quick brown fox jumps over the lazy dog.';
-    const fontName = s.renamed ? 'Garden letters' : 'My handwriting';
+    const fontName = 'Autograph';
     // The three styles (FR-034) differ only in how wide the ink is along each stroke, so the
     // boards keep each covered letter where Kalam sets it and draw ink over it along its centre
     // line. The centre lines below are traced from Kalam's letters (SIL Open Font License; font
@@ -868,7 +872,7 @@ class Component extends DCLogic {
     };
     const fp = {
       land, port: !land, dir: land ? 'row' : 'column', gap: land ? '22px' : '10px', leftW: land ? '270px' : 'auto', prevH: land ? '190px' : 'auto',
-      note: relearning ? 'Learning ' + (s.relearnCh || 't') + ' again… ' + pct + '%' : { current: 'Plain letters aren’t in it yet', installed: 'Plain letters aren’t in it yet', none: 'Not learned yet', learning: 'Learning your letters… ' + pct + '%', outdated: 'You wrote more since', relearn: 'Learning ' + (s.relearnCh || 't') + ' again… ' + pct + '%' }[fstate] || '',
+      note: relearning ? 'Learning ' + (s.relearnCh || 't') + ' again… ' + pct + '%' : { current: 'Plain letters are the base’s still', installed: 'Plain letters are the base’s still', none: 'Plain letters are the base’s still', learning: 'Learning your letters… ' + pct + '%', outdated: 'You wrote more since', relearn: 'Learning ' + (s.relearnCh || 't') + ' again… ' + pct + '%' }[fstate] || '',
       hasBar: fstate === 'learning' || relearning, pct: String(pct), bar: Array.from({ length: 10 }, (_, i) => ({ bg: i < pct / 10 ? 'var(--il-ink)' : 'var(--il-paper)' })),
       hasHand: showHand, sentence: SENT, fs: land ? 27 : 31,
       stCard: showHand && !land, hdrAlign: showHand && !land ? 'center' : 'baseline', stHead: showHand && land, nibFoot: showHand && fstyle === 'calligraphy',
@@ -881,33 +885,31 @@ class Component extends DCLogic {
       // a word at a time, so a line never breaks inside one
       words: SENT.split(' ').map((wd, wi, all) => ({ sp: wi < all.length - 1 ? ' ' : '', chars: wd.split('').map(c => { const hand = c === ' ' || covered(c), ink = hand && fstyle !== 'regular' && !!CL[c];
         const g = ink ? inkD(c, fstyle) : { d: '', sw: 0 };
-        return { t: c, ff: hand ? "'Kalam',cursive" : k.F, fz: hand ? '1em' : '0.72em', col: ink ? 'transparent' : hand ? 'var(--il-pen)' : 'var(--il-ink-soft)',
+        return { t: c, ff: hand ? "'Kalam',cursive" : k.F, fz: hand ? '1em' : '0.86em', col: ink ? 'transparent' : 'var(--il-pen)',
           ink, d: g.d, sw: String(g.sw), w: ink ? CL[c][0] / 1000 + 'em' : '0', vb: ink ? '0 -1063 ' + CL[c][0] + ' 1594' : '0 0 1 1' }; }) })),
       hasText: !showHand || relearning,
-      text: relearning ? 'The preview shows the new ' + (s.relearnCh || 't') + ' when this is done.' + (installed && land ? ' Your installed font stays as it is until you update it.' : '') : { none: 'The counts below come straight from your samples. The preview comes once your letters are learned.',
-        learning: 'The preview comes when this is done. You can go on using the tablet meanwhile.',
+      text: relearning ? 'The preview shows the new ' + (s.relearnCh || 't') + ' when this is done.' + (installed && land ? ' Your installed font stays as it is until you update it.' : '') : { learning: 'The preview comes when this is done. You can go on using the tablet meanwhile.',
         relearn: 'The preview shows the new ' + (s.relearnCh || 't') + ' when this is done. Your installed font stays as it is until you update it.' }[fstate] || '',
-      actRow: fstate === 'none' || (fstate === 'outdated' && land),
-      act: fstate === 'none' ? btn('Learn letters now', () => u({ fstate: 'learning' }), 'pri') : btn('Update letters', () => u({ fstate: 'relearn', relearnCh: 'your letters' })),
+      actRow: fstate === 'outdated' && land,
+      act: btn('Update letters', () => u({ fstate: 'relearn', relearnCh: 'your letters' })),
       actNote: 'Or it does this on its own while the tablet charges.',
-      countLbl: 'Letters · ' + have + ' of ' + FCH.length + (fstate === 'none' || fstate === 'learning' ? ' with enough samples' : ' in your font'),
+      countLbl: 'Letters · ' + have + ' of ' + FCH.length + (fstate === 'none' || fstate === 'learning' ? ' with enough samples' : ' in your hand'),
       cols: land ? 12 : 13, keyH: land ? 40 : 43,
       keys: FCH.map(c => { const n = FN[c] || 0, ok = n >= MIN;
-        return { ch: c, hasN: !ok, n: n + '/' + MIN, aria: c + (ok ? ', in your font' : ', ' + n + ' of ' + MIN + ' samples'), fg: ink,
+        return { ch: c, hasN: !ok, n: n + '/' + MIN, aria: c + (ok ? ', in your hand' : ', ' + n + ' of ' + MIN + ' samples'), fg: ink,
           bg: ok ? 'var(--il-paper)' : n ? 'var(--il-highlight)' : 'transparent', sh: ok ? 'inset 0 0 0 1px var(--il-rule)' : 'inset 0 0 0 1.5px var(--il-ink-soft)',
           on: () => u({ sheet: c, seg: null, wi: null, outS: null, outV: null, open: null, vList: null, redo: false, asking: false, delS: null, redone: false, fav: null, chosen: null }) }; }),
-      missT: miss + (land ? ' not in it yet' : ' not in it yet; shaded ones have a sample or two'), writeMissing: go('best-char-missing'),
-      name: fontName, rename: () => u({ renaming: true }), renaming: screen === 'best-font-rename' || !!s.renaming,
+      missT: !miss ? 'Every one is in your hand.' : (land ? 'In your hand; ' : '') + miss + ' still the base’s' + (land ? '' : '; shaded ones have a sample or two'), writeMissing: go('best-char-missing'),
+      // Export: a copy of the three styles under a name of the person's own (FR-012)
+      name: fontName, exportName: 'Garden letters', rename: () => u({ renaming: true }), renaming: screen === 'best-font-rename' || !!s.renaming,
       renameDone: () => u({ renaming: false, screen: screen === 'best-font-rename' ? 'best-font-installed' : screen }), kbH: land ? '260px' : '330px',
-      instIcon: installed ? 'check_circle' : 'font_download',
-      inst: installed ? 'Installed, version 3' : 'Not installed',
-      instSub: installed && nib !== nibAt && fstate === 'installed' ? 'Update puts the new nib angle in it.' : { installed: 'Apps list it under this one name, in all three styles.',
-        outdated: 'Update makes all three styles again, under the same name.',
-        relearn: 'Update puts the new letters in all three styles.' }[fstate] || (fstate === 'current' ? 'Install puts in all three styles, under this one name. Only you have it; it is never contributed.' : 'Only you have it, on this tablet. It is never contributed.'),
+      inst: 'Version ' + (fstate === 'none' ? 1 : 3),
+      instSub: stale ? 'It takes your new letters while the tablet charges, or now with Update.'
+        : nib !== nibAt ? 'Update puts the new nib angle in it.'
+        : 'Apps list it as Autograph, in all three styles. Only you have it; Export gives you a copy under a name of your own.',
       parts: [['draw', 'Write it your best', 'best-write'], ['compare', 'Which one is nicer?', 'best-pick'], ['edit_note', 'Neaten my writing', 'best-neat']]
         .map(([icon, label, to]) => ({ icon, label, on: go(to) })),
-      btns: installed ? [btn('Remove', () => {}), btn('Update', fstate === 'installed' && nib === nibAt ? null : () => u({ fstate: 'installed', nibAt: nib }), 'pri')]
-        : [btn('Install', fstate === 'current' ? () => u({ fstate: 'installed' }) : null, 'pri')]
+      btns: [btn('Update', stale || nib !== nibAt ? () => u({ fstate: 'installed', nibAt: nib }) : null, 'pri')]
     };
 
     // ---- the character sheet, opened by tapping a key
@@ -985,7 +987,7 @@ class Component extends DCLogic {
       needT: (MIN - nCh) + ' more, and ' + (sheetCh || '') + ' is in your font',
       needSub: 'Write it with care, on its own or in a word. Until then, apps show the usual font’s ' + (sheetCh || '') + '.',
       tabs: !drill, isVersions: shown && sseg === 'versions' && !drill, vCols: Math.max(2, VER.length), inkH: land ? 88 : 150, vBtnCols: land ? 'minmax(0,1fr) minmax(0,1fr)' : 'minmax(0,1fr)', vNoteShow: !land, glyphFs: land ? 70 : 110, versions,
-      vNote: 'Your font switches between the ways you write ' + (sheetCh || '') + ', each about as often as you do. A favourite is used more. Leaving one out doesn’t delete anything.',
+      vNote: 'Autograph switches between the ways you write ' + (sheetCh || '') + ', each about as often as you do. A favourite is used more. Leaving one out doesn’t delete anything.',
       isSamples: sseg === 'samples' && !drill, sCols: land ? 6 : 4, tileH: land ? 84 : 96, samples,
       sCount: (nAllS - nBad - nOut) + ' of ' + nAllS + ' samples count towards ' + (sheetCh || '') + (nBad ? ' · ' + nBad + ' can’t be used' : '') + (nOut ? ' · ' + nOut + ' left out' : ''),
       hasUndo: nOut > 0, noUndo: nOut === 0,
@@ -1141,13 +1143,13 @@ class Component extends DCLogic {
       write: 'Write', 'write-ink': 'Ink', 'write-kept': 'Kept', 'write-check': 'Check failed', 'write-sentence': 'Sentence', 'write-sets': 'Sets',
       samples: 'Samples', sample: 'Sample', 'sample-delete': 'Delete?', coverage: 'Coverage',
       'learn-few': 'Too few', 'learn-waiting': 'Waiting', 'learn-running': 'Learning', 'learn-better': 'Better', 'learn-kept': 'Not better', 'best-write': 'Your best', 'best-quick': 'Quick', 'best-careful': 'Careful', 'best-pick': 'Which one?',
-      'best-font-none': 'Font · not learned', 'best-font-learning': 'Font · learning', 'best-font': 'Font', 'best-font-installed': 'Font · installed', 'best-font-outdated': 'Font · out of date', 'best-font-rename': 'Font · rename', 'best-font-relearn': 'Font · relearning', 'best-font-style-calligraphy': 'Font · calligraphy', 'best-font-style-brush': 'Font · brush',
+      'best-font-none': 'Font · nothing written', 'best-font-learning': 'Font · learning', 'best-font': 'Font', 'best-font-installed': 'Font · up to date', 'best-font-outdated': 'Font · out of date', 'best-font-rename': 'Font · export', 'best-font-relearn': 'Font · relearning', 'best-font-style-calligraphy': 'Font · calligraphy', 'best-font-style-brush': 'Font · brush',
       'best-char': 'Character', 'best-char-samples': 'Its samples', 'best-char-write': 'Write more', 'best-char-pick': 'Compare', 'best-char-missing': 'Not covered', 'best-char-sample': 'A sample', 'best-char-redo': 'Write it again', 'best-char-delete': 'Delete?', 'best-char-version-samples': 'A version’s samples', 'best-neat': 'Neaten', 'best-neat-original': 'Original', 'best-neat-unlearned': 'Neaten · not learned',
       'donate-off': 'Contribute off', 'donate-licence': 'Licence', 'donate-earlier': 'Earlier samples', 'donate-on': 'Contribute on', 'donate-saved': 'Saved',
       others: 'Writers', 'others-empty': 'No writers', 'others-add': 'Add', 'others-rename': 'Rename', 'others-taken': 'Name taken', 'others-remove': 'Remove?', 'others-remove-plain': 'Remove? · nothing unsaved', 'others-done': 'After Finish', 'others-done-kept': 'After Finish · not contributing',
       'guest-hello': '1 Hello', 'guest-try': '2 Try one', 'guest-share': '3 Contribute?', 'guest-age': '3 18 or older', 'guest-licence': '3 Licence', 'guest-write': 'Write', 'guest-sets': 'Sets', 'guest-samples': 'Your samples', 'guest-contribute-off': 'Contribute off', 'guest-contribute': 'Contribute on' };
     // the screens of this part, and one chip to jump to each other part
-    const AREAS = [['First start', 'w-'], ['Write', 'write'], ['Your font', 'best-font', 'best-write', 'best-quick', 'best-careful', 'best-pick'],
+    const AREAS = [['First start', 'w-'], ['Write', 'write'], ['Autograph', 'best-font', 'best-write', 'best-quick', 'best-careful', 'best-pick'],
       ['A character and neatening', 'best-char', 'best-neat'], ['Learn', 'learn', 'sample', 'coverage'], ['Contribute', 'donate'], ['Other writers', 'others'], ['A guest’s session', 'guest-']];
     const areaOf = id => AREAS.findIndex(([, ...ps]) => ps.some(x => id.startsWith(x)));
     const here = areaOf(raw);

@@ -1,26 +1,32 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-2.0-or-later
-"""sheet.py VOICE OUT.png CELLS.txt: the sample sheet in Python (glassine_ui.paint),
+"""sheet.py VOICE OUT.png CELLS.txt [SCALE [MM TEXT]]: the sample sheet in Python (glassine_ui.paint),
 the same elements in the same cells as sheet.c, each drawn from the voice's CSS
 values the way tools/gen-voices builds the C table from them (with the voice's
-"c" values, so the comparison is of the drawing code, not of the data)."""
+"c" values, so the comparison is of the drawing code, not of the data). SCALE: the
+scale it is drawn at (2); MM TEXT: with the voice's metrics set (the millimetres of a
+design pixel, the text factor)."""
+import math
 import sys
 
 import cairo
 
 from glassine_ui import paint as P
-from glassine_ui import voices
+from glassine_ui import size, voices
 
 CW, CH, COLS, NCELL = 170, 90, 4, 40
 
 
-def main(name, out, cells):
+def main(name, out, cells, sc=2, mm=None, text=1):
+    sc = float(sc)
     v = voices.voice(name)
+    if mm is not None:
+        size.set_voice_metrics(v, float(mm), float(text))
     s = dict(v["shell"])
     over = {k: x for k, x in v["c"].items() if not k.startswith("_")}
-    surf = cairo.ImageSurface(cairo.FORMAT_ARGB32, CW * COLS * 2, CH * (NCELL // COLS) * 2)
+    surf = cairo.ImageSurface(cairo.FORMAT_ARGB32, math.ceil(CW * COLS * sc), math.ceil(CH * (NCELL // COLS) * sc))
     cr = cairo.Context(surf)
-    cr.scale(2, 2)
+    cr.scale(sc, sc)
     P.fill(cr, 0, 0, CW * COLS, CH * (NCELL // COLS), "#ffffff")
     names = []
 
@@ -73,4 +79,4 @@ def main(name, out, cells):
 
 
 if __name__ == "__main__":
-    main(*sys.argv[1:4])
+    main(*sys.argv[1:7])

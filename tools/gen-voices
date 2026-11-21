@@ -16,7 +16,7 @@ Generated (do not edit by hand):
 The data is the design's own form: CSS values (colours, box-shadow lists,
 borders, font shorthands, radii) with every var(--il-*) resolved against the
 voice's E-ink scheme. The C table is built from the sections "shell" and "inline"
-by the rules in c_voice() below; "c" holds the few C values that are not the CSS
+(and the text sizes of "type", "card" and "setup") by the rules in c_voice() below; "c" holds the few C values that are not the CSS
 value (see README "Voices", "Where C and Python differ"). The section "apps"
 (GTK and the on-screen keyboard) is tools/gen-apps' input.
 """
@@ -223,6 +223,12 @@ def c_voice(name, v):
     f["gripRound"], f["grips"], f["gripGap"] = int(s["gripR"] == "50%"), int(s["grips"]), px(s["gripGap"])
     f["gripLip"] = color(s["gripLip"])
     f["divStitch"], f["divStitchC"] = int(bool(s["divStitch"])), color(s["stitchColor"])
+    # the sizes text grows against and is held to (GlassineOS/shell spec 012): the voice's
+    # Interleaf body size ("type", written by tools/gen-interleaf), and the smaller of the
+    # settings card's and the setup's row label and secondary text
+    f["bodyPx"] = px(v["type"]["body"])
+    f["rowPx"] = min(font(v[sec]["row"])["px"] for sec in ("card", "setup"))
+    f["subPx"] = min(font(v[sec]["sub"])["px"] for sec in ("card", "setup"))
     # the C values that are not the CSS value: "field.part": value
     for k, val in over.items():
         if k.startswith("_"):

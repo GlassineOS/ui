@@ -34,7 +34,7 @@ UI_CFLAGS = -Wall -Wno-format-truncation -fPIC
 PKGS = pangocairo librsvg-2.0 glib-2.0
 O = out
 LIB = $(O)/libglassine-ui.so.$(VERSION)
-SRC = src/glassine-ui-draw.c src/glassine-ui-voices.c src/glassine-ui-icons.c
+SRC = src/glassine-ui-draw.c src/glassine-ui-voices.c src/glassine-ui-icons.c src/glassine-ui-size.c
 HDR = src/glassine-ui.h src/glassine-ui-scheme.h
 
 all: $(LIB) $(O)/glassine-ui.pc
@@ -84,15 +84,17 @@ check-forms:
 	$(PYTHON) test/test_ladder.py
 	$(PYTHON) test/test_interleaf.py
 	$(PYTHON) test/test_reference.py
+	$(PYTHON) test/test_size.py
 	sh test/ci-scope.sh
 
-# the library: the build, the drawing APIs, the sample sheet
+# the library: the build, the drawing APIs, the sample sheet, the interface size
 check-lib: all
 	$(PYTHON) test/test_paint.py
 	sh test/c-api.sh
 	sh test/pc-prefix.sh
 	sh test/build-flags.sh
 	sh test/sheet.sh
+	sh test/size.sh
 
 # the design-board tools under node (reader, renderer, server, import); no browser
 check-boards:

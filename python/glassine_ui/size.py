@@ -24,8 +24,10 @@ written beside the file and renamed over it):
 The text size and the minimums, one state for the process, read by glassine_ui.paint:
     set_metrics(mm_per_px, text_factor, body_px, row_px), set_voice_metrics(voice, ...),
     metrics(), body_px(voice), row_px(voice), sub_px(voice),
-    text_px_at(px, text_factor, body_px, row_px, mm_per_px), text_px(px),
-    grow(h, px, lines, lh), min_tap()
+    text_px_at(px, text_factor, body_px, row_px, mm_per_px), text_px(font), font_px(font),
+    grow(h, font, lines, lh), min_tap()
+A font is a size in design px or a CSS font shorthand of the voice data
+("500 16px/1.3 'IBM Plex Sans',sans-serif"), as glassine_ui.paint takes it.
 """
 # SPDX-License-Identifier: GPL-2.0-or-later
 import math
@@ -284,7 +286,7 @@ def write_output_scale(entries, path=None):
 # ---- the text size and the minimums ------------------------------------------------------
 
 _M = [0.0, 1.0, 0.0, 0.0]               # mm per design px, text factor, body px, row px
-_FONT_PX = re.compile(r"(?:^|\s)([\d.]+)px")
+_FONT_PX = re.compile(r"(?:^|\s)([\d.]+)px(?:/([\d.]+)(px)?)?")
 
 
 def set_metrics(mm=0.0, text_factor=1.0, body=0.0, row=0.0):
@@ -302,8 +304,22 @@ def metrics():
     return tuple(_M)
 
 
-def _font_px(shorthand):
-    return float(_FONT_PX.search(shorthand).group(1))
+def font_px(font):
+    """the design size of a font: a number, or the px of a CSS font shorthand"""
+    if not isinstance(font, str):
+        return float(font)
+    m = _FONT_PX.search(font)
+    if not m:
+        raise ValueError("font: %r" % (font,))
+    return float(m.group(1))
+
+
+def _font_lh(font):
+    """the line height of a CSS font shorthand as a factor of its size; None without one"""
+    m = _FONT_PX.search(font) if isinstance(font, str) else None
+    if not m or not m.group(2):
+        return None
+    return float(m.group(2)) / float(m.group(1)) if m.group(3) else float(m.group(2))
 
 
 def body_px(voice):
@@ -313,12 +329,12 @@ def body_px(voice):
 
 def row_px(voice):
     """the voice's row label size: the smaller of the settings card's and the setup's"""
-    return min(_font_px(voice[s]["row"]) for s in ("card", "setup"))
+    return min(font_px(voice[s]["row"]) for s in ("card", "setup"))
 
 
 def sub_px(voice):
     """the voice's secondary text size: the smaller of the settings card's and the setup's"""
-    return min(_font_px(voice[s]["sub"]) for s in ("card", "setup"))
+    return min(font_px(voice[s]["sub"]) for s in ("card", "setup"))
 
 
 def set_voice_metrics(voice, mm=0.0, text_factor=1.0):
@@ -341,16 +357,20 @@ def text_px_at(px, text_factor, body, row, mm):
     return g
 
 
-def text_px(px):
-    """text_px_at with the process's metrics: px itself when nothing applies. For layouts:
+def text_px(font):
+    """the size a font (a size in design px, or a CSS font shorthand) is drawn at with the
+    process's metrics: its design size itself when nothing applies. For layouts:
     glassine_ui.paint draws every font at this size itself."""
-    return text_px_at(px, _M[1], _M[2], _M[3], _M[0])
+    return text_px_at(font_px(font), _M[1], _M[2], _M[3], _M[0])
 
 
-def grow(h, px, lines=1, lh=1.0):
-    """the height of a box that holds lines of text of px once the text has grown:
-    h + lines x lh x (text_px(px) - px); lh: the line height as a factor of the font size.
-    Spacing and icons keep their size."""
+def grow(h, font, lines=1, lh=None):
+    """the height of a box that holds lines of text in font once the text has grown:
+    h + lines x lh x (text_px(font) - its design size); lh: the line height as a factor of
+    the font size (None: the shorthand's own, else 1). Spacing and icons keep their size."""
+    if lh is None:
+        lh = _font_lh(font)
+    px = font_px(font)
     return h + (lines if lines > 0 else 1) * (lh if lh and lh > 0 else 1) * (text_px(px) - px)
 
 

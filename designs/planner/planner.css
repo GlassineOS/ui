@@ -360,6 +360,10 @@ html, body { margin: 0; }
 .pl-ydm .w { height: 15px; display: flex; align-items: center; justify-content: center; font: 600 9px/1 var(--font-mono); border-radius: 2px; box-shadow: inset 0 0 0 1px var(--ink); color: var(--ink); }
 .pl-ydm .w.is-out { box-shadow: none; }
 .pl-ydm .w.is-pick::after { bottom: -3px; }
+/* turned: four months to a row, and the year's arrows at the end of the scopes' row */
+.pl-bezel.is-land .pl-yd { grid-template-columns: repeat(4, 1fr); }
+.pl-ynav.is-in { margin-left: auto; padding: 0; align-self: center; }
+.pl-ynav.is-in b { flex: none; width: 56px; }
 
 /* ---------- The start refusal ---------- */
 .pl-refuse { flex: 1; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 18px; padding: 0 56px 60px; }

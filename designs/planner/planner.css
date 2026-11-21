@@ -149,7 +149,7 @@ html, body { margin: 0; }
 .pl-now { position: absolute; left: 34px; right: 0; border-top: 2px solid var(--ink); }
 .pl-now::before { content: ""; position: absolute; left: -4px; top: -5px; width: 8px; height: 8px; border-radius: 50%; background: var(--ink); }
 /* the time readout in the hour gutter while a block is drawn or dragged */
-.pl-readout { position: absolute; left: 2px; padding: 2px 4px; font: 600 11px/1 var(--font-mono); background: var(--ink); color: var(--paper); border-radius: 3px; white-space: nowrap; }
+.pl-readout { position: absolute; left: 2px; padding: 2px 3px; font: 600 10px/1 var(--font-mono); z-index: 3; background: var(--ink); color: var(--paper); border-radius: 3px; white-space: nowrap; }
 
 /* ---------- The foot: hidden counts and the cog (variant A) ---------- */
 .pl-foot { flex: none; height: 34px; display: flex; align-items: center; gap: 10px; padding: 0 8px 0 14px; border-top: var(--v-row-rule); }

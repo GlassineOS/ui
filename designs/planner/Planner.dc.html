@@ -239,7 +239,7 @@ class Component extends DCLogic {
       btns: [{ t: 'Add widget', icon: ic.plus, cls: 'pl-btn' }, { t: 'Remove', icon: ic.trash, cls: 'pl-btn' }, { t: eLand ? 'Upright' : 'Turned', icon: ic.rotate, cls: 'pl-btn' }] };
 
     const refuse = p.refuse === 'off'
-      ? { title: 'The planner needs handwriting', body: 'Handwriting is turned off on this tablet. Everything in the planner is written with the pen, and the handwriting service reads it so that you can search it later.',
+      ? { title: 'The planner needs handwriting', body: 'Handwriting is turned off on this system. Everything in the planner is written with the pen, and the handwriting service reads it so that you can search it later.',
           why: 'Turn handwriting on in Settings, then open the planner again. Nothing written in the planner is lost while it is off.',
           acts: [{ t: 'Open Handwriting settings', cls: 'pl-btn is-primary' }, { t: 'Close', cls: 'pl-btn' }] }
       : { title: 'The planner needs handwriting', body: 'This system has no handwriting service. Everything in the planner is written with the pen, and the planner can’t read what you write without it.',

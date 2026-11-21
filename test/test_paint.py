@@ -123,5 +123,99 @@ for bad in ("bold 16px sans-serif", "16pt serif", "", "500 sans-serif", None):
         ok(True, "font(%r) raises ValueError" % (bad,))
 ok(P.font("italic 500 22px/1.1 'EB Garamond',serif")[1] == 1.1, "font: a shorthand parses")
 
+# ---- the text size and the minimums (glassine_ui.size) reach every text call --------
+from glassine_ui import size as Z  # noqa: E402
+
+
+def text_shot(f=FONT, **kw):
+    s, cr = canvas(400, 100)
+    r = P.text(cr, "Sample 0123", f, 10, 10, "#111111", **kw)
+    return bytes(s.get_data()), r, P.measure(cr, "Sample 0123", f, **kw)
+
+
+def sz(f, **kw):
+    return P.font(f, **kw)[0].get_size() / 1024
+
+
+plain, r0, m0 = text_shot()
+ok(sz(FONT) == 16, "font: the design's size without metrics")
+Z.set_metrics(2 / 8.943, 1.0, 17, 16)
+same = text_shot()
+ok(same[0] == plain and same[1] == r0 and sz(FONT) == 16, "Default at 8.943 px/mm, text 100 %: the same pixels and the same measure")
+Z.set_metrics(0, 1.25, 17, 16)
+big, r1, m1 = text_shot()
+ok(sz(FONT) == 20 and sz(FONT, grow=False) == 16 and sz("600 34px sans-serif") == 34 + .25 * 17,
+   "text at 125 %: 16 px drawn at 20, a 34 px heading at 38.25; grow=False gives the design's size")
+ok(big != plain and abs(r1[0] / r0[0] - 1.25) < .05 and abs(r1[1] / r0[1] - 1.25) < .001 and m1 == r1,
+   "text at 125 %: the text is a quarter wider, its line box (line-height 1.2) a quarter taller, measure agrees")
+ok(abs(P.measure(cr, "Sample", "500 16px/24px sans-serif")[1] - 30) < .001, "a line-height in px grows with its text")
+Z.set_metrics()
+plain_ls = text_shot(ls=.1)[1][0]
+Z.set_metrics(0, 1.5, 17, 16)
+ok(abs(text_shot(ls=.1)[1][0] / plain_ls - 1.5) < .05, "letter spacing in em follows the drawn size")
+Z.set_metrics(0.1792, 1.0, 17, 16)
+ok(abs(sz("500 10px sans-serif") - 2.0 / 0.1792) < 1e-3 and sz("500 16px sans-serif") == 16
+   and abs(sz("500 15px sans-serif") - 15) < 1e-9 and abs(Z.min_tap() - 7 / 0.1792) < 1e-9,
+   "the minimums: 10 px drawn at 2.0 mm, 16 px (a row label, 2.87 mm) as it is; the tap minimum")
+Z.set_metrics()
+back = text_shot()
+ok(back[0] == plain and back[1] == r0 and sz(FONT) == 16, "the metrics cleared: the same pixels as before")
+
+# ---- whole device pixels at a fractional scale ----------------------------------------
+
+
+def scaled(sc, dev=1.0):
+    s = cairo.ImageSurface(cairo.FORMAT_ARGB32, 320, 200)
+    cr = cairo.Context(s)
+    cr.set_source_rgb(1, 1, 1)
+    cr.paint()
+    s.set_device_scale(dev, dev)
+    cr = cairo.Context(s)
+    cr.scale(sc, sc)
+    return s, cr
+
+
+def colours(s):
+    s.flush()
+    d = bytes(s.get_data())
+    return {d[i:i + 3] for i in range(0, len(d), 4)}
+
+
+INK, PAPER = b"\x11\x11\x11", b"\xff\xff\xff"
+for sc, dev in ((1.6, 1), (1.8, 1), (2.4, 1), (0.8, 1), (0.8, 2), (1.2, 2)):
+    s, cr = scaled(sc, dev)
+    P.fill(cr, 10.3, 10.3, 50.3, 20.3, "#111111")
+    P.rule(cr, 10.3, 50.3, 80.3, "1px solid #111111")
+    P.rule(cr, 10.3, 60.3, 80.3, "0.5px solid #111111")
+    P.rule(cr, 10.3, 70.3, 80.3, "3px double #111111")
+    P.box(cr, 10.3, 80.3, 60.3, 20.3, "0", None, "0 2px 0 #111111", "1.5px solid #111111")
+    ok(colours(s) == {INK, PAPER}, "scale %g (device scale %g): fill, rule and a square box are whole device pixels (no grey between)" % (sc, dev))
+    ok(abs(P.dev_scale(cr) - sc * dev) < 1e-9, "dev_scale: %g" % (sc * dev))
+    t = sc * dev
+    ok(abs(P.snap_x(cr, 10.3) * t - round(10.3 * t)) < 1e-9 and abs(P.snap_len(cr, 1.5) * t - max(1, round(1.5 * t))) < 1e-9
+       and abs(P.snap_len(cr, 0.2) * t - 1) < 1e-9 and P.snap_len(cr, 0) == 0 and abs(P.snap_len(cr, -1) * t + max(1, round(t))) < 1e-9,
+       "snap_x, snap_len at %g: a device pixel edge; whole device pixels, at least one; 0 stays 0; the sign kept" % t)
+s, cr = scaled(1.6)
+P.rule(cr, 10, 50.3, 100, "0.5px solid #111111")
+s.flush()
+rows = {i // s.get_stride() for i in range(0, len(s.get_data()), 4) if bytes(s.get_data()[i:i + 3]) == INK}
+ok(len(rows) == 1, "a rule of half a design pixel at 1.6 is one device pixel thick")
+# a whole scale draws the values as given: the same pixels as cairo alone
+s, cr = scaled(2)
+P.fill(cr, 10.25, 10.25, 50.25, 20.25, "#111111")
+s2, cr2 = scaled(2)
+cr2.set_source_rgba(*P.color("#111111"))
+cr2.rectangle(10.25, 10.25, 50.25, 20.25)
+cr2.fill()
+ok(bytes(s.get_data()) == bytes(s2.get_data()) and len(colours(s)) > 2, "scale 2: a fill off the grid stays as given (antialiased)")
+cr.rotate(.3)
+ok(P.snap_x(cr, 10.3) == 10.3 and P.snap_len(cr, 1.5) == 1.5, "a turned context: the snaps give the values back")
+# an icon at a fractional scale: drawn at the device resolution, on whole device pixels
+s, cr = scaled(1.6)
+ok(P.icon(cr, "go-next-symbolic", 24, 50, 50, "#111111") and painted(s) > 0 and not P.icon(cr, "no-such-icon-anywhere", 24, 50, 50, "#111111"),
+   "an icon at 1.6 draws; no such icon: False")
+s, cr = scaled(0.8, 2)
+ok(P.icon(cr, "go-next-symbolic", 24, 50, 50, "#111111") and painted(s) > 0, "an icon at 0.8 on a surface of device scale 2 draws")
+
 print("paint: %s" % ("all passed" if not fails else "%d FAILED" % fails))
 sys.exit(1 if fails else 0)

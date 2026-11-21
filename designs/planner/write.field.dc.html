@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Writing a to-do into the last free row</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div data-spec-id="write.field" style="width:824px;height:1400px;box-sizing:border-box;padding:28px 32px;display:flex;flex-direction:column;gap:18px;background:#e6e6e6;color:#1b1b1b;font-family:'IBM Plex Sans',sans-serif">
+<div style="display:flex;flex-direction:column;gap:6px">
+<span style="font:500 13px/1.2 'IBM Plex Mono',monospace;color:#3d3d3d">write.field</span>
+<h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">Writing a to-do into the last free row</h1>
+<p style="margin:0;max-width:760px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">Raw ink (default state): the person’s writing as it is. Writing: a new to-do goes into the empty row while the list is full; the layout is held (marked here with a dashed box, which the planner doesn’t draw). Settled: after the pause, once, the day’s list takes the new row and keeps an empty one; nothing else moves. Neatened and Set in Autograph show the two opt-ins on every field: neatening straightens the ink towards the person’s own letters; Autograph sets each read word in the person’s font.</p>
+</div>
+<dc-import name="ThemeBar" voice="{{ voice }}" on-pick="{{ pick }}" hint-size="100%,112px"></dc-import>
+<dc-import name="Planner" voice="{{ voice }}" orient="portrait" tmpl="day-lists" write="{{ write }}" ink="{{ ink }}" hint-size="760px,1008px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "write": {"editor": "enum", "options": ["none", "writing", "settled"], "default": "none"}, "ink": {"editor": "enum", "options": ["raw", "neat", "font"], "default": "raw"}, "$preview": {"width": 824, "height": 1400}, "$states": [{"id": "raw", "name": "Raw ink", "props": {"write": "none", "ink": "raw"}}, {"id": "writing", "name": "Writing: the layout is held", "props": {"write": "writing", "ink": "raw"}, "from": [{"state": "raw", "label": "the pen writes in the empty row"}]}, {"id": "settled", "name": "Settled after the pause", "props": {"write": "settled", "ink": "raw"}, "from": [{"state": "writing", "label": "a pause"}]}, {"id": "neat", "name": "Neatened (opt-in)", "props": {"write": "none", "ink": "neat"}, "from": [{"state": "raw", "label": "Neaten on"}]}, {"id": "font", "name": "Set in Autograph (opt-in)", "props": {"write": "none", "ink": "font"}, "from": [{"state": "raw", "label": "Set in Autograph on"}]}]}'>
+class Component extends DCLogic {
+  state = {};
+  renderVals() {
+    const s = this.state, p = this.props;
+    return { voice: s.voice ?? p.voice ?? 'white', pick: (k, v) => this.setState({ [k]: v }), write: p.write ?? "none", ink: p.ink ?? "raw" };
+  }
+}
+</script>
+</body>
+</html>

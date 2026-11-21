@@ -1,0 +1,679 @@
+{
+ "v": 3,
+ "title": "GlassineOS Planner",
+ "launch": {
+  "view": "canvas",
+  "page": "day"
+ },
+ "pages": [
+  {
+   "id": "day",
+   "name": "Day · three templates, upright and turned"
+  },
+  {
+   "id": "week",
+   "name": "Week · three templates"
+  },
+  {
+   "id": "month",
+   "name": "Month · two templates"
+  },
+  {
+   "id": "widgets",
+   "name": "Widgets · each one empty, full and past full"
+  },
+  {
+   "id": "write",
+   "name": "Writing into a field · raw ink, neatened, set in Autograph"
+  },
+  {
+   "id": "text",
+   "name": "Text mode · a finger tap on a field, and back"
+  },
+  {
+   "id": "hidden",
+   "name": "Hidden entries · counted, one tap from their list"
+  },
+  {
+   "id": "info",
+   "name": "The (i) · this page’s details, and the cog inside them"
+  },
+  {
+   "id": "templates",
+   "name": "Templates · choose, plan ahead, edit"
+  },
+  {
+   "id": "events",
+   "name": "Events · drawn, dragged, stretched"
+  },
+  {
+   "id": "refused",
+   "name": "Without handwriting · the planner doesn’t start"
+  },
+  {
+   "id": "parts",
+   "name": "Parts"
+  }
+ ],
+ "boards": {
+  "day.lists.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 824,
+   "h": 1376,
+   "title": "Day · agenda and lists",
+   "page": "day",
+   "is_interactive": false
+  },
+  "day.diary.dc.html": {
+   "x": 904,
+   "y": 0,
+   "w": 824,
+   "h": 1352,
+   "title": "Day · diary",
+   "page": "day",
+   "is_interactive": false
+  },
+  "day.agenda.dc.html": {
+   "x": 1808,
+   "y": 0,
+   "w": 824,
+   "h": 1352,
+   "title": "Day · agenda only",
+   "page": "day",
+   "is_interactive": false
+  },
+  "day.lists.landscape.dc.html": {
+   "x": 2712,
+   "y": 0,
+   "w": 1080,
+   "h": 1104,
+   "title": "Day · agenda and lists, turned",
+   "page": "day",
+   "is_interactive": false
+  },
+  "day.diary.landscape.dc.html": {
+   "x": 3872,
+   "y": 0,
+   "w": 1080,
+   "h": 1104,
+   "title": "Day · diary, turned",
+   "page": "day",
+   "is_interactive": false
+  },
+  "week.columns.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 824,
+   "h": 1352,
+   "title": "Week · seven columns",
+   "page": "week",
+   "is_interactive": false
+  },
+  "week.spread.dc.html": {
+   "x": 904,
+   "y": 0,
+   "w": 824,
+   "h": 1352,
+   "title": "Week · spread",
+   "page": "week",
+   "is_interactive": false
+  },
+  "week.lists.dc.html": {
+   "x": 1808,
+   "y": 0,
+   "w": 824,
+   "h": 1352,
+   "title": "Week · lists and notes",
+   "page": "week",
+   "is_interactive": false
+  },
+  "week.columns.landscape.dc.html": {
+   "x": 2712,
+   "y": 0,
+   "w": 1080,
+   "h": 1104,
+   "title": "Week · seven columns, turned",
+   "page": "week",
+   "is_interactive": false
+  },
+  "month.grid.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 824,
+   "h": 1352,
+   "title": "Month · calendar",
+   "page": "month",
+   "is_interactive": false
+  },
+  "month.goals.dc.html": {
+   "x": 904,
+   "y": 0,
+   "w": 824,
+   "h": 1352,
+   "title": "Month · goals",
+   "page": "month",
+   "is_interactive": false
+  },
+  "month.grid.landscape.dc.html": {
+   "x": 1808,
+   "y": 0,
+   "w": 1080,
+   "h": 1104,
+   "title": "Month · calendar, turned",
+   "page": "month",
+   "is_interactive": false
+  },
+  "widget.agenda.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 824,
+   "h": 864,
+   "title": "Widget · Day agenda",
+   "page": "widgets",
+   "is_interactive": false
+  },
+  "widget.todo.dc.html": {
+   "x": 904,
+   "y": 0,
+   "w": 824,
+   "h": 764,
+   "title": "Widget · To-do list",
+   "page": "widgets",
+   "is_interactive": false
+  },
+  "widget.notes.dc.html": {
+   "x": 1808,
+   "y": 0,
+   "w": 824,
+   "h": 664,
+   "title": "Widget · Notes",
+   "page": "widgets",
+   "is_interactive": false
+  },
+  "widget.habits.dc.html": {
+   "x": 2712,
+   "y": 0,
+   "w": 824,
+   "h": 684,
+   "title": "Widget · Habit tracker",
+   "page": "widgets",
+   "is_interactive": false
+  },
+  "widget.minimonth.dc.html": {
+   "x": 3616,
+   "y": 0,
+   "w": 824,
+   "h": 654,
+   "title": "Widget · Mini month",
+   "page": "widgets",
+   "is_interactive": false
+  },
+  "widget.weekov.dc.html": {
+   "x": 4520,
+   "y": 0,
+   "w": 824,
+   "h": 884,
+   "title": "Widget · Week overview",
+   "page": "widgets",
+   "is_interactive": false
+  },
+  "widget.priorities.dc.html": {
+   "x": 5424,
+   "y": 0,
+   "w": 824,
+   "h": 624,
+   "title": "Widget · Priorities",
+   "page": "widgets",
+   "is_interactive": false
+  },
+  "write.field.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 824,
+   "h": 1400,
+   "title": "Writing a to-do into the last free row",
+   "page": "write",
+   "is_interactive": false
+  },
+  "text.field.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 824,
+   "h": 1400,
+   "title": "Text mode on one field, and back",
+   "page": "text",
+   "is_interactive": false
+  },
+  "text.view.dc.html": {
+   "x": 904,
+   "y": 0,
+   "w": 824,
+   "h": 1376,
+   "title": "Text mode for the whole view",
+   "page": "text",
+   "is_interactive": false
+  },
+  "hidden.hint.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 824,
+   "h": 1352,
+   "title": "How the page says entries are hidden · two answers",
+   "page": "hidden",
+   "is_interactive": false
+  },
+  "hidden.list.dc.html": {
+   "x": 904,
+   "y": 0,
+   "w": 824,
+   "h": 1352,
+   "title": "The hidden entries, listed in ink",
+   "page": "hidden",
+   "is_interactive": false
+  },
+  "info.popup.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 824,
+   "h": 1376,
+   "title": "The (i) popover",
+   "page": "info",
+   "is_interactive": false
+  },
+  "info.popup.landscape.dc.html": {
+   "x": 904,
+   "y": 0,
+   "w": 1080,
+   "h": 1104,
+   "title": "The (i) popover, turned",
+   "page": "info",
+   "is_interactive": false
+  },
+  "info.search.dc.html": {
+   "x": 2064,
+   "y": 0,
+   "w": 824,
+   "h": 1352,
+   "title": "Where search goes · two answers",
+   "page": "info",
+   "is_interactive": false
+  },
+  "cog.menu.dc.html": {
+   "x": 2968,
+   "y": 0,
+   "w": 824,
+   "h": 1376,
+   "title": "The cog’s menu, inside the popover",
+   "page": "info",
+   "is_interactive": false
+  },
+  "cog.settings.dc.html": {
+   "x": 3872,
+   "y": 0,
+   "w": 824,
+   "h": 1352,
+   "title": "Planner settings",
+   "page": "info",
+   "is_interactive": false
+  },
+  "templates.picker.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 824,
+   "h": 1352,
+   "title": "Choosing a template",
+   "page": "templates",
+   "is_interactive": false
+  },
+  "templates.year.dc.html": {
+   "x": 904,
+   "y": 0,
+   "w": 824,
+   "h": 1352,
+   "title": "The year planned ahead",
+   "page": "templates",
+   "is_interactive": false
+  },
+  "templates.used.dc.html": {
+   "x": 1808,
+   "y": 0,
+   "w": 824,
+   "h": 1352,
+   "title": "Editing a template that is in use",
+   "page": "templates",
+   "is_interactive": false
+  },
+  "templates.editor.dc.html": {
+   "x": 2712,
+   "y": 0,
+   "w": 824,
+   "h": 1376,
+   "title": "The template editor",
+   "page": "templates",
+   "is_interactive": false
+  },
+  "templates.editor.landscape.dc.html": {
+   "x": 3616,
+   "y": 0,
+   "w": 1080,
+   "h": 1104,
+   "title": "The template editor, turned",
+   "page": "templates",
+   "is_interactive": false
+  },
+  "event.draw.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 824,
+   "h": 1352,
+   "title": "Drawing an event into free time",
+   "page": "events",
+   "is_interactive": false
+  },
+  "event.drag.dc.html": {
+   "x": 904,
+   "y": 0,
+   "w": 824,
+   "h": 1376,
+   "title": "Dragging an event, and its edge",
+   "page": "events",
+   "is_interactive": false
+  },
+  "event.title.dc.html": {
+   "x": 1808,
+   "y": 0,
+   "w": 824,
+   "h": 1352,
+   "title": "A long title in a short event · two answers",
+   "page": "events",
+   "is_interactive": false
+  },
+  "start.refused.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 824,
+   "h": 1352,
+   "title": "No handwriting service",
+   "page": "refused",
+   "is_interactive": false
+  },
+  "start.refused.landscape.dc.html": {
+   "x": 904,
+   "y": 0,
+   "w": 1080,
+   "h": 1104,
+   "title": "No handwriting service, turned",
+   "page": "refused",
+   "is_interactive": false
+  },
+  "Parts.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1400,
+   "h": 1700,
+   "title": "Parts · components, the grid, refresh costs, decisions",
+   "page": "parts",
+   "is_interactive": false
+  },
+  "Planner.dc.html": {
+   "x": 1480,
+   "y": 0,
+   "w": 760,
+   "h": 1008,
+   "title": "Component · Planner (every screen)",
+   "page": "parts",
+   "is_interactive": false
+  },
+  "Widget.dc.html": {
+   "x": 2320,
+   "y": 0,
+   "w": 300,
+   "h": 240,
+   "title": "Component · Widget (one widget of a page)",
+   "page": "parts",
+   "is_interactive": false
+  },
+  "ThemeBar.dc.html": {
+   "x": 2700,
+   "y": 0,
+   "w": 760,
+   "h": 110,
+   "title": "Component · ThemeBar",
+   "page": "parts",
+   "is_interactive": false
+  }
+ },
+ "notes": {
+  "t-day": {
+   "kind": "title1",
+   "page": "day",
+   "text": "Day · three templates, upright and turned",
+   "x": 0,
+   "y": -200,
+   "w": 240,
+   "maxW": 5032
+  },
+  "n-day": {
+   "page": "day",
+   "text": "The planner for GlassineOS/planner spec 001, a proposal. The bar holds only the planner: the period, Month, Week and Day, and previous, Today and next. There is no foot line: one quiet (i) beside the navigation opens this page’s details (the template, what this layout doesn’t show), and the cog inside that popover opens everything else (text mode, templates, settings). All ink is synthetic (Kalam with a wobble per word), never anyone’s writing. No reading is ever shown in ink mode. One device pixel is two panel pixels, as on the handwriting boards.",
+   "x": 0,
+   "y": -560,
+   "w": 2400
+  },
+  "t-week": {
+   "kind": "title1",
+   "page": "week",
+   "text": "Week · three templates",
+   "x": 0,
+   "y": -200,
+   "w": 240,
+   "maxW": 3872
+  },
+  "n-week": {
+   "page": "week",
+   "text": "Seven columns fit upright only with a column minimum of about 100 px (the spike’s finding); turned, they breathe.",
+   "x": 0,
+   "y": -560,
+   "w": 2400
+  },
+  "t-month": {
+   "kind": "title1",
+   "page": "month",
+   "text": "Month · two templates",
+   "x": 0,
+   "y": -200,
+   "w": 240,
+   "maxW": 2968
+  },
+  "n-month": {
+   "page": "month",
+   "text": "The large mini month is the month grid: its days show their events in ink while there is room, then a count.",
+   "x": 0,
+   "y": -560,
+   "w": 2400
+  },
+  "t-widgets": {
+   "kind": "title1",
+   "page": "widgets",
+   "text": "Widgets · each one empty, full and past full",
+   "x": 0,
+   "y": -200,
+   "w": 240,
+   "maxW": 6328
+  },
+  "n-widgets": {
+   "page": "widgets",
+   "text": "Every widget declares its width (minimum, preferred; the template adds weight and grow) and its height minimum; its content gives the height it needs. Two kinds: compressing (the agenda’s hour pitch shrinks, the mini month’s cells shrink) and truncating (lists and notes show “+n more” and always keep one empty row to write in). Rows give way in this order: done first, then the oldest open. Each board shows the widget at its preferred size and at its minimum; its states switch empty, full and past full.",
+   "x": 0,
+   "y": -560,
+   "w": 2400
+  },
+  "t-write": {
+   "kind": "title1",
+   "page": "write",
+   "text": "Writing into a field · raw ink, neatened, set in Autograph",
+   "x": 0,
+   "y": -200,
+   "w": 240,
+   "maxW": 2400
+  },
+  "n-write": {
+   "page": "write",
+   "text": "The pen writes straight into a field; nothing moves under it. The layout is held while the pen is down and for a pause after it lifts, then settles once. Neatening and “set in Autograph” are opt-ins, off unless chosen.",
+   "x": 0,
+   "y": -560,
+   "w": 2400
+  },
+  "t-text": {
+   "kind": "title1",
+   "page": "text",
+   "text": "Text mode · a finger tap on a field, and back",
+   "x": 0,
+   "y": -200,
+   "w": 240,
+   "maxW": 2400
+  },
+  "n-text": {
+   "page": "text",
+   "text": "A finger tap opens one field’s text mode on the system keyboard; the pen keeps writing. Back in ink mode, changed words are set in Autograph in their place and every other word keeps its ink.",
+   "x": 0,
+   "y": -560,
+   "w": 2400
+  },
+  "t-hidden": {
+   "kind": "title1",
+   "page": "hidden",
+   "text": "Hidden entries · counted, one tap from their list",
+   "x": 0,
+   "y": -200,
+   "w": 240,
+   "maxW": 2400
+  },
+  "n-hidden": {
+   "page": "hidden",
+   "text": "Nothing is lost by a layout: what no widget shows is counted per kind (and per slot for notes) in the (i) popover and listed in ink one tap further. With no foot line, the (i) itself carries the hint.",
+   "x": 0,
+   "y": -560,
+   "w": 2400
+  },
+  "t-info": {
+   "kind": "title1",
+   "page": "info",
+   "text": "The (i) · this page’s details, and the cog inside them",
+   "x": 0,
+   "y": -200,
+   "w": 240,
+   "maxW": 4776
+  },
+  "n-info": {
+   "page": "info",
+   "text": "One quiet (i) at the end of the bar, outside the Month/Week/Day group and the previous/next group, no edge. A tap opens a popover (one rectangle refresh); its cog turns the same popover into the maintenance menu. Search has no place yet: two answers.",
+   "x": 0,
+   "y": -560,
+   "w": 2400
+  },
+  "t-templates": {
+   "kind": "title1",
+   "page": "templates",
+   "text": "Templates · choose, plan ahead, edit",
+   "x": 0,
+   "y": -200,
+   "w": 240,
+   "maxW": 4776
+  },
+  "n-templates": {
+   "page": "templates",
+   "text": "Several templates per kind; one chosen per period, a range or from a date on, and a default. An edit applies everywhere the template is used; copying first keeps the old arrangement.",
+   "x": 0,
+   "y": -560,
+   "w": 2400
+  },
+  "t-events": {
+   "kind": "title1",
+   "page": "events",
+   "text": "Events · drawn, dragged, stretched",
+   "x": 0,
+   "y": -200,
+   "w": 240,
+   "maxW": 2712
+  },
+  "n-events": {
+   "page": "events",
+   "text": "Times come only from the agenda: draw a block into free time and an event exists; drag it in 30-minute steps; drag its lower edge to change its length. No handwriting for times.",
+   "x": 0,
+   "y": -560,
+   "w": 2400
+  },
+  "t-refused": {
+   "kind": "title1",
+   "page": "refused",
+   "text": "Without handwriting · the planner doesn’t start",
+   "x": 0,
+   "y": -200,
+   "w": 240,
+   "maxW": 2400
+  },
+  "n-refused": {
+   "page": "refused",
+   "text": "Spec 001 FR-001: there is no keyboard-only planner. A calm page that says why and where to go.",
+   "x": 0,
+   "y": -560,
+   "w": 2400
+  },
+  "t-parts": {
+   "kind": "title1",
+   "page": "parts",
+   "text": "Parts",
+   "x": 0,
+   "y": -200,
+   "w": 240,
+   "maxW": 3540
+  }
+ },
+ "order": [
+  "day.lists.dc.html",
+  "day.diary.dc.html",
+  "day.agenda.dc.html",
+  "day.lists.landscape.dc.html",
+  "day.diary.landscape.dc.html",
+  "week.columns.dc.html",
+  "week.spread.dc.html",
+  "week.lists.dc.html",
+  "week.columns.landscape.dc.html",
+  "month.grid.dc.html",
+  "month.goals.dc.html",
+  "month.grid.landscape.dc.html",
+  "widget.agenda.dc.html",
+  "widget.todo.dc.html",
+  "widget.notes.dc.html",
+  "widget.habits.dc.html",
+  "widget.minimonth.dc.html",
+  "widget.weekov.dc.html",
+  "widget.priorities.dc.html",
+  "write.field.dc.html",
+  "text.field.dc.html",
+  "text.view.dc.html",
+  "hidden.hint.dc.html",
+  "hidden.list.dc.html",
+  "info.popup.dc.html",
+  "info.popup.landscape.dc.html",
+  "info.search.dc.html",
+  "cog.menu.dc.html",
+  "cog.settings.dc.html",
+  "templates.picker.dc.html",
+  "templates.year.dc.html",
+  "templates.used.dc.html",
+  "templates.editor.dc.html",
+  "templates.editor.landscape.dc.html",
+  "event.draw.dc.html",
+  "event.drag.dc.html",
+  "event.title.dc.html",
+  "start.refused.dc.html",
+  "start.refused.landscape.dc.html",
+  "Parts.dc.html",
+  "Planner.dc.html",
+  "Widget.dc.html",
+  "ThemeBar.dc.html"
+ ]
+}

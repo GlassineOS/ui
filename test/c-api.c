@@ -63,6 +63,33 @@ int main(int argc, char **argv)
     double h9 = ui_text_wrap(&lay, &v->nameFont, para, 0, 0, 120, 9, 0, v->ink);
     OK(h1 > 10 && h2 > 1.8 * h1 && h3 > h2 && h9 > h3, "wrap: more lines are taller, up to maxlines");
     OK(ui_text_wrap(&lay, &v->nameFont, para, 0, 0, 120, 2, 1.6, v->ink) > h2, "wrap: a line height above the font's is taller");
+    /* the lines lh apart at every scale, as at scale 1 (pango alone spaces them lh x the
+     * scale apart: an empty line in a wrapped paragraph at scale 2) */
+    {
+        static const double scales[] = { 1, 1.25, 1.6, 2, 3 }, lhs[] = { 1.2, 1.45, 1.6 };
+        int bad = 0;
+        for (int vi = 0; vi < ui_nvoices; vi++)
+            for (int si = 0; si < 5; si++)
+                for (int li = 0; li < 3; li++) {
+                    cairo_surface_t *ms = cairo_image_surface_create(CAIRO_FORMAT_RGB24, 1, 1);
+                    cairo_t *mc = cairo_create(ms);
+                    cairo_scale(mc, scales[si], scales[si]);
+                    UiGc sg = { mc, 0, ui_voices[vi] };
+                    const UiFont *fs[] = { &ui_voices[vi]->nameFont, &ui_voices[vi]->lbl };
+                    for (int fi = 0; fi < 2; fi++) {
+                        double one = ui_text_wrap(&sg, fs[fi], "Ag", 0, 0, 1e4, 1, 0, 0);
+                        double two = ui_text_wrap(&sg, fs[fi], "Ag\nAg", 0, 0, 1e4, 2, lhs[li], 0);
+                        if (fabs((two - one) - lhs[li] * one) >= 1) {
+                            bad++;
+                            printf("     %s at %g, lh %g: lines %.1f apart, want %.1f\n", ui_voices[vi]->name, scales[si], lhs[li],
+                                   two - one, lhs[li] * one);
+                        }
+                    }
+                    cairo_destroy(mc);
+                    cairo_surface_destroy(ms);
+                }
+        OK(bad == 0, "wrap: lines lh apart at every scale");
+    }
 
     /* the rules: solid, dashes (3:2), dots (1:1) along one row */
     cairo_surface_t *rs = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 200, 30);

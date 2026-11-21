@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>A long title in a short event · two answers</title>
+<title>A long title in a short event</title>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -14,14 +14,14 @@
 <div data-spec-id="event.title" style="width:824px;height:1352px;box-sizing:border-box;padding:28px 32px;display:flex;flex-direction:column;gap:18px;background:#e6e6e6;color:#1b1b1b;font-family:'IBM Plex Sans',sans-serif">
 <div style="display:flex;flex-direction:column;gap:6px">
 <span style="font:500 13px/1.2 'IBM Plex Mono',monospace;color:#3d3d3d">event.title</span>
-<h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">A long title in a short event · two answers</h1>
-<p style="margin:0;max-width:760px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">The spike’s open question: a title written into a 30-minute block runs past it. A: the field grows down over the free time below (a dotted lower edge), never over another event. B: the block keeps its time; the ink is cut at the edge with a quiet “…”, and a tap opens the whole event.</p>
+<h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">A long title in a short event</h1>
+<p style="margin:0;max-width:760px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">A title written into a 30-minute block can’t run past it: its field grows down over the free time below (a dotted lower edge), never over another event, and the event keeps its time. When that space shrinks later (the event is shortened, another event takes the free time below, a smaller view, or the title set in the person’s font), the title shrinks evenly to fit, down to the smallest readable size. Below that it is cut at the block’s edge, with no “…”; a tap on a cut title shows the whole title, a tap on a title that is not cut opens its text mode.</p>
 </div>
 <dc-import name="ThemeBar" voice="{{ voice }}" on-pick="{{ pick }}" hint-size="100%,112px"></dc-import>
 <dc-import name="Planner" voice="{{ voice }}" orient="portrait" tmpl="day-agenda" long-title="true" title="{{ title }}" hint-size="760px,1008px"></dc-import>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "title": {"editor": "enum", "options": ["grow", "clip"], "default": "grow"}, "$preview": {"width": 824, "height": 1352}, "$states": [{"id": "grow", "name": "A · the field grows", "props": {"title": "grow"}}, {"id": "clip", "name": "B · cut at the block", "props": {"title": "clip"}}]}'>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "title": {"editor": "enum", "options": ["grow", "shrink", "cut"], "default": "grow"}, "$preview": {"width": 824, "height": 1352}, "$states": [{"id": "grow", "name": "Written: the field grows", "props": {"title": "grow"}}, {"id": "shrink", "name": "Its space taken: the title shrinks", "props": {"title": "shrink"}, "from": [{"state": "grow", "label": "another event takes the free time below"}]}, {"id": "cut", "name": "Too long at the smallest size: cut at the edge", "props": {"title": "cut"}, "from": [{"state": "shrink", "label": "a longer title"}]}]}'>
 class Component extends DCLogic {
   state = {};
   renderVals() {

@@ -197,7 +197,7 @@
   function measure(n, view, axis, empty) {
     if (n.wg) {
       const d = WG[n.wg], c = empty ? emptyContent(n) : content(n, view);
-      if (axis === 'w') return { min: d.minW, need: d.prefW };
+      if (axis === 'w') return { min: d.minW, need: n.large ? d.prefW + 400 : d.prefW }; // the month grid wants room for ink in each day
       const min = d.minH(c), need = Math.max(min, d.needH(c));
       return { min, need: n.large ? need + 300 : need };
     }

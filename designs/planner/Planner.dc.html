@@ -35,6 +35,7 @@
 <div class="pl-title"><b>{{ bar.main }}</b><span>{{ bar.sub }}</span></div>
 <div class="pl-seg" role="tablist"><sc-for list="{{ bar.kinds }}" as="k" hint-placeholder-count="3"><a class="{{ k.cls }}" href="{{ k.href }}" role="tab" aria-selected="{{ k.on }}">{{ k.t }}</a></sc-for></div>
 <div class="pl-nav"><a href="#" aria-label="{{ bar.prevLabel }}"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.chevL }}"></path></svg></a><a class="{{ bar.todayCls }}" href="#">{{ bar.today }}</a><a href="#" aria-label="{{ bar.nextLabel }}"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.chevR }}"></path></svg></a></div>
+<div class="pl-tools"><sc-if value="{{ bar.search }}" hint-placeholder-val="{{ false }}"><a class="pl-tool" href="#" aria-label="Search the planner"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.search }}"></path></svg></a></sc-if><a class="{{ bar.infoCls }}" href="#" aria-label="{{ bar.infoLabel }}" aria-expanded="{{ bar.infoOpen }}"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.info }}"></path></svg><sc-if value="{{ bar.badge }}" hint-placeholder-val="{{ false }}"><span class="pl-badge" aria-hidden="true">{{ bar.badge }}</span></sc-if></a></div>
 </nav>
 </sc-if>
 
@@ -54,7 +55,6 @@
 
 <sc-if value="{{ showPage }}" hint-placeholder-val="{{ true }}">
 <div class="pl-page">
-<sc-if value="{{ countTop }}" hint-placeholder-val="{{ false }}"><div class="pl-foot" style="position:absolute;left:0;right:0;top:0;border-top:0;border-bottom:var(--v-row-rule)">{{ hiddenNone }}</div></sc-if>
 <div class="pl-content" style="left:{{ cx }}px;top:{{ cy }}px;width:{{ cw }}px;height:{{ ch }}px">
 <sc-for list="{{ widgets }}" as="g" hint-placeholder-count="3"><dc-import name="Widget" g="{{ g }}" style="position:absolute;left:{{ g.x }}px;top:{{ g.y }}px;width:{{ g.w }}px;height:{{ g.h }}px" hint-size="200px,120px"></dc-import>
 </sc-for>
@@ -64,14 +64,22 @@
 <sc-if value="{{ pen.on }}" hint-placeholder-val="{{ false }}"><svg class="pl-pen" viewBox="0 0 46 46" style="left:{{ pen.x }}px;top:{{ pen.y }}px"><path d="M3 43l5-14 26-26 9 9-26 26z M8 29l9 9 M30 7l9 9" fill="var(--paper)" stroke="var(--ink)" stroke-width="2" stroke-linejoin="round"></path></svg></sc-if>
 <sc-if value="{{ tf.on }}" hint-placeholder-val="{{ false }}"><div class="pl-tf" style="left:{{ tf.x }}px;top:{{ tf.y }}px;width:{{ tf.w }}px">{{ tf.pre }}<span class="caret"></span>{{ tf.post }}</div></sc-if>
 </div>
-<sc-if value="{{ corner }}" hint-placeholder-val="{{ false }}"><a class="pl-corner is-left pl-hidden" href="#">{{ hiddenText }}</a><a class="pl-corner is-right pl-cog" href="#" aria-label="Planner menu"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.cog }}"></path></svg></a></sc-if>
 
 
 
-<sc-if value="{{ menu.on }}" hint-placeholder-val="{{ false }}">
-<div class="pl-menu" role="menu" style="right:8px;bottom:{{ menu.bottom }}px;top:{{ menu.top }}">
-<div class="pl-menu-h">{{ menu.head }}</div>
-<sc-for list="{{ menu.items }}" as="mi" hint-placeholder-count="5"><a class="{{ mi.cls }}" href="#" role="menuitem"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ mi.icon }}"></path></svg><span class="tx">{{ mi.t }}<small>{{ mi.sub }}</small></span><sc-if value="{{ mi.tog }}" hint-placeholder-val="{{ false }}"><span class="{{ mi.togCls }}"></span></sc-if><span class="end">{{ mi.end }}</span></a></sc-for>
+<sc-if value="{{ info.on }}" hint-placeholder-val="{{ false }}">
+<div class="pl-pop" role="dialog" aria-label="{{ info.label }}" style="right:8px;top:4px">
+<div class="pl-pop-h"><sc-if value="{{ info.isMenu }}" hint-placeholder-val="{{ false }}"><a class="pl-pop-back" href="#" aria-label="Back to this page’s details"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.chevL }}"></path></svg></a></sc-if><span class="lbl">{{ info.head }}</span><span class="sp"></span><a class="{{ info.cogCls }}" href="#" aria-label="Planner menu" aria-expanded="{{ info.menuOpen }}"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.cog }}"></path></svg></a></div>
+<sc-if value="{{ info.isInfo }}" hint-placeholder-val="{{ true }}">
+<sc-if value="{{ info.search }}" hint-placeholder-val="{{ false }}"><a class="pl-pop-search" href="#"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.search }}"></path></svg>Search the planner</a></sc-if>
+<sc-for list="{{ info.facts }}" as="f" hint-placeholder-count="2"><div class="pl-pop-fact"><span class="k">{{ f.k }}</span><span class="v">{{ f.v }}<small>{{ f.sub }}</small></span></div></sc-for>
+<div class="pl-pop-k">{{ info.hiddenHead }}</div>
+<sc-for list="{{ info.hidden }}" as="hr" hint-placeholder-count="3"><a class="pl-pop-row" href="#"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.hidden }}"></path></svg><span class="tx">{{ hr.label }}</span><span class="end">›</span></a></sc-for>
+<sc-if value="{{ info.none }}" hint-placeholder-val="{{ false }}"><div class="pl-pop-none">Every entry of this {{ info.kind }} has a place in this layout.</div></sc-if>
+</sc-if>
+<sc-if value="{{ info.isMenu }}" hint-placeholder-val="{{ false }}">
+<sc-for list="{{ info.items }}" as="mi" hint-placeholder-count="5"><a class="{{ mi.cls }}" href="#" role="menuitem"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ mi.icon }}"></path></svg><span class="tx">{{ mi.t }}<small>{{ mi.sub }}</small></span><sc-if value="{{ mi.tog }}" hint-placeholder-val="{{ false }}"><span class="{{ mi.togCls }}"></span></sc-if><span class="end">{{ mi.end }}</span></a></sc-for>
+</sc-if>
 </div>
 </sc-if>
 
@@ -98,16 +106,6 @@
 <sc-for list="{{ warns }}" as="wn" hint-placeholder-count="0"><div class="pl-warn" style="top:{{ wn.y }}px"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.info }}"></path></svg><span><b>{{ wn.t }}</b>{{ wn.sub }}</span></div></sc-for>
 </div>
 
-<sc-if value="{{ foot.on }}" hint-placeholder-val="{{ true }}">
-<div class="pl-foot">
-<sc-if value="{{ foot.line }}" hint-placeholder-val="{{ true }}"><a class="pl-hidden" href="#" aria-label="Not shown in this layout"><sc-if value="{{ foot.hasHidden }}" hint-placeholder-val="{{ true }}"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.hidden }}"></path></svg></sc-if>{{ hiddenText }}</a></sc-if>
-<sc-if value="{{ foot.chips }}" hint-placeholder-val="{{ false }}"><sc-for list="{{ hidden }}" as="hc" hint-placeholder-count="2"><a class="pl-hchip" href="#">{{ hc.label }}</a></sc-for></sc-if>
-<sc-if value="{{ foot.back }}" hint-placeholder-val="{{ false }}"><a class="pl-btn" href="#" style="min-height:28px;padding:0 10px">Back to ink</a></sc-if>
-<span class="sp"></span>
-<a class="{{ foot.cogCls }}" href="#" aria-label="Planner menu"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.cog }}"></path></svg></a>
-</div>
-</sc-if>
-
 <sc-if value="{{ edBar.on }}" hint-placeholder-val="{{ false }}">
 <div class="pl-ed-bar"><sc-for list="{{ edBar.btns }}" as="eb" hint-placeholder-count="4"><a class="{{ eb.cls }}" href="#"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ eb.icon }}"></path></svg>{{ eb.t }}</a></sc-for><span class="sp"></span><span style="font:400 12px/1.3 var(--font-mono);color:var(--ink-soft)">{{ edBar.note }}</span></div>
 </sc-if>
@@ -133,7 +131,7 @@
 </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "orient": {"editor": "enum", "options": ["portrait", "landscape"], "default": "portrait"}, "screen": {"editor": "enum", "options": ["view", "refused", "sheet", "picker", "year", "editor"], "default": "view"}, "tmpl": {"editor": "enum", "options": ["day-lists", "day-diary", "day-agenda", "week-columns", "week-spread", "week-lists", "month-grid", "month-goals"], "default": "day-lists"}, "cog": {"editor": "enum", "options": ["foot", "corner"], "default": "foot"}, "count": {"editor": "enum", "options": ["line", "chips"], "default": "line"}, "overlay": {"editor": "enum", "options": ["none", "cog", "hidden", "settings", "add", "used"], "default": "none"}, "dev": {"editor": "boolean", "default": false}, "ink": {"editor": "enum", "options": ["raw", "neat", "font"], "default": "raw"}, "write": {"editor": "enum", "options": ["none", "writing", "settled"], "default": "none"}, "text": {"editor": "enum", "options": ["none", "field", "back", "view"], "default": "none"}, "leave": {"editor": "enum", "options": ["done", "outside"], "default": "done"}, "drag": {"editor": "enum", "options": ["none", "draw", "drawn", "titled", "grab", "moved", "resize", "released"], "default": "none"}, "title": {"editor": "enum", "options": ["grow", "clip"], "default": "grow"}, "longTitle": {"editor": "boolean", "default": false}, "edit": {"editor": "enum", "options": ["select", "weight", "short", "land"], "default": "select"}, "refuse": {"editor": "enum", "options": ["missing", "off"], "default": "missing"}, "refresh": {"editor": "boolean", "default": false}, "widget": {"editor": "enum", "options": ["agenda", "todo", "notes", "habits", "minimonth", "weekov", "priorities"], "default": "todo"}, "fill": {"editor": "enum", "options": ["empty", "full", "more"], "default": "full"}, "$preview": {"width": 760, "height": 1008}}'>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "orient": {"editor": "enum", "options": ["portrait", "landscape"], "default": "portrait"}, "screen": {"editor": "enum", "options": ["view", "refused", "sheet", "picker", "year", "editor"], "default": "view"}, "tmpl": {"editor": "enum", "options": ["day-lists", "day-diary", "day-agenda", "week-columns", "week-spread", "week-lists", "month-grid", "month-goals"], "default": "day-lists"}, "hint": {"editor": "enum", "options": ["count", "none"], "default": "count"}, "search": {"editor": "enum", "options": ["none", "bar", "popup"], "default": "none"}, "overlay": {"editor": "enum", "options": ["none", "info", "cog", "hidden", "settings", "add", "used"], "default": "none"}, "dev": {"editor": "boolean", "default": false}, "ink": {"editor": "enum", "options": ["raw", "neat", "font"], "default": "raw"}, "write": {"editor": "enum", "options": ["none", "writing", "settled"], "default": "none"}, "text": {"editor": "enum", "options": ["none", "field", "back", "view"], "default": "none"}, "leave": {"editor": "enum", "options": ["done", "outside"], "default": "done"}, "drag": {"editor": "enum", "options": ["none", "draw", "drawn", "titled", "grab", "moved", "resize", "released"], "default": "none"}, "title": {"editor": "enum", "options": ["grow", "clip"], "default": "grow"}, "longTitle": {"editor": "boolean", "default": false}, "edit": {"editor": "enum", "options": ["select", "weight", "short", "land"], "default": "select"}, "refuse": {"editor": "enum", "options": ["missing", "off"], "default": "missing"}, "refresh": {"editor": "boolean", "default": false}, "widget": {"editor": "enum", "options": ["agenda", "todo", "notes", "habits", "minimonth", "weekov", "priorities"], "default": "todo"}, "fill": {"editor": "enum", "options": ["empty", "full", "more"], "default": "full"}, "$preview": {"width": 760, "height": 1008}}'>
 class Component extends DCLogic {
   renderVals() {
     const p = this.props, PL = window.PLANNER;
@@ -145,18 +143,16 @@ class Component extends DCLogic {
     if (screen === 'editor' && p.edit === 'weight' && tid === 'day-lists') tid = 'day-lists-w';
     const t = PL.T[tid], kind = t.kind;
     const overlay = p.overlay || 'none', text = p.text || 'none', drag = p.drag || 'none', write = p.write || 'none';
-    const cogCorner = p.cog === 'corner';
     const editing = screen === 'editor';
     const kbdOn = text === 'field' || text === 'view';
     const KBD = 236;
 
     if (screen === 'sheet') return this.sheet(voice, p, PL);
 
-    // ---- the page area: below the status bar (40) and the bar (60); the foot (34) unless corner
-    const footOn = !cogCorner && !editing && screen === 'view';
-    const pageH = H - 40 - 60 - (footOn ? 34 : 0) - (editing ? 57 : 0);
+    // ---- the page area: below the status bar (40) and the bar (60); no foot line
+    const pageH = H - 40 - 60 - (editing ? 57 : 0);
     const pad = 12;
-    let cw = W - 2 * pad, ch = pageH - 2 * pad - (cogCorner ? 22 : 0);
+    let cw = W - 2 * pad, ch = pageH - 2 * pad;
     // the keyboard covers the lower part of the screen (one refresh of that area); nothing is laid out again
     const eLand = land || (editing && p.edit === 'land');
 
@@ -202,11 +198,11 @@ class Component extends DCLogic {
     // ---- hidden counts (FR-028)
     const hidden = pg.hidden;
     const hiddenText = hidden.length ? hidden.map(h => h.label).join(' · ') : '';
-    const countChips = p.count === 'chips';
+    const nHidden = hidden.reduce((a, h) => a + (h.n || 0), 0);
 
-    // ---- the cog menu and the other overlays
-    const menu = { on: overlay === 'cog' };
-    if (menu.on) Object.assign(menu, this.cogMenu(p, t, cogCorner));
+    // ---- the (i) popover: this page's details and the hidden counts; its cog turns it into the menu
+    const info = { on: overlay === 'info' || overlay === 'cog' };
+    if (info.on) Object.assign(info, this.infoPop(p, t, kind, hidden, pg));
     const sheetOv = { on: overlay === 'hidden' || overlay === 'add' || overlay === 'settings' };
     if (overlay === 'hidden') Object.assign(sheetOv, this.hiddenSheet(hidden, kind, pageH));
     if (overlay === 'add') Object.assign(sheetOv, this.addSheet(PL, pageH));
@@ -230,8 +226,12 @@ class Component extends DCLogic {
     const kinds = [['month', 'Month'], ['week', 'Week'], ['day', 'Day']].map(([id, label]) => ({ t: label, on: String(id === kind), cls: id === kind ? 'is-on' : '', href: '#' }));
     const ttl = pg.title;
     const isToday = true;
-    const bar = { main: ttl.main, sub: ttl.sub + ' · ' + t.name, kinds, today: 'Today', todayCls: isToday ? 'is-here' : '',
-      prevLabel: 'Previous ' + kind, nextLabel: 'Next ' + kind };
+    const infoOpen = info.on;
+    const badge = p.hint !== 'none' && nHidden ? String(nHidden) : '';
+    const bar = { main: ttl.main, sub: ttl.sub, kinds, today: 'Today', todayCls: isToday ? 'is-here' : '',
+      prevLabel: 'Previous ' + kind, nextLabel: 'Next ' + kind, search: p.search === 'bar', badge,
+      infoCls: 'pl-tool' + (badge ? ' has-badge' : '') + (infoOpen ? ' is-open' : ''), infoOpen: String(infoOpen),
+      infoLabel: 'About this page' + (nHidden ? ': ' + nHidden + ' entries not shown in this layout' : '') };
 
     const ed = { title: 'Editing “' + t.name + '”', sub: 'A ' + kind + ' template · shown with this ' + kind + '’s entries · used by 143 days',
       saveCls: p.edit === 'short' ? 'pl-btn is-off' : 'pl-btn is-primary' };
@@ -250,11 +250,8 @@ class Component extends DCLogic {
       theme: voice + '-eink', ic, W, H, isSheet: false, isDevice: true, bezelCls: land ? 'pl-bezel is-land' : 'pl-bezel',
       showBar: screen === 'view', showEdHead: editing, showRefuse: screen === 'refused', showPage: screen === 'view' || editing,
       showPicker: screen === 'picker' || screen === 'year', pick: screen === 'picker' || screen === 'year' ? this.picker(PL, kind, tid, screen === 'year') : {},
-      cx: pad, cy: pad, cw, ch, widgets, marks, handles, tags, warns, pen, tf, menu, sheetOv, dialog, kbd, bar, ed, edBar, refuse,
-      hidden, hiddenText: hiddenText || 'everything is shown', countTop: false, hiddenNone: '',
-      corner: cogCorner && screen === 'view',
-      foot: { on: footOn, line: !countChips, chips: countChips, back: false, hasHidden: hidden.length > 0,
-        cogCls: overlay === 'cog' || overlay === 'settings' ? 'pl-cog is-open' : 'pl-cog' }
+      cx: pad, cy: pad, cw, ch, widgets, marks, handles, tags, warns, pen, tf, info, sheetOv, dialog, kbd, bar, ed, edBar, refuse,
+      hidden
     };
   }
 
@@ -336,7 +333,22 @@ class Component extends DCLogic {
     if (p.edit === 'short') warns.push({ y: 12, t: 'These widgets need ' + (pg.deficit || 0) + ' px more height than the page has.', sub: ' Every widget keeps its minimum, so the template can’t be saved like this: remove a widget or put two side by side.' });
   }
 
-  cogMenu(p, t, corner) {
+  infoPop(p, t, kind, hidden, pg) {
+    const isMenu = p.overlay === 'cog';
+    const PL = window.PLANNER;
+    const how = { day: 'the default for days', week: 'chosen for this week', month: 'the default for months' }[kind];
+    const facts = [
+      { k: 'Template', v: t.name, sub: how }
+    ];
+    const base = { isMenu, isInfo: !isMenu, menuOpen: String(isMenu), cogCls: 'pl-cog' + (isMenu ? ' is-open' : ''),
+      label: isMenu ? 'Planner menu' : 'About this page', head: isMenu ? 'Planner' : 'This page', kind,
+      search: p.search === 'popup', facts, hiddenHead: hidden.length ? 'Not shown in this layout' : 'Nothing hidden',
+      hidden: hidden.map(h => ({ label: h.label })), none: !hidden.length };
+    if (isMenu) base.items = this.cogMenu(p, t).items;
+    return base;
+  }
+
+  cogMenu(p, t) {
     const ic = Component.IC;
     const items = [
       { t: 'Text mode for this view', sub: 'every field as text, with the keyboard', icon: ic.keyboard, tog: true, togCls: 'pl-tog', end: '' },
@@ -345,7 +357,7 @@ class Component extends DCLogic {
       { t: 'Settings', sub: 'how ink is shown, the agenda’s hours', icon: ic.sliders, end: '›' }
     ];
     if (p.dev) items.push({ t: 'Debug', sub: 'developer build only: layout boxes, refresh counts', icon: ic.bug, end: '›', dev: true });
-    return { head: 'Planner', bottom: corner ? 40 : 6, top: 'auto', items: items.map(i => ({ ...i, tog: !!i.tog, cls: 'pl-mi' + (i.dev ? ' is-dev' : '') })) };
+    return { head: 'Planner', items: items.map(i => ({ ...i, tog: !!i.tog, cls: 'pl-mi' + (i.dev ? ' is-dev' : '') })) };
   }
 
   hiddenSheet(hidden, kind, pageH) {
@@ -437,7 +449,7 @@ Component.IC = {
   keyboard: 'M3 6h18v12H3z M7 10h.01 M11 10h.01 M15 10h.01 M7 14h10', layout: 'M4 4h16v16H4z M4 10h16 M10 10v10', edit: 'M4 20h4L19 9l-4-4L4 16z M13.5 6.5l4 4',
   sliders: 'M4 7h10 M18 7h2 M4 17h4 M12 17h8 M16 5v4 M10 15v4', bug: 'M8 9a4 4 0 0 1 8 0v5a4 4 0 0 1-8 0z M4 12h4 M16 12h4 M5 7l3 2 M19 7l-3 2 M5 18l3-2 M19 18l-3-2',
   calendar: 'M4 6h16v14H4z M4 10h16 M8 3v5 M16 3v5', plus: 'M12 5v14 M5 12h14', trash: 'M5 7h14 M9 7V4h6v3 M7 7l1 13h8l1-13', copy: 'M8 8h12v12H8z M4 16V4h12',
-  rotate: 'M4 9h11v11H4z M14 3a7 7 0 0 1 6 6 M20 5v4h-4', info: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M12 11v6 M12 7.5h.01',
+  rotate: 'M4 9h11v11H4z M14 3a7 7 0 0 1 6 6 M20 5v4h-4', info: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M12 11v6 M12 7.5h.01', search: 'M10.5 4a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13z M15.3 15.3L20 20',
   hand: 'M3 21h12 M4 17c2-4 3.5-4 4.5-.5s3 2.5 5-1.5 M14 13l6.5-6.5 2 2L16 15l-3 1z',
   w_agenda: 'M4 5h16v15H4z M8 3v4 M16 3v4 M8 11h5 M8 15h8', w_todo: 'M4 6h3v3H4z M10 7.5h10 M4 14h3v3H4z M10 15.5h10', w_notes: 'M5 4h14v16H5z M8 9h8 M8 13h8 M8 17h5',
   w_habits: 'M5 7a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0z M11 7a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0z M17 7a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0z M5 14a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0z M11 14a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0z',

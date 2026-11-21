@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Interface size</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}a{color:#1b1b1b}a:hover{color:#4a4a4a}</style>
+</helmet>
+<div data-spec-id="settings.appearance.ui-size" style="width:1560px;height:1260px;box-sizing:border-box;padding:28px 32px;display:flex;flex-direction:column;gap:18px;background:#e6e6e6;color:#1b1b1b;font-family:'IBM Plex Sans',sans-serif">
+<div style="display:flex;flex-direction:column;gap:6px">
+<span style="font:500 13px/1.2 'IBM Plex Mono',monospace;color:#3d3d3d">settings.appearance.ui-size</span>
+<h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">Interface size: the same screen at two sizes</h1>
+<p style="margin:0;max-width:1100px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">Appearance → Size and text → Interface size (shell spec 012). A design pixel is 0.224 mm at Default and 80 % of that at Smaller, on every display; each display’s pixels per millimetre (reported, or measured on its Screen size page, spec 011) turn it into the display’s own pixels. Both frames are the same panel below the top bar, drawn to the same scale: at Smaller the window has more design pixels, so the page lays out again and shows more, rather than shrinking. Row text and buttons keep their minimums (2.8 mm, 7 mm).</p>
+</div>
+<dc-import name="ThemeBar" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" on-pick="{{ pick }}" hint-size="100%,112px"></dc-import>
+<div style="display:flex;flex-wrap:wrap;gap:32px 64px;align-items:flex-start">
+<figure style="margin:0;display:flex;flex-direction:column;gap:8px">
+<figcaption style="display:flex;flex-direction:column;gap:3px;max-width:702px">
+<span style="font:600 15px/1.3 'IBM Plex Sans',sans-serif">Default · 100 %</span>
+<span style="font:500 12px/1.4 'IBM Plex Mono',monospace;color:#3d3d3d">702 × 884 design px window · a design px is 0.224 mm</span>
+</figcaption>
+<div data-ui-size="Default" style="width:702px;height:884px;position:relative;outline:1.5px solid #1b1b1b;overflow:hidden;background:#ffffff"><dc-import name="EinkSettingsCard" theme="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" page="appearance" win="full" orient="portrait" uisize="Default" style="width:100%;height:100%" hint-size="702px,884px"></dc-import></div>
+</figure>
+<figure style="margin:0;display:flex;flex-direction:column;gap:8px">
+<figcaption style="display:flex;flex-direction:column;gap:3px;max-width:702px">
+<span style="font:600 15px/1.3 'IBM Plex Sans',sans-serif">Smaller · 80 %</span>
+<span style="font:500 12px/1.4 'IBM Plex Mono',monospace;color:#3d3d3d">878 × 1118 design px window (the bar is smaller too) · a design px is 0.179 mm</span>
+</figcaption>
+<div style="width:702px;height:894px;position:relative;outline:1.5px solid #1b1b1b;overflow:hidden;background:#ffffff"><div data-ui-size="Smaller" style="position:absolute;left:0;top:0;width:878px;height:1118px;transform:scale(0.8);transform-origin:0 0"><dc-import name="EinkSettingsCard" theme="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" page="appearance" win="full" orient="portrait" uisize="Smaller" style="width:100%;height:100%" hint-size="878px,1118px"></dc-import></div></div>
+</figure>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "$preview": {"width": 1560, "height": 1260}}'>
+class Component extends DCLogic {
+  state = {};
+  renderVals() {
+    const s = this.state, p = this.props;
+    return { voice: s.voice ?? p.voice ?? 'white', scheme: 'eink', pen: '1', pick: (k, v) => this.setState({ [k]: v }) };
+  }
+}
+</script>
+</body>
+</html>

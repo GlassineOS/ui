@@ -381,9 +381,8 @@
       n = Object.assign({}, n, { from: ws, to: we });
       const blocks = inside.map(e => {
         const y1 = top + (Math.max(e.s, n.from * 2) / 2 - n.from) * pitch, y2 = top + (Math.min(e.e, n.to * 2) / 2 - n.from) * pitch;
-        const st = o.move && o.move.id === e.id ? o.move.look : '';
         return { id: e.id, y: Math.round(y1) + 1, h: Math.max(8, Math.round(y2 - y1) - 2), words: compact ? ink(e.t, { fs: 13, salt: e.id }) : ink(e.t, { fs: Math.min(fs, Math.max(14, (y2 - y1) - 8)), salt: e.id }),
-          when: hm(e.s) + '–' + hm(e.e), cls: 'pl-ev' + (st ? ' is-' + st : '') + (y2 - y1 < 24 ? ' is-short' : ''), handle: st === 'grab' || st === 'resize' };
+          when: hm(e.s) + '–' + hm(e.e), cls: 'pl-ev' + (y2 - y1 < 24 ? ' is-short' : '') };
       });
       const allDay = compact || empty ? [] : EV.filter(e => e.day === day && e.allDay).map(e => ({ words: ink(e.t, { fs: 15, salt: e.id }) }));
       return Object.assign(base, { compact, title: compact ? DOW2[wd(day)] + ' ' + day : 'Agenda', tag: compact ? '' : hm(n.from * 2) + '–' + hm(n.to * 2), today: day === MONTH.today, hrs, blocks, allDay, hasAllDay: allDay.length > 0,

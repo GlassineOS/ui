@@ -63,7 +63,7 @@ class Component extends DCLogic {
   renderVals() {
     return {
       comps: [
-        { name: 'Agenda', cls: 'il-agenda', what: 'The hours of a day as rules, timed events as keyline blocks with their time as the widget’s own text and the title as ink, all-day events above, a now line, a count at the top or bottom edge for events outside the hours. The held look while dragging (a heavier edge and a dashed ghost; no fill behind the ink).', lib: 'Yes: Home’s “Next” widget and a calendar app draw the same hours and blocks.' },
+        { name: 'Agenda', cls: 'il-agenda', what: 'The hours of a day as rules, timed events as keyline blocks with their time as the widget’s own text and the title as ink, all-day events above, a now line, a count at the top or bottom edge for events outside the hours. While dragged, the block looks as it will when released; its only mark is a dashed outline at its old place.', lib: 'Yes: Home’s “Next” widget and a calendar app draw the same hours and blocks.' },
         { name: 'Ink field', cls: 'il-inkfield', what: 'A handwriting field: its ruled line or lines, the ink in the pen colour, the words set in Autograph in their place, an empty row to write in. In text mode it becomes an ordinary text field.', lib: 'The frame only (rules, the empty row, the text-mode box). The ink and the reading belong to the writing regions (handwriting spec 005) and their client.' },
         { name: 'More list', cls: 'il-morelist', what: 'Rows under rules, one empty row kept at the end, and a quiet “+n more” after the last row that opens the whole list. Rows give way done first, then the oldest open.', lib: 'Yes: Home’s lists and Settings’ long lists (saved networks, paired devices) truncate the same way.' },
         { name: 'Mini month', cls: 'il-minimonth', what: 'Seven columns of days, a dot under days with entries, today ringed, a week shaded; at a large size the month grid with entries in each day.', lib: 'Yes: a Home calendar widget and the date pickers in Settings and the planner.' },
@@ -84,7 +84,7 @@ class Component extends DCLogic {
         { step: 'Writing', cost: 'the ink’s own box, at the pen’s latency; nothing else' },
         { step: 'Settle after the pause', cost: 'once, only the widgets whose size changed' },
         { step: 'Event drag, per 30-minute step', cost: 'the strip the block leaves and enters, a few per cent of the panel (the spike: about 3 %)' },
-        { step: 'Release after a drag', cost: 'one more small refresh, as the drag look goes (a drag without that look would save it)' },
+        { step: 'Release after a drag', cost: 'only the old place, as the dashed outline goes' },
         { step: 'The (i) popover, the hidden list, a widget’s whole content', cost: 'one rectangle to open, one to close' },
         { step: 'The cog inside the popover', cost: 'only the popover’s rectangle (it becomes the menu)' },
         { step: 'The number on the (i)', cost: 'the icon’s own box, only when the count changes' },

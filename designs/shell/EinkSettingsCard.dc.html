@@ -129,6 +129,14 @@
 
 <sc-if value="{{ b.isPara }}" hint-placeholder-val="{{ false }}"><div style="padding:16px 0 12px;font:{{ k.row }};text-wrap:pretty">{{ b.label }}</div></sc-if>
 
+<sc-if value="{{ b.isRuler }}" hint-placeholder-val="{{ false }}"><div data-widget="ruler" style="display:flex;flex-direction:column;padding:14px 0 14px">
+<span style="font:{{ k.sub }};color:{{ k.subC }}">{{ b.label }}</span>
+<div aria-label="{{ b.aria }}" role="img" style="position:relative;height:46px;margin-top:10px;width:{{ b.len }}"><div style="position:absolute;left:0;top:0;width:100%;height:1.5px;background:var(--il-ink,#111111)"></div><sc-for list="{{ b.ticks }}" as="t" hint-placeholder-count="20"><div style="position:absolute;top:0;left:{{ t.x }};width:{{ t.w }};height:{{ t.h }};background:var(--il-ink,#111111)"></div></sc-for><sc-for list="{{ b.nums }}" as="n" hint-placeholder-count="8"><span style="position:absolute;top:24px;left:{{ n.x }};transform:translateX(-50%);font:400 11px/1 'IBM Plex Sans',sans-serif">{{ n.t }}</span></sc-for></div>
+<div style="display:flex;gap:12px;margin-top:14px"><sc-for list="{{ b.btns }}" as="o" hint-placeholder-count="2"><div tabindex="0" role="button" aria-label="{{ o.l }}" onKeyDown="{{ ilKey }}" onClick="{{ o.on }}" style="height:48px;box-sizing:border-box;padding:0 18px 0 14px;border:1.5px solid var(--il-ink,#111111);border-radius:999px;display:flex;align-items:center;gap:6px;font:{{ k.row }};cursor:pointer;box-shadow:{{ k.pillSh }}"><span style="font:400 22px/1 'Material Symbols Outlined'">{{ o.icon }}</span><span style="display:{{ o.lD }}">{{ o.l }}</span></div></sc-for></div>
+</div></sc-if>
+
+<sc-if value="{{ b.isNum }}" hint-placeholder-val="{{ false }}"><form data-widget="number-field" onSubmit="{{ b.submit }}" style="margin:14px 0 14px;display:flex;flex-direction:column;gap:10px"><span style="font:{{ k.head }};font-variant:{{ k.headVar }};text-transform:{{ k.headCase }};letter-spacing:{{ k.headLs }}">{{ b.label }}</span><div style="display:flex;align-items:center;gap:10px"><input data-widget="text-field" data-osk="number" name="n" aria-label="{{ b.label }}" inputmode="decimal" enterkeyhint="done" autocomplete="off" value="{{ b.val }}" style="flex:1;min-width:0;height:52px;box-sizing:border-box;padding:0 14px;border:1.5px solid var(--il-ink,#111111);border-radius:{{ k.segR }};background:var(--il-paper,#ffffff);font:{{ k.row }};color:var(--il-ink,#111111)"><button type="submit" style="height:52px;flex:none;box-sizing:border-box;padding:0 20px;border:1.5px solid var(--il-ink,#111111);border-radius:{{ k.segR }};background:var(--il-paper,#ffffff);color:var(--il-ink,#111111);font:{{ k.row }};cursor:pointer">Keep</button></div></form></sc-if>
+
 <sc-if value="{{ b.isMono }}" hint-placeholder-val="{{ false }}"><div style="margin:6px 0;padding:10px 14px;background:var(--il-sheet,#f2f2f2);border-radius:{{ k.segOnR }};font:400 13px/21px 'IBM Plex Mono',monospace;white-space:pre-wrap;word-break:break-word">{{ b.label }}</div></sc-if>
 
 </div>
@@ -595,6 +603,14 @@ class Component extends DCLogic {
       info: (label, val) => ({ k: 'info', label, val, h: 52 }),
       app: (name, icon, note, fn, badge, bIcon) => ({ k: 'app', label: name, icon, sub: note, h: 70, on: fn, badge: badge || '', bIcon: bIcon || '', badgeD: badge ? 'flex' : 'none' }),
       radio: (label, on, fn) => ({ k: 'radio', label, h: 54, on: fn, dot: on ? 'block' : 'none' }),
+      // Screen size (shell spec 011): a ruler mm long at per px per mm, Shorter / Longer (fn(-1|+1))
+      ruler: (mm, per, card, fn) => ({ k: 'ruler', h: 150, nosep: false, label: card ? 'A bank card · 85.6 mm' : Math.round(mm / 10) + ' cm',
+        aria: (card ? '85.6' : mm) + ' mm ruler', len: (mm * per).toFixed(1) + 'px',
+        ticks: Array.from({ length: Math.floor(mm) + 1 }, (_, i) => ({ x: (i * per - (i % 10 ? 0.5 : 0.75)).toFixed(2) + 'px', w: i % 10 ? '1px' : '1.5px', h: (i === 0 ? 34 : i % 10 === 0 ? 22 : i % 5 === 0 ? 14 : 8) + 'px' }))
+          .concat(card ? [{ x: (mm * per - 0.75).toFixed(2) + 'px', w: '1.5px', h: '34px' }] : []),
+        nums: Array.from({ length: Math.floor(mm / 10) }, (_, i) => ({ x: ((i + 1) * 10 * per).toFixed(1) + 'px', t: String(i + 1) })),
+        btns: [['remove', 'Shorter', -1], ['add', 'Longer', 1]].map(([icon, l, d]) => ({ icon, l, lD: cw < 400 ? 'none' : 'inline', on: () => fn(d) })) }),
+      num: (label, val, fn) => ({ k: 'num', label, val, h: 104, submit: e => { e.preventDefault(); const v = parseFloat(String(new FormData(e.currentTarget).get('n')).replace(',', '.')); fn(v >= 1 && v <= 100 ? v : null); } }),
       btn: (label, sub, btn, fn, enabled) => ({ k: 'button', label, sub, btn, aria: btn + ' · ' + label, h: 80, on: fn, bFg: enabled === false ? DIM : 'var(--il-ink,#111111)' })
     };
 
@@ -683,7 +699,7 @@ class Component extends DCLogic {
       bluetooth: () => [S('Bluetooth', [W.tog('Bluetooth', null, s.bt, flip('bt')), s.bt && W.link('Page turner', 'Connected · battery 80 %', det('Page turner', [['Status', 'Connected'], ['Battery', '80 %'], ['Type', 'Remote']]), 'settings_remote'), s.bt && W.link('Headphones', 'Paired', det('Headphones', [['Status', 'Paired'], ['Codec', 'AAC']]), 'headphones'), s.bt && W.link('Pair a new device', null, () => {}, 'add')]),
         S('Visibility', [W.tog('Visible to nearby devices', 'Only while this page is open', s.btVis, flip('btVis'))])],
       sound: () => [S('Volume', [W.sl('Volume', s.vol, set('vol'), ' %'), W.tog('Mute', null, s.mute, flip('mute'))]), S('Output', [W.seg('Play through', ['Speaker', 'Headphones', 'Bluetooth'], s.out, set('out'))]), S('Alerts', [W.tog('Notification sound', null, s.nsound, flip('nsound'))])],
-      appearance: () => [S('Theme', [W.seg('Theme', ['White', 'Editorial', 'Stationery'], cap1(themeId), o => u({ theme: o.toLowerCase() }))]), S('Text', [W.sl('Text size', s.tsize, set('tsize'), ' %'), W.seg('Typeface', ['Sans', 'Serif'], s.face, set('face'))]), S('Rotation', [rot]), S('Top bar', [W.tog('Battery percentage', null, s.pct, flip('pct')), W.tog('Seconds on the clock', null, s.secs, flip('secs'))])],
+      appearance: () => [S('Theme', [W.seg('Theme', ['White', 'Editorial', 'Stationery'], cap1(themeId), o => u({ theme: o.toLowerCase() }))]), S('Text', [W.sl('Text size', s.tsize, set('tsize'), ' %'), W.seg('Typeface', ['Sans', 'Serif'], s.face, set('face'))]), S('Rotation', [rot]), ...(s.ppmShow ?? pp[0] === 'screenSize' ? [S('Screen size', [W.link('Screen size', 'Optoma HD146X · ' + (s.ppm ? s.ppm + ' pixels per mm' : 'Not measured'), () => u({ topic: 'screenSize', ppmShow: true, sub: null, subPrev: null, pg: 0 }))])] : []), S('Top bar', [W.tog('Battery percentage', null, s.pct, flip('pct')), W.tog('Seconds on the clock', null, s.secs, flip('secs'))])],
       gestures: () => [3, 4].map(n => S(n === 3 ? 'Three fingers' : 'Four fingers', DIRS.map(([d, ic, l]) => W.link(l, s.g[n + d], pickGo('g' + n + d), ic)))).concat([S('Edges', [W.tog('Swipe down from the top', 'Opens notifications', s.edge, flip('edge'))])]),
       power: () => [S('Battery', [W.info('Charge', '69 %'), W.info('Estimate', 'About 3 weeks of reading'), W.info('Health', 'Good')]), S('Saving', [W.tog('Battery saver', 'Slower refresh, no background sync', s.saver, flip('saver')), W.seg('Sleep after', ['2 min', '5 min', '10 min', '30 min'], s.sleepAfter, set('sleepAfter'))]), S('Sleep', [W.tog('Show the sleep notice', 'A small pill over the last page', s.pill, flip('pill'))])],
       keyboard: () => [S('On-screen keyboard', [W.tog('Show when typing', 'Opens when a text field is selected', s.osk, flip('osk')), W.seg('Size', ['Small', 'Medium', 'Large'], s.kbSize, set('kbSize')), W.tog('Flash keys', 'Inverts each key briefly when tapped', s.kbFlash, flip('kbFlash')), ...kbLayoutNote()]), S('Typing', [W.tog('Suggestions', 'Three words above the keys, from the text before the cursor', s.kbSugg, flip('kbSugg')), W.link('Suggestion languages', kbOn().length ? kbOn().join(' · ') + (kbOn().length > 1 ? ' · mixed in one row' : '') : 'No dictionary · learned words only', () => u({ topic: 'kbLangs', sub: null, subPrev: null, pg: 0 }), 'translate'), W.seg('Email & web addresses', ['Off', 'Suggest', 'Suggest & learn'], s.kbAddr, set('kbAddr'), ['No suggestions in these fields', 'Suggestions, but nothing typed there is learned', 'Learned like any other field']), W.tog('Handwriting', 'A pen tap on an empty field lays a sheet of paper over it', s.kbHw, flip('kbHw')), W.tog('Learn as I go', 'New words and corrected handwriting, kept on this device only', s.kbLearn, flip('kbLearn')), W.link('Learned words', s.kbLearnedW ? kbN(s.kbLearnedW) + (s.kbGoneN ? ' · ' + s.kbGoneN + ' removed' : '') : s.kbGoneN ? s.kbGoneN + ' removed' : 'None yet', () => u({ topic: 'kbWords', sub: null, subPrev: null, pg: 0 }), 'menu_book'), W.btn('Erase what was learned', s.kbLearnedW || s.kbLearnedH || s.kbGoneN ? s.kbLearnedW + ' words · ' + s.kbLearnedH + ' handwriting samples' : 'Nothing learned', 'Erase', () => u(kbForgot(s, { kbLearnedH: 0 })), !!(s.kbLearnedW || s.kbLearnedH || s.kbGoneN))]), S('Hardware', [W.link('Layout', 'English (UK)', () => {})])],
@@ -736,6 +752,14 @@ class Component extends DCLogic {
         S('On the keyboard', inst.map(x => W.tog(x.l, '40,000 words', s.kbLangs.includes(x.l), kbLang(x.l))), { list: true }),
         S('Add a language', [...more.map(x => W.btn(x.l, running ? BUSY : (x.l === s.kbLayout ? 'Your keyboard layout · ' : '') + 'Download ' + PKD[x.pkg].dl, 'Install', pkAsk('install', x.pkg), !running)),
           W.link('All keyboard languages', 'In Packages, where installed ones can also be removed', () => u({ topic: 'pkgSearch', pkQ: 'glassine-predict-model', pg: 0 }), 'deployed_code')], { list: true })].filter(Boolean); };
+    // Screen size (shell spec 011): only for a display that doesn't report its size; the ruler is the measurement
+    PAGES.screenSize = () => { const v = s.ppm, cur = v || 3.78, per = cur, card = 85.6 * per <= cw, mm = card ? 85.6 : Math.max(2, Math.floor(cw / per / 10)) * 10;
+      const keep = x => u(x == null ? { ppmErr: true } : { ppm: Math.round(x * 1000) / 1000, ppmErr: false });
+      return [S('Ruler', [W.note(card ? 'Hold a bank card against the screen at the line’s left end, or a ruler at its 0, and make the line as long as the card’s long edge.' : 'Hold a ruler against the screen at the line’s 0 and make the line as long as ' + mm / 10 + ' cm on it.'),
+          W.ruler(mm, per, card, d => keep(Math.round(clamp(cur * (1 + d / 100), 1, 100) * 1000) / 1000)),
+          W.num('Pixels per millimetre', v ? String(v) : '', keep),
+          W.note(s.ppmErr ? 'Type a number from 1 to 100, like 3.78.' : v ? 'About ' + Math.round(v * 25.4) + ' pixels per inch. Handwriting uses it on this display.' : 'Until it is measured, handwriting assumes a typical size here.'),
+          W.btn('Forget', 'Not measured again', 'Forget', () => u({ ppm: null, ppmErr: false }), !!v)], { right: v ? 'Measured' : 'Not measured' })]; };
     // Words: counts, not the words (there can be 20,000); the folder holds them as a plain text file
     PAGES.kbWords = () => { const none = !s.kbLearnedW && !s.kbGoneN, DIR = '~/.local/share/glassine/predict';
       const langs = [...s.kbLangs, ...Object.keys(s.kbPerLang).filter(l => !s.kbLangs.includes(l))];
@@ -773,7 +797,7 @@ class Component extends DCLogic {
     });
     const PKT = { packages: ['Packages', 'Apps', 'apps'], pkgSearch: ['“' + (s.pkQ || '') + '”', 'Packages', 'packages'],
       pkg: [s.pkSel, s.pkFrom === 'pkgChanges' ? 'Your changes' : s.pkFrom === 'pkgSearch' ? 'Results' : 'Packages', s.pkFrom || 'pkgSearch'],
-      pkgChanges: ['Your changes', 'Packages', 'packages'], pkgUpdates: ['Updates', 'Packages', 'packages'], pkgOutput: ['apk output', s.pkSel, 'pkg'], kbWords: ['Words', 'Keyboard', 'keyboard'], kbLangs: ['Languages', 'Keyboard', 'keyboard'] };
+      pkgChanges: ['Your changes', 'Packages', 'packages'], pkgUpdates: ['Updates', 'Packages', 'packages'], pkgOutput: ['apk output', s.pkSel, 'pkg'], kbWords: ['Words', 'Keyboard', 'keyboard'], screenSize: ['Optoma HD146X', 'Appearance', 'appearance'], kbLangs: ['Languages', 'Keyboard', 'keyboard'] };
 
     // the sheet on the card: first-change note, plan, result
     let sh = { show: false };
@@ -857,10 +881,10 @@ class Component extends DCLogic {
     const np = pages.length, pg = clamp(s.pg, 0, np - 1);
     this._fitInfo = { fit, compact, pages: np, collapsed: secs.filter((x, i) => col.has(i)).map(x => x.title), w: Math.round(winW), h: Math.round(winH), cw: Math.round(cw), narrow, tabsPaged: Math.floor((cardH - 15 + 5) / (tabH + 5)) < TOP.length };
     const shown = pages[pg].map((b, j, arr) => { const nx = arr[j + 1]; return { sub: '', val: '', icon: '', right: '', rule: 'none', ...b, sep: b.k === 'section-head' || b.nosep ? 'none' : k.sep,
-      isHead: b.k === 'section-head', isTog: b.k === 'toggle', isSeg: b.k === 'segmented', isNote: b.k === 'note', isSl: b.k === 'slider', isRange: b.k === 'range', isLink: b.k === 'link', isInfo: b.k === 'info', isApp: b.k === 'app', isRadio: b.k === 'radio', isDith: b.k === 'dithering', isBars: b.k === 'bars', isAxis: b.k === 'axis', isOff: b.k === 'offset', isBtn: b.k === 'button', isRot: b.k === 'rotation', isSearch: b.k === 'search', isPkg: b.k === 'pkg', isStatus: b.k === 'status', isPara: b.k === 'para', isMono: b.k === 'mono', valD: b.k === 'link' && b.val ? 'block' : 'none', instD: b.instD || 'none',
+      isHead: b.k === 'section-head', isTog: b.k === 'toggle', isSeg: b.k === 'segmented', isNote: b.k === 'note', isSl: b.k === 'slider', isRange: b.k === 'range', isLink: b.k === 'link', isInfo: b.k === 'info', isApp: b.k === 'app', isRadio: b.k === 'radio', isDith: b.k === 'dithering', isBars: b.k === 'bars', isAxis: b.k === 'axis', isOff: b.k === 'offset', isBtn: b.k === 'button', isRot: b.k === 'rotation', isSearch: b.k === 'search', isPkg: b.k === 'pkg', isStatus: b.k === 'status', isPara: b.k === 'para', isMono: b.k === 'mono', isRuler: b.k === 'ruler', isNum: b.k === 'num', valD: b.k === 'link' && b.val ? 'block' : 'none', instD: b.instD || 'none',
       subD: b.sub ? 'block' : 'none', iconD: b.icon ? 'block' : 'none', rightD: b.right && cw > 380 ? 'block' : 'none' }; });
 
-    const active = topic === 'kbWords' || topic === 'kbLangs' ? 'keyboard' : topic === 'app' || PKT[topic] ? 'apps' : topic;
+    const active = topic === 'kbWords' || topic === 'kbLangs' ? 'keyboard' : topic === 'screenSize' ? 'appearance' : topic === 'app' || PKT[topic] ? 'apps' : topic;
     const goTopic = id => () => u({ topic: id, sub: null, subPrev: null, pg: 0 });
     const mkTab = (label, icon, on, isOn, fill) => ({ label, icon, on, fill: fill ? 1 : 0, bg: isOn ? k.tabOnBg : 'var(--il-paper,#ffffff)', fg: isOn ? k.tabOnFg : 'var(--il-ink,#111111)', sh: isOn ? k.tabOnSh : k.tabSh, w: (isOn ? tabW + 12 : tabW) + 'px', ml: isOn ? '-4px' : '0', bl: isOn ? 'none' : '1.5px solid var(--il-ink,#111111)', extra: '', exD: 'none' });
     const slots = Math.floor((cardH - 15 + 5) / (tabH + 5));

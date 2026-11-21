@@ -474,8 +474,8 @@ class Component extends DCLogic {
       const tn = kind === 'day' ? 'Diary' : 'Spread';
       const lead = p.range === 'first' ? 'Tap the first and the last ' + kind + ' for ' + tn + '.' : p.range === 'last' ? 'Now the last ' + kind + ' for ' + tn + '.'
         : 'Each ' + kind + ' shows the template planned for it. A single ' + kind + '’s own choice wins over a range; change any ' + kind + ' at any time, past ' + kind + 's too.';
-      // turned, the days' year puts its arrows at the end of the scopes' row, so that the twelve months fit
-      const navIn = !!p.yearNav && kind === 'day' && p.orient === 'landscape';
+      // turned, the arrows go to the end of the scopes' row, so that the twelve months and the choices fit
+      const navIn = !!p.yearNav && p.orient === 'landscape';
       const base = { isYear: true, isList: false, title: 'Plan the ' + kind + 's ahead', lead, scopes, nav: !!p.yearNav && !navIn, navIn, yearT: next ? '2028' : '2027' };
       if (kind === 'day') {
         // the year at a glance: a month each, Monday first, a cell per day with its template's letter
@@ -496,6 +496,12 @@ class Component extends DCLogic {
         return Object.assign(base, { isDays: true, months: [], dmonths,
           key: [{ l: 'A', cls: '', t: 'Agenda and lists' }, { l: 'B', cls: 'is-b', t: 'Diary' }, { l: 'C', cls: 'is-c', t: 'Agenda only' }],
           ranges: next ? [] : [{ t: '12 Apr to 23 Apr: Diary', sub: 'a range', act: 'Change' }, { t: 'Fri 26 Mar: Agenda only', sub: 'that day only', act: 'Remove' }] });
+      }
+      if (kind === 'month') {
+        // a cell per month: March has its own choice, and is the month on screen
+        const months = M.map((m, mi) => ({ m, weeks: [{ l: mi === 2 && !next ? 'B' : 'A', cls: 'w is-' + (mi === 2 && !next ? 'b is-one' : 'a') + (mi === 2 && !next ? ' is-now' : '') }] }));
+        return Object.assign(base, { months, key: next ? [{ l: 'A', cls: '', t: 'Calendar' }] : [{ l: 'A', cls: '', t: 'Calendar' }, { l: 'B', cls: 'is-b', t: 'Goals' }],
+          ranges: next ? [] : [{ t: 'March: Goals', sub: 'that month only', act: 'Remove' }] });
       }
       const months = M.map((m, mi) => ({ m, weeks: [0, 1, 2, 3].concat(mi % 3 === 2 ? [4] : []).map(wi => {
         const l = mi < 3 && !next ? 'A' : 'B';

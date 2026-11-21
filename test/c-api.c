@@ -154,6 +154,25 @@ int main(int argc, char **argv)
     OK(outside == 0xffffffffu, "a hatch stays inside its rect");
     cairo_destroy(cr);
     cairo_surface_destroy(s);
+    /* what a frame is said to be: one frame each, a page wins, a frame not sent drops it */
+    UiContent ct = { 0 };
+    OK(ui_content_frame(&ct, 1) == UI_CONTENT_NONE, "content: nothing said");
+    ui_content_page(&ct);
+    OK(ui_content_frame(&ct, 1) == UI_CONTENT_PAGE && ui_content_frame(&ct, 1) == UI_CONTENT_NONE, "content: a page, for one frame");
+    ui_content_page(&ct);
+    OK(ui_content_frame(&ct, 0) == UI_CONTENT_NONE && ui_content_frame(&ct, 1) == UI_CONTENT_NONE, "content: a frame not sent drops it");
+    ui_content_step(&ct);
+    OK(ui_content_frame(&ct, 1) == UI_CONTENT_MOTION, "content: a step is motion");
+    ui_content_step(&ct);
+    ui_content_end(&ct);
+    OK(ui_content_frame(&ct, 1) == UI_CONTENT_NONE, "content: the movement's result is no step");
+    ui_content_step(&ct);
+    ui_content_page(&ct);
+    OK(ui_content_frame(&ct, 1) == UI_CONTENT_PAGE, "content: a page wins over a step");
+    ui_content_page(&ct);
+    ui_content_step(&ct);
+    ui_content_end(&ct);
+    OK(ui_content_frame(&ct, 1) == UI_CONTENT_PAGE, "content: ... whatever the order");
     printf("c-api: %s\n", fails ? "FAILED" : "all passed");
     return fails != 0;
 }

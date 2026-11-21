@@ -861,6 +861,33 @@
    "title": "A guest · their samples",
    "page": "guest",
    "is_interactive": true
+  },
+  "learn.models.none.dc.html": {
+   "x": 11550,
+   "y": 0,
+   "w": 824,
+   "h": 1545,
+   "title": "Models · nothing installed",
+   "page": "learn",
+   "is_interactive": true
+  },
+  "learn.models.installed.dc.html": {
+   "x": 12454,
+   "y": 0,
+   "w": 824,
+   "h": 1545,
+   "title": "Models · installed, in use",
+   "page": "learn",
+   "is_interactive": true
+  },
+  "learn.models.refused.dc.html": {
+   "x": 13358,
+   "y": 0,
+   "w": 824,
+   "h": 1545,
+   "title": "Models · refused",
+   "page": "learn",
+   "is_interactive": true
   }
  },
  "notes": {
@@ -885,11 +912,11 @@
   "title_learn": {
    "kind": "title1",
    "page": "learn",
-   "text": "Learn · how the reader learns, with its Samples and Coverage beneath",
+   "text": "Learn · how the reader learns, with its Samples, Coverage and Models beneath",
    "x": 0,
    "y": -300,
    "w": 240,
-   "maxW": 11550
+   "maxW": 14182
   },
   "title_best": {
    "kind": "title1",
@@ -1023,6 +1050,9 @@
   "samples.landscape.dc.html",
   "coverage.dc.html",
   "coverage.landscape.dc.html",
+  "learn.models.none.dc.html",
+  "learn.models.installed.dc.html",
+  "learn.models.refused.dc.html",
   "donate.off.dc.html",
   "donate.licence.dc.html",
   "donate.earlier.dc.html",

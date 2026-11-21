@@ -47,6 +47,7 @@
 <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;color:{{ vc.fg }}"><span style="font:{{ vc.nameF }};font-variant:{{ vc.nameVar }};letter-spacing:{{ vc.nameLs }}">{{ vc.name }}</span><span style="font:{{ k.sub }};color:var(--il-ink-soft);text-wrap:pretty">{{ vc.desc }}</span></div>
 <span style="font:400 24px/1 'Material Symbols Outlined';visibility:{{ vc.vis }}">check_circle</span>
 </div></sc-for>
+<div style="min-height:72px;margin-top:6px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px"><div style="flex:1;min-width:240px;display:flex;flex-direction:column;gap:2px"><span style="font:{{ k.row }}">Interface size · Built-in panel</span><span style="font:{{ k.sub }};color:var(--il-ink-soft)">{{ uiSub }}</span></div><div style="display:flex;padding:3px;gap:3px;border-radius:{{ k.btnR }};box-shadow:{{ k.traySh }}"><sc-for list="{{ uisizes }}" as="us" hint-placeholder-count="4"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ us.on }}" style="height:40px;padding:0 16px;display:flex;align-items:center;cursor:pointer;border-radius:{{ k.segR }};font:{{ k.row }};font-weight:{{ us.fw }};background:{{ us.bg }};color:{{ us.fg }};box-shadow:{{ us.sh }}">{{ us.label }}</div></sc-for></div></div>
 <span style="font:{{ k.sub }};color:var(--il-ink-soft)">GlassineOS draws in greys for e-ink; the voice sets type, edges and rules. You can change it later in Settings › Appearance.</span>
 </div></sc-if>
 
@@ -132,7 +133,7 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:760,&quot;height&quot;:1080},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;white&quot;,&quot;editorial&quot;,&quot;stationery&quot;],&quot;default&quot;:&quot;white&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;scheme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;paper&quot;,&quot;night&quot;,&quot;eink&quot;],&quot;default&quot;:&quot;paper&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;pen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;1&quot;,&quot;2&quot;,&quot;3&quot;],&quot;default&quot;:&quot;1&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;step&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;welcome&quot;,&quot;look&quot;,&quot;location&quot;,&quot;keyboard&quot;,&quot;network&quot;,&quot;account&quot;,&quot;software&quot;,&quot;review&quot;,&quot;installing&quot;,&quot;done&quot;],&quot;default&quot;:&quot;welcome&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;layout&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;de&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;joined&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;packs&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
 class Component extends DCLogic {
-  state = { step: null, voice: null, pen: null, scheme: 'auto', lang: 'en-GB', big: false, city: 0, ntp: true, clock: '24', layout: 'de',
+  state = { step: null, voice: null, pen: null, scheme: 'auto', lang: 'en-GB', big: false, city: 0, ntp: true, clock: '24', uis: 100, layout: 'de',
     osk: true, net: 'Fernweh', joined: null, showPw: false, admin: true, auto: false, packs: ['reading', 'notes', 'containers'] };
 
   componentDidMount() {
@@ -248,6 +249,12 @@ class Component extends DCLogic {
     const cities = CITIES.map(([name, tz, time], i) => ({ name, tz, time: s.clock === '12' ? (i ? '9:51 am' : '2:51 pm') : time, on: () => u({ city: i }), ...sel(s.city === i) }));
     const loc = { tz: CITIES[s.city][1].split(' · ')[0], fmt: s.city ? '10/31/2026 · 1,234.56' : '31.10.2026 · 1.234,56' };
     const clocks = [['24', '24-hour'], ['12', '12-hour']].map(([id, label]) => ({ label, on: () => u({ clock: id }), ...seg(s.clock === id) }));
+    // the Look step's Interface size (shell spec 012 FR-016): the four steps of the display the
+    // setup is on, applied at once; the sub line as in Settings (a 22 px row text, a 48 px button,
+    // a design px 0.224 mm at Default)
+    const uisizes = [['Smaller', 80], ['Small', 90], ['Default', 100], ['Large', 120]].map(([label, pc]) => ({ label, on: () => u({ uis: pc }), ...seg(s.uis === pc) }));
+    const uiMm = px => (px * 0.224 * s.uis / 100).toFixed(1);
+    const uiSub = 'Text ' + uiMm(16) + ' mm · buttons ' + uiMm(48) + ' mm';
 
     const LAY = [['en-gb', 'English (UK)', 'gb'], ['en-us', 'English (US)', 'us'], ['de', 'German', 'de'], ['de-nd', 'German, no dead keys', 'de nodeadkeys'], ['fr', 'French (AZERTY)', 'fr'], ['no', 'Norwegian', 'no']];
     const layouts = LAY.map(([id, name, code]) => ({ name, code, on: () => u({ layout: id }), vis: s.layout === id ? 'visible' : 'hidden', ...sel(s.layout === id) }));
@@ -326,7 +333,7 @@ class Component extends DCLogic {
 
     return { ilKey: e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } },  ilv: this.ilVars(voice, scheme, pen), k, hdr, pg, foot, chips,
       is: Object.fromEntries(all.map(id => [id, id === step])),
-      langs, voices, cities, loc, clocks, layouts, kb, nets, pw, fields, pwRules, packs, review, inst, done,
+      langs, voices, cities, loc, clocks, uisizes, uiSub, layouts, kb, nets, pw, fields, pwRules, packs, review, inst, done,
       tg: { big: tog('big'), ntp: tog('ntp'), osk: tog('osk'), admin: tog('admin'), auto: tog('auto') } };
   }
 

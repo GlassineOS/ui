@@ -81,7 +81,6 @@
 <div class="pl-pop-search is-typed" role="searchbox" aria-label="Search the planner"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.search }}"></path></svg><span>{{ info.q }}<span class="caret"></span></span></div>
 <div class="pl-pop-k">{{ info.found }}</div>
 <div class="pl-pop-res"><sc-for list="{{ info.results }}" as="rs" hint-placeholder-count="3"><a class="pl-hl-i" href="#"><span class="pl-ink"><sc-for list="{{ rs.words }}" as="w" hint-placeholder-count="3"><span class="{{ w.cls }}" style="{{ w.st }}">{{ w.t }}</span></sc-for></span><span class="when">{{ rs.when }}</span></a></sc-for></div>
-<sc-if value="{{ info.nothing }}" hint-placeholder-val="{{ false }}"><div class="pl-pop-none">{{ info.nothingText }}</div></sc-if>
 </sc-if>
 <sc-if value="{{ info.isMenu }}" hint-placeholder-val="{{ false }}">
 <sc-for list="{{ info.items }}" as="mi" hint-placeholder-count="5"><a class="{{ mi.cls }}" href="#" role="menuitem"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ mi.icon }}"></path></svg><span class="tx">{{ mi.t }}<small>{{ mi.sub }}</small></span><sc-if value="{{ mi.tog }}" hint-placeholder-val="{{ false }}"><span class="{{ mi.togCls }}"></span></sc-if><span class="end">{{ mi.end }}</span></a></sc-for>
@@ -533,8 +532,7 @@ class Component extends DCLogic {
     }[query] || { q: '', rows: [] };
     const n = R.rows.length;
     return { isInfo: false, isResults: true, q: R.q, found: R.more ? 'More than 8 found' : n ? n + ' found' : 'Nothing found',
-      results: R.rows.map(([t, when], i) => ({ words: PL.ink(t, { fs: 18, salt: 'q' + i }), when })), nothing: !n,
-      nothingText: 'Nothing written in the planner reads “' + R.q + '”.' };
+      results: R.rows.map(([t, when], i) => ({ words: PL.ink(t, { fs: 18, salt: 'q' + i }), when })) };
   }
 
   /* the whole entry over its place: a cut title over its block, an entry opened from the hidden list a third down the page */

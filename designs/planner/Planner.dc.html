@@ -131,7 +131,7 @@
 </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "orient": {"editor": "enum", "options": ["portrait", "landscape"], "default": "portrait"}, "screen": {"editor": "enum", "options": ["view", "refused", "sheet", "picker", "year", "editor"], "default": "view"}, "tmpl": {"editor": "enum", "options": ["day-lists", "day-diary", "day-agenda", "week-columns", "week-spread", "week-lists", "month-grid", "month-goals"], "default": "day-lists"}, "hint": {"editor": "enum", "options": ["count", "none"], "default": "count"}, "search": {"editor": "enum", "options": ["none", "bar", "popup"], "default": "none"}, "overlay": {"editor": "enum", "options": ["none", "info", "cog", "hidden", "settings", "add", "used"], "default": "none"}, "dev": {"editor": "boolean", "default": false}, "ink": {"editor": "enum", "options": ["raw", "neat", "font"], "default": "raw"}, "write": {"editor": "enum", "options": ["none", "writing", "settled"], "default": "none"}, "text": {"editor": "enum", "options": ["none", "field", "back", "view"], "default": "none"}, "leave": {"editor": "enum", "options": ["done", "outside"], "default": "done"}, "drag": {"editor": "enum", "options": ["none", "draw", "drawn", "titled", "grab", "moved", "resize", "released"], "default": "none"}, "title": {"editor": "enum", "options": ["grow", "clip"], "default": "grow"}, "longTitle": {"editor": "boolean", "default": false}, "edit": {"editor": "enum", "options": ["select", "weight", "short", "land"], "default": "select"}, "refuse": {"editor": "enum", "options": ["missing", "off"], "default": "missing"}, "refresh": {"editor": "boolean", "default": false}, "widget": {"editor": "enum", "options": ["agenda", "todo", "notes", "habits", "minimonth", "weekov", "priorities"], "default": "todo"}, "fill": {"editor": "enum", "options": ["empty", "full", "more"], "default": "full"}, "$preview": {"width": 760, "height": 1008}}'>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "orient": {"editor": "enum", "options": ["portrait", "landscape"], "default": "portrait"}, "screen": {"editor": "enum", "options": ["view", "refused", "sheet", "picker", "year", "editor"], "default": "view"}, "tmpl": {"editor": "enum", "options": ["day-lists", "day-diary", "day-agenda", "week-columns", "week-spread", "week-lists", "month-grid", "month-goals"], "default": "day-lists"}, "hint": {"editor": "enum", "options": ["count", "none"], "default": "count"}, "search": {"editor": "enum", "options": ["none", "bar", "popup"], "default": "none"}, "overlay": {"editor": "enum", "options": ["none", "info", "cog", "hidden", "settings", "add", "used"], "default": "none"}, "dev": {"editor": "boolean", "default": false}, "ink": {"editor": "enum", "options": ["raw", "neat", "font"], "default": "raw"}, "write": {"editor": "enum", "options": ["none", "writing", "settled"], "default": "none"}, "text": {"editor": "enum", "options": ["none", "field", "back", "view"], "default": "none"}, "leave": {"editor": "enum", "options": ["done", "outside"], "default": "done"}, "drag": {"editor": "enum", "options": ["none", "draw", "drawn", "titled", "grab", "moved", "resize", "released"], "default": "none"}, "title": {"editor": "enum", "options": ["grow", "shrink", "cut"], "default": "grow"}, "longTitle": {"editor": "boolean", "default": false}, "edit": {"editor": "enum", "options": ["select", "weight", "short", "land"], "default": "select"}, "refuse": {"editor": "enum", "options": ["missing", "off"], "default": "missing"}, "refresh": {"editor": "boolean", "default": false}, "widget": {"editor": "enum", "options": ["agenda", "todo", "notes", "habits", "minimonth", "weekov", "priorities"], "default": "todo"}, "fill": {"editor": "enum", "options": ["empty", "full", "more"], "default": "full"}, "$preview": {"width": 760, "height": 1008}}'>
 class Component extends DCLogic {
   renderVals() {
     const p = this.props, PL = window.PLANNER;
@@ -273,12 +273,22 @@ class Component extends DCLogic {
       const now = 14 + 20 / 60; // 14:20
       out.nowY = g.today && now > g.from && now < g.from + g.hrs.length - 1 ? Math.round(g.top + (now - g.from) * g.pitch) : 0;
       out.blocks = g.blocks.map(b => ({ ...b, extra: '' }));
-      if (p.title === 'clip' || p.title === 'grow') {
+      // a long title: written, its field grows into the free time below; when that space is taken
+      // later, the ink shrinks evenly to fit, down to the smallest readable size, and below that it
+      // is cut at the block's edge (no ellipsis; a tap shows the whole title)
+      if (p.title === 'grow' || p.title === 'shrink' || p.title === 'cut') {
         const b = out.blocks.find(x => x.id === 'e4');
         if (b && p.longTitle) {
-          b.words = window.PLANNER.ink('pick up the parcel at the post office', { fs: 19, salt: 'e4' });
-          if (p.title === 'grow') { b.h = Math.max(b.h, 56); b.cls += ' is-grown'; b.extra = 'box-shadow:inset 0 0 0 1.5px var(--ink);border-bottom:2px dotted var(--ink);flex-wrap:wrap;align-content:flex-start'; }
-          else { b.extra = 'white-space:nowrap'; b.words = b.words.slice(0, 4).concat([{ t: '…', st: 'font-size:15px;color:var(--ink-soft)', cls: 'pl-w' }]); }
+          const PL = window.PLANNER, t = 'pick up the parcel at the post office and the keys from the neighbours';
+          const tc = t + ' and the bike from the repair shop on the way back home before the shops close';
+          const fs = { grow: 19, shrink: 13, cut: 11 }[p.title];
+          b.words = PL.ink(p.title === 'cut' ? tc : t, { fs, salt: 'e4' });
+          if (p.title === 'grow') { b.h = Math.max(b.h, 64); b.cls += ' is-grown'; b.extra = 'box-shadow:inset 0 0 0 1.5px var(--ink);border-bottom:2px dotted var(--ink);flex-wrap:wrap;align-content:flex-start'; }
+          else {
+            b.extra = 'white-space:nowrap;align-items:center;padding-top:0';
+            const step = b.h + 2; // 30 minutes; the next event takes the free time below
+            out.blocks.push({ id: 'e4next', y: b.y + step, h: 2 * step - 2, cls: 'pl-ev', when: '18:00–19:00', extra: '', words: PL.ink('dinner', { fs: 19, salt: 'e4next' }) });
+          }
         }
       }
     }

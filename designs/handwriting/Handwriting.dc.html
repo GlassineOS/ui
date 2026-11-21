@@ -556,7 +556,7 @@ class Component extends DCLogic {
     // neatening as rows below it; Learn is the reader's learning with Samples and Coverage beneath
     // it. A guest's session has Write and Contribute only, their own samples a row in Contribute
     // (handwriting spec 002 FR-018).
-    const TABS = [['write', 'Write', 'edit'], ['font', 'Your font', 'font_download'], ['learn', 'Learn', 'school'], ['donate', 'Contribute', 'volunteer_activism']];
+    const TABS = [['write', 'Write', 'edit'], ['font', 'Autograph', 'font_download'], ['learn', 'Learn', 'school'], ['donate', 'Contribute', 'volunteer_activism']];
     const tabOf = G && screen.startsWith('best') ? 'write' : G && screen.startsWith('sample') ? 'donate' : screen.startsWith('write') ? 'write' : screen.startsWith('best') ? 'font' : screen.startsWith('learn') || screen.startsWith('sample') || screen === 'coverage' ? 'learn' : screen.startsWith('donate') ? 'donate' : screen;
     const FIRST = { write: 'write', font: 'best-font-installed', learn: 'learn-waiting', donate: donating ? 'donate-on' : 'donate-off' };
     const tabs = TABS.filter(([id]) => !G || id === 'write' || id === 'donate').map(([id, label, icon]) => { const on = id === tabOf, x = on ? k.segOn : { bg: 'transparent', fg: ink, sh: 'none' };

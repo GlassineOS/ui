@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Search results in the (i)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div data-spec-id="info.results" style="width:824px;height:1352px;box-sizing:border-box;padding:28px 32px;display:flex;flex-direction:column;gap:18px;background:#e6e6e6;color:#1b1b1b;font-family:'IBM Plex Sans',sans-serif">
+<div style="display:flex;flex-direction:column;gap:6px">
+<span style="font:500 13px/1.2 'IBM Plex Mono',monospace;color:#3d3d3d">info.results</span>
+<h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">Search results in the (i)</h1>
+<p style="margin:0;max-width:760px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">Search sits at the top of the (i) popover (answer B of info.search). Typing reads every entry of the planner and lists what matches as the keyboard is up: how many were found, then a row per entry in its own ink, cut to one row, with its period on the right (a day, a week number, a month). At most eight rows; past that the count says more than eight, and a longer word narrows them. A tap on a row closes search and opens that entry’s period. With nothing found the count says so and the field stays as typed.</p>
+</div>
+<dc-import name="ThemeBar" voice="{{ voice }}" on-pick="{{ pick }}" hint-size="100%,112px"></dc-import>
+<dc-import name="Planner" voice="{{ voice }}" orient="portrait" tmpl="day-lists" search="popup" overlay="results" query="{{ query }}" hint-size="760px,1008px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "query": {"editor": "enum", "options": ["found", "more", "nothing"], "default": "found"}, "$preview": {"width": 824, "height": 1352}, "$states": [{"id": "found", "name": "Three found", "props": {"query": "found"}}, {"id": "more", "name": "More than eight", "props": {"query": "more"}}, {"id": "nothing", "name": "Nothing found", "props": {"query": "nothing"}}]}'>
+class Component extends DCLogic {
+  state = {};
+  renderVals() {
+    const s = this.state, p = this.props;
+    return { voice: s.voice ?? p.voice ?? 'white', pick: (k, v) => this.setState({ [k]: v }), query: p.query ?? "found" };
+  }
+}
+</script>
+</body>
+</html>

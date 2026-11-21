@@ -210,7 +210,7 @@ class Component extends DCLogic {
     if (info.on) Object.assign(info, this.infoPop(p, t, kind, hidden, pg));
     const sheetOv = { on: overlay === 'hidden' || overlay === 'add' || overlay === 'settings' || overlay === 'wset' || overlay === 'slot' };
     if (overlay === 'slot') Object.assign(sheetOv, { isSlot: true, h: Math.round(pageH * 0.62), title: 'Slot for these notes', lead: 'Notes are kept per slot. Every template that names a slot shows the same entries; a slot no widget shows keeps its entries, named in the (i).',
-      slots: [{ t: 'notes', sub: 'Agenda and lists, Lists and notes · 12 days hold entries', end: '✓' }, { t: 'morning', sub: 'Diary · 9 days hold entries', end: '' }, { t: 'evening', sub: 'Diary · 7 days hold entries', end: '' }],
+      slots: [{ t: 'notes', sub: '12 days hold entries', end: '✓' }, { t: 'morning', sub: '9 days hold entries', end: '' }, { t: 'evening', sub: '1 day holds entries', end: '' }],
       nameInk: PL.ink('gratitude', { fs: 21, salt: 'slot' }) });
     if (overlay === 'wset') Object.assign(sheetOv, this.widgetSheet(pageH));
     if (overlay === 'hidden') Object.assign(sheetOv, this.hiddenSheet(hidden, kind, pageH));

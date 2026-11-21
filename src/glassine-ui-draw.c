@@ -403,8 +403,47 @@ double ui_text(UiGc *g, const UiFont *f, const char *s, double x, double y, int 
     return w;
 }
 
+/* Pango spaces the lines of a layout on a scaled cairo context by the line-spacing factor
+ * times the line's height in device pixels, not in the context's units: at scale 2 a factor
+ * of 1.45 put the next line 2.9 lines down (an empty line in a wrapped paragraph). The
+ * spacing of two lines is measured once per font, factor and scale, and pango is given
+ * the factor that spaces them as at scale 1 (the same factor where pango does) */
+static double lh_at(UiGc *g, const UiFont *f, double lh)
+{
+    static struct { double xx, yy, px, lh, out; int weight, italic, smallcaps; char family[64]; } memo[32];
+    static int nmemo, next;
+    cairo_matrix_t m;
+    cairo_get_matrix(g->cr, &m);
+    const char *fam = f->family ? f->family : "";
+    double px = ui_text_px(f);
+    for (int i = 0; i < nmemo; i++)
+        if (memo[i].xx == m.xx && memo[i].yy == m.yy && memo[i].px == px && memo[i].lh == lh && memo[i].weight == f->weight
+            && memo[i].italic == f->italic && memo[i].smallcaps == f->smallcaps && !strcmp(memo[i].family, fam))
+            return memo[i].out;
+    PangoLayout *l = layout(g, f, "Ag\nAg", 0);
+    PangoLayoutIter *it = pango_layout_get_iter(l);
+    PangoRectangle a, b;
+    pango_layout_iter_get_line_extents(it, NULL, &a);
+    int two = pango_layout_iter_next_line(it);
+    pango_layout_iter_free(it);
+    pango_layout_set_line_spacing(l, lh);
+    it = pango_layout_get_iter(l);
+    pango_layout_iter_next_line(it);
+    pango_layout_iter_get_line_extents(it, NULL, &b);
+    pango_layout_iter_free(it);
+    g_object_unref(l);
+    double step = b.y / (double)PANGO_SCALE, want = lh * a.height / (double)PANGO_SCALE, out = lh;
+    if (two && step > 0 && want > 0 && fabs(step / want - 1) > 0.02) out = lh * want / step;
+    int i = nmemo < 32 ? nmemo++ : next++ % 32;
+    memo[i].xx = m.xx, memo[i].yy = m.yy, memo[i].px = px, memo[i].lh = lh, memo[i].out = out;
+    memo[i].weight = f->weight, memo[i].italic = f->italic, memo[i].smallcaps = f->smallcaps;
+    snprintf(memo[i].family, sizeof memo[i].family, "%s", fam);
+    return out;
+}
+
 double ui_text_wrap(UiGc *g, const UiFont *f, const char *s, double x, double y, double w, int maxlines, double lh, ui_col c)
 {
+    if (lh > 0) lh = lh_at(g, f, lh);
     PangoLayout *l = layout(g, f, s, 0);
     pango_layout_set_width(l, (int)(w * PANGO_SCALE));
     pango_layout_set_wrap(l, PANGO_WRAP_WORD_CHAR);

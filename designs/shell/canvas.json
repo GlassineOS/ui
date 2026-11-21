@@ -617,6 +617,15 @@
    "x": 3612,
    "y": 0
   },
+  "settings.appearance.screen-size.dc.html": {
+   "h": 1540,
+   "is_interactive": true,
+   "page": "settings",
+   "title": "settings.appearance.screen-size · Appearance › Screen size",
+   "w": 1124,
+   "x": 3612,
+   "y": 8300
+  },
   "settings.apps.dc.html": {
    "h": 1540,
    "is_interactive": true,
@@ -1116,6 +1125,7 @@
   "settings.keyboard.words.dc.html",
   "settings.keyboard.languages.dc.html",
   "settings.keyboard.layout-dictionary.dc.html",
+  "settings.appearance.screen-size.dc.html",
   "settings.apps.dc.html",
   "settings.app.dc.html",
   "settings.app.eink.dc.html",

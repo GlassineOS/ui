@@ -55,7 +55,11 @@ class Py:
 
     def state(self, mm, t, body, row, px):
         Z.set_metrics(mm, t, body, row)
-        r = Z.metrics() + (Z.text_px(px), Z.text_px(px), Z.grow(40, px, 2, 1.5), Z.min_tap())
+        f = "italic 500 %rpx/1.5 'Sans',sans-serif" % px      # a font as Python programs hold it
+        ok(Z.font_px(f) == px and Z.text_px(f) == Z.text_px(px) and Z.grow(40, f, 2) == Z.grow(40, px, 2, 1.5)
+           and Z.grow(40, "500 %rpx 'Sans'" % px, 2) == Z.grow(40, px, 2, 1) and Z.grow(40, "%rpx/%rpx 'Sans'" % (px, 2 * px)) == Z.grow(40, px, 1, 2),
+           "python: a CSS font shorthand in place of a size: its px, its line height")
+        r = Z.metrics() + (Z.text_px(px), Z.text_px(f), Z.grow(40, f, 2), Z.min_tap())
         Z.set_metrics()
         return r
 
@@ -405,7 +409,7 @@ def minimums(im, st, sizes, V, out):
                         if not (g * mm >= least - 1e-9):
                             ok(False, "%s: %s %s at %d %%, %g px/mm, text %d %%: %.3f mm, under %.1f" % (n, v, name, step, d, t * 100, g * mm, least))
                         if free * mm >= least:
-                            if g != free:
+                            if not near(g, free):
                                 ok(False, "%s: %s %s at %d %%, %g px/mm: over its minimum, yet changed" % (n, v, name, step, d))
                         else:
                             if not near(g * mm, least):

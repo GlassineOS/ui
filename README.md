@@ -425,7 +425,7 @@ Making them agree changes the pixels of the programs that use them, so it is a s
 The design pixel has a length, so a control is as large on one display as on another, and a person
 picks how large the interface is on each display (GlassineOS/shell spec 012, on the density of its
 spec 011). This repository has the arithmetic, the files' readers and writers and the drawing side,
-once in C and once in Python, for every program that draws with it. Additions to the C and the
+once in C and once in Python, for every program that draws with it. It is part of the C and the
 Python API of version 1.
 
 | | C (`glassine-ui.h`) | Python (`glassine_ui.size`) |
@@ -501,11 +501,13 @@ design pixels at `mm_per_px`, after both the interface size and the text size.
   letter spacing; in Python `paint.font` answers with it, so `text`, `measure` and `layout` do the
   same and a CSS line height stays a factor of the drawn size. A program's calls stay as they are.
 - For layouts: `ui_text_px(font)` (`f->px` itself when nothing applies), `ui_grown_px(px)`,
-  `ui_text_px_at(px, text_factor, body_px, row_px, mm_per_px)` (no state); `size.text_px(px)`,
-  `size.text_px_at(...)`. Never put the result back into a font: it would grow twice.
+  `ui_text_px_at(px, text_factor, body_px, row_px, mm_per_px)` (no state); `size.text_px(font)`,
+  `size.text_px_at(...)`, `size.font_px(font)` (the design size). In Python a font is a size in
+  design pixels or a CSS font shorthand of the voice data. Never put the result back into a font: it
+  would grow twice.
 - A box that holds text: `ui_grow(h, font, lines, lh)` = h + lines × lh × (drawn size − design size),
-  `lh` the line height as a factor of the font size (`size.grow(h, px, lines, lh)`). Spacing and
-  icons keep their size.
+  `lh` the line height as a factor of the font size (`size.grow(h, font, lines, lh)`; without `lh`,
+  the shorthand's own line height, else 1). Spacing and icons keep their size.
 - A control that takes a tap: `ui_min_tap()` (`size.min_tap()`), 7 mm in design pixels; 0 while
   `mm_per_px` is unknown.
 - The voices' sizes: `UiVoice.bodyPx` (Interleaf's body style of the voice: 17, 18.5, 20), `rowPx`
@@ -527,7 +529,7 @@ device pixel edge, and every border, ring, shadow offset and rule is a whole num
 never under one; `ui_hatch`'s lines are at least one device pixel thick; icons are drawn at the
 device resolution on whole device pixels. At a whole scale, and under a matrix that turns or shears,
 every call draws the values as given, so a keyline of 1.5 design pixels at a scale of 1 or 3 is
-antialiased as before.
+antialiased.
 
 A program that is given only a whole scale N for an output of factor F (a GTK 3 program) scales its
 context by F / N; the target's device scale N counts, so its shapes land on the output's device

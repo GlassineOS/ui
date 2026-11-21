@@ -105,7 +105,7 @@ int main(int argc, char **argv)
     OK(ui_text_px(&v->nameFont) == 25.5f && ui_text_px(&v->lbl) == 15.75f && fabs(wt1 / wt0 - 1.5) < .04 && fabs(ht1 / ht0 - 1.5) < .04,
        "text at 150 %: the body size drawn half as large again, measured so");
     UiFont head = ui_font_px(&v->nameFont, 34);
-    OK(ui_text_px(&head) == 42.5f && ui_grow(44, &v->nameFont, 1, 1.3) == 44 + 1.3 * 8.5 &&
+    OK(ui_text_px(&head) == 42.5f && fabs(ui_grow(44, &v->nameFont, 1, 1.3) - (44 + 1.3 * 8.5)) < 1e-9 &&
        ui_text_wrap(&lay, &v->nameFont, para, 0, 0, 120, 2, 0, v->ink) > 1.4 * h2, "a heading twice the body grows by half of it; a box grows with its text; wrapped text too");
     ui_metrics_voice(v, 0.1792, 1.0);
     OK(fabs(ui_text_px(&v->lbl) - 2.0 / 0.1792) < 1e-4 && ui_text_px(&v->nameFont) == 17, "Smaller: a 10.5 px label drawn at 2.0 mm, the body as it is");

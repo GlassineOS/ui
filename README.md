@@ -800,7 +800,7 @@ tools/previews [--update] [--component NAME]... [--width desktop|phone]... [--co
   case ever turns out unstable, fix the cause (an animation, a timer, a font) rather than widening
   the threshold.
 - **Chromium is part of the contract.** References are valid for one Chromium build: the version in
-  `tools/chromium.pin`, Alpine 3.24's package (`chromium=156.0.8078.79-r0`), installed by
+  `tools/chromium.pin`, Alpine 3.24's package (`chromium=158.0.8127.36-r0`), installed by
   `tools/in-alpine` and by CI. A run with another version reports `chromiumMismatch` and fails, even
   when the pixels agree. Alpine updates Chromium in 3.24 every few weeks and drops the old package;
   then `tools/in-alpine` and CI fail to install the pin. Bumping it: set the new version in

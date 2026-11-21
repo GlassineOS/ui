@@ -42,7 +42,7 @@ data = json.load(open(os.path.join(ROOT, "voices", "voices.json")))
 ok(data["contract"] == 1, "voice data contract 1")
 ok(list(data["voices"]) == list(gen.ORDER), "voices in order: " + ", ".join(gen.ORDER))
 for name, v in data["voices"].items():
-    ok(set(v) == {"title", "scheme", "shell", "c", "card", "setup", "inline", "apps"}, name + ": sections")
+    ok(set(v) == {"title", "scheme", "type", "shell", "c", "card", "setup", "inline", "apps"}, name + ": sections")
     try:
         gen.c_voice(name, v)
         ok(True, name + ": the C table reads every shell value it needs")
@@ -63,6 +63,13 @@ def refused(key, value):
         return True
 
 
+# the text sizes of the interface size: the body from "type", the row label and the secondary
+# text the smaller of the settings card's and the setup's
+sizes = {n: gen.c_voice(n, v) for n, v in data["voices"].items()}
+ok([(sizes[n]["bodyPx"], sizes[n]["rowPx"], sizes[n]["subPx"]) for n in gen.ORDER] == [(17, 16, 13.5), (18.5, 17.5, 14.5), (20, 19, 16)],
+   "the C table's bodyPx, rowPx, subPx")
+ok(data["voices"]["stationery"]["card"]["row"].startswith("400 19.5px") and data["voices"]["stationery"]["setup"]["row"].startswith("400 19px"),
+   "Stationery's row label: the setup's 19 px, the smaller of the two")
 ok(refused("barShadow", "0 2px 0 #111111, 0 4px 0 #888888"), "barShadow: a second shadow is refused")
 ok(refused("barShadow", "2px 2px 0 #111111") and refused("barShadow", "0 2px 0 1px #111111")
    and refused("barShadow", "inset 0 2px 0 #111111"), "barShadow: an x offset, a spread, inset are refused")

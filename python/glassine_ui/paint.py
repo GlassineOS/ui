@@ -10,6 +10,14 @@ values are exact recipes:
   icon(...)                                          an icon-theme icon in one colour
 Units are logical px (the caller scales cairo to the panel). Nothing animates or
 redraws by itself: each call draws once.
+
+Text is drawn at the size glassine_ui.size gives its font (the text size and the
+minimums: size.set_metrics); font() answers with that size. At a fractional scale
+(an interface factor of 1.6, 1.8, 2.4) box, rule and fill put their edges on whole
+device pixels, with borders, shadows and rules a whole number of device pixels
+thick and never under one, and icon draws at the device resolution; at a whole scale
+they draw the values as given. dev_scale, snap_x, snap_y and snap_len do the same
+for a program's own shapes.
 """
 # SPDX-License-Identifier: GPL-2.0-or-later
 import math
@@ -21,6 +29,8 @@ gi.require_version("Pango", "1.0")
 gi.require_version("PangoCairo", "1.0")
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Pango, PangoCairo  # noqa: E402
+
+from . import size as _size  # noqa: E402
 
 # ---- values ---------------------------------------------------------------------
 
@@ -100,11 +110,14 @@ _FONT = re.compile(r"^(?:(italic)\s+)?(?:(\d{3})\s+)?([\d.]+)px(?:/([\d.]+(?:px)
 _fonts = {}
 
 
-def font(s, weight=None):
+def font(s, weight=None, grow=True):
     """CSS font shorthand ("italic 500 22px/1.1 'EB Garamond',serif") ->
     (Pango.FontDescription, line-height factor or None). Anything else raises
-    ValueError, as tools/gen-voices does for the same input."""
-    key = (s, weight)
+    ValueError, as tools/gen-voices does for the same input. The description has the
+    size the style is drawn at (glassine_ui.size.text_px: the text size and the
+    minimums); grow=False gives the design's size. The line height stays a factor of
+    the font size, so a line box grows with its text."""
+    key = (s, weight, grow and _size.metrics())
     if key in _fonts:
         return _fonts[key]
     m = _FONT.match(s.strip()) if isinstance(s, str) else None
@@ -114,7 +127,7 @@ def font(s, weight=None):
     fam = fam.split(",")[0].strip().strip("'\"")
     d = Pango.FontDescription()
     d.set_family(fam)
-    d.set_absolute_size(float(size) * Pango.SCALE)
+    d.set_absolute_size((_size.text_px(float(size)) if grow else float(size)) * Pango.SCALE)
     d.set_weight(int(weight or w or 400))
     if italic:
         d.set_style(Pango.Style.ITALIC)
@@ -125,6 +138,67 @@ def font(s, weight=None):
 
 
 # ---- shapes -----------------------------------------------------------------------
+
+
+def _snap(cr, frac=False):
+    """(s, tx, ty): device px = logical x s + t, for a context that only scales (the same
+    both ways) and moves; s includes the target's device scale. None otherwise, and
+    with frac at a whole scale (which draws the values as given)"""
+    m = cr.get_matrix()
+    dx, dy = cr.get_target().get_device_scale()
+    if m.xy or m.yx or m.xx <= 0 or m.xx != m.yy or dx != dy or dx <= 0:
+        return None
+    s = m.xx * dx
+    if frac and abs(s - math.floor(s + 0.5)) <= 1e-6:
+        return None
+    return s, m.x0 * dx, m.y0 * dy
+
+
+def _sx(n, x):
+    return (math.floor(x * n[0] + n[1] + 0.5) - n[1]) / n[0]
+
+
+def _sy(n, y):
+    return (math.floor(y * n[0] + n[2] + 0.5) - n[2]) / n[0]
+
+
+def _slen(n, v):
+    if v == 0:
+        return 0.0
+    return math.copysign(max(1.0, math.floor(abs(v) * n[0] + 0.5)) / n[0], v)
+
+
+def _srect(n, x, y, w, h):
+    """a rect's edges on device pixel edges; a side that had a length keeps one pixel"""
+    x0, x1, y0, y1 = _sx(n, x), _sx(n, x + w), _sy(n, y), _sy(n, y + h)
+    if w > 0 and x1 - x0 < 0.5 / n[0]:
+        x1 = x0 + 1 / n[0]
+    if h > 0 and y1 - y0 < 0.5 / n[0]:
+        y1 = y0 + 1 / n[0]
+    return x0, y0, x1 - x0, y1 - y0
+
+
+def dev_scale(cr):
+    """device px per logical px (x): the context's matrix times its target's device scale"""
+    return math.hypot(*cr.user_to_device_distance(1, 0)) * cr.get_target().get_device_scale()[0]
+
+
+def snap_x(cr, x):
+    """the nearest x on a device pixel edge"""
+    n = _snap(cr)
+    return _sx(n, x) if n else x
+
+
+def snap_y(cr, y):
+    n = _snap(cr)
+    return _sy(n, y) if n else y
+
+
+def snap_len(cr, v):
+    """the nearest length that is a whole number of device pixels, at least one for a
+    length that is not 0 (its sign kept)"""
+    n = _snap(cr)
+    return _slen(n, v) if n else v
 
 
 def rrect(cr, x, y, w, h, r):
@@ -154,8 +228,13 @@ def box(cr, x, y, w, h, radius="0", bg=None, shadow=None, bd=None):
     for w <= 0 or h <= 0, as in C. The caller's line width, cap and dash stay."""
     if w <= 0 or h <= 0:
         return
+    n = _snap(cr, frac=True)
+    if n:
+        x, y, w, h = _srect(n, x, y, w, h)
     r = radii(radius, w, h) if not isinstance(radius, list) else radius
     sh = shadows(shadow)
+    if n:                                             # offsets and spreads in whole device pixels
+        sh = [(i, _slen(n, dx), _slen(n, dy), _slen(n, sp), col) for i, dx, dy, sp, col in sh]
     for inset, dx, dy, sp, col in reversed(sh):          # outer: below, last first
         if inset or not col:
             continue
@@ -184,8 +263,10 @@ def box(cr, x, y, w, h, radius="0", bg=None, shadow=None, bd=None):
         bw, style, col = b
         cr.save()                                         # the caller's line state stays
         cr.set_source_rgba(*col)
+        if n:
+            bw = _slen(n, bw)
         if style == "double":
-            t = max(1.0, round(bw / 3))
+            t = _slen(n, bw / 3) if n else max(1.0, round(bw / 3))
             for inset in (0, bw - t):
                 cr.set_line_width(t)
                 rrect(cr, x + inset + t / 2, y + inset + t / 2, w - 2 * inset - t, h - 2 * inset - t, _grow(r, -inset - t / 2))
@@ -217,8 +298,13 @@ def rule(cr, x, y, w, bd):
         return
     bw, style, col = b
     cr.set_source_rgba(*col)
+    n = _snap(cr, frac=True)
+    if n:                                             # whole device pixels thick, on pixel edges
+        x1 = _sx(n, x + w)
+        x, y, bw = _sx(n, x), _sy(n, y), _slen(n, bw)
+        w = max(x1 - x, 1 / n[0]) if w > 0 else w
     if style == "double":
-        t = max(1.0, round(bw / 3))
+        t = _slen(n, bw / 3) if n else max(1.0, round(bw / 3))
         cr.rectangle(x, y - bw, w, t)
         cr.rectangle(x, y - t, w, t)
         cr.fill()
@@ -239,6 +325,9 @@ def rule(cr, x, y, w, bd):
 def fill(cr, x, y, w, h, col):
     c = color(col) if isinstance(col, str) else col
     if c:
+        n = _snap(cr, frac=True)
+        if n:
+            x, y, w, h = _srect(n, x, y, w, h)
         cr.set_source_rgba(*c)
         cr.rectangle(x, y, w, h)
         cr.fill()
@@ -626,6 +715,20 @@ def icon(cr, name, sz, cx, cy, col, scale=2):
             return True
         sz, name = sz * 0.6, ("check" if name == "check_circle" else name)
     sz = round(sz * ISCALE.get(name, .86))
+    n = _snap(cr, frac=True)
+    if n:                                             # at the device resolution, on whole device pixels
+        ds = cr.get_target().get_device_scale()[0]
+        s = _icon_surface(name, max(1, int(math.floor(sz * n[0] + 0.5))) / ds, ds)
+        if not s:
+            return False
+        if c:
+            cr.save()
+            dx, dy = cr.user_to_device(cx - sz / 2, cy - sz / 2)
+            cr.identity_matrix()
+            cr.set_source_rgba(*c)
+            cr.mask_surface(s, math.floor(dx * ds + 0.5) / ds, math.floor(dy * ds + 0.5) / ds)
+            cr.restore()
+        return True
     s = _icon_surface(name, sz, scale)
     if not s:
         return False

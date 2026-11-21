@@ -6,7 +6,8 @@
     gen-interleaf --check    exit 1 (and say which) when one is out of date
 
 Generated (do not edit by hand):
-    voices/voices.json       the "scheme" section of each voice (002 FR-002): White and
+    voices/voices.json       the "type" section of each voice (its body size) and
+                             the "scheme" section of each voice (002 FR-002): White and
                              Editorial from the theme "eink", Stationery from
                              "stationery-eink"; every other section is kept as it is
     web/tokens.css           the CSS custom properties of every theme and the pen
@@ -151,10 +152,25 @@ def scheme(tok, voice):
     return dict(sorted(out.items()))
 
 
+def type_sizes(tok, voice, title):
+    """the voice's "type" section: the size of its running text, the body style of the type
+    group called as the voice (GlassineOS/shell spec 012: the body size text grows against)"""
+    for g in tok.data["type"]["groups"]:
+        if g["name"] != title:
+            continue
+        for s in g["styles"]:
+            if s["name"] == "body" or s["name"].endswith("-body"):
+                if not re.fullmatch(r"[\d.]+px", s["fontSize"]):
+                    raise ValueError("type style %s: fontSize not in px: %r" % (s["name"], s["fontSize"]))
+                return {"body": s["fontSize"]}
+    raise ValueError("voice %s: no body style in a type group called %s" % (voice, title))
+
+
 def voices_json(tok, old):
     data = json.loads(old)
     for name, v in data["voices"].items():
         v["scheme"] = scheme(tok, name)
+        v["type"] = type_sizes(tok, name, v["title"])
     return json.dumps(data, indent=2, ensure_ascii=False) + "\n"
 
 

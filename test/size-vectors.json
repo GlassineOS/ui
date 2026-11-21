@@ -1,0 +1,975 @@
+{
+ "contract": 1,
+ "about": "Test vectors of the interface size (GlassineOS/shell spec 012; README \"Interface size\"). Numbers agree within 1e-9. The same file is read by the C and the Python tests here; another implementation of these rules can be tested against it.",
+ "unit": {
+  "mm_per_px": 0.224,
+  "steps": [
+   80,
+   90,
+   100,
+   120
+  ],
+  "fallback_density": 4.464285714285714,
+  "factor_snap": 0.03,
+  "text_mm_row": 2.8,
+  "text_mm_min": 2.0,
+  "tap_mm": 7.0
+ },
+ "step_ok": [
+  [
+   80,
+   true
+  ],
+  [
+   90,
+   true
+  ],
+  [
+   100,
+   true
+  ],
+  [
+   120,
+   true
+  ],
+  [
+   0,
+   false
+  ],
+  [
+   85,
+   false
+  ],
+  [
+   110,
+   false
+  ],
+  [
+   125,
+   false
+  ],
+  [
+   150,
+   false
+  ],
+  [
+   -80,
+   false
+  ]
+ ],
+ "text_size_ok": [
+  [
+   100,
+   true
+  ],
+  [
+   105,
+   true
+  ],
+  [
+   125,
+   true
+  ],
+  [
+   150,
+   true
+  ],
+  [
+   95,
+   false
+  ],
+  [
+   155,
+   false
+  ],
+  [
+   101,
+   false
+  ],
+  [
+   0,
+   false
+  ],
+  [
+   200,
+   false
+  ]
+ ],
+ "plausible": [
+  {
+   "why": "a tablet's panel",
+   "w_px": 1404,
+   "h_px": 1872,
+   "w_mm": 157,
+   "h_mm": 209,
+   "ok": true
+  },
+  {
+   "why": "a monitor",
+   "w_px": 1920,
+   "h_px": 1080,
+   "w_mm": 527,
+   "h_mm": 296,
+   "ok": true
+  },
+  {
+   "why": "a fine monitor",
+   "w_px": 3840,
+   "h_px": 2160,
+   "w_mm": 597,
+   "h_mm": 336,
+   "ok": true
+  },
+  {
+   "why": "no size",
+   "w_px": 1920,
+   "h_px": 1080,
+   "w_mm": 0,
+   "h_mm": 0,
+   "ok": false
+  },
+  {
+   "why": "no height",
+   "w_px": 1920,
+   "h_px": 1080,
+   "w_mm": 527,
+   "h_mm": 0,
+   "ok": false
+  },
+  {
+   "why": "a negative size",
+   "w_px": 1920,
+   "h_px": 1080,
+   "w_mm": -527,
+   "h_mm": -296,
+   "ok": false
+  },
+  {
+   "why": "no mode",
+   "w_px": 0,
+   "h_px": 0,
+   "w_mm": 527,
+   "h_mm": 296,
+   "ok": false
+  },
+  {
+   "why": "under 1 px per mm",
+   "w_px": 1920,
+   "h_px": 1080,
+   "w_mm": 5000,
+   "h_mm": 2800,
+   "ok": false
+  },
+  {
+   "why": "over 100 px per mm",
+   "w_px": 3840,
+   "h_px": 2160,
+   "w_mm": 30,
+   "h_mm": 17,
+   "ok": false
+  },
+  {
+   "why": "the width in range, the height over 100 px per mm",
+   "w_px": 1920,
+   "h_px": 1080,
+   "w_mm": 527,
+   "h_mm": 10,
+   "ok": false
+  },
+  {
+   "why": "exactly 1 px per mm",
+   "w_px": 1920,
+   "h_px": 1080,
+   "w_mm": 1920,
+   "h_mm": 1080,
+   "ok": true
+  },
+  {
+   "why": "exactly 100 px per mm",
+   "w_px": 2000,
+   "h_px": 1000,
+   "w_mm": 20,
+   "h_mm": 10,
+   "ok": true
+  },
+  {
+   "why": "16:9 in centimetres",
+   "w_px": 1920,
+   "h_px": 1080,
+   "w_mm": 16,
+   "h_mm": 9,
+   "ok": false
+  },
+  {
+   "why": "16:10 in centimetres",
+   "w_px": 1920,
+   "h_px": 1200,
+   "w_mm": 16,
+   "h_mm": 10,
+   "ok": false
+  },
+  {
+   "why": "16:9 in centimetres, as millimetres",
+   "w_px": 1920,
+   "h_px": 1080,
+   "w_mm": 160,
+   "h_mm": 90,
+   "ok": false
+  },
+  {
+   "why": "16:10 in centimetres, as millimetres",
+   "w_px": 1920,
+   "h_px": 1200,
+   "w_mm": 160,
+   "h_mm": 100,
+   "ok": false
+  },
+  {
+   "why": "9:16, turned",
+   "w_px": 1080,
+   "h_px": 1920,
+   "w_mm": 9,
+   "h_mm": 16,
+   "ok": false
+  },
+  {
+   "why": "10:16, turned",
+   "w_px": 1200,
+   "h_px": 1920,
+   "w_mm": 10,
+   "h_mm": 16,
+   "ok": false
+  },
+  {
+   "why": "90 x 160, turned",
+   "w_px": 1080,
+   "h_px": 1920,
+   "w_mm": 90,
+   "h_mm": 160,
+   "ok": false
+  },
+  {
+   "why": "100 x 160, turned",
+   "w_px": 1200,
+   "h_px": 1920,
+   "w_mm": 100,
+   "h_mm": 160,
+   "ok": false
+  },
+  {
+   "why": "a small display beside the refused ones",
+   "w_px": 1920,
+   "h_px": 1080,
+   "w_mm": 160,
+   "h_mm": 91,
+   "ok": true
+  }
+ ],
+ "density": [
+  {
+   "why": "reported",
+   "w_px": 1404,
+   "h_px": 1872,
+   "w_mm": 157,
+   "h_mm": 209,
+   "kept": 0,
+   "density": 8.94267515923567,
+   "source": "reported"
+  },
+  {
+   "why": "reported wins over kept",
+   "w_px": 1920,
+   "h_px": 1080,
+   "w_mm": 527,
+   "h_mm": 296,
+   "kept": 5.5,
+   "density": 3.643263757115749,
+   "source": "reported"
+  },
+  {
+   "why": "kept, no size reported",
+   "w_px": 1920,
+   "h_px": 1080,
+   "w_mm": 0,
+   "h_mm": 0,
+   "kept": 5.5,
+   "density": 5.5,
+   "source": "measured"
+  },
+  {
+   "why": "kept, the reported size refused",
+   "w_px": 1920,
+   "h_px": 1080,
+   "w_mm": 160,
+   "h_mm": 90,
+   "kept": 3.78,
+   "density": 3.78,
+   "source": "measured"
+  },
+  {
+   "why": "the fallback",
+   "w_px": 1920,
+   "h_px": 1080,
+   "w_mm": 0,
+   "h_mm": 0,
+   "kept": 0,
+   "density": 4.464285714285714,
+   "source": "fallback"
+  },
+  {
+   "why": "the fallback, the reported size refused",
+   "w_px": 1920,
+   "h_px": 1080,
+   "w_mm": 16,
+   "h_mm": 9,
+   "kept": 0,
+   "density": 4.464285714285714,
+   "source": "fallback"
+  },
+  {
+   "why": "a kept density under 1 does not count",
+   "w_px": 1920,
+   "h_px": 1080,
+   "w_mm": 0,
+   "h_mm": 0,
+   "kept": 0.5,
+   "density": 4.464285714285714,
+   "source": "fallback"
+  },
+  {
+   "why": "a kept density over 100 does not count",
+   "w_px": 1920,
+   "h_px": 1080,
+   "w_mm": 0,
+   "h_mm": 0,
+   "kept": 150,
+   "density": 4.464285714285714,
+   "source": "fallback"
+  }
+ ],
+ "factor": [
+  {
+   "why": "8.94 px/mm, Smaller",
+   "density": 8.94,
+   "percent": 80,
+   "factor": 1.602048
+  },
+  {
+   "why": "8.94, Small",
+   "density": 8.94,
+   "percent": 90,
+   "factor": 1.802304
+  },
+  {
+   "why": "8.94, Default: 2.00256 is 2",
+   "density": 8.94,
+   "percent": 100,
+   "factor": 2
+  },
+  {
+   "why": "8.94, Large",
+   "density": 8.94,
+   "percent": 120,
+   "factor": 2.403072
+  },
+  {
+   "why": "a tablet's panel of 8.943 px/mm, Default: 2.003232 is 2",
+   "density": 8.943,
+   "percent": 100,
+   "factor": 2
+  },
+  {
+   "why": "3.6 px/mm, Smaller",
+   "density": 3.6,
+   "percent": 80,
+   "factor": 0.64512
+  },
+  {
+   "why": "3.6, Small",
+   "density": 3.6,
+   "percent": 90,
+   "factor": 0.72576
+  },
+  {
+   "why": "3.6, Default",
+   "density": 3.6,
+   "percent": 100,
+   "factor": 0.8064
+  },
+  {
+   "why": "3.6, Large: 0.96768 is beyond 3 % of 1",
+   "density": 3.6,
+   "percent": 120,
+   "factor": 0.96768
+  },
+  {
+   "why": "13 px/mm, Smaller",
+   "density": 13,
+   "percent": 80,
+   "factor": 2.3296
+  },
+  {
+   "why": "13, Small",
+   "density": 13,
+   "percent": 90,
+   "factor": 2.6208
+  },
+  {
+   "why": "13, Default: 2.912 is 3",
+   "density": 13,
+   "percent": 100,
+   "factor": 3
+  },
+  {
+   "why": "13, Large",
+   "density": 13,
+   "percent": 120,
+   "factor": 3.4944
+  },
+  {
+   "why": "no density (0: the fallback), Smaller",
+   "density": 0,
+   "percent": 80,
+   "factor": 0.8
+  },
+  {
+   "why": "none, Small",
+   "density": 0,
+   "percent": 90,
+   "factor": 0.9
+  },
+  {
+   "why": "none, Default",
+   "density": 0,
+   "percent": 100,
+   "factor": 1
+  },
+  {
+   "why": "none, Large",
+   "density": 0,
+   "percent": 120,
+   "factor": 1.2
+  },
+  {
+   "why": "the fallback density itself",
+   "density": 4.464285714285714,
+   "percent": 100,
+   "factor": 1
+  },
+  {
+   "why": "the snap: 2.0496 is 2",
+   "density": 9.15,
+   "percent": 100,
+   "factor": 2
+  },
+  {
+   "why": "the snap: 2.072 is beyond 3 % of 2",
+   "density": 9.25,
+   "percent": 100,
+   "factor": 2.072
+  },
+  {
+   "why": "the snap: 1.9488 is 2",
+   "density": 8.7,
+   "percent": 100,
+   "factor": 2
+  },
+  {
+   "why": "the snap: 1.9264 is beyond 3 % of 2",
+   "density": 8.6,
+   "percent": 100,
+   "factor": 1.9264
+  },
+  {
+   "why": "the snap: 0.9744 is 1",
+   "density": 4.35,
+   "percent": 100,
+   "factor": 1
+  },
+  {
+   "why": "the snap: 0.9632 is beyond 3 % of 1",
+   "density": 4.3,
+   "percent": 100,
+   "factor": 0.9632
+  },
+  {
+   "why": "the snap: 1.02816 is 1",
+   "density": 4.59,
+   "percent": 100,
+   "factor": 1
+  },
+  {
+   "why": "the snap: 1.0416 is beyond 3 % of 1",
+   "density": 4.65,
+   "percent": 100,
+   "factor": 1.0416
+  },
+  {
+   "why": "the snap: 3.0688 is 3",
+   "density": 13.7,
+   "percent": 100,
+   "factor": 3
+  },
+  {
+   "why": "the snap: 3.1136 is beyond 3 % of 3",
+   "density": 13.9,
+   "percent": 100,
+   "factor": 3.1136
+  },
+  {
+   "why": "the snap at a step: 1.9712 is 2",
+   "density": 11,
+   "percent": 80,
+   "factor": 2
+  },
+  {
+   "why": "under one device pixel per design pixel there is no whole number",
+   "density": 2.2,
+   "percent": 100,
+   "factor": 0.4928
+  },
+  {
+   "why": "0.0448 is never 0",
+   "density": 0.2,
+   "percent": 100,
+   "factor": 0.0448
+  },
+  {
+   "why": "a percent that is no step counts as 100",
+   "density": 8.943,
+   "percent": 110,
+   "factor": 2
+  }
+ ],
+ "output_key": [
+  {
+   "make": "Acme",
+   "model": "Panel 10",
+   "serial": "A1B2",
+   "name": "DP-1",
+   "key": "Acme Panel 10 A1B2"
+  },
+  {
+   "make": "Acme",
+   "model": "",
+   "serial": "",
+   "name": "DP-1",
+   "key": "Acme Unknown Unknown"
+  },
+  {
+   "make": "Unknown",
+   "model": "Panel 10",
+   "serial": "Unknown",
+   "name": "DP-1",
+   "key": "Unknown Panel 10 Unknown"
+  },
+  {
+   "make": "",
+   "model": "",
+   "serial": "0x01",
+   "name": "DP-1",
+   "key": "Unknown Unknown 0x01"
+  },
+  {
+   "make": "",
+   "model": "",
+   "serial": "",
+   "name": "HEADLESS-1",
+   "key": "HEADLESS-1"
+  },
+  {
+   "make": "Unknown",
+   "model": "Unknown",
+   "serial": "Unknown",
+   "name": "HDMI-A-1",
+   "key": "HDMI-A-1"
+  }
+ ],
+ "text_px": [
+  {
+   "why": "100 %: the design's size",
+   "px": 17,
+   "text": 1,
+   "body": 17,
+   "row": 16,
+   "mm": 0,
+   "drawn": 17
+  },
+  {
+   "why": "the body by the full factor",
+   "px": 17,
+   "text": 1.25,
+   "body": 17,
+   "row": 16,
+   "mm": 0,
+   "drawn": 21.25
+  },
+  {
+   "why": "the body by the full factor",
+   "px": 17,
+   "text": 1.5,
+   "body": 17,
+   "row": 16,
+   "mm": 0,
+   "drawn": 25.5
+  },
+  {
+   "why": "smaller than the body by the full factor",
+   "px": 11.5,
+   "text": 1.5,
+   "body": 17,
+   "row": 16,
+   "mm": 0,
+   "drawn": 17.25
+  },
+  {
+   "why": "smaller than the body by the full factor",
+   "px": 13.5,
+   "text": 1.25,
+   "body": 17,
+   "row": 16,
+   "mm": 0,
+   "drawn": 16.875
+  },
+  {
+   "why": "twice the body by half of it",
+   "px": 34,
+   "text": 1.5,
+   "body": 17,
+   "row": 16,
+   "mm": 0,
+   "drawn": 42.5
+  },
+  {
+   "why": "twice the body by half of it",
+   "px": 34,
+   "text": 1.25,
+   "body": 17,
+   "row": 16,
+   "mm": 0,
+   "drawn": 38.25
+  },
+  {
+   "why": "twice the body by half of it",
+   "px": 40,
+   "text": 1.5,
+   "body": 20,
+   "row": 19,
+   "mm": 0,
+   "drawn": 50
+  },
+  {
+   "why": "four times the body by a quarter of it",
+   "px": 74,
+   "text": 1.5,
+   "body": 18.5,
+   "row": 17.5,
+   "mm": 0,
+   "drawn": 83.25
+  },
+  {
+   "why": "a display style: 44 x (1 + 0.5 x 17 / 44)",
+   "px": 44,
+   "text": 1.5,
+   "body": 17,
+   "row": 16,
+   "mm": 0,
+   "drawn": 52.5
+  },
+  {
+   "why": "no body size: every style by the full factor",
+   "px": 44,
+   "text": 1.5,
+   "body": 0,
+   "row": 16,
+   "mm": 0,
+   "drawn": 66
+  },
+  {
+   "why": "Default on 8.943 px/mm (2 / 8.943 mm): no minimum reached",
+   "px": 10.5,
+   "text": 1,
+   "body": 17,
+   "row": 16,
+   "mm": 0.2236386,
+   "drawn": 10.5
+  },
+  {
+   "why": "Default on 8.943 px/mm: a row label",
+   "px": 16,
+   "text": 1,
+   "body": 17,
+   "row": 16,
+   "mm": 0.2236386,
+   "drawn": 16
+  },
+  {
+   "why": "Smaller (0.1792 mm): a label under 2.0 mm is 2.0 mm",
+   "px": 10.5,
+   "text": 1,
+   "body": 17,
+   "row": 16,
+   "mm": 0.1792,
+   "drawn": 11.160714285714286
+  },
+  {
+   "why": "Smaller: a row label of 16 px is 2.867 mm, over 2.8",
+   "px": 16,
+   "text": 1,
+   "body": 17,
+   "row": 16,
+   "mm": 0.1792,
+   "drawn": 16
+  },
+  {
+   "why": "Smaller: a row label of 15 px would be 2.688 mm, so 2.8 mm",
+   "px": 15,
+   "text": 1,
+   "body": 17,
+   "row": 15,
+   "mm": 0.1792,
+   "drawn": 15.625
+  },
+  {
+   "why": "Smaller: the same size under the row size is other text, 2.0 mm",
+   "px": 15,
+   "text": 1,
+   "body": 17,
+   "row": 16,
+   "mm": 0.1792,
+   "drawn": 15
+  },
+  {
+   "why": "no row size: every style is other text",
+   "px": 9,
+   "text": 1,
+   "body": 17,
+   "row": 0,
+   "mm": 0.1792,
+   "drawn": 11.160714285714286
+  },
+  {
+   "why": "the minimum after the text size: 10.5 x 1.25 = 13.125 px is over 2.0 mm",
+   "px": 10.5,
+   "text": 1.25,
+   "body": 17,
+   "row": 16,
+   "mm": 0.1792,
+   "drawn": 13.125
+  },
+  {
+   "why": "the minimum after the text size: 8 x 1.25 = 10 px is under 2.0 mm",
+   "px": 8,
+   "text": 1.25,
+   "body": 17,
+   "row": 16,
+   "mm": 0.1792,
+   "drawn": 11.160714285714286
+  },
+  {
+   "why": "mm unknown: no minimum",
+   "px": 4,
+   "text": 1,
+   "body": 17,
+   "row": 16,
+   "mm": 0,
+   "drawn": 4
+  }
+ ],
+ "ui_size_file": [
+  {
+   "why": "empty",
+   "text": "",
+   "sizes": {}
+  },
+  {
+   "why": "a line per step",
+   "text": "80 A B 1\n90 C D 2\n100 E F 3\n120 G H 4\n",
+   "sizes": {
+    "A B 1": 80,
+    "C D 2": 90,
+    "E F 3": 100,
+    "G H 4": 120
+   }
+  },
+  {
+   "why": "a key with spaces",
+   "text": "120 Acme  Wide Panel 10  S 1\n",
+   "sizes": {
+    "Acme  Wide Panel 10  S 1": 120
+   }
+  },
+  {
+   "why": "a connector name as the key",
+   "text": "80 HEADLESS-1\n",
+   "sizes": {
+    "HEADLESS-1": 80
+   }
+  },
+  {
+   "why": "comments and blank lines",
+   "text": "# sizes\n\n  # indented\n90 A B 1\n\n",
+   "sizes": {
+    "A B 1": 90
+   }
+  },
+  {
+   "why": "a number that is no step",
+   "text": "85 A B 1\n110 C D 2\n0 E F 3\n",
+   "sizes": {}
+  },
+  {
+   "why": "not a whole number",
+   "text": "80.0 A B 1\n+90 C D 2\n1e2 E F 3\nlarge G H 4\n 120x I J 5\n",
+   "sizes": {}
+  },
+  {
+   "why": "a bad line leaves an earlier good one",
+   "text": "80 A B 1\n85 A B 1\n",
+   "sizes": {
+    "A B 1": 80
+   }
+  },
+  {
+   "why": "two lines for one key: the later",
+   "text": "80 A B 1\n90 C D 2\n120 A B 1\n",
+   "sizes": {
+    "A B 1": 120,
+    "C D 2": 90
+   }
+  },
+  {
+   "why": "a line without a key",
+   "text": "80\n90 \n120 A B 1\n",
+   "sizes": {
+    "A B 1": 120
+   }
+  },
+  {
+   "why": "no line end at the end; CR LF",
+   "text": "80 A B 1\r\n90 C D 2",
+   "sizes": {
+    "A B 1": 80,
+    "C D 2": 90
+   }
+  }
+ ],
+ "text_size_file": [
+  {
+   "why": "empty",
+   "text": "",
+   "percent": 100
+  },
+  {
+   "why": "100",
+   "text": "100\n",
+   "percent": 100
+  },
+  {
+   "why": "105",
+   "text": "105\n",
+   "percent": 105
+  },
+  {
+   "why": "125",
+   "text": "125\n",
+   "percent": 125
+  },
+  {
+   "why": "150, no line end",
+   "text": "150",
+   "percent": 150
+  },
+  {
+   "why": "under the range",
+   "text": "95\n",
+   "percent": 100
+  },
+  {
+   "why": "over the range",
+   "text": "155\n",
+   "percent": 100
+  },
+  {
+   "why": "not a multiple of 5",
+   "text": "112\n",
+   "percent": 100
+  },
+  {
+   "why": "not a whole number",
+   "text": "120.0\n",
+   "percent": 100
+  },
+  {
+   "why": "a percent sign",
+   "text": "120%\n",
+   "percent": 100
+  },
+  {
+   "why": "words",
+   "text": "large\n",
+   "percent": 100
+  },
+  {
+   "why": "two lines",
+   "text": "120\n130\n",
+   "percent": 100
+  }
+ ],
+ "output_scale_file": [
+  {
+   "why": "empty",
+   "text": "",
+   "outputs": {}
+  },
+  {
+   "why": "two outputs of different densities and sizes",
+   "text": "1.6 8.942675 reported Acme Panel 10 A1B2\n1.2 4.464286 fallback HDMI-A-1\n",
+   "outputs": {
+    "Acme Panel 10 A1B2": [
+     1.6,
+     8.942675,
+     "reported"
+    ],
+    "HDMI-A-1": [
+     1.2,
+     4.464286,
+     "fallback"
+    ]
+   }
+  },
+  {
+   "why": "a whole factor, a measured density",
+   "text": "2 5.5 measured Acme Unknown Unknown\n",
+   "outputs": {
+    "Acme Unknown Unknown": [
+     2,
+     5.5,
+     "measured"
+    ]
+   }
+  },
+  {
+   "why": "bad lines are skipped",
+   "text": "# scales\n\n0 8.9 reported A B 1\n1,5 8.9 reported C D 2\n1.5 8.9 guessed E F 3\n1.5 8.9 reported\n1.5 3.6 reported G H 4\n",
+   "outputs": {
+    "G H 4": [
+     1.5,
+     3.6,
+     "reported"
+    ]
+   }
+  },
+  {
+   "why": "two lines for one key: the later",
+   "text": "1.5 3.6 reported G H 4\n2 3.6 reported G H 4\n",
+   "outputs": {
+    "G H 4": [
+     2,
+     3.6,
+     "reported"
+    ]
+   }
+  }
+ ]
+}

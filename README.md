@@ -73,6 +73,8 @@ renders the boards changed and keeps the images as the `design-shots` artifact (
 - `test/test_reference.py`: the reference builds (twice, the same), every token, type style,
   family and component appears, every preview loads the web form, the picker offers all 27
   combinations, every link and source resolves. No browser.
+- `test/test_size.py`: the interface size in Python (see "Interface size"): the factor, the files, the
+  text size and the minimums, against `test/size-vectors.json`. python3 alone.
 - `test/ci-scope.sh`: which changed paths `tools/ci-scope` sends to the library checks.
 - `test/test_paint.py`: the Python drawing API call by call.
 - `test/test_content.py`: what importing the package asks of the session's GTK module, and `content.say`.
@@ -91,6 +93,12 @@ renders the boards changed and keeps the images as the `design-shots` artifact (
   differences within its ink, the same darkest grey, ink within 3x). So FR-012's one grey step holds
   for the cells not listed; the listed ones are held to these bounds, and
   `test/compare-selftest.py` checks that a regression in one fails.
+- `test/size.sh`: the interface size on the built library. `test/test_size.py` again, now through the
+  C library too (`test/size-cli.c`): the same vectors and cases, and what one writes the other reads.
+  The sample sheet with the metrics of Default on a display of 8.943 px/mm, byte for byte the sheet
+  without metrics. The sample sheet at the factors 0.8, 1.6, 1.8 and 2.4 (`test/scale.py`): rules of
+  whole device pixels, box edges on the pixel grid, text grown by the text size. It keeps the list of
+  the elements that reach a minimum in `out/test/size-minimums-{c,python}.txt`.
 
 ## Interleaf
 
@@ -320,6 +328,7 @@ is chosen by name; unknown names give White (in C and in Python). Each voice has
 | Section | What |
 |---|---|
 | `title` | the name shown to people: White, Editorial, Stationery |
+| `type` | generated from Interleaf's type styles: `body`, the size of the voice's running text (the `body` style of the type group called as the voice) |
 | `scheme` | generated from Interleaf's E-ink themes (see "Interleaf"): the 16-grey ladder by role (`paper`, `sheet`, `ink`, `ink-soft`, `rule`, `shade`, `highlight`, `dim`, `accent`, `on-accent`, ...), the Stationery extras (`leather-dark`, `gilt`, `gold`, `wax`), the focus colours and the named shadows (`offset`, `keycap`, `card-stack`, `passe-partout`) |
 | `shell` | the desktop shell's surfaces: bar, plates, cards, buttons, toggles, slider, trays, segments, power button, pads, folders, app tiles, tabs, rules, fonts, and the voice's own words (`qsTitle`, `oTitle`, ...) |
 | `c` | the few values the C table takes instead of the CSS value: `"field.part": value`, with `_why` |
@@ -341,8 +350,8 @@ The `apps` values are the GTK and keyboard themes' own greys, not the scheme's r
 ladder (`tools/ladder --map-apps` put them on the ladder grey of their panel level). The keyboard's
 swipe trail is opaque: the grey the translucent trail showed over the key face.
 
-Changing a voice: a scheme token is changed in `interleaf/tokens.json`; every other section is
-edited in `voices/voices.json`. Then run `make generate` and commit the data and the generated files
+Changing a voice: a scheme token or the body size is changed in `interleaf/tokens.json`; every other
+section is edited in `voices/voices.json`. Then run `make generate` and commit the data and the generated files
 together.
 
 ## C API
@@ -354,7 +363,7 @@ Contract: C API, version 1 (`GLASSINE_UI_API` in `glassine-ui.h`). `#include <gl
   inset), `UiBox` (background, border width/colour/dashed, four radii with `UI_HALF` = 50%, up to
   `UI_NRING` rings in CSS order), `UiFont` (family, weight, italic, px, small caps, letter spacing in
   em, case `UI_CASE_*`), `UiVoice` (one voice: the fields of the `shell` section, the focus ring of
-  `inline`, the drag handles; see the header),
+  `inline`, the drag handles, and the text sizes `bodyPx`, `rowPx`, `subPx`; see the header),
   `UiGc` (cairo context, paint or layout pass, voice).
 - Voices: `ui_voices[]`, `ui_nvoices`, `ui_voice_find(name)` (unknown names and NULL give White);
   `UI_RULE`, `UI_DIM`, `UI_PAPER`, `UI_HIGHLIGHT`.
@@ -366,6 +375,12 @@ Contract: C API, version 1 (`GLASSINE_UI_API` in `glassine-ui.h`). `#include <gl
   and cached), `ui_icon_material` (an icon named as the design names it, in Material Symbols, through
   the same map as the Python `ICONS`/`ISCALE`, generated into `src/glassine-ui-icons.c`), `ui_hatch`
   (parallel lines inside a rounded rect: the design's hatched outlines), `ui_font_with`, `ui_font_px`.
+- The interface size (see "Interface size"): `ui_size_plausible`, `ui_density`, `ui_factor`,
+  `ui_mm_per_px`, `ui_output_key`, the files (`ui_size_read`, `ui_size_write`, `ui_text_size_read`,
+  `ui_text_size_write`, `ui_output_density_read`, `ui_output_scale_read`, `ui_output_scale_find`,
+  `ui_output_scale_write`), the text size and the minimums (`ui_metrics_set`, `ui_metrics_voice`,
+  `ui_text_px`, `ui_grown_px`, `ui_text_px_at`, `ui_grow`, `ui_min_tap`), whole device pixels
+  (`ui_dev_scale`, `ui_snap_x`, `ui_snap_y`, `ui_snap_len`, `ui_device_px`).
 - What a frame is (`UiContent`: `ui_content_page`, `ui_content_step`, `ui_content_end`,
   `ui_content_frame`; `UI_CONTENT_NONE`, `_PAGE`, `_MOTION`): the rule a program follows to tell an
   e-ink panel what its next frame is, so the panel does not have to find out by watching. The answer
@@ -381,8 +396,8 @@ Contract: C API, version 1 (`GLASSINE_UI_API` in `glassine-ui.h`). `#include <gl
 
 Contract: Python API, version 1 (`glassine_ui.API`).
 
-- `glassine_ui.voices`: `NAMES`, `voice(name)` (a dict: `name`, `title`, `scheme`, `shell`, `c`,
-  `card`, `setup`; unknown names give White), `title(name)`, `CONTRACT`. The section dicts are shared:
+- `glassine_ui.voices`: `NAMES`, `voice(name)` (a dict: `name`, `title`, `scheme`, `type`, `shell`, `c`,
+  `card`, `setup`, `inline`, `apps`; unknown names give White), `title(name)`, `CONTRACT`. The section dicts are shared:
   copy one before changing it.
 - `glassine_ui.paint` (needs PyGObject with Gtk 3 and Pango, and pycairo): the CSS readers `color`,
   `px`, `radii`, `shadows`, `border`, `font`; `box(cr, x, y, w, h, radius, bg, shadow, border)`,
@@ -392,7 +407,11 @@ Contract: Python API, version 1 (`glassine_ui.API`).
   `'transparent'`) draws nothing, as 0 does in C: `text` still measures, `icon` still says whether
   there is such an icon. `box` draws nothing for a width or height <= 0, as in C; `box`, `rule` and
   `icon` leave the context's line width, cap, join and dash as they were; `font` raises `ValueError`
-  for anything that isn't a CSS font shorthand, as `tools/gen-voices` does.
+  for anything that isn't a CSS font shorthand, as `tools/gen-voices` does. `font` answers with the
+  size the style is drawn at (`font(s, grow=False)`: the design's size); `dev_scale`, `snap_x`,
+  `snap_y`, `snap_len` (see "Interface size").
+- `glassine_ui.size` (python3 alone): the interface size, the same as the C calls (see "Interface
+  size").
 
 - `glassine_ui.content`: importing `glassine_ui` asks the session's GTK module (GlassineOS/shell) to
   name this process's repaints for an e-ink panel: the repaint that answers a tap is a page, a
@@ -415,6 +434,134 @@ change in the move. `test/compare.py` lists what differs by more than one grey s
 - Rules: dotted is 1:1 square dots in C, round dots in Python; dashed is 3:2 in C, 3:3 in Python.
 
 Making them agree changes the pixels of the programs that use them, so it is a separate change.
+
+## Interface size
+
+The design pixel has a length, so a control is as large on one display as on another, and a person
+picks how large the interface is on each display (GlassineOS/shell spec 012, on the density of its
+spec 011). This repository has the arithmetic, the files' readers and writers and the drawing side,
+once in C and once in Python, for every program that draws with it. It is part of the C and the
+Python API of version 1.
+
+| | C (`glassine-ui.h`) | Python (`glassine_ui.size`) |
+|---|---|---|
+| a design pixel at Default: 0.224 mm | `UI_MM_PER_PX` | `MM_PER_PX` |
+| the steps 80, 90, 100, 120 % | `ui_size_steps[]`, `ui_nsize_steps`, `ui_size_step_ok(percent)` | `STEPS`, `step_ok(percent)` |
+| the text sizes 100 to 150 % in steps of 5 | `ui_text_size_ok(percent)` | `text_size_ok(percent)` |
+| does a reported size count? | `ui_size_plausible(w_px, h_px, w_mm, h_mm)` | `plausible(...)` |
+| an output's density and its source | `ui_density(w_px, h_px, w_mm, h_mm, kept, &source)`, `UI_DENSITY_REPORTED`, `_MEASURED`, `_FALLBACK`, `ui_density_source_name` | `density(w_px, h_px, w_mm, h_mm, kept)` → `(density, 'reported' \| 'measured' \| 'fallback')` |
+| the density of an output of unknown size: 1 / 0.224 = 4.464 | `UI_FALLBACK_DENSITY` | `FALLBACK_DENSITY` |
+| device pixels per design pixel | `ui_factor(density, percent)` | `factor(density, percent)` |
+| the millimetres of a design pixel on the glass | `ui_mm_per_px(factor, density)` | `mm_per_px(factor, density)` |
+| an output's key | `ui_output_key(make, model, serial, name, buf, len)` | `output_key(make, model, serial, name)` |
+| a logical length in device pixels | `ui_device_px(logical, factor)` | `device_px(logical, factor)` |
+
+- **Density:** the pixels of the output's mode (not turned, not scaled) per millimetre: from the
+  size the output reports when that is plausible (width in pixels over width in millimetres), else
+  the density kept for it, else the fallback. A reported size is plausible when width and height
+  both give 1 to 100 pixels per millimetre and it is not the aspect ratio in centimetres: 16 × 9,
+  16 × 10, 160 × 90 and 160 × 100 mm, either way up, are refused.
+- **Factor:** density × 0.224 × percent / 100. A factor within 3 % of a whole number (1 or more) is
+  that number: 8.943 px/mm at Default is 2.0032, so 2. A design pixel on the glass is then
+  factor / density millimetres.
+- **Output key:** make, model and serial joined by single spaces, a missing part as `Unknown`; the
+  connector name when all three are unknown.
+
+### The files
+
+A path of NULL (`None`) is the file's own place; `XDG_CONFIG_HOME` and `XDG_RUNTIME_DIR` count when
+absolute, `~/.config` otherwise, and there is no runtime file without `XDG_RUNTIME_DIR`. Numbers are
+written with a dot in every locale. A write makes the directory when it is missing, writes
+`FILE.tmp` beside the file and renames it over the file, so a reader never sees half a file; when it
+fails, the file stays as it was and no temporary file is left. The C writes return 0 or -1; the
+Python ones raise `OSError` or `ValueError`.
+
+| File | Lines | C | Python |
+|---|---|---|---|
+| `$XDG_CONFIG_HOME/glassine/ui-size` | `PERCENT OUTPUT-KEY` | `ui_size_file`, `ui_size_read(path, key)`, `ui_size_write(path, key, percent)` | `ui_size_path()`, `read_ui_size(path)` → `{key: percent}`, `ui_size(key, path)`, `write_ui_size(key, percent, path)` |
+| `$XDG_CONFIG_HOME/glassine/text-size` | `PERCENT` | `ui_text_size_file`, `ui_text_size_read(path)`, `ui_text_size_write(path, percent)` | `text_size_path()`, `read_text_size(path)`, `write_text_size(percent, path)` |
+| `$XDG_CONFIG_HOME/glassine/output-density` (read only) | `DENSITY OUTPUT-KEY` | `ui_output_density_file`, `ui_output_density_read(path, key)` (0: none) | `output_density_path()`, `read_output_density(path)` → `{key: density}` |
+| `$XDG_RUNTIME_DIR/glassine/output-scale` | `FACTOR DENSITY SOURCE OUTPUT-KEY` | `ui_output_scale_file`, `ui_output_scale_read(path, out, max)`, `ui_output_scale_find(path, key, &out)`, `ui_output_scale_write(path, outputs, n)` with `UiOutputScale` | `output_scale_path()`, `read_output_scale(path)` → `{key: (factor, density, source)}`, `write_output_scale([(factor, density, source, key)], path)` |
+
+- **`ui-size`:** the step's percentage as a whole number, one space, the output key to the end of the
+  line. Lines starting with `#` and blank lines are comments; a line whose number is not a step is
+  ignored; of two lines for one key the later counts; an output without a line is at 100. A write
+  keeps every other line as it is, replaces the output's line where it stands (or adds one at the
+  end) and removes it for 100.
+- **`text-size`:** one line, a whole number from 100 to 150 that is a multiple of 5. No file or any
+  other content is 100.
+- **`output-scale`:** what the session applied to each output: the factor and the density as decimals
+  (at most six places), `reported`, `measured` or `fallback`, then the output key. A write replaces
+  the whole file with the outputs given.
+
+### Text size and minimums
+
+One state for the process, read by every text call: `ui_metrics_set(mm_per_px, text_factor, body_px,
+row_px)` or `ui_metrics_voice(voice, mm_per_px, text_factor)` (`ui_metrics_get` reads it back); in
+Python `size.set_metrics(mm, text_factor, body, row)`, `size.set_voice_metrics(voice, mm,
+text_factor)`, `size.metrics()`. `mm_per_px` is the millimetres of a design pixel on the glass (0:
+unknown, no minimums), `text_factor` 1.0 to 1.5. A program that draws for outputs of different factors
+sets it before it draws for each. Until it is set, nothing changes: no minimums, text at 100 %.
+
+A type style of S design pixels is drawn at
+
+    S × (1 + (T − 1) × min(1, B / S)), and at least its minimum
+
+with T the text factor and B the voice's body size: the body and anything smaller grows by the full
+factor, a heading twice the body by half of it. The minimum is 2.8 mm for a style of at least the
+voice's row label size and 2.0 mm for a smaller one (for every style while the row size is 0), in
+design pixels at `mm_per_px`, after both the interface size and the text size.
+
+- `ui_text`, `ui_text_w` and `ui_text_wrap` draw and measure every `UiFont` at that size, with its
+  letter spacing; in Python `paint.font` answers with it, so `text`, `measure` and `layout` do the
+  same and a CSS line height stays a factor of the drawn size. A program's calls stay as they are.
+- For layouts: `ui_text_px(font)` (`f->px` itself when nothing applies), `ui_grown_px(px)`,
+  `ui_text_px_at(px, text_factor, body_px, row_px, mm_per_px)` (no state); `size.text_px(font)`,
+  `size.text_px_at(...)`, `size.font_px(font)` (the design size). In Python a font is a size in
+  design pixels or a CSS font shorthand of the voice data. Never put the result back into a font: it
+  would grow twice.
+- A box that holds text: `ui_grow(h, font, lines, lh)` = h + lines × lh × (drawn size − design size),
+  `lh` the line height as a factor of the font size (`size.grow(h, font, lines, lh)`; without `lh`,
+  the shorthand's own line height, else 1). Spacing and icons keep their size.
+- A control that takes a tap: `ui_min_tap()` (`size.min_tap()`), 7 mm in design pixels; 0 while
+  `mm_per_px` is unknown.
+- The voices' sizes: `UiVoice.bodyPx` (Interleaf's body style of the voice: 17, 18.5, 20), `rowPx`
+  and `subPx` (the smaller of the settings card's and the setup's `row` and `sub`: 16, 17.5, 19 and
+  13.5, 14.5, 16); `size.body_px(voice)`, `size.row_px(voice)`, `size.sub_px(voice)`.
+
+At Default on a display of 8.943 px/mm and a text size of 100 % no style of the voice data reaches a
+minimum, and every sheet is byte for byte the one drawn without metrics (`test/size.sh`). No
+Interleaf type style, row label or secondary text reaches one at any step; at Smaller and Small the
+smallest labels of the voice data do (`out/test/size-minimums-*.txt` lists them).
+
+### Whole device pixels
+
+At a fractional factor (1.6, 1.8, 2.4; 0.8 on a display of unknown size) a design value is not a
+whole number of device pixels. When the context's scale (its matrix times its target's device scale)
+is fractional, the shapes do it themselves: `ui_fill_rect`, `ui_rrect`, `ui_box`, `ui_box_bg`,
+`ui_stroke_rrect` and `ui_hline` (Python: `fill`, `box`, `rule`) put their outer edges on the nearest
+device pixel edge, and every border, ring, shadow offset and rule is a whole number of device pixels,
+never under one; `ui_hatch`'s lines are at least one device pixel thick; icons are drawn at the
+device resolution on whole device pixels. At a whole scale, and under a matrix that turns or shears,
+every call draws the values as given, so a keyline of 1.5 design pixels at a scale of 1 or 3 is
+antialiased.
+
+A program that is given only a whole scale N for an output of factor F (a GTK 3 program) scales its
+context by F / N; the target's device scale N counts, so its shapes land on the output's device
+pixels too.
+
+For a program's own shapes: `ui_dev_scale(cr)`, `ui_snap_x(cr, x)`, `ui_snap_y(cr, y)`,
+`ui_snap_len(cr, len)` (a whole number of device pixels, at least one; 0 stays 0); in Python
+`paint.dev_scale`, `paint.snap_x`, `paint.snap_y`, `paint.snap_len`. A surface that is `logical`
+pixels wide has a buffer of `ui_device_px(logical, factor)` device pixels.
+
+### Test vectors
+
+`test/size-vectors.json` (`"contract": 1`) has the cases of the factor (plausible sizes, densities,
+factors with the snap, output keys), of the text size (`text_px`) and of the files' reading
+(`ui_size_file`, `text_size_file`, `output_scale_file`: a file's text and what it means). The C and
+the Python tests here read the same file; another implementation of these rules can be tested
+against it. Numbers agree within 1e-9.
 
 ## Boards
 

@@ -18,7 +18,7 @@
 #   make reference       the browsable Interleaf reference (tools/gen-reference) in out/reference/
 #   make site            the reference and the design boards (tools/boards export) in out/reference/
 #   make serve-reference build it and serve it on http://127.0.0.1:8000/ (REFERENCE_HOST, REFERENCE_PORT)
-VERSION = 1.4.0
+VERSION = 1.5.0
 SOMAJOR = 1
 PREFIX ?= /usr/local
 LIBDIR ?= $(PREFIX)/lib
@@ -34,7 +34,7 @@ UI_CFLAGS = -Wall -Wno-format-truncation -fPIC
 PKGS = pangocairo librsvg-2.0 glib-2.0
 O = out
 LIB = $(O)/libglassine-ui.so.$(VERSION)
-SRC = src/glassine-ui-draw.c src/glassine-ui-voices.c src/glassine-ui-icons.c src/glassine-ui-content.c
+SRC = src/glassine-ui-draw.c src/glassine-ui-voices.c src/glassine-ui-icons.c src/glassine-ui-size.c src/glassine-ui-content.c
 HDR = src/glassine-ui.h src/glassine-ui-scheme.h
 
 all: $(LIB) $(O)/glassine-ui.pc
@@ -84,9 +84,10 @@ check-forms:
 	$(PYTHON) test/test_ladder.py
 	$(PYTHON) test/test_interleaf.py
 	$(PYTHON) test/test_reference.py
+	$(PYTHON) test/test_size.py
 	sh test/ci-scope.sh
 
-# the library: the build, the drawing APIs, the sample sheet
+# the library: the build, the drawing APIs, the sample sheet, the interface size
 check-lib: all
 	$(PYTHON) test/test_paint.py
 	$(PYTHON) test/test_content.py
@@ -94,6 +95,7 @@ check-lib: all
 	sh test/pc-prefix.sh
 	sh test/build-flags.sh
 	sh test/sheet.sh
+	sh test/size.sh
 
 # the design-board tools under node (reader, renderer, server, import); no browser
 check-boards:

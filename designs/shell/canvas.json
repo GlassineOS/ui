@@ -627,7 +627,7 @@
    "y": 8300
   },
   "settings.appearance.ui-size.dc.html": {
-   "h": 1260,
+   "h": 1300,
    "is_interactive": true,
    "page": "settings",
    "title": "settings.appearance.ui-size · Appearance › Interface size at two sizes",

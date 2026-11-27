@@ -457,7 +457,7 @@ class Component extends DCLogic {
         hasTitle: !b.land, tx, tw, th: b.th || h, words: b.words || [], when: b.when || '',
         cls: 'pl-evt' + (b.empty ? ' is-empty' : '') + (pos.K > 1 ? ' is-col' : '') + (/is-cut/.test(b.cls || '') ? ' is-cut' : ''), extra: b.extra || '',
         label: (b.when || '') + (b.title ? ', ' + b.title : ''),
-        ends: live && !b.land && !b.empty && !b.synthetic, endX: spine + 6 - B.hitW, endTop: b.y - B.hitH / 2, endBot: b.y + h - B.hitH / 2 };
+        ends: live && !b.land && !b.empty && !b.synthetic, endX: pos.col ? spine - B.gap + 1 : spine + 6 - B.hitW, endW: pos.col ? B.gap + 5 : B.hitW, endTop: b.y - B.hitH / 2, endBot: b.y + h - B.hitH / 2 };
       if (live && ev.hasTitle && !b.empty && !b.synthetic) {
         ev.down = e => g.evDown(e, b.id, 'title', tx);
         ev.downTop = e => g.evDown(e, b.id, 'top', tx);
@@ -516,7 +516,7 @@ class Component extends DCLogic {
       ag.readouts = [{ y: Math.round(yL(t)) + (drag === 'end' ? 3 : -17), t: PL.hm(t) }];
       if (p.refresh) {
         const a = drag === 'end' ? [31, 32] : [28, 29];
-        marks.push({ cls: 'pl-refresh is-side', x: ag.x + 26, y: Math.round(y(a[0])) - 4, w: 20, h: Math.round(y(a[1]) - y(a[0])) + 8, t: 'each step: only the event’s strip' });
+        marks.push({ cls: 'pl-refresh', x: mx, y: Math.round(y(a[0])) - 4, w: mw, h: Math.round(y(a[1]) - y(a[0])) + 8, t: 'each step: only the strip of both serifs' });
       }
     }
     if (drag === 'released' && p.refresh) {
@@ -889,7 +889,8 @@ class Component extends DCLogic {
 /* an event's brackets, in px of the agenda: the first lane's "[" (in the hour margin, right of the
    hours), the last "]" this far from the agenda's right edge, the gap between one lane's "]" and the
    next lane's "[", the serif, the title's left edge (for the first lane; each lane the same distance
-   from its "["), an end's touch target (it ends at the serif's tip and reaches left of the "["),
+   from its "["), an end's touch target (it ends at the serif's tip and reaches left over the margin;
+   in a later lane only over the gap, so a pen-down in the neighbour's lane always inks there),
    the most lanes side by side */
 Component.BK = { spine: 36, right: 10, gap: 12, serif: 5, title: 44, hitW: 44, hitH: 28, maxCols: 3 };
 /* events added for the overlap boards: one at the same time as the dentist, and a long one around both */

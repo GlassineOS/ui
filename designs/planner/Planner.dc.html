@@ -164,13 +164,13 @@
 </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "orient": {"editor": "enum", "options": ["portrait", "landscape"], "default": "portrait"}, "screen": {"editor": "enum", "options": ["view", "refused", "sheet", "picker", "year", "editor"], "default": "view"}, "tmpl": {"editor": "enum", "options": ["day-lists", "day-diary", "day-agenda", "week-columns", "week-spread", "week-lists", "month-grid", "month-goals"], "default": "day-lists"}, "hint": {"editor": "enum", "options": ["count", "none"], "default": "count"}, "search": {"editor": "enum", "options": ["none", "bar", "popup"], "default": "none"}, "overlay": {"editor": "enum", "options": ["none", "info", "cog", "hidden", "settings", "add", "used", "discard", "wset", "slot", "restore", "results", "open", "move"], "default": "none"}, "query": {"editor": "enum", "options": ["found", "more", "nothing"], "default": "found"}, "openFrom": {"editor": "enum", "options": ["title", "hidden"], "default": "title"}, "moveKind": {"editor": "enum", "options": ["day", "week", "month"], "default": "day"}, "strength": {"editor": "enum", "options": ["none", "light", "medium", "strong"], "default": "none"}, "range": {"editor": "enum", "options": ["none", "first", "last", "named"], "default": "none"}, "yearNav": {"editor": "boolean", "default": false}, "year": {"editor": "enum", "options": ["this", "next"], "default": "this"}, "day": {"editor": "enum", "options": ["11", "18"], "default": "11"}, "dev": {"editor": "boolean", "default": false}, "ink": {"editor": "enum", "options": ["raw", "neat", "font"], "default": "raw"}, "write": {"editor": "enum", "options": ["none", "writing", "settled"], "default": "none"}, "text": {"editor": "enum", "options": ["none", "field", "back", "view"], "default": "none"}, "leave": {"editor": "enum", "options": ["done", "outside"], "default": "done"}, "drag": {"editor": "enum", "options": ["none", "draw", "drawn", "titled", "grab", "moved", "released", "end", "start", "edge"], "default": "none"}, "title": {"editor": "enum", "options": ["grow", "shrink", "cut"], "default": "grow"}, "longTitle": {"editor": "boolean", "default": false}, "edit": {"editor": "enum", "options": ["select", "weight", "short", "land", "new", "copy", "name", "move", "remove", "saved", "edited"], "default": "select"}, "refuse": {"editor": "enum", "options": ["missing", "off"], "default": "missing"}, "refresh": {"editor": "boolean", "default": false}, "ev": {"editor": "enum", "options": ["none", "card", "confirm", "strike", "struck", "deleted", "page", "page-text", "page-confirm"], "default": "none"}, "stack": {"editor": "enum", "options": ["none", "two", "three", "writing"], "default": "none"}, "live": {"editor": "boolean", "default": false}, "widget": {"editor": "enum", "options": ["agenda", "todo", "notes", "habits", "minimonth", "weekov", "priorities"], "default": "todo"}, "fill": {"editor": "enum", "options": ["empty", "full", "more"], "default": "full"}, "$preview": {"width": 760, "height": 1008}}'>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "orient": {"editor": "enum", "options": ["portrait", "landscape"], "default": "portrait"}, "screen": {"editor": "enum", "options": ["view", "refused", "sheet", "picker", "year", "editor"], "default": "view"}, "tmpl": {"editor": "enum", "options": ["day-lists", "day-diary", "day-agenda", "week-columns", "week-spread", "week-lists", "month-grid", "month-goals"], "default": "day-lists"}, "hint": {"editor": "enum", "options": ["count", "none"], "default": "count"}, "search": {"editor": "enum", "options": ["none", "bar", "popup"], "default": "none"}, "overlay": {"editor": "enum", "options": ["none", "info", "cog", "hidden", "settings", "add", "used", "discard", "wset", "slot", "restore", "results", "open", "move"], "default": "none"}, "query": {"editor": "enum", "options": ["found", "more", "nothing"], "default": "found"}, "openFrom": {"editor": "enum", "options": ["title", "hidden"], "default": "title"}, "moveKind": {"editor": "enum", "options": ["day", "week", "month"], "default": "day"}, "strength": {"editor": "enum", "options": ["none", "light", "medium", "strong"], "default": "none"}, "range": {"editor": "enum", "options": ["none", "first", "last", "named"], "default": "none"}, "yearNav": {"editor": "boolean", "default": false}, "year": {"editor": "enum", "options": ["this", "next"], "default": "this"}, "day": {"editor": "enum", "options": ["11", "18"], "default": "11"}, "dev": {"editor": "boolean", "default": false}, "ink": {"editor": "enum", "options": ["raw", "neat", "font"], "default": "raw"}, "write": {"editor": "enum", "options": ["none", "writing", "settled"], "default": "none"}, "text": {"editor": "enum", "options": ["none", "field", "back", "view"], "default": "none"}, "leave": {"editor": "enum", "options": ["done", "outside"], "default": "done"}, "drag": {"editor": "enum", "options": ["none", "draw", "drawn", "titled", "grab", "moved", "released", "end", "start", "edge"], "default": "none"}, "title": {"editor": "enum", "options": ["grow", "shrink", "cut"], "default": "grow"}, "longTitle": {"editor": "boolean", "default": false}, "edit": {"editor": "enum", "options": ["select", "weight", "short", "land", "new", "copy", "name", "move", "remove", "saved", "edited"], "default": "select"}, "refuse": {"editor": "enum", "options": ["missing", "off"], "default": "missing"}, "refresh": {"editor": "boolean", "default": false}, "ev": {"editor": "enum", "options": ["none", "card", "confirm", "strike", "struck", "deleted", "page", "page-text", "page-confirm"], "default": "none"}, "stack": {"editor": "enum", "options": ["none", "two", "three", "writing"], "default": "none"}, "wrap": {"editor": "enum", "options": ["none", "written", "held", "dropped", "short", "cut", "card", "back"], "default": "none"}, "more": {"editor": "enum", "options": ["none", "lanes", "fan", "closed", "chosen", "widget", "wfan"], "default": "none"}, "route": {"editor": "enum", "options": ["none", "gap", "space", "joined"], "default": "none"}, "live": {"editor": "boolean", "default": false}, "widget": {"editor": "enum", "options": ["agenda", "todo", "notes", "habits", "minimonth", "weekov", "priorities"], "default": "todo"}, "fill": {"editor": "enum", "options": ["empty", "full", "more"], "default": "full"}, "$preview": {"width": 760, "height": 1008}}'>
 class Component extends DCLogic {
   state = {};
   /* a live board starts again from its props when another state is picked */
   componentDidUpdate(prev) {
     const p = this.props;
-    if (this.state.seeded && (prev.ev !== p.ev || prev.drag !== p.drag || prev.stack !== p.stack || prev.live !== p.live)) this.setState({ seeded: false });
+    if (this.state.seeded && (prev.ev !== p.ev || prev.drag !== p.drag || prev.stack !== p.stack || prev.wrap !== p.wrap || prev.more !== p.more || prev.route !== p.route || prev.live !== p.live || prev.screen !== p.screen)) this.setState({ seeded: false });
   }
   renderVals() {
     const p = this.props, PL = window.PLANNER;
@@ -188,7 +188,7 @@ class Component extends DCLogic {
     if (screen === 'picker' && p.edit === 'saved') tid = 'day-lists-c';
     const t = PL.T[tid], kind = t.kind;
     this._tid = tid;
-    const ev = L ? L.ev : (p.ev || 'none'), evPage = ev === 'page' || ev === 'page-text' || ev === 'page-confirm';
+    const ev = L ? L.ev : p.more === 'chosen' || p.wrap === 'card' ? 'card' : (p.ev || 'none'), evPage = ev === 'page' || ev === 'page-text' || ev === 'page-confirm';
     const overlay = p.overlay || 'none', text = p.text || 'none', drag = L ? 'none' : (p.drag || 'none'), write = p.write || 'none';
     const editing = screen === 'editor';
     const kbdOn = text === 'field' || text === 'view' || ev === 'page-text';
@@ -213,6 +213,12 @@ class Component extends DCLogic {
     // for an overlap, deleted
     const sm = Component.staticMove(drag);
     o.moves = Object.assign({}, sm ? { [sm.id]: { s: sm.s, e: sm.e } } : {}, L ? L.moves : {});
+    // event.wrap: a title written in free time, moved beside the dentist; event.more: five at once;
+    // event.route: strokes between the brackets of a group
+    const wr = Component.WRAP[p.wrap], more = p.more && p.more !== 'none' ? p.more : null, route = p.route && p.route !== 'none' ? p.route : null;
+    if (wr) { o.extra = Component.EXTRA.wrap.concat(wr.cafe ? [Component.EXTRA.three[1]] : []); if (!(L && L.moves.w1)) o.moves.w1 = { s: wr.s, e: wr.e }; }
+    if (more) o.extra = Component.EXTRA.more;
+    if (route) o.extra = Component.EXTRA.three.concat(route === 'space' || route === 'joined' ? [{ id: 'r1', day: 11, s: 30, e: 32, t: '' }] : []);
     const lv = L && L.live;
     if (lv) o.moves[lv.id] = { s: lv.s, e: lv.e };
     if (p.stack === 'two' || p.stack === 'three' || p.stack === 'writing') o.extra = Component.EXTRA[p.stack === 'writing' ? 'two' : p.stack];
@@ -237,7 +243,9 @@ class Component extends DCLogic {
       }
       if (p.live) agenda.evDown = (e, bid, mode, tx) => this.evDown(e, bid, mode, tx);
       if (p.stack === 'writing') agenda.focus = 's1';
+      if (wr || more || route) this.groupSteps(agenda, p, wr, more, route, L);
       this.toBrackets(agenda);
+      if (wr || more || route) this.groupMarks(agenda, p, wr, more, route, L, marks, pen);
       if (p.stack === 'writing') this.laneInk(agenda, pen);
       // where each title is on the page, for the board's own drags
       this._evAt = {};
@@ -285,7 +293,7 @@ class Component extends DCLogic {
     // still on it, or Delete event on its card)
     const card = { on: overlay === 'open' || ev === 'card' || ev === 'confirm' || ev === 'struck' };
     if (overlay === 'open') Object.assign(card, this.wholeCard(PL, p, widgets, pad, cw, pageH));
-    else if (card.on) Object.assign(card, this.eventCard(PL, agenda, pad, pg.title, L ? L.id : 'e3', ev === 'card' ? 'card' : 'confirm'));
+    else if (card.on) Object.assign(card, this.eventCard(PL, agenda, pad, pg.title, L ? L.id : p.more === 'chosen' ? 's1' : p.wrap === 'card' ? 'w1' : 'e3', ev === 'card' ? 'card' : 'confirm'));
     const evp = { on: evPage };
     if (evPage) Object.assign(evp, this.eventPage(PL, ev, pg.title, agenda, L));
     const sheetOv = { on: overlay === 'hidden' || overlay === 'add' || overlay === 'settings' || overlay === 'wset' || overlay === 'slot' || overlay === 'move' || (overlay === 'open' && p.openFrom === 'hidden') };
@@ -383,14 +391,14 @@ class Component extends DCLogic {
       out.blocks = g.blocks.map(b => ({ ...b, extra: '' }));
       out.evs = [];
       // a long title: written, its field grows into the free time below; when that space is taken
-      // later, the ink shrinks evenly to fit, down to the smallest readable size, and below that it
-      // is cut at the block's edge (no ellipsis; a tap shows the whole title)
+      // later, the ink shrinks evenly to fit, never below about 70 % of its written size, and below
+      // that it is cut at the block's edge with a fade (no ellipsis; a tap shows the whole title)
       if (p.title === 'grow' || p.title === 'shrink' || p.title === 'cut') {
         const b = out.blocks.find(x => x.id === 'e4');
         if (b && p.longTitle) {
           const PL = window.PLANNER, t = 'pick up the parcel at the post office and the keys from the neighbours';
           const tc = t + ' and the bike from the repair shop on the way back home before the shops close';
-          const fs = { grow: 19, shrink: 13, cut: 11 }[p.title];
+          const fs = { grow: 19, shrink: 13.5, cut: 13.3 }[p.title];
           b.words = PL.ink(p.title === 'cut' ? tc : t, { fs, salt: 'e4' });
           if (p.title === 'grow') { b.th = Math.max(b.h, 64); b.cls += ' is-grown'; b.extra = 'border-bottom:2px dotted var(--ink)'; }
           else {
@@ -415,24 +423,35 @@ class Component extends DCLogic {
      area, "]" at the right, the ends turned in as small serifs, the title written inside at its start:
      lines in the ink, no box, no fill. Events at the same time (a cluster: those that overlap, one
      through the next) split the width into equal lanes for the cluster's whole span, the first start in
-     the first lane, at most three; each event's brackets stand in its own lane, neighbours meet as
-     "] [" with a gap between. A stroke belongs to the lane its pen-down point is in; ink outside every
-     bracket is loose ink on the day. g.focus: the event the pen writes in, the others of its cluster
-     go grey. The compact week agenda keeps its blocks. Turns g.blocks into g.evs (b.land: a bracket
-     still being drawn, dashed, no title yet; b.dashed: an event being moved, dashed until released;
-     b.held: 'top' or 'bottom', the end held; b.empty: a new event waiting for its title; b.th: the
-     title's own height). */
+     the first lane, as many as fit at the smallest lane (BK.minLane); each event's brackets stand in its
+     own lane, neighbours meet as "] [" with a gap between. The events past the last lane that fits fold
+     into a "+N" marker on that lane; a tap on it fans the last lane's event and the folded ones out over
+     the cluster (g.fanOpen), as lanes where they fit and as rows where they don't. A stroke belongs to
+     the lane its pen-down point is in; ink outside every bracket is loose ink on the day. g.focus: the
+     event the pen writes in, the others of its cluster go grey. The compact week agenda keeps its
+     blocks. Turns g.blocks into g.evs (b.land: a bracket still being drawn, dashed, no title yet;
+     b.drawing: the same inside a cluster, in its lane; b.dashed: an event being moved, dashed until
+     released; b.held: 'top' or 'bottom', the end held; b.empty: a new event waiting for its title;
+     b.th: the title's own height; b.fit: a title that is fitted to its lane, see fitTitle). */
   toBrackets(g) {
     const B = Component.BK, solid = g.blocks.filter(b => !b.land).sort((a, b) => a.y - b.y || b.h - a.h);
-    const at = {};
+    // the writing area: from the first lane's "[" (in the hour margin, right of the hours) to the last "]"
+    const L0 = B.spine, R0 = g.w - B.right;
+    const fitK = Math.max(1, Math.floor((R0 - L0 + B.gap) / (B.minLane + B.gap)));
+    const at = {}, clusters = [];
     let group = [], end = -1, cols = [], cl = 0;
-    const close = () => { const K = Math.min(B.maxCols, Math.max(1, cols.length)); group.forEach(b => { at[b.id].K = K; at[b.id].cl = cl; }); group = []; cols = []; cl++; };
+    const close = () => {
+      const K = Math.min(fitK, Math.max(1, cols.length));
+      group.forEach(b => Object.assign(at[b.id], { K, cl, fold: at[b.id].col >= K }));
+      if (group.length) clusters.push({ cl, K, items: group.slice(), y0: group[0].y, y1: end });
+      group = []; cols = []; cl++;
+    };
     solid.forEach(b => {
       if (b.y >= end) { close(); end = -1; }
       let c = cols.findIndex(e => e <= b.y);
       if (c < 0) { c = cols.length; cols.push(0); }
       cols[c] = b.y + b.h;
-      at[b.id] = { col: Math.min(c, B.maxCols - 1) };
+      at[b.id] = { col: c };
       group.push(b);
       end = Math.max(end, b.y + b.h);
     });
@@ -440,34 +459,157 @@ class Component extends DCLogic {
     g._src = solid;
     g.bk = true;
     const live = !!g.evDown, fc = g.focus && at[g.focus] ? at[g.focus].cl : null;
-    // the writing area: from the first lane's "[" (in the hour margin, right of the hours) to the last "]"
-    const L0 = B.spine, R0 = g.w - B.right;
-    g.evs = g.blocks.map(b => {
-      const pos = b.land ? { col: 0, K: 1 } : at[b.id];
-      const lw = Math.floor((R0 - L0 - (pos.K - 1) * B.gap) / pos.K);
-      const spine = L0 + pos.col * (lw + B.gap), rs = spine + lw;
+    const lane = (col, K, l0, r0) => { const lw = Math.floor((r0 - l0 - (K - 1) * B.gap) / K); return { spine: l0 + col * (lw + B.gap), lw }; };
+    // one event's brackets and title in a lane (spine: its "[", lw: from "[" to "]"; dx, dy: the layer it is drawn in)
+    const draw = (b, pos, sp, dx, dy) => {
+      const spine = sp.spine - dx, lw = sp.lw, rs = spine + lw, y = b.y - dy;
       const h = b.h, s = B.serif, bw = lw + 2;
       const tx = spine + B.title - B.spine, tw = rs - s - 3 - tx;
       const quiet = fc != null && pos.cl === fc && b.id !== g.focus;
-      const ev = { id: b.id, y: b.y, h, bx: spine - 1, bw, lx: spine, lw,
-        bkCls: 'pl-bk' + (b.land || b.dashed ? ' is-dashed' : '') + (quiet ? ' is-quiet' : ''),
+      const ev = { id: b.id, y, h, bx: spine - 1, bw, lx: spine, lw,
+        bkCls: 'pl-bk' + (b.land || b.dashed || b.drawing ? ' is-dashed' : '') + (quiet ? ' is-quiet' : ''),
         dTop: 'M1 1H' + (1 + s), dSp: 'M1 1V' + (h - 1), dBot: 'M1 ' + (h - 1) + 'H' + (1 + s),
         cTop: 'M' + (bw - 1 - s) + ' 1H' + (bw - 1), cSp: 'M' + (bw - 1) + ' 1V' + (h - 1), cBot: 'M' + (bw - 1 - s) + ' ' + (h - 1) + 'H' + (bw - 1),
         topCls: b.held === 'top' ? 'is-held' : '', botCls: b.held === 'bottom' ? 'is-held' : '',
-        hasTitle: !b.land, tx, tw, th: b.th || h, words: b.words || [], when: b.when || '',
+        hasTitle: !b.land && !b.drawing, tx, tw, th: b.th || h, words: b.words || [], when: b.when || '',
         cls: 'pl-evt' + (b.empty ? ' is-empty' : '') + (pos.K > 1 ? ' is-col' : '') + (/is-cut/.test(b.cls || '') ? ' is-cut' : ''), extra: b.extra || '',
         label: (b.when || '') + (b.title ? ', ' + b.title : ''),
-        ends: live && !b.land && !b.empty && !b.synthetic, endX: pos.col ? spine - B.gap + 1 : spine + 6 - B.hitW, endW: pos.col ? B.gap + 5 : B.hitW, endTop: b.y - B.hitH / 2, endBot: b.y + h - B.hitH / 2 };
+        ends: live && !b.land && !b.drawing && !b.empty && !b.synthetic, endX: pos.col ? spine - B.gap + 1 : spine + 6 - B.hitW, endW: pos.col ? B.gap + 5 : B.hitW, endTop: y - B.hitH / 2, endBot: y + h - B.hitH / 2 };
+      if (b.fit) this.fitTitle(ev, b, pos.K > 1);
+      return ev;
+    };
+    g.evs = g.blocks.filter(b => b.land || !at[b.id].fold).map(b => {
+      const pos = b.land ? { col: 0, K: 1 } : at[b.id];
+      const ev = draw(b, pos, lane(pos.col, pos.K, L0, R0), 0, 0);
       if (live && ev.hasTitle && !b.empty && !b.synthetic) {
-        ev.down = e => g.evDown(e, b.id, 'title', tx);
-        ev.downTop = e => g.evDown(e, b.id, 'top', tx);
-        ev.downBot = e => g.evDown(e, b.id, 'bottom', tx);
+        ev.down = e => g.evDown(e, b.id, 'title', ev.tx);
+        ev.downTop = e => g.evDown(e, b.id, 'top', ev.tx);
+        ev.downBot = e => g.evDown(e, b.id, 'bottom', ev.tx);
       }
       /* a compressed agenda (a small widget): a title keeps to one line beside its event, cut at the edge */
-      if (g.pitch < 30 && !b.th && ev.hasTitle) { ev.cls += /is-cut/.test(ev.cls) ? '' : ' is-cut'; ev.extra += ';height:' + Math.max(h, g.pitch) + 'px'; }
+      if (g.pitch < 30 && !b.th && ev.hasTitle) { ev.cls += /is-cut/.test(ev.cls) ? '' : ' is-cut'; ev.extra += ';height:' + Math.max(ev.h, g.pitch) + 'px'; }
       return ev;
     });
+    // every event, the folded ones too, for a card opened from the fan: a folded one at its marker
+    g.evAll = g.evs.slice();
+    g.mores = [];
+    g.fan = { on: false };
+    clusters.filter(c => c.items.some(b => at[b.id].fold)).forEach(c => {
+      const folded = c.items.filter(b => at[b.id].fold), last = lane(c.K - 1, c.K, L0, R0);
+      const my = Math.min(...folded.map(b => b.y)), n = folded.length;
+      const more = { x: last.spine + last.lw - B.serif - 4, y: my + 2, t: '+' + n, label: n + ' more at the same time: a tap shows them', on: e => g.onMore && g.onMore(e, c.cl) };
+      g.mores.push(more);
+      folded.forEach(b => g.evAll.push({ id: b.id, y: more.y, h: 20, th: 20, tx: last.spine + B.title - B.spine, words: b.words || [], when: b.when || '' }));
+      if (g.fanOpen == null || (g.fanOpen !== true && g.fanOpen !== c.cl) || g.fan.on) return;
+      // the fan: the last lane's event and the folded ones, over the cluster's hours; lanes when they fit
+      // at the smallest lane, else one row each (time and title)
+      const shown = c.items.filter(b => at[b.id].col >= c.K - 1);
+      const fc2 = [], fat = {};
+      shown.forEach(b => { let k = fc2.findIndex(e => e <= b.y); if (k < 0) { k = fc2.length; fc2.push(0); } fc2[k] = b.y + b.h; fat[b.id] = k; });
+      const K2 = fc2.length, asLanes = K2 > 1 && K2 <= fitK;
+      const HD = 24, x = L0 - 10, w = R0 - L0 + 16;
+      const pick = id => e => g.onPick && g.onPick(e, id);
+      const fan = { on: true, x, w, head: shown.length + ' at the same time' + (w >= 240 ? ' · a tap opens one' : ''), label: 'The events at the same time; a tap outside closes them', close: e => g.onMore && g.onMore(e, null), evs: [], rows: [] };
+      if (asLanes) {
+        const y0 = Math.min(...shown.map(b => b.y)) - HD - 6, y1 = Math.max(...shown.map(b => b.y + b.h)) + 8;
+        Object.assign(fan, { y: y0, h: y1 - y0 });
+        fan.evs = shown.map(b => Object.assign(draw(b, { col: fat[b.id], K: K2 }, lane(fat[b.id], K2, L0, R0), x, y0), { pick: pick(b.id) }));
+      } else {
+        const RH = 34, hh = HD + shown.length * RH + 6, bodyH = (g.h || 9999) - 34;
+        const y = Math.max(0, Math.min(c.y0 - 6, bodyH - hh - 4));
+        Object.assign(fan, { y, h: hh });
+        // a widget too short for the rows: the fan reaches out over the page below it
+        if (hh > bodyH - 4) g.cls = (g.cls || '') + ' has-fan';
+        fan.rows = shown.map((b, i) => ({ y: HD + i * RH, when: b.when || '', words: b.words || [], pick: pick(b.id), label: (b.when || '') + (b.title ? ', ' + b.title : '') }));
+      }
+      g.fan = fan;
+    });
     g.blocks = [];
+  }
+
+  /* a title placed in a lane: its strokes split into words at the visible gaps, the words wrapped onto
+     the lines that fit the lane (each word keeps its own ink: only where it is placed changes); when the
+     event's height has no more lines, the ink shrinks evenly, never below about 70 % of its written
+     size, and beyond that it is cut with a fade. A title alone in its hours keeps its written size on
+     one line. b.fit: { t, salt, w } (w: the title's width on one line at its written size); while it is
+     moved (dashed) it keeps the lines it had, on one line, cut at the lane. */
+  fitTitle(ev, b, inLane) {
+    const PL = window.PLANNER, F = Component.FIT, f = b.fit;
+    const aw = ev.tw - F.pad - F.when;
+    let fs = F.fs, cut = false;
+    if (inLane && b.dashed) cut = f.w > aw;
+    else if (inLane) {
+      fs = 0;
+      for (let s = F.fs; s >= F.fs * F.least - 0.01; s -= 0.5) {
+        const lines = Math.max(1, Math.floor((ev.h - 2 + F.gap) / (s + F.gap)));
+        if (f.w * s / F.fs <= lines * aw * (lines > 1 ? F.slack : 1)) { fs = s; break; }
+      }
+      if (!fs) { fs = Math.round(F.fs * F.least * 10) / 10; cut = true; }
+    }
+    ev.words = PL.ink(f.t, { fs, salt: f.salt });
+    ev.written = PL.ink(f.t, { fs: F.fs, salt: f.salt });
+    ev.fs = fs;
+    if (cut && !/is-cut/.test(ev.cls)) ev.cls += ' is-cut';
+  }
+
+  /* the steps of event.wrap, event.more and event.route, before the brackets are drawn: the moved
+     title is fitted to its lane (held: dashed, its line kept); the fan of five at once, open or closed;
+     a line drawn down an empty lane inside the group, or the event it made */
+  groupSteps(ag, p, wr, more, route, L) {
+    const PL = window.PLANNER, yL = hh => ag.top + (hh / 2 - ag.from) * ag.pitch;
+    const w1 = ag.blocks.find(b => b.id === 'w1');
+    if (w1) {
+      w1.fit = { t: Component.EXTRA.wrap[0].t, salt: 'w1', w: Component.WRAPW };
+      if (!L && wr.held) { w1.dashed = true; ag.readouts = [{ y: Math.round(yL(wr.s)) - 17, t: PL.hm(wr.s) }]; }
+    }
+    if (more) {
+      ag.fanOpen = L ? L.fan : more === 'fan' ? true : null;
+      if (p.live) { ag.onMore = (e, c) => this.act(e, { fan: c }); ag.onPick = (e, id) => this.act(e, { fan: null, ev: 'card', id }); }
+    }
+    const r1 = ag.blocks.find(b => b.id === 'r1');
+    if (r1 && route === 'space') { r1.drawing = true; if (!L) ag.readouts = [{ y: Math.round(yL(30)) - 17, t: PL.hm(30) }, { y: Math.round(yL(32)) + 3, t: PL.hm(32) }]; }
+    if (r1 && route === 'joined') { r1.empty = true; r1.when = ''; }
+    if (route === 'gap') ag.focus = 'e3';
+  }
+
+  /* what each of those steps marks over the page (the static states only), the pen and the ink */
+  groupMarks(ag, p, wr, more, route, L, marks, pen) {
+    const PL = window.PLANNER, B = Component.BK, X = ag.x, Y = ag.y + 34;
+    const ev = id => ag.evs.find(e => e.id === id);
+    const box = (e, t) => marks.push({ cls: 'pl-mark is-below' + (e.lx > 200 ? ' is-end' : ''), x: X + e.lx - 6, y: Y + e.y - 4, w: e.lw + 12, h: e.h + 8, t });
+    if (route === 'gap') {
+      const e = ev('e3');
+      if (!e) return;
+      const x = e.lx - 7, y = e.y + 26;
+      ag.inks = [{ x, y, w: e.lw - 8, words: PL.ink('bring the card', { fs: 19, salt: 'g1' }) }];
+      if (!L) {
+        Object.assign(pen, { on: true, x: X + x + 126, y: Y + y + 18 - 43 });
+        marks.push({ cls: 'pl-mark is-below', x: X + e.lx - B.gap - 2, y: Y + y - 4, w: B.gap + 4, h: 30, t: 'pen-down in the gap: nearest [' });
+      }
+    }
+    if (L) return;
+    if (wr) {
+      const e = ev('w1');
+      if (!e) return;
+      const pct = Math.round(100 * e.fs / Component.FIT.fs);
+      const t = { written: 'written in free time: one line across the width', held: 'held: the same line, cut at its lane until it lands',
+        dropped: 'dropped: its words placed again, on two lines', short: '30 minutes, one line: the ink shrinks evenly, to ' + pct + ' %',
+        cut: 'still too long at ' + pct + ' %: cut with a fade', back: 'in free time again: one line, as written' }[p.wrap];
+      if (t) box(e, t);
+    }
+    if (more === 'lanes' || more === 'closed') {
+      const m = ag.mores[0];
+      if (m && more === 'lanes') marks.push({ cls: 'pl-mark is-below is-end', x: X + m.x - 36, y: Y + m.y - 5, w: 40, h: 28, t: 'two more than fit at 160 px each' });
+      const ids = ['s2', 'm1', 'e3'].map(ev).filter(Boolean);
+      if (more === 'closed' && ids.length) {
+        const y0 = Math.min(...ids.map(e => e.y)), y1 = Math.max(...ids.map(e => e.y + e.h));
+        marks.push({ cls: 'pl-refresh', x: X + 22, y: Y + y0 - 30, w: ag.w - 24, h: y1 - y0 + 38, t: 'closed: one refresh of the group, as it was' });
+      }
+    }
+    const r1 = ev('r1');
+    if (r1 && route === 'space') Object.assign(pen, { on: true, x: X + r1.lx - 3, y: Y + r1.y + r1.h - 44 });
+    if (r1 && route === 'space') box(r1, 'a line down the empty lane: free time inside the group');
+    if (r1 && route === 'joined') box(r1, 'a new event, 15:00–16:00: it joins the group, in that lane');
   }
 
   /* the pen writing into an event's lane (the bank's): a line of ink under its title, the pen at
@@ -544,7 +686,7 @@ class Component extends DCLogic {
 
   /* an event's card under its title: the title as written, time and day, and its actions */
   eventCard(PL, ag, pad, ttl, id, kind) {
-    const e = ag && ag.evs.find(x => x.id === id);
+    const e = ag && (ag.evAll || ag.evs).find(x => x.id === id);
     const CW = 340, day = ttl.main + ' ' + ttl.sub.split(' ·')[0];
     const x = ag && e ? Math.min(ag.x + e.tx, ag.x + ag.w - 4 - CW) : 0;
     const y = ag && e ? ag.y + 34 + e.y + Math.max(e.h, e.th) + 6 : 300;
@@ -553,7 +695,7 @@ class Component extends DCLogic {
     const act = (t, cls, step) => ({ t, cls, on: ev => step === 'deleted' ? this.del(ev, id) : this.act(ev, { ev: step, id, stroke: null }) });
     return { cls: 'pl-pop pl-card is-confirm', label: confirm ? 'Delete this event?' : 'The event', hasActs: true, q: confirm ? 'Delete this event?' : '',
       x: pad + x, y: pad + (up && e ? ag.y + 34 + e.y - 156 : y), w: CW,
-      words: e ? e.words : PL.ink('dentist', { fs: 19, salt: 'e3' }), fact: (e ? e.when : '14:00–15:00') + ' · ' + day,
+      words: e ? e.written || e.words : PL.ink('dentist', { fs: 19, salt: 'e3' }), fact: (e ? e.when : '14:00–15:00') + ' · ' + day,
       acts: confirm ? [act('Keep', 'pl-btn', 'none'), act('Delete event', 'pl-btn is-primary', 'deleted')]
         : [act('Delete event', 'pl-btn', 'confirm'), act('Open', 'pl-btn is-primary', 'page')],
       scrim: !!this.props.live, close: ev => this.act(ev, { ev: 'none', stroke: null }) };
@@ -605,8 +747,12 @@ class Component extends DCLogic {
   /* the live state a board starts from: what its props show */
   seed() {
     const p = this.props, sm = Component.staticMove(p.drag);
-    const ev = p.ev === 'strike' || p.ev === 'deleted' || !p.ev ? 'none' : p.ev;
-    return { seeded: true, ev, id: 'e3', moves: sm && !sm.dashed ? { [sm.id]: { s: sm.s, e: sm.e } } : {}, drop: p.ev === 'deleted' ? ['e3'] : [], live: null, stroke: null };
+    const chosen = p.more === 'chosen' || p.wrap === 'card';
+    const ev = chosen ? 'card' : p.ev === 'strike' || p.ev === 'deleted' || !p.ev ? 'none' : p.ev;
+    const wr = Component.WRAP[p.wrap], moves = sm && !sm.dashed ? { [sm.id]: { s: sm.s, e: sm.e } } : {};
+    if (wr) moves.w1 = { s: wr.s, e: wr.e };
+    return { seeded: true, ev, id: p.more === 'chosen' ? 's1' : p.wrap === 'card' ? 'w1' : 'e3', moves, drop: p.ev === 'deleted' ? ['e3'] : [], live: null, stroke: null,
+      fan: p.more === 'fan' || p.more === 'wfan' ? true : null };
   }
 
   /* where a static state shows the dentist: dashed while it is moved, solid once released */
@@ -865,6 +1011,7 @@ class Component extends DCLogic {
   /* a widget alone, at its preferred and at its minimum size, empty, full or past full */
   sheet(voice, p, PL) {
     const id = p.widget || 'todo', fill = p.fill || 'full', D = PL.WG[id];
+    const more = id === 'agenda' && (p.more === 'widget' || p.more === 'wfan');
     const node = Component.SHEETNODE[id];
     const tmp = 'sheet-' + id;
     PL.T[tmp] = { kind: node.period || 'day', name: D.name, root: { k: 'col', c: [Object.assign({}, node, { grow: true })] } };
@@ -876,8 +1023,16 @@ class Component extends DCLogic {
     let x = 0;
     const cols = [];
     sizes.forEach(([w, h], i) => {
-      const pg = PL.page({ tmpl: tmp, W: w, H: h, empty: fill === 'empty', fs: 19, day: Number(p.day) || 0 });
-      pg.widgets.forEach(g => { const d = this.decorate(Object.assign(g, { x: g.x + x, y: g.y }), p, false); if (d.isAgenda && !d.compact) this.toBrackets(d); widgets.push(d); });
+      const pg = PL.page({ tmpl: tmp, W: w, H: h, empty: fill === 'empty', fs: 19, day: Number(p.day) || 0, extra: more ? Component.EXTRA.more : undefined });
+      pg.widgets.forEach(g => {
+        const d = this.decorate(Object.assign(g, { x: g.x + x, y: g.y }), p, false);
+        if (d.isAgenda && !d.compact) {
+          // five at once in the small widget (event.more): one lane and the marker; its fan as rows
+          if (more) { d.fanOpen = this.state.seeded ? this.state.fan : p.more === 'wfan' ? true : null; if (p.live) { d.onMore = (e, c) => this.act(e, { fan: c }); d.onPick = e => this.act(e, { fan: null }); } }
+          this.toBrackets(d);
+        }
+        widgets.push(d);
+      });
       cols.push({ w, head: (i === 0 ? (fill === 'more' ? 'Too small for its content' : 'Preferred size') : 'Minimum size') + ' · ' + w + ' × ' + h,
         cap: i === 0 ? D.kind + ' · width: min ' + D.minW + ', preferred ' + D.prefW : 'never smaller; ink is never shrunk' });
       x += w + 28;
@@ -891,13 +1046,28 @@ class Component extends DCLogic {
    next lane's "[", the serif, the title's left edge (for the first lane; each lane the same distance
    from its "["), an end's touch target (it ends at the serif's tip and reaches left over the margin;
    in a later lane only over the gap, so a pen-down in the neighbour's lane always inks there),
-   the most lanes side by side */
-Component.BK = { spine: 36, right: 10, gap: 12, serif: 5, title: 44, hitW: 44, hitH: 28, maxCols: 3 };
-/* events added for the overlap boards: one at the same time as the dentist, and a long one around both */
+   the smallest lane: about 4 cm on the panel; more lanes than fit at it fold into a "+N" marker */
+Component.BK = { spine: 36, right: 10, gap: 12, serif: 5, title: 44, hitW: 44, hitH: 28, minLane: 160 };
+/* a title fitted to its lane (toBrackets, fitTitle): the written size, the least it shrinks to (a
+   share of the written size), the gap between its lines, the title's padding and the time beside it
+   (px of the lane), and how full a line is taken to be once the words wrap onto more than one */
+Component.FIT = { fs: 19, least: 0.7, gap: 2, pad: 12, when: 76, slack: 0.86 };
+/* events added for the overlap boards: one at the same time as the dentist, and a long one around both;
+   a title written in free time and moved beside the dentist (wrap); five at once (more) */
 Component.EXTRA = {
   two: [{ id: 's1', day: 11, s: 29, e: 31, t: 'call the bank' }],
-  three: [{ id: 's1', day: 11, s: 29, e: 31, t: 'call the bank' }, { id: 's2', day: 11, s: 26, e: 32, t: 'work from the café' }]
+  three: [{ id: 's1', day: 11, s: 29, e: 31, t: 'call the bank' }, { id: 's2', day: 11, s: 26, e: 32, t: 'work from the café' }],
+  wrap: [{ id: 'w1', day: 11, s: 32, e: 34, t: 'take the coats to the cleaner' }],
+  more: [{ id: 's2', day: 11, s: 26, e: 32, t: 'work from the café' }, { id: 'm1', day: 11, s: 27, e: 30, t: 'the plumber comes' },
+    { id: 's1', day: 11, s: 29, e: 31, t: 'call the bank' }, { id: 'm2', day: 11, s: 29, e: 30, t: 'sign for the parcel' }]
 };
+/* where each step of event.wrap puts the moved title (half hours), and whether the café is around it */
+Component.WRAP = {
+  written: { s: 32, e: 34 }, held: { s: 29, e: 31, held: true }, dropped: { s: 29, e: 31 }, short: { s: 29, e: 30 },
+  cut: { s: 29, e: 30, cafe: true }, card: { s: 29, e: 30, cafe: true }, back: { s: 32, e: 33 }
+};
+/* the moved title's width on one line at the written size (px), measured on the boards */
+Component.WRAPW = 243;
 Component.IC = {
   chevL: 'M15 5l-7 7 7 7', chevR: 'M9 5l7 7-7 7',
   cog: 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z M19.4 13.4l1.7 1.3-1.9 3.3-2-.8a7.4 7.4 0 0 1-1.8 1l-.3 2.1h-3.8l-.3-2.1a7.4 7.4 0 0 1-1.8-1l-2 .8-1.9-3.3 1.7-1.3a7.6 7.6 0 0 1 0-2.8L3.3 9.3l1.9-3.3 2 .8a7.4 7.4 0 0 1 1.8-1l.3-2.1h3.8l.3 2.1a7.4 7.4 0 0 1 1.8 1l2-.8 1.9 3.3-1.7 1.3a7.6 7.6 0 0 1 0 2.8z',

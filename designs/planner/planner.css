@@ -453,6 +453,26 @@ html, body { margin: 0; }
 .pl-evp-foot { display: flex; padding: 14px 0; }
 /* a refresh mark too narrow for its label: the label beside it */
 .pl-refresh.is-side span { right: auto; left: calc(100% + 6px); top: -2px; }
-/* a title that has to fit its event: on one line, cut at the column's edge (no ellipsis) */
-.pl-evt.is-cut .pl-ink { flex-wrap: nowrap; overflow: hidden; }
+/* a title that has to fit its event: on one line, cut at the lane's edge with a fade (no ellipsis);
+   the ink takes the whole width beside the time, so the fade falls on its end only when it is cut */
+.pl-evt.is-cut .pl-ink { flex: 1 1 0; flex-wrap: nowrap; overflow: hidden; -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 30px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 30px), transparent); }
 .pl-evt.is-cut { overflow: hidden; }
+/* a mark whose label ends at its right edge (a mark in a later lane) */
+.pl-mark.is-end span { left: auto; right: -2px; }
+/* more events at the same time than lanes fit: "+N" on the last lane, at the first folded one's start;
+   its touch target reaches past the pill */
+.pl-lanes-more { position: absolute; z-index: 2; transform: translateX(-100%); height: 20px; padding: 0 7px; display: flex; align-items: center; border-radius: 10px;
+  font: 600 11.5px/1 var(--font-mono); color: var(--ink); text-decoration: none; background: var(--paper); box-shadow: inset 0 0 0 1.5px var(--ink); }
+.pl-lanes-more::before { content: ""; position: absolute; inset: -12px -8px; }
+[data-theme^="stationery"] .pl-lanes-more { box-shadow: inset 0 0 0 1px var(--ink); }
+/* the fan: those events over the group's hours, a layer that closes on a tap outside or on a choice */
+.pl-wg.has-fan { overflow: visible; z-index: 3; }
+.pl-fan-scrim { position: absolute; inset: -34px 0 0 0; z-index: 4; }
+.pl-fan { position: absolute; z-index: 5; background: var(--paper); color: var(--ink); border-radius: var(--v-card-radius); box-shadow: var(--v-card-edge); }
+[data-theme^="stationery"] .pl-fan { box-shadow: 0 0 0 1px var(--ink), 0 3px 0 var(--shade); }
+.pl-fan-h { position: absolute; left: 0; right: 0; top: 0; height: 24px; padding: 0 10px; display: flex; align-items: center; border-bottom: var(--v-row-rule); font: 500 10.5px/1 var(--font-mono); color: var(--ink-soft); white-space: nowrap; overflow: hidden; }
+.pl-fan-r { position: absolute; left: 0; right: 0; height: 34px; display: flex; align-items: center; gap: 10px; padding: 0 12px; border-bottom: var(--v-row-rule); color: var(--ink); text-decoration: none; }
+.pl-fan-r:last-child { border-bottom: 0; }
+.pl-fan-r .when { flex: none; width: 74px; font: 400 10px/1 var(--font-mono); }
+[data-theme^="editorial"] .pl-fan-r .when, [data-theme^="stationery"] .pl-fan-r .when { font: italic 400 12px/1 var(--v-text); }
+.pl-fan-r .pl-ink { flex: 1 1 0; overflow: hidden; -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 30px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 30px), transparent); }

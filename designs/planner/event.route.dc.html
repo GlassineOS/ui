@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Proposal: strokes between the brackets of a group</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div data-spec-id="event.route" style="width:824px;height:1438px;box-sizing:border-box;padding:28px 32px;display:flex;flex-direction:column;gap:18px;background:#e6e6e6;color:#1b1b1b;font-family:'IBM Plex Sans',sans-serif">
+<div style="display:flex;flex-direction:column;gap:6px">
+<span style="font:500 13px/1.2 'IBM Plex Mono',monospace;color:#3d3d3d">event.route</span>
+<h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">Proposal: strokes between the brackets of a group</h1>
+<p style="margin:0;max-width:760px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">A proposal, not decided yet. Inside a group, a stroke can land outside every bracket. A stroke whose pen-down point is in the 12 px gap between one lane’s ] and the next lane’s [ goes to the nearest bracket, and its ink stays where it was written. A lane’s empty space, where its event has ended and the group goes on (right of the café, after the dentist), counts as free time: a line drawn down it makes a new event from the line’s start to its end, which joins the group in that lane, as a line down the hour margin does in an empty hour. What other ink written there belongs to is still open. Here: the café, the dentist and the call to the bank; “bring the card”, started in the gap left of the dentist’s [; a line down the dentist’s lane from 15:00 to 16:00; and the new event it made.</p>
+</div>
+<dc-import name="ThemeBar" voice="{{ voice }}" on-pick="{{ pick }}" hint-size="100%,112px"></dc-import>
+<dc-import name="Planner" voice="{{ voice }}" orient="portrait" tmpl="day-agenda" route="{{ step }}" live="true" hint-size="760px,1008px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "step": {"editor": "enum", "options": ["gap", "space", "joined"], "default": "gap"}, "$preview": {"width": 824, "height": 1438}, "$states": [{"id": "gap", "name": "Pen-down in the gap: the nearest bracket", "props": {"step": "gap"}}, {"id": "space", "name": "A line down an empty lane", "props": {"step": "space"}, "from": [{"state": "gap", "label": "the pen draws down the lane after the dentist"}]}, {"id": "joined", "name": "A new event in the group", "props": {"step": "joined"}, "from": [{"state": "space", "label": "the pen lifts"}]}]}'>
+class Component extends DCLogic {
+  state = {};
+  renderVals() {
+    const s = this.state, p = this.props;
+    return { voice: s.voice ?? p.voice ?? 'white', pick: (k, v) => this.setState({ [k]: v }), step: p.step ?? "gap" };
+  }
+}
+</script>
+</body>
+</html>

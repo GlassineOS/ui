@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>More events at once than lanes: +N, and a fan</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div data-spec-id="event.more" style="width:824px;height:1460px;box-sizing:border-box;padding:28px 32px;display:flex;flex-direction:column;gap:18px;background:#e6e6e6;color:#1b1b1b;font-family:'IBM Plex Sans',sans-serif">
+<div style="display:flex;flex-direction:column;gap:6px">
+<span style="font:500 13px/1.2 'IBM Plex Mono',monospace;color:#3d3d3d">event.more</span>
+<h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">More events at once than lanes: +N, and a fan</h1>
+<p style="margin:0;max-width:760px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">A lane is never narrower than about 160 px (about 4 cm on the panel), so that a word fits and the pen can land in it. When a group needs more lanes than fit at the width shown, the later events fold into a “+N” marker on the last lane, at the first folded event’s start; the lanes shown keep their brackets and titles. A tap on the marker fans them out over the group: the last lane’s event and the folded ones, as lanes when they fit at that width and as rows (time and title) when they don’t. The fan is for the moment: a tap outside closes it, and so does choosing one, which opens that event’s card. Opening and closing refresh only the group’s place. Here: five at once on the upright day agenda (three lanes and +2), and the same day in the small agenda widget at its preferred and its smallest size (one lane and +4). On this board you can tap the marker, an event in the fan, or outside it.</p>
+</div>
+<dc-import name="ThemeBar" voice="{{ voice }}" on-pick="{{ pick }}" hint-size="100%,112px"></dc-import>
+<dc-import name="Planner" voice="{{ voice }}" orient="portrait" tmpl="day-agenda" screen="{{ screen }}" widget="agenda" fill="full" more="{{ step }}" live="true" hint-size="760px,1008px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "step": {"editor": "enum", "options": ["lanes", "fan", "closed", "chosen", "widget", "wfan"], "default": "lanes"}, "$preview": {"width": 824, "height": 1460}, "$states": [{"id": "lanes", "name": "Five at once: three lanes and +2", "props": {"step": "lanes"}}, {"id": "fan", "name": "A tap on +2: fanned out over the group", "props": {"step": "fan"}, "from": [{"state": "lanes", "label": "tap +2"}]}, {"id": "closed", "name": "A tap outside: closed again", "props": {"step": "closed"}, "from": [{"state": "fan", "label": "tap outside the fan"}]}, {"id": "chosen", "name": "Choosing one: its card", "props": {"step": "chosen"}, "from": [{"state": "fan", "label": "tap the call to the bank"}]}, {"id": "widget", "name": "The small widget: one lane and +4", "props": {"step": "widget"}}, {"id": "wfan", "name": "Its fan: one row each", "props": {"step": "wfan"}, "from": [{"state": "widget", "label": "tap +4"}]}]}'>
+class Component extends DCLogic {
+  state = {};
+  renderVals() {
+    const s = this.state, p = this.props;
+    return { voice: s.voice ?? p.voice ?? 'white', pick: (k, v) => this.setState({ [k]: v }), step: p.step ?? "lanes", screen: /^w/.test(p.step || "") ? "sheet" : "view" };
+  }
+}
+</script>
+</body>
+</html>

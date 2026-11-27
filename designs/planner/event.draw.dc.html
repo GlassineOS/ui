@@ -15,7 +15,7 @@
 <div style="display:flex;flex-direction:column;gap:6px">
 <span style="font:500 13px/1.2 'IBM Plex Mono',monospace;color:#3d3d3d">event.draw</span>
 <h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">Drawing an event into free time</h1>
-<p style="margin:0;max-width:760px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">Drawing: the pen draws a line down the hour margin, over free time. It snaps to half hours, and the margin shows its start and end. Drawn: when the pen lifts, a new event exists from 16:00 to 17:00. Its bracket stands in the margin with its ends turned in, and beside it a dotted line marks where its title goes. Titled: the pen writes the title there; nothing is read aloud or shown as text. On this board a tap takes the next step.</p>
+<p style="margin:0;max-width:760px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">Drawing: the pen draws a line down the hour margin, over free time. It snaps to half hours, and the margin shows its start and end. Drawn: when the pen lifts, a new event exists from 16:00 to 17:00. Its brackets close around the row, [ in the margin and ] at the right end, their ends turned in, and between them a dotted line marks where its title goes. Titled: the pen writes the title there; nothing is read aloud or shown as text. On this board a tap takes the next step.</p>
 </div>
 <dc-import name="ThemeBar" voice="{{ voice }}" on-pick="{{ pick }}" hint-size="100%,112px"></dc-import>
 <div role="button" aria-label="The next step" onClick="{{ next }}" style="cursor:pointer"><dc-import name="Planner" voice="{{ voice }}" orient="portrait" tmpl="day-agenda" drag="{{ drag }}" hint-size="760px,1008px"></dc-import></div>

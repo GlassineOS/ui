@@ -163,6 +163,11 @@ html, body { margin: 0; }
 [data-theme^="stationery"] .pl-bk path { stroke-width: 1; }
 [data-theme^="stationery"] .pl-bk path.is-held { stroke-width: 2; }
 [data-theme^="stationery"] .pl-bk.is-dashed path { stroke-width: 1; stroke-dasharray: 2 2; }
+/* the other events of a cluster while the pen writes in one lane: their brackets in the quiet grey */
+.pl-bk.is-quiet path { stroke: var(--dim); }
+/* ink written into an event's lane */
+.pl-evink { position: absolute; display: flex; pointer-events: none; }
+.pl-evink .pl-ink { flex-wrap: wrap; row-gap: 2px; }
 .pl-evt { position: absolute; display: flex; align-items: flex-start; gap: 6px; padding: 2px 4px 0 8px; overflow: hidden; touch-action: none; cursor: default; }
 .pl-evt .pl-ink { flex-wrap: wrap; row-gap: 2px; }
 .pl-evt .when { flex: none; margin-left: auto; padding-top: 3px; font: 400 10px/1 var(--font-mono); color: var(--ink); white-space: nowrap; }
@@ -448,8 +453,6 @@ html, body { margin: 0; }
 .pl-evp-foot { display: flex; padding: 14px 0; }
 /* a refresh mark too narrow for its label: the label beside it */
 .pl-refresh.is-side span { right: auto; left: calc(100% + 6px); top: -2px; }
-/* titles in columns (events at the same time): the time right after the title */
-.pl-evt.is-col .when { margin-left: 2px; }
 /* a title that has to fit its event: on one line, cut at the column's edge (no ellipsis) */
 .pl-evt.is-cut .pl-ink { flex-wrap: nowrap; overflow: hidden; }
 .pl-evt.is-cut { overflow: hidden; }

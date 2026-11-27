@@ -53,17 +53,39 @@
 </div>
 </sc-if>
 
+<sc-if value="{{ evp.on }}" hint-placeholder-val="{{ false }}">
+<nav class="pl-bar" aria-label="Event">
+<a class="pl-btn pl-back" href="#" onClick="{{ evp.back }}"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.chevL }}"></path></svg>Back</a>
+<div class="pl-title"><b>{{ evp.head }}</b><span>{{ evp.sub }}</span></div>
+</nav>
+</sc-if>
+
 <sc-if value="{{ showPage }}" hint-placeholder-val="{{ true }}">
 <div class="pl-page">
+<sc-if value="{{ showContent }}" hint-placeholder-val="{{ true }}">
 <div class="pl-content" style="left:{{ cx }}px;top:{{ cy }}px;width:{{ cw }}px;height:{{ ch }}px">
 <sc-for list="{{ widgets }}" as="g" hint-placeholder-count="3"><dc-import name="Widget" g="{{ g }}" style="position:absolute;left:{{ g.x }}px;top:{{ g.y }}px;width:{{ g.w }}px;height:{{ g.h }}px" hint-size="200px,120px"></dc-import>
 </sc-for>
 <sc-for list="{{ handles }}" as="hd" hint-placeholder-count="0"><span class="{{ hd.cls }}" style="left:{{ hd.x }}px;top:{{ hd.y }}px"></span></sc-for>
 <sc-for list="{{ tags }}" as="tg" hint-placeholder-count="0"><span class="pl-ed-tag" style="left:{{ tg.x }}px;top:{{ tg.y }}px">{{ tg.t }}<sc-for list="{{ tg.btns }}" as="tb" hint-placeholder-count="2"><a href="#" aria-label="{{ tb.label }}">{{ tb.t }}</a></sc-for></span></sc-for>
 <sc-for list="{{ marks }}" as="mk" hint-placeholder-count="0"><div class="{{ mk.cls }}" style="left:{{ mk.x }}px;top:{{ mk.y }}px;width:{{ mk.w }}px;height:{{ mk.h }}px"><span>{{ mk.t }}</span></div></sc-for>
+<sc-for list="{{ strokes }}" as="sk" hint-placeholder-count="0"><svg class="pl-stroke" viewBox="0 0 {{ sk.w }} {{ sk.h }}" style="left:{{ sk.x }}px;top:{{ sk.y }}px;width:{{ sk.w }}px;height:{{ sk.h }}px" aria-hidden="true"><path d="{{ sk.d }}"></path></svg></sc-for>
 <sc-if value="{{ pen.on }}" hint-placeholder-val="{{ false }}"><svg class="pl-pen" viewBox="0 0 46 46" style="left:{{ pen.x }}px;top:{{ pen.y }}px"><path d="M3 43l5-14 26-26 9 9-26 26z M8 29l9 9 M30 7l9 9" fill="var(--paper)" stroke="var(--ink)" stroke-width="2" stroke-linejoin="round"></path></svg></sc-if>
 <sc-if value="{{ tf.on }}" hint-placeholder-val="{{ false }}"><div class="pl-tf" style="left:{{ tf.x }}px;top:{{ tf.y }}px;width:{{ tf.w }}px">{{ tf.pre }}<span class="caret"></span>{{ tf.post }}</div></sc-if>
 </div>
+</sc-if>
+<sc-if value="{{ evp.on }}" hint-placeholder-val="{{ false }}">
+<div class="pl-evp">
+<div class="pl-evp-r"><span class="k">Title</span><div class="v"><sc-if value="{{ evp.isText }}" hint-placeholder-val="{{ false }}"><div class="pl-evp-tf">{{ evp.titleText }}<span class="caret"></span></div></sc-if><sc-if value="{{ evp.notText }}" hint-placeholder-val="{{ true }}"><div class="pl-evp-line is-title" role="textbox" aria-label="Title: write, or tap with a finger to type" onClick="{{ evp.textTap }}"><span class="pl-ink"><sc-for list="{{ evp.titleBig }}" as="w" hint-placeholder-count="2"><span class="{{ w.cls }}" style="{{ w.st }}">{{ w.t }}</span></sc-for></span></div></sc-if></div></div>
+<div class="pl-evp-r"><span class="k">When</span><div class="v pl-evp-when"><a class="pl-btn pl-evp-date" href="#" aria-label="The day: a tap opens the month"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.calendar }}"></path></svg>{{ evp.date }}</a><div class="pl-evp-times"><span class="pl-evp-time"><span class="lbl">from</span><a class="pl-btn" href="#" aria-label="Start 30 minutes earlier" onClick="{{ evp.sMinus }}">−</a><b>{{ evp.start }}</b><a class="pl-btn" href="#" aria-label="Start 30 minutes later" onClick="{{ evp.sPlus }}">+</a></span><span class="pl-evp-time"><span class="lbl">to</span><a class="pl-btn" href="#" aria-label="End 30 minutes earlier" onClick="{{ evp.eMinus }}">−</a><b>{{ evp.end }}</b><a class="pl-btn" href="#" aria-label="End 30 minutes later" onClick="{{ evp.ePlus }}">+</a></span><span class="pl-evp-dur">{{ evp.dur }}</span></div></div></div>
+<div class="pl-evp-r"><span class="k">Where</span><div class="v"><div class="pl-evp-line" role="textbox" aria-label="Where"><span class="pl-ink"><sc-for list="{{ evp.place }}" as="w" hint-placeholder-count="2"><span class="{{ w.cls }}" style="{{ w.st }}">{{ w.t }}</span></sc-for></span></div></div></div>
+<div class="pl-evp-r"><span class="k">Notes</span><div class="v"><sc-for list="{{ evp.notes }}" as="nl" hint-placeholder-count="4"><div class="pl-evp-line" role="textbox" aria-label="Notes"><span class="pl-ink"><sc-for list="{{ nl.words }}" as="w" hint-placeholder-count="2"><span class="{{ w.cls }}" style="{{ w.st }}">{{ w.t }}</span></sc-for></span></div></sc-for></div></div>
+<div class="pl-evp-r"><span class="k">With</span><div class="v"><sc-for list="{{ evp.people }}" as="pp" hint-placeholder-count="2"><div class="pl-evp-line" role="textbox" aria-label="Participants"><span class="pl-ink"><sc-for list="{{ pp.words }}" as="w" hint-placeholder-count="2"><span class="{{ w.cls }}" style="{{ w.st }}">{{ w.t }}</span></sc-for></span></div></sc-for></div></div>
+<div class="pl-evp-r"><span class="k">Repeat</span><div class="v"><div class="pl-evp-seg" role="radiogroup" aria-label="Repeat"><sc-for list="{{ evp.repeat }}" as="o" hint-placeholder-count="5"><a class="{{ o.cls }}" href="#" role="radio" onClick="{{ o.on }}">{{ o.t }}</a></sc-for></div></div></div>
+<div class="pl-evp-r"><span class="k">Remind</span><div class="v"><div class="pl-evp-seg" role="radiogroup" aria-label="Reminder, before the start"><sc-for list="{{ evp.remind }}" as="o" hint-placeholder-count="5"><a class="{{ o.cls }}" href="#" role="radio" onClick="{{ o.on }}">{{ o.t }}</a></sc-for></div></div></div>
+<div class="pl-evp-foot"><a class="pl-btn" href="#" onClick="{{ evp.del }}"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.trash }}"></path></svg>Delete event</a></div>
+</div>
+</sc-if>
 
 
 
@@ -89,7 +111,8 @@
 </sc-if>
 
 <sc-if value="{{ card.on }}" hint-placeholder-val="{{ false }}">
-<div class="pl-pop pl-card" role="dialog" aria-label="The whole entry; a tap anywhere closes it" style="left:{{ card.x }}px;top:{{ card.y }}px;width:{{ card.w }}px"><span class="pl-ink"><sc-for list="{{ card.words }}" as="w" hint-placeholder-count="6"><span class="{{ w.cls }}" style="{{ w.st }}">{{ w.t }}</span></sc-for></span></div>
+<sc-if value="{{ card.scrim }}" hint-placeholder-val="{{ false }}"><div class="pl-evscrim" onClick="{{ card.close }}"></div></sc-if>
+<div class="{{ card.cls }}" role="dialog" aria-label="{{ card.label }}" style="left:{{ card.x }}px;top:{{ card.y }}px;width:{{ card.w }}px"><sc-if value="{{ card.q }}" hint-placeholder-val="{{ false }}"><div class="pl-card-q">{{ card.q }}</div></sc-if><span class="pl-ink"><sc-for list="{{ card.words }}" as="w" hint-placeholder-count="6"><span class="{{ w.cls }}" style="{{ w.st }}">{{ w.t }}</span></sc-for></span><sc-if value="{{ card.hasActs }}" hint-placeholder-val="{{ false }}"><div class="pl-card-fact">{{ card.fact }}</div><div class="pl-card-acts"><sc-for list="{{ card.acts }}" as="ca" hint-placeholder-count="2"><a class="{{ ca.cls }}" href="#" onClick="{{ ca.on }}">{{ ca.t }}</a></sc-for></div></sc-if></div>
 </sc-if>
 
 <sc-if value="{{ sheetOv.on }}" hint-placeholder-val="{{ false }}">
@@ -109,7 +132,7 @@
 <div class="pl-sheet-h" style="padding:0 0 8px"><h2>{{ dialog.title }}</h2></div>
 <p style="margin:0 0 8px;font-size:15px;line-height:1.45">{{ dialog.body }}</p>
 <p style="margin:0 0 16px;font-size:13.5px;line-height:1.45;color:var(--ink-soft)">{{ dialog.soft }}</p>
-<div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap"><sc-for list="{{ dialog.acts }}" as="da" hint-placeholder-count="3"><a class="{{ da.cls }}" href="#">{{ da.t }}</a></sc-for></div>
+<div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap"><sc-for list="{{ dialog.acts }}" as="da" hint-placeholder-count="3"><a class="{{ da.cls }}" href="#" onClick="{{ da.on }}">{{ da.t }}</a></sc-for></div>
 </div>
 </sc-if>
 
@@ -120,7 +143,7 @@
 <div class="pl-ed-bar"><sc-for list="{{ edBar.btns }}" as="eb" hint-placeholder-count="4"><a class="{{ eb.cls }}" href="#"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ eb.icon }}"></path></svg>{{ eb.t }}</a></sc-for><span class="sp"></span><span style="font:400 12px/1.3 var(--font-mono);color:var(--ink-soft)">{{ edBar.note }}</span></div>
 </sc-if>
 <sc-if value="{{ kbd.on }}" hint-placeholder-val="{{ false }}">
-<sc-if value="{{ kbd.bar }}" hint-placeholder-val="{{ true }}"><div class="pl-tbar" style="bottom:{{ kbd.h }}px"><span class="lbl">{{ kbd.label }}</span><sc-for list="{{ kbd.btns }}" as="kb" hint-placeholder-count="2"><a class="{{ kb.cls }}" href="#"><sc-if value="{{ kb.tog }}" hint-placeholder-val="{{ false }}"><span class="{{ kb.togCls }}"></span></sc-if>{{ kb.t }}</a></sc-for></div></sc-if>
+<sc-if value="{{ kbd.bar }}" hint-placeholder-val="{{ true }}"><div class="pl-tbar" style="bottom:{{ kbd.h }}px"><span class="lbl">{{ kbd.label }}</span><sc-for list="{{ kbd.btns }}" as="kb" hint-placeholder-count="2"><a class="{{ kb.cls }}" href="#" onClick="{{ kb.on }}"><sc-if value="{{ kb.tog }}" hint-placeholder-val="{{ false }}"><span class="{{ kb.togCls }}"></span></sc-if>{{ kb.t }}</a></sc-for></div></sc-if>
 <div class="pl-kbd" style="height:{{ kbd.h }}px"><sc-for list="{{ kbd.rows }}" as="kr" hint-placeholder-count="4"><div class="kr"><sc-for list="{{ kr.keys }}" as="ky" hint-placeholder-count="10"><span class="{{ ky.cls }}">{{ ky.t }}</span></sc-for></div></sc-for><div class="cap">the system keyboard (GlassineOS/shell); not part of these boards</div></div>
 </sc-if>
 </sc-if>
@@ -141,25 +164,34 @@
 </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "orient": {"editor": "enum", "options": ["portrait", "landscape"], "default": "portrait"}, "screen": {"editor": "enum", "options": ["view", "refused", "sheet", "picker", "year", "editor"], "default": "view"}, "tmpl": {"editor": "enum", "options": ["day-lists", "day-diary", "day-agenda", "week-columns", "week-spread", "week-lists", "month-grid", "month-goals"], "default": "day-lists"}, "hint": {"editor": "enum", "options": ["count", "none"], "default": "count"}, "search": {"editor": "enum", "options": ["none", "bar", "popup"], "default": "none"}, "overlay": {"editor": "enum", "options": ["none", "info", "cog", "hidden", "settings", "add", "used", "discard", "wset", "slot", "restore", "results", "open", "move"], "default": "none"}, "query": {"editor": "enum", "options": ["found", "more", "nothing"], "default": "found"}, "openFrom": {"editor": "enum", "options": ["title", "hidden"], "default": "title"}, "moveKind": {"editor": "enum", "options": ["day", "week", "month"], "default": "day"}, "strength": {"editor": "enum", "options": ["none", "light", "medium", "strong"], "default": "none"}, "range": {"editor": "enum", "options": ["none", "first", "last", "named"], "default": "none"}, "yearNav": {"editor": "boolean", "default": false}, "year": {"editor": "enum", "options": ["this", "next"], "default": "this"}, "day": {"editor": "enum", "options": ["11", "18"], "default": "11"}, "dev": {"editor": "boolean", "default": false}, "ink": {"editor": "enum", "options": ["raw", "neat", "font"], "default": "raw"}, "write": {"editor": "enum", "options": ["none", "writing", "settled"], "default": "none"}, "text": {"editor": "enum", "options": ["none", "field", "back", "view"], "default": "none"}, "leave": {"editor": "enum", "options": ["done", "outside"], "default": "done"}, "drag": {"editor": "enum", "options": ["none", "draw", "drawn", "titled", "grab", "moved", "resize", "released", "edge"], "default": "none"}, "title": {"editor": "enum", "options": ["grow", "shrink", "cut"], "default": "grow"}, "longTitle": {"editor": "boolean", "default": false}, "edit": {"editor": "enum", "options": ["select", "weight", "short", "land", "new", "copy", "name", "move", "remove", "saved", "edited"], "default": "select"}, "refuse": {"editor": "enum", "options": ["missing", "off"], "default": "missing"}, "refresh": {"editor": "boolean", "default": false}, "widget": {"editor": "enum", "options": ["agenda", "todo", "notes", "habits", "minimonth", "weekov", "priorities"], "default": "todo"}, "fill": {"editor": "enum", "options": ["empty", "full", "more"], "default": "full"}, "$preview": {"width": 760, "height": 1008}}'>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "orient": {"editor": "enum", "options": ["portrait", "landscape"], "default": "portrait"}, "screen": {"editor": "enum", "options": ["view", "refused", "sheet", "picker", "year", "editor"], "default": "view"}, "tmpl": {"editor": "enum", "options": ["day-lists", "day-diary", "day-agenda", "week-columns", "week-spread", "week-lists", "month-grid", "month-goals"], "default": "day-lists"}, "hint": {"editor": "enum", "options": ["count", "none"], "default": "count"}, "search": {"editor": "enum", "options": ["none", "bar", "popup"], "default": "none"}, "overlay": {"editor": "enum", "options": ["none", "info", "cog", "hidden", "settings", "add", "used", "discard", "wset", "slot", "restore", "results", "open", "move"], "default": "none"}, "query": {"editor": "enum", "options": ["found", "more", "nothing"], "default": "found"}, "openFrom": {"editor": "enum", "options": ["title", "hidden"], "default": "title"}, "moveKind": {"editor": "enum", "options": ["day", "week", "month"], "default": "day"}, "strength": {"editor": "enum", "options": ["none", "light", "medium", "strong"], "default": "none"}, "range": {"editor": "enum", "options": ["none", "first", "last", "named"], "default": "none"}, "yearNav": {"editor": "boolean", "default": false}, "year": {"editor": "enum", "options": ["this", "next"], "default": "this"}, "day": {"editor": "enum", "options": ["11", "18"], "default": "11"}, "dev": {"editor": "boolean", "default": false}, "ink": {"editor": "enum", "options": ["raw", "neat", "font"], "default": "raw"}, "write": {"editor": "enum", "options": ["none", "writing", "settled"], "default": "none"}, "text": {"editor": "enum", "options": ["none", "field", "back", "view"], "default": "none"}, "leave": {"editor": "enum", "options": ["done", "outside"], "default": "done"}, "drag": {"editor": "enum", "options": ["none", "draw", "drawn", "titled", "grab", "moved", "released", "end", "start", "edge"], "default": "none"}, "title": {"editor": "enum", "options": ["grow", "shrink", "cut"], "default": "grow"}, "longTitle": {"editor": "boolean", "default": false}, "edit": {"editor": "enum", "options": ["select", "weight", "short", "land", "new", "copy", "name", "move", "remove", "saved", "edited"], "default": "select"}, "refuse": {"editor": "enum", "options": ["missing", "off"], "default": "missing"}, "refresh": {"editor": "boolean", "default": false}, "ev": {"editor": "enum", "options": ["none", "card", "confirm", "strike", "struck", "deleted", "page", "page-text", "page-confirm"], "default": "none"}, "stack": {"editor": "enum", "options": ["none", "two", "three", "writing"], "default": "none"}, "live": {"editor": "boolean", "default": false}, "widget": {"editor": "enum", "options": ["agenda", "todo", "notes", "habits", "minimonth", "weekov", "priorities"], "default": "todo"}, "fill": {"editor": "enum", "options": ["empty", "full", "more"], "default": "full"}, "$preview": {"width": 760, "height": 1008}}'>
 class Component extends DCLogic {
+  state = {};
+  /* a live board starts again from its props when another state is picked */
+  componentDidUpdate(prev) {
+    const p = this.props;
+    if (this.state.seeded && (prev.ev !== p.ev || prev.drag !== p.drag || prev.stack !== p.stack || prev.live !== p.live)) this.setState({ seeded: false });
+  }
   renderVals() {
     const p = this.props, PL = window.PLANNER;
     const voice = ['white', 'editorial', 'stationery'].includes(p.voice) ? p.voice : 'white';
     const land = p.orient === 'landscape', screen = p.screen || 'view';
     const W = land ? 936 : 702, H = land ? 702 : 936;
     const ic = Component.IC;
+    // a live board (p.live) takes its own steps from a tap or a drag; until then the props show the step
+    const L = p.live && this.state.seeded ? this.state : null;
     let tid = PL.T[p.tmpl] ? p.tmpl : 'day-lists';
     if (screen === 'editor' && p.edit === 'weight' && tid === 'day-lists') tid = 'day-lists-w';
     if (screen === 'editor' && p.edit === 'new') tid = 'day-new';
     if (screen === 'editor' && p.edit === 'remove' && tid === 'day-lists') tid = 'day-lists-r';
-    if (p.drag === 'edge') tid = 'day-agenda-up';
+    if (!L && p.drag === 'edge') tid = 'day-agenda-up';
     if (screen === 'picker' && p.edit === 'saved') tid = 'day-lists-c';
     const t = PL.T[tid], kind = t.kind;
     this._tid = tid;
-    const overlay = p.overlay || 'none', text = p.text || 'none', drag = p.drag || 'none', write = p.write || 'none';
+    const ev = L ? L.ev : (p.ev || 'none'), evPage = ev === 'page' || ev === 'page-text' || ev === 'page-confirm';
+    const overlay = p.overlay || 'none', text = p.text || 'none', drag = L ? 'none' : (p.drag || 'none'), write = p.write || 'none';
     const editing = screen === 'editor';
-    const kbdOn = text === 'field' || text === 'view';
+    const kbdOn = text === 'field' || text === 'view' || ev === 'page-text';
     const KBD = 236;
 
     if (screen === 'sheet') return this.sheet(voice, p, PL);
@@ -177,10 +209,14 @@ class Component extends DCLogic {
     if (write === 'settled') o.add = { t: 'buy milk', settled: true };
     if (text === 'back') o.edit = { t: 'call the bank about the card', words: { 2: 'bank' } };
     if (text === 'field' || text === 'view') o.textMode = text === 'view';
-    if (drag === 'grab' || drag === 'moved' || drag === 'resize' || drag === 'released' || drag === 'edge') {
-      const mv = { grab: [28, 30], moved: [29, 31], resize: [29, 32], released: [29, 32], edge: [10, 12] }[drag];
-      o.move = { id: 'e3', s: mv[0], e: mv[1] };
-    }
+    // events: moved or stretched (a released state, or the board's own steps), held at an end, added
+    // for an overlap, deleted
+    const sm = Component.staticMove(drag);
+    o.moves = Object.assign({}, sm ? { [sm.id]: { s: sm.s, e: sm.e } } : {}, L ? L.moves : {});
+    const lv = L && L.live;
+    if (lv) o.moves[lv.id] = { s: lv.s, e: lv.e };
+    if (p.stack === 'two' || p.stack === 'three' || p.stack === 'writing') o.extra = Component.EXTRA[p.stack === 'writing' ? 'two' : p.stack];
+    o.drop = L ? L.drop.concat(ev === 'deleted' ? [L.id] : []) : ev === 'deleted' ? ['e3'] : [];
     if (editing && p.edit === 'short') { o.W = cw; }
     const pg = PL.page(o);
     const widgets = pg.widgets.map(g => this.decorate(g, p, editing));
@@ -191,6 +227,31 @@ class Component extends DCLogic {
     const find = (kind2, title) => widgets.find(g => g.kind === kind2 && (!title || g.title === title));
     const agenda = find('agenda');
     if (agenda && drag !== 'none') this.dragMarks(agenda, drag, p, marks, pen, cw, ch, W, H);
+    const strokes = [];
+    if (agenda && !agenda.compact) {
+      const id = L ? L.id : 'e3';
+      if (lv) {
+        const yL = hh => agenda.top + (hh / 2 - agenda.from) * agenda.pitch;
+        agenda.blocks = agenda.blocks.map(b => b.id === lv.id ? Object.assign({}, b, lv.mode === 'move' ? { dashed: true } : { held: lv.mode }) : b);
+        agenda.readouts = [lv.mode === 'bottom' ? { y: Math.round(yL(lv.e)) + 3, t: window.PLANNER.hm(lv.e) } : { y: Math.round(yL(lv.s)) - 17, t: window.PLANNER.hm(lv.s) }];
+      }
+      if (p.live) agenda.evDown = (e, bid, mode, tx) => this.evDown(e, bid, mode, tx);
+      if (p.stack === 'writing') agenda.focus = 's1';
+      this.toBrackets(agenda);
+      if (p.stack === 'writing') this.laneInk(agenda, pen);
+      // where each title is on the page, for the board's own drags
+      this._evAt = {};
+      agenda.evs.forEach(e => { if (!e.hasTitle) return;
+        const src = agenda._src.find(x => x.id === e.id) || {};
+        this._evAt[e.id] = { x: agenda.x + e.tx, y: agenda.y + 34 + e.y, pitch: agenda.pitch, s: src.s, e: src.e, lo: agenda.from * 2, hi: (agenda.from + agenda.hrs.length - 1) * 2 }; });
+      if ((ev === 'strike' || ev === 'struck') && !(L && L.stroke)) this.strikeMarks(agenda, ev, strokes, pen);
+      if (L && L.stroke) strokes.push(Component.stroke(L.stroke.length > 1 ? L.stroke : L.stroke.concat([L.stroke[0]])));
+      if (ev === 'deleted' && !L) {
+        const y = hh => agenda.y + 34 + agenda.top + (hh / 2 - agenda.from) * agenda.pitch;
+        marks.push({ cls: 'pl-refresh', x: agenda.x + 16, y: Math.round(y(28)) - 6, w: agenda.w - 18, h: Math.round(y(30) - y(28)) + 8, t: 'deleted: only its brackets and title, free time again' });
+      }
+    }
+    widgets.filter(g => g.isAgenda && !g.compact && !g.bk).forEach(g => this.toBrackets(g));
     if (write !== 'none') {
       const td = find('todo', 'Today');
       if (td) {
@@ -220,8 +281,13 @@ class Component extends DCLogic {
     if (info.on) Object.assign(info, this.infoPop(p, t, kind, hidden, pg));
     if (overlay === 'results') Object.assign(info, this.results(PL, p.query || 'found'));
     // an entry shown whole (a cut title, or Open in the hidden list): a card over its place; a tap anywhere closes it
-    const card = { on: overlay === 'open' };
-    if (card.on) Object.assign(card, this.wholeCard(PL, p, widgets, pad, cw, pageH));
+    // an event's card (a tap on its title) and the confirm card (a stroke through the title, a finger held
+    // still on it, or Delete event on its card)
+    const card = { on: overlay === 'open' || ev === 'card' || ev === 'confirm' || ev === 'struck' };
+    if (overlay === 'open') Object.assign(card, this.wholeCard(PL, p, widgets, pad, cw, pageH));
+    else if (card.on) Object.assign(card, this.eventCard(PL, agenda, pad, pg.title, L ? L.id : 'e3', ev === 'card' ? 'card' : 'confirm'));
+    const evp = { on: evPage };
+    if (evPage) Object.assign(evp, this.eventPage(PL, ev, pg.title, agenda, L));
     const sheetOv = { on: overlay === 'hidden' || overlay === 'add' || overlay === 'settings' || overlay === 'wset' || overlay === 'slot' || overlay === 'move' || (overlay === 'open' && p.openFrom === 'hidden') };
     if (overlay === 'move') Object.assign(sheetOv, this.moveSheet(PL, p.moveKind || 'day', pageH));
     if (overlay === 'slot') Object.assign(sheetOv, { isSlot: true, h: Math.round(pageH * 0.62), title: 'Slot for these notes', lead: 'Notes are kept per slot. Every template that names a slot shows the same entries; a slot no widget shows keeps its entries, named in the (i).',
@@ -231,7 +297,11 @@ class Component extends DCLogic {
     if (overlay === 'hidden' || (overlay === 'open' && p.openFrom === 'hidden')) Object.assign(sheetOv, this.hiddenSheet(hidden, kind, pageH));
     if (overlay === 'add') Object.assign(sheetOv, this.addSheet(PL, pageH));
     if (overlay === 'settings') Object.assign(sheetOv, this.settingsSheet(pageH, p));
-    const dialog = { on: overlay === 'used' || overlay === 'discard' || overlay === 'restore' };
+    const dialog = { on: overlay === 'used' || overlay === 'discard' || overlay === 'restore' || ev === 'page-confirm' };
+    if (ev === 'page-confirm') Object.assign(dialog, { top: 200, title: 'Delete this event?',
+      body: 'This event, ' + evp.start + '–' + evp.end + ' on ' + evp.sub + ', leaves the planner, with its place, notes and participants.',
+      soft: 'Nothing else changes.',
+      acts: [{ t: 'Keep', cls: 'pl-btn', on: e => this.act(e, { ev: 'page' }) }, { t: 'Delete event', cls: 'pl-btn is-primary', on: e => this.del(e, L ? L.id : 'e3') }] });
     if (overlay === 'restore') Object.assign(dialog, { top: 170, title: 'Back to the shipped “' + t.name + '”?',
       body: 'Your arrangement is replaced by the one the planner came with, wherever the template is used, past days included.',
       soft: 'Nothing written on any day changes; what the shipped arrangement doesn’t show is named in the (i). Copy it first to keep your arrangement as a template of its own.',
@@ -248,8 +318,9 @@ class Component extends DCLogic {
     // ---- the keyboard (text mode)
     const leaveOutside = p.leave === 'outside';
     const kbd = { on: kbdOn || overlay === 'results', bar: overlay !== 'results', h: KBD, rows: Component.KEYS,
-      label: text === 'view' ? 'Text mode for the whole view: every field shows its text' : leaveOutside ? 'Tap outside the field or write with the pen to go back' : 'Text mode for this to-do',
+      label: text === 'view' ? 'Text mode for the whole view: every field shows its text' : ev === 'page-text' ? 'Text mode for the title' : leaveOutside ? 'Tap outside the field or write with the pen to go back' : 'Text mode for this to-do',
       btns: text === 'view' ? [{ t: 'Back to ink', cls: 'pl-btn is-primary' }]
+        : ev === 'page-text' ? [{ t: 'Done', cls: 'pl-btn is-primary', on: e => this.act(e, { ev: 'page' }) }]
         : (leaveOutside ? [] : []).concat([
           { t: 'Neaten', cls: 'pl-btn is-quiet', tog: true, togCls: 'pl-tog' },
           { t: 'Set in Autograph', cls: 'pl-btn is-quiet', tog: true, togCls: 'pl-tog' }]).concat(leaveOutside ? [] : [{ t: 'Done', cls: 'pl-btn is-primary' }]) };
@@ -285,9 +356,9 @@ class Component extends DCLogic {
 
     return {
       theme: voice + '-eink', ic, W, H, isSheet: false, isDevice: true, bezelCls: land ? 'pl-bezel is-land' : 'pl-bezel',
-      showBar: screen === 'view', showEdHead: editing, showRefuse: screen === 'refused', showPage: screen === 'view' || editing,
+      showBar: screen === 'view' && !evPage, showEdHead: editing, showRefuse: screen === 'refused', showPage: screen === 'view' || editing, showContent: !evPage, evp,
       showPicker: screen === 'picker' || screen === 'year', pick: screen === 'picker' || screen === 'year' ? this.picker(PL, kind, tid, screen === 'year', p) : {},
-      cx: pad, cy: pad, cw, ch, widgets, marks, handles, tags, warns, pen, tf, info, card, sheetOv, dialog, kbd, bar, ed, edBar, refuse,
+      cx: pad, cy: pad, cw, ch, widgets, marks, strokes, handles, tags, warns, pen, tf, info, card, sheetOv, dialog, kbd, bar, ed, edBar, refuse,
       hidden
     };
   }
@@ -310,6 +381,7 @@ class Component extends DCLogic {
       const now = 14 + 20 / 60; // 14:20
       out.nowY = g.today && now > g.from && now < g.from + g.hrs.length - 1 ? Math.round(g.top + (now - g.from) * g.pitch) : 0;
       out.blocks = g.blocks.map(b => ({ ...b, extra: '' }));
+      out.evs = [];
       // a long title: written, its field grows into the free time below; when that space is taken
       // later, the ink shrinks evenly to fit, down to the smallest readable size, and below that it
       // is cut at the block's edge (no ellipsis; a tap shows the whole title)
@@ -320,11 +392,12 @@ class Component extends DCLogic {
           const tc = t + ' and the bike from the repair shop on the way back home before the shops close';
           const fs = { grow: 19, shrink: 13, cut: 11 }[p.title];
           b.words = PL.ink(p.title === 'cut' ? tc : t, { fs, salt: 'e4' });
-          if (p.title === 'grow') { b.h = Math.max(b.h, 64); b.cls += ' is-grown'; b.extra = 'box-shadow:inset 0 0 0 1.5px var(--ink);border-bottom:2px dotted var(--ink);flex-wrap:wrap;align-content:flex-start'; }
+          if (p.title === 'grow') { b.th = Math.max(b.h, 64); b.cls += ' is-grown'; b.extra = 'border-bottom:2px dotted var(--ink)'; }
           else {
-            b.extra = 'white-space:nowrap;align-items:center;padding-top:0';
+            b.extra = 'align-items:center;padding-top:0;height:' + b.h + 'px';
+            b.cls += ' is-cut';
             const step = b.h + 2; // 30 minutes; the next event takes the free time below
-            out.blocks.push({ id: 'e4next', y: b.y + step, h: 2 * step - 2, cls: 'pl-ev', when: '18:00–19:00', extra: '', words: PL.ink('dinner', { fs: 19, salt: 'e4next' }) });
+            out.blocks.push({ id: 'e4next', synthetic: true, s: 36, e: 38, title: 'dinner', y: b.y + step, h: 2 * step - 2, cls: 'pl-ev', when: '18:00–19:00', extra: '', words: PL.ink('dinner', { fs: 19, salt: 'e4next' }) });
           }
         }
       }
@@ -338,40 +411,258 @@ class Component extends DCLogic {
     return out;
   }
 
+  /* An event in a day agenda is a pair of brackets along its hours: "[" at the left of its writing
+     area, "]" at the right, the ends turned in as small serifs, the title written inside at its start:
+     lines in the ink, no box, no fill. Events at the same time (a cluster: those that overlap, one
+     through the next) split the width into equal lanes for the cluster's whole span, the first start in
+     the first lane, at most three; each event's brackets stand in its own lane, neighbours meet as
+     "] [" with a gap between. A stroke belongs to the lane its pen-down point is in; ink outside every
+     bracket is loose ink on the day. g.focus: the event the pen writes in, the others of its cluster
+     go grey. The compact week agenda keeps its blocks. Turns g.blocks into g.evs (b.land: a bracket
+     still being drawn, dashed, no title yet; b.dashed: an event being moved, dashed until released;
+     b.held: 'top' or 'bottom', the end held; b.empty: a new event waiting for its title; b.th: the
+     title's own height). */
+  toBrackets(g) {
+    const B = Component.BK, solid = g.blocks.filter(b => !b.land).sort((a, b) => a.y - b.y || b.h - a.h);
+    const at = {};
+    let group = [], end = -1, cols = [], cl = 0;
+    const close = () => { const K = Math.min(B.maxCols, Math.max(1, cols.length)); group.forEach(b => { at[b.id].K = K; at[b.id].cl = cl; }); group = []; cols = []; cl++; };
+    solid.forEach(b => {
+      if (b.y >= end) { close(); end = -1; }
+      let c = cols.findIndex(e => e <= b.y);
+      if (c < 0) { c = cols.length; cols.push(0); }
+      cols[c] = b.y + b.h;
+      at[b.id] = { col: Math.min(c, B.maxCols - 1) };
+      group.push(b);
+      end = Math.max(end, b.y + b.h);
+    });
+    close();
+    g._src = solid;
+    g.bk = true;
+    const live = !!g.evDown, fc = g.focus && at[g.focus] ? at[g.focus].cl : null;
+    // the writing area: from the first lane's "[" (in the hour margin, right of the hours) to the last "]"
+    const L0 = B.spine, R0 = g.w - B.right;
+    g.evs = g.blocks.map(b => {
+      const pos = b.land ? { col: 0, K: 1 } : at[b.id];
+      const lw = Math.floor((R0 - L0 - (pos.K - 1) * B.gap) / pos.K);
+      const spine = L0 + pos.col * (lw + B.gap), rs = spine + lw;
+      const h = b.h, s = B.serif, bw = lw + 2;
+      const tx = spine + B.title - B.spine, tw = rs - s - 3 - tx;
+      const quiet = fc != null && pos.cl === fc && b.id !== g.focus;
+      const ev = { id: b.id, y: b.y, h, bx: spine - 1, bw, lx: spine, lw,
+        bkCls: 'pl-bk' + (b.land || b.dashed ? ' is-dashed' : '') + (quiet ? ' is-quiet' : ''),
+        dTop: 'M1 1H' + (1 + s), dSp: 'M1 1V' + (h - 1), dBot: 'M1 ' + (h - 1) + 'H' + (1 + s),
+        cTop: 'M' + (bw - 1 - s) + ' 1H' + (bw - 1), cSp: 'M' + (bw - 1) + ' 1V' + (h - 1), cBot: 'M' + (bw - 1 - s) + ' ' + (h - 1) + 'H' + (bw - 1),
+        topCls: b.held === 'top' ? 'is-held' : '', botCls: b.held === 'bottom' ? 'is-held' : '',
+        hasTitle: !b.land, tx, tw, th: b.th || h, words: b.words || [], when: b.when || '',
+        cls: 'pl-evt' + (b.empty ? ' is-empty' : '') + (pos.K > 1 ? ' is-col' : '') + (/is-cut/.test(b.cls || '') ? ' is-cut' : ''), extra: b.extra || '',
+        label: (b.when || '') + (b.title ? ', ' + b.title : ''),
+        ends: live && !b.land && !b.empty && !b.synthetic, endX: pos.col ? spine - B.gap + 1 : spine + 6 - B.hitW, endW: pos.col ? B.gap + 5 : B.hitW, endTop: b.y - B.hitH / 2, endBot: b.y + h - B.hitH / 2 };
+      if (live && ev.hasTitle && !b.empty && !b.synthetic) {
+        ev.down = e => g.evDown(e, b.id, 'title', tx);
+        ev.downTop = e => g.evDown(e, b.id, 'top', tx);
+        ev.downBot = e => g.evDown(e, b.id, 'bottom', tx);
+      }
+      /* a compressed agenda (a small widget): a title keeps to one line beside its event, cut at the edge */
+      if (g.pitch < 30 && !b.th && ev.hasTitle) { ev.cls += /is-cut/.test(ev.cls) ? '' : ' is-cut'; ev.extra += ';height:' + Math.max(h, g.pitch) + 'px'; }
+      return ev;
+    });
+    g.blocks = [];
+  }
+
+  /* the pen writing into an event's lane (the bank's): a line of ink under its title, the pen at
+     its end; its brackets stay black, the others of its cluster are grey (g.focus) */
+  laneInk(ag, pen) {
+    const PL = window.PLANNER, e = ag.evs.find(x => x.id === 's1');
+    if (!e) return;
+    const x = e.tx + 8, w = e.lw - (e.tx - e.lx) - 18, y0 = e.y + Math.round(ag.pitch * 0.5) + 4;
+    ag.inks = [{ x, y: y0, w, words: PL.ink('ask about the fee', { fs: 19, salt: 'k2' }) }];
+    Object.assign(pen, { on: true, x: ag.x + x + 150 - 3, y: ag.y + 34 + y0 + 18 - 43 });
+  }
+
+  /* the static states of drawing, moving and stretching an event */
   dragMarks(ag, drag, p, marks, pen, cw, ch, W, H) {
     const top = ag.top, pitch = ag.pitch, y = hh => ag.y + 34 + top + (hh / 2 - ag.from) * pitch;
     const yL = hh => top + (hh / 2 - ag.from) * pitch;
-    const PL = window.PLANNER;
+    const PL = window.PLANNER, B = Component.BK;
+    const span = (s, e) => ({ y: Math.round(yL(s)) + 1, h: Math.round(yL(e) - yL(s)) - 2 });
+    const mx = ag.x + 22, mw = ag.w - 24; // a mark over the brackets and the titles
     if (drag === 'draw' || drag === 'drawn' || drag === 'titled') {
       const s = 32, e = 34; // 16:00-17:00, in free time
-      const blk = { id: 'new', y: Math.round(yL(s)) + 1, h: Math.round(yL(e) - yL(s)) - 2, when: PL.hm(s) + '–' + PL.hm(e),
-        cls: drag === 'draw' ? 'pl-ev is-new' : 'pl-ev', words: drag === 'titled' ? PL.ink('bike repair', { fs: 19, salt: 'new' }) : [], extra: drag === 'drawn' ? 'box-shadow:inset 0 0 0 2.5px var(--ink)' : '' };
+      const blk = Object.assign(span(s, e), { id: 'new', when: drag === 'draw' ? '' : PL.hm(s) + '–' + PL.hm(e), cls: 'pl-ev',
+        land: drag === 'draw', empty: drag === 'drawn', words: drag === 'titled' ? PL.ink('bike repair', { fs: 19, salt: 'new' }) : [] });
       ag.blocks = ag.blocks.concat([blk]);
-      if (drag === 'draw') { ag.readouts = [{ y: Math.round(yL(s)) - 8, t: PL.hm(s) }, { y: Math.round(yL(e)) - 8, t: PL.hm(e) }]; Object.assign(pen, { on: true, x: ag.x + ag.w - 120, y: y(e) - 40 }); }
-      if (drag === 'drawn') { ag.readouts = []; marks.push({ cls: 'pl-mark is-below', x: ag.x + 36, y: Math.round(y(s)) - 4, w: ag.w - 38, h: Math.round(y(e) - y(s)) + 8, t: 'a new event, 16:00–17:00: write its title in it' }); }
-      if (drag === 'titled') Object.assign(pen, { on: true, x: ag.x + 150, y: y(s) - 22 });
+      if (drag === 'draw') { ag.readouts = [{ y: Math.round(yL(s)) - 17, t: PL.hm(s) }, { y: Math.round(yL(e)) + 3, t: PL.hm(e) }]; Object.assign(pen, { on: true, x: ag.x + B.spine - 3, y: Math.round(y(e)) - 44 }); }
+      if (drag === 'drawn') { ag.readouts = []; marks.push({ cls: 'pl-mark is-below', x: mx, y: Math.round(y(s)) - 4, w: mw, h: Math.round(y(e) - y(s)) + 8, t: 'a new event, 16:00–17:00: write its title between the brackets' }); }
+      if (drag === 'titled') Object.assign(pen, { on: true, x: ag.x + B.title + 104, y: Math.round(y(s)) - 26 });
     }
-    if (drag === 'grab' || drag === 'moved' || drag === 'resize') {
-      const ghost = { id: 'ghost', y: Math.round(yL(28)) + 1, h: Math.round(yL(30) - yL(28)) - 2, cls: 'pl-ev is-ghost', words: [], when: '', extra: '' };
-      ag.blocks = [ghost].concat(ag.blocks);
-      const mv = { grab: [28, 30], moved: [29, 31], resize: [29, 32] }[drag];
-      ag.readouts = drag === 'resize' ? [{ y: Math.round(yL(mv[1])) - 8, t: PL.hm(mv[1]) }] : [{ y: Math.round(yL(mv[0])) - 8, t: PL.hm(mv[0]) }];
-      if (p.refresh) {
-        const a = drag === 'grab' ? [28, 30] : drag === 'moved' ? [28, 31] : [31, 32];
-        const r = { x: ag.x + 36, y: Math.round(y(a[0])) - 2, w: ag.w - 38, h: Math.round(y(a[1]) - y(a[0])) + 4 };
+    // moved by its title: the event goes with the finger in 30-minute steps, its bracket dashed until released
+    if (drag === 'grab' || drag === 'moved' || drag === 'edge') {
+      const mv = Component.staticMove(drag);
+      ag.blocks = ag.blocks.map(b => b.id === 'e3' ? Object.assign({}, b, { dashed: true }) : b);
+      ag.readouts = drag === 'edge' ? [{ y: top - 1, t: PL.hm(10) + ' ↑' }] : [{ y: Math.round(yL(mv.s)) - 17, t: PL.hm(mv.s) }];
+      if (drag === 'grab') marks.push({ cls: 'pl-mark is-below', x: mx, y: Math.round(y(28)) - 4, w: mw, h: Math.round(y(30) - y(28)) + 8, t: 'pressed on its title: the brackets turn dashed, the readout shows the start' });
+      if (drag === 'edge') marks.push({ cls: 'pl-mark is-below', x: mx, y: ag.y + 34 + top - 2, w: mw, h: Math.round(y(12) - y(10)) + 4, t: 'held past 06:00: the hours scroll up a step each step; the readout stays at the margin’s top' });
+      if (drag === 'moved' && p.refresh) {
+        const r = { x: mx, y: Math.round(y(28)) - 2, w: mw, h: Math.round(y(31) - y(28)) + 4 };
         const pct = Math.max(1, Math.round(100 * (r.w * r.h) / (W * H)));
-        marks.push({ cls: 'pl-refresh', ...r, t: (drag === 'grab' ? 'the grab' : 'one 30-minute step') + ': about ' + pct + ' % of the panel' });
+        marks.push({ cls: 'pl-refresh', ...r, t: 'one 30-minute step: the strip it leaves and the one it enters, about ' + pct + ' % of the panel' });
       }
     }
-    if (drag === 'edge') {
-      ag.blocks = [{ id: 'ghost', y: Math.round(yL(28)) + 1, h: Math.round(yL(30) - yL(28)) - 2, cls: 'pl-ev is-ghost', words: [], when: '', extra: '' }].concat(ag.blocks);
-      ag.readouts = [{ y: top - 1, t: PL.hm(10) + ' ↑' }];
-      marks.push({ cls: 'pl-mark is-below', x: ag.x + 36, y: ag.y + 34 + top - 2, w: ag.w - 38, h: Math.round(y(12) - y(10)) + 4, t: 'held past 06:00: the hours scroll up a step each step; the readout stays at the gutter’s top' });
+    // an end held: it thickens; the bracket follows it in 30-minute steps
+    if (drag === 'end' || drag === 'start') {
+      ag.blocks = ag.blocks.map(b => b.id === 'e3' ? Object.assign({}, b, { held: drag === 'end' ? 'bottom' : 'top' }) : b);
+      const t = drag === 'end' ? 32 : 28;
+      ag.readouts = [{ y: Math.round(yL(t)) + (drag === 'end' ? 3 : -17), t: PL.hm(t) }];
+      if (p.refresh) {
+        const a = drag === 'end' ? [31, 32] : [28, 29];
+        marks.push({ cls: 'pl-refresh', x: mx, y: Math.round(y(a[0])) - 4, w: mw, h: Math.round(y(a[1]) - y(a[0])) + 8, t: 'each step: only the strip of both serifs' });
+      }
     }
     if (drag === 'released' && p.refresh) {
-      const r = { x: ag.x + 36, y: Math.round(y(28)) - 2, w: ag.w - 38, h: Math.round(y(30) - y(28)) + 4 };
-      marks.push({ cls: 'pl-refresh', ...r, t: 'on release: only the old place, the outline goes' });
+      marks.push({ cls: 'pl-refresh', x: mx, y: Math.round(y(29)) - 2, w: mw, h: Math.round(y(31) - y(29)) + 4, t: 'on release: its brackets turn solid, one refresh of its place' });
     }
+  }
+
+  /* deleting: a pen stroke through the title (from before its first letter to past its last), a finger
+     held still on it for 0.5 s, or Delete event on its card; each ends in the same confirm card */
+  strikeMarks(ag, ev, strokes, pen) {
+    const e = ag.evs.find(x => x.id === 'e3');
+    if (!e) return;
+    // from just before the first letter to past the last, through the middle of the ink, a slight rise
+    const x0 = ag.x + e.tx - 1, x1 = ag.x + e.tx + 92, yy = ag.y + 34 + e.y + 11;
+    strokes.push(Component.stroke([[x0, yy + 4], [x0 + 30, yy + 2], [x1 - 34, yy - 1], [x1, yy - 4]]));
+    if (ev === 'strike') Object.assign(pen, { on: true, x: x1 - 3, y: yy - 3 - 43 });
+  }
+
+  /* a pen stroke through points (content px) as an SVG box */
+  static stroke(pts) {
+    const xs = pts.map(q => q[0]), ys = pts.map(q => q[1]);
+    const bx = Math.min(...xs) - 4, by = Math.min(...ys) - 4, bw = Math.max(...xs) - bx + 4, bh = Math.max(...ys) - by + 4;
+    return { x: Math.round(bx), y: Math.round(by), w: Math.round(bw), h: Math.round(bh), d: 'M' + pts.map(q => Math.round(q[0] - bx) + ' ' + Math.round(q[1] - by)).join(' L') };
+  }
+
+  /* an event's card under its title: the title as written, time and day, and its actions */
+  eventCard(PL, ag, pad, ttl, id, kind) {
+    const e = ag && ag.evs.find(x => x.id === id);
+    const CW = 340, day = ttl.main + ' ' + ttl.sub.split(' ·')[0];
+    const x = ag && e ? Math.min(ag.x + e.tx, ag.x + ag.w - 4 - CW) : 0;
+    const y = ag && e ? ag.y + 34 + e.y + Math.max(e.h, e.th) + 6 : 300;
+    const up = y + 150 > ag.y + ag.h; // no room below: above the title
+    const confirm = kind === 'confirm';
+    const act = (t, cls, step) => ({ t, cls, on: ev => step === 'deleted' ? this.del(ev, id) : this.act(ev, { ev: step, id, stroke: null }) });
+    return { cls: 'pl-pop pl-card is-confirm', label: confirm ? 'Delete this event?' : 'The event', hasActs: true, q: confirm ? 'Delete this event?' : '',
+      x: pad + x, y: pad + (up && e ? ag.y + 34 + e.y - 156 : y), w: CW,
+      words: e ? e.words : PL.ink('dentist', { fs: 19, salt: 'e3' }), fact: (e ? e.when : '14:00–15:00') + ' · ' + day,
+      acts: confirm ? [act('Keep', 'pl-btn', 'none'), act('Delete event', 'pl-btn is-primary', 'deleted')]
+        : [act('Delete event', 'pl-btn', 'confirm'), act('Open', 'pl-btn is-primary', 'page')],
+      scrim: !!this.props.live, close: ev => this.act(ev, { ev: 'none', stroke: null }) };
+  }
+
+  /* the event's own page, full screen: Back to the day in the bar; title, when, where, notes, who,
+     repeat and reminder; Delete event at its foot */
+  eventPage(PL, ev, ttl, ag, L) {
+    const id = (L && L.id) || 'e3', e = ag && ag.evs.find(x => x.id === id);
+    const ev0 = (PL.data.EV.concat(Component.EXTRA.three)).find(x => x.id === id) || { s: 28, e: 30, t: 'dentist' };
+    const mv = L && L.moves && L.moves[id] ? L.moves[id] : {};
+    const s = mv.s != null ? mv.s : ev0.s, en = mv.e != null ? mv.e : ev0.e;
+    const step = (k, d) => evt => { if (evt) evt.preventDefault(); if (!this.props.live) return;
+      const lo = 12, hi = 46; let a = s, b = en;
+      if (k === 's') a = Math.max(lo, Math.min(b - 1, a + d)); else b = Math.min(hi, Math.max(a + 1, b + d));
+      this.act(null, { moves: Object.assign({}, (this.state.moves || {}), { [id]: { s: a, e: b } }) }); };
+    const dur = en - s, durT = (dur >= 2 ? Math.floor(dur / 2) + ' h' : '') + (dur % 2 ? (dur >= 2 ? ' ' : '') + '30 min' : '');
+    const choose = (key, list, on) => list.map(t => ({ t, cls: t === on ? 'is-on' : '', on: evt => this.act(evt, { [key]: t }) }));
+    const day = ttl.main + ' ' + ttl.sub.split(' ·')[0];
+    const back = evt => this.act(evt, { ev: 'none' });
+    const lines = (words, n) => words.concat(Array(Math.max(0, n - words.length)).fill([])).map(w => ({ words: w }));
+    return { on: true, back, head: 'Event', sub: day, isText: ev === 'page-text', notText: ev !== 'page-text', titleText: ev0.t,
+      title: e ? e.words : PL.ink(ev0.t, { fs: 26, salt: id }), titleBig: PL.ink(ev0.t, { fs: 26, salt: id }),
+      date: day.replace(/^(\w{3})\w*/, '$1'), start: PL.hm(s), end: PL.hm(en), dur: durT,
+      sMinus: step('s', -1), sPlus: step('s', 1), eMinus: step('e', -1), ePlus: step('e', 1),
+      place: PL.ink('the practice on Mill Lane', { fs: 19, salt: id + 'p' }),
+      notes: lines([PL.ink('bring the insurance card', { fs: 19, salt: id + 'n1' }), PL.ink('ask about the x-ray from May', { fs: 19, salt: id + 'n2' })], 4),
+      people: lines([PL.ink('Anna', { fs: 19, salt: id + 'a' })], 2),
+      repeat: choose('rep', ['Never', 'Daily', 'Weekly', 'Monthly', 'Yearly'], (L && L.rep) || 'Never'),
+      remind: choose('rem', ['None', 'At start', '15 min', '1 h', '1 day'], (L && L.rem) || '1 h'),
+      del: evt => this.act(evt, { ev: 'page-confirm' }),
+      textTap: evt => this.act(evt, { ev: 'page-text' }) };
+  }
+
+  /* the board's own steps, taken by a tap or a drag: what the props showed is the start */
+  act(evt, patch) {
+    if (evt && evt.preventDefault) evt.preventDefault();
+    if (!this.props.live) return;
+    this.setState(st => Object.assign({}, st.seeded ? st : this.seed(), patch));
+  }
+
+  /* Delete event: the event leaves the day; the day is shown again */
+  del(evt, id) {
+    if (evt && evt.preventDefault) evt.preventDefault();
+    if (!this.props.live) return;
+    this.setState(st => { const b = st.seeded ? st : this.seed(); return Object.assign({}, b, { ev: 'none', stroke: null, live: null, drop: b.drop.concat([id]) }); });
+  }
+
+  /* the live state a board starts from: what its props show */
+  seed() {
+    const p = this.props, sm = Component.staticMove(p.drag);
+    const ev = p.ev === 'strike' || p.ev === 'deleted' || !p.ev ? 'none' : p.ev;
+    return { seeded: true, ev, id: 'e3', moves: sm && !sm.dashed ? { [sm.id]: { s: sm.s, e: sm.e } } : {}, drop: p.ev === 'deleted' ? ['e3'] : [], live: null, stroke: null };
+  }
+
+  /* where a static state shows the dentist: dashed while it is moved, solid once released */
+  static staticMove(drag) {
+    const mv = { grab: [28, 30], moved: [29, 31], edge: [10, 12], released: [29, 31], end: [29, 32], start: [28, 31] }[drag];
+    return mv ? { id: 'e3', s: mv[0], e: mv[1], dashed: drag === 'grab' || drag === 'moved' || drag === 'edge' } : null;
+  }
+
+  /* a press on an event's title or on one of its ends: a tap opens its card; a press held still for
+     0.5 s opens the confirm card; a drag up or down moves it (by its title) or its end, in 30-minute
+     steps; a stroke across the title, from before it to past it, deletes it */
+  evDown(e, id, mode, tx) {
+    if (!this.props.live || e.button > 0) return;
+    e.preventDefault(); e.stopPropagation();
+    const el = e.currentTarget, r = el.getBoundingClientRect(), k = (r.height / el.offsetHeight) || 1;
+    const info = this._evAt && this._evAt[id];
+    if (!info) return;
+    const ink = mode === 'title' && el.querySelector('.pl-ink');
+    const inkW = ink ? ink.getBoundingClientRect().width / k : 60;
+    const ox = info.x + (e.clientX - r.left) / k, oy = info.y + (e.clientY - r.top) / k;
+    const half = info.pitch / 2, x0 = e.clientX, y0 = e.clientY;
+    const pts = [[ox, oy]];
+    let kind = mode === 'title' ? null : 'end', last = null;
+    if (kind) { last = { id, mode, s: info.s, e: info.e }; this.act(null, { live: last }); }
+    const timer = mode === 'title' ? setTimeout(() => { if (!kind) { kind = 'hold'; this.act(null, { ev: 'confirm', id, stroke: null }); } }, 500) : null;
+    const move = m => {
+      const dx = (m.clientX - x0) / k, dy = (m.clientY - y0) / k;
+      if (!kind) {
+        if (Math.abs(dx) > 10 && Math.abs(dx) > 2 * Math.abs(dy)) kind = 'strike';
+        else if (Math.abs(dy) > 8) kind = 'move';
+        if (kind) clearTimeout(timer);
+      }
+      if (kind === 'strike') { pts.push([ox + dx, oy + dy]); this.act(null, { stroke: pts.slice() }); return; }
+      if (kind === 'hold') return;
+      const st = Math.round(dy / half);
+      let s = info.s, en = info.e;
+      if (kind === 'move') { const d = Math.max(info.lo - s, Math.min(info.hi - en, st)); s += d; en += d; }
+      if (mode === 'top') s = Math.max(info.lo, Math.min(en - 1, info.s + st));
+      if (mode === 'bottom') en = Math.min(info.hi, Math.max(s + 1, info.e + st));
+      if (kind && (!last || last.s !== s || last.e !== en)) { last = { id, mode: kind === 'move' ? 'move' : mode, s, e: en }; this.act(null, { live: last }); }
+    };
+    const up = () => {
+      window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up);
+      clearTimeout(timer);
+      if (!kind && mode === 'title') return this.act(null, { ev: 'card', id });
+      if (kind === 'strike') {
+        const xs = pts.map(q => q[0]), across = Math.max(...xs) - Math.min(...xs);
+        const startsBefore = Math.min(...xs) <= info.x + 8; // before the first letter
+        return this.act(null, across >= inkW && startsBefore ? { ev: 'struck', id } : { stroke: null });
+      }
+      if (kind === 'hold') return;
+      const moves = Object.assign({}, this.state.moves || {});
+      if (last && (last.s !== info.s || last.e !== info.e)) moves[id] = { s: last.s, e: last.e };
+      this.act(null, { live: null, moves });
+    };
+    window.addEventListener('pointermove', move); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
   }
 
   editMarks(widgets, p, handles, tags, warns, pg, cw, ch, marks) {
@@ -545,12 +836,12 @@ class Component extends DCLogic {
   /* the whole entry over its place: a cut title over its block, an entry opened from the hidden list a third down the page */
   wholeCard(PL, p, widgets, pad, cw, pageH) {
     if (p.openFrom === 'hidden') {
-      return { x: 16, y: Math.round(pageH / 3) - 70, w: cw + 2 * pad - 32, words: PL.ink('return the library books before the holidays', { fs: 19, salt: 'open' }) };
+      return { cls: 'pl-pop pl-card', label: 'The whole entry; a tap anywhere closes it', x: 16, y: Math.round(pageH / 3) - 70, w: cw + 2 * pad - 32, words: PL.ink('return the library books before the holidays', { fs: 19, salt: 'open' }) };
     }
     const ag = widgets.find(g => g.kind === 'agenda');
-    const b = ag && ag.blocks.find(x => x.id === 'e4');
+    const b = ag && (ag.evs && ag.evs.length ? ag.evs : ag.blocks).find(x => x.id === 'e4');
     const t = 'pick up the parcel at the post office and the keys from the neighbours and the bike from the repair shop on the way back home before the shops close';
-    return { x: pad + (ag ? ag.x + 30 : 0), y: pad + (ag && b ? ag.y + 34 + b.y - 8 : 300), w: (ag ? ag.w - 30 : cw), words: PL.ink(t, { fs: 19, salt: 'e4' }) };
+    return { cls: 'pl-pop pl-card', label: 'The whole entry; a tap anywhere closes it', x: pad + (ag ? ag.x + 30 : 0), y: pad + (ag && b ? ag.y + 34 + b.y - 8 : 300), w: (ag ? ag.w - 30 : cw), words: PL.ink(t, { fs: 19, salt: 'e4' }) };
   }
 
   /* Move: another date for an entry from the hidden list; the month's days, a month's weeks or the year's months */
@@ -586,7 +877,7 @@ class Component extends DCLogic {
     const cols = [];
     sizes.forEach(([w, h], i) => {
       const pg = PL.page({ tmpl: tmp, W: w, H: h, empty: fill === 'empty', fs: 19, day: Number(p.day) || 0 });
-      pg.widgets.forEach(g => widgets.push(this.decorate(Object.assign(g, { x: g.x + x, y: g.y }), p, false)));
+      pg.widgets.forEach(g => { const d = this.decorate(Object.assign(g, { x: g.x + x, y: g.y }), p, false); if (d.isAgenda && !d.compact) this.toBrackets(d); widgets.push(d); });
       cols.push({ w, head: (i === 0 ? (fill === 'more' ? 'Too small for its content' : 'Preferred size') : 'Minimum size') + ' · ' + w + ' × ' + h,
         cap: i === 0 ? D.kind + ' · width: min ' + D.minW + ', preferred ' + D.prefW : 'never smaller; ink is never shrunk' });
       x += w + 28;
@@ -595,6 +886,18 @@ class Component extends DCLogic {
     return { theme: voice + '-eink', ic: Component.IC, isSheet: true, isDevice: false, widgets, sheet: { W: x - 28 + 40, H: H + 16, top: 86, cols } };
   }
 }
+/* an event's brackets, in px of the agenda: the first lane's "[" (in the hour margin, right of the
+   hours), the last "]" this far from the agenda's right edge, the gap between one lane's "]" and the
+   next lane's "[", the serif, the title's left edge (for the first lane; each lane the same distance
+   from its "["), an end's touch target (it ends at the serif's tip and reaches left over the margin;
+   in a later lane only over the gap, so a pen-down in the neighbour's lane always inks there),
+   the most lanes side by side */
+Component.BK = { spine: 36, right: 10, gap: 12, serif: 5, title: 44, hitW: 44, hitH: 28, maxCols: 3 };
+/* events added for the overlap boards: one at the same time as the dentist, and a long one around both */
+Component.EXTRA = {
+  two: [{ id: 's1', day: 11, s: 29, e: 31, t: 'call the bank' }],
+  three: [{ id: 's1', day: 11, s: 29, e: 31, t: 'call the bank' }, { id: 's2', day: 11, s: 26, e: 32, t: 'work from the café' }]
+};
 Component.IC = {
   chevL: 'M15 5l-7 7 7 7', chevR: 'M9 5l7 7-7 7',
   cog: 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z M19.4 13.4l1.7 1.3-1.9 3.3-2-.8a7.4 7.4 0 0 1-1.8 1l-.3 2.1h-3.8l-.3-2.1a7.4 7.4 0 0 1-1.8-1l-2 .8-1.9-3.3 1.7-1.3a7.6 7.6 0 0 1 0-2.8L3.3 9.3l1.9-3.3 2 .8a7.4 7.4 0 0 1 1.8-1l.3-2.1h3.8l.3 2.1a7.4 7.4 0 0 1 1.8 1l2-.8 1.9 3.3-1.7 1.3a7.6 7.6 0 0 1 0 2.8z',

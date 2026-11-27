@@ -44,7 +44,7 @@
   },
   {
    "id": "events",
-   "name": "Events · drawn, dragged, stretched"
+   "name": "Events · drawn, moved, stretched, deleted, opened"
   },
   {
    "id": "refused",
@@ -375,28 +375,55 @@
    "x": 0,
    "y": 0,
    "w": 824,
-   "h": 1352,
+   "h": 1370,
    "title": "Drawing an event into free time",
    "page": "events",
-   "is_interactive": false
+   "is_interactive": true
   },
   "event.drag.dc.html": {
    "x": 904,
    "y": 0,
    "w": 824,
-   "h": 1376,
-   "title": "Dragging an event, and its edge",
+   "h": 1438,
+   "title": "Moving an event, and its ends",
    "page": "events",
-   "is_interactive": false
+   "is_interactive": true
   },
   "event.title.dc.html": {
    "x": 1808,
    "y": 0,
    "w": 824,
-   "h": 1352,
-   "title": "A long title in a short event",
+   "h": 1414,
+   "title": "A long title beside a short event",
    "page": "events",
-   "is_interactive": false
+   "is_interactive": true
+  },
+  "event.delete.dc.html": {
+   "x": 2712,
+   "y": 0,
+   "w": 824,
+   "h": 1438,
+   "title": "Deleting an event: struck through, or held",
+   "page": "events",
+   "is_interactive": true
+  },
+  "event.stack.dc.html": {
+   "x": 3616,
+   "y": 0,
+   "w": 824,
+   "h": 1440,
+   "title": "Events at the same time: one lane each",
+   "page": "events",
+   "is_interactive": true
+  },
+  "event.open.dc.html": {
+   "x": 4520,
+   "y": 0,
+   "w": 824,
+   "h": 1438,
+   "title": "An event’s card, and its page",
+   "page": "events",
+   "is_interactive": true
   },
   "start.refused.dc.html": {
    "x": 0,
@@ -691,15 +718,15 @@
   "t-events": {
    "kind": "title1",
    "page": "events",
-   "text": "Events · drawn, dragged, stretched",
+   "text": "Events · drawn, moved, stretched, deleted, opened",
    "x": 0,
    "y": -200,
    "w": 240,
-   "maxW": 2712
+   "maxW": 5344
   },
   "n-events": {
    "page": "events",
-   "text": "Times come only from the agenda: draw a block into free time and an event exists; drag it in 30-minute steps; drag its lower edge to change its length. No handwriting for times.",
+   "text": "Times come only from the agenda: draw a line down the hour margin over free time and an event exists. An event is a pair of brackets, [ in the margin and ] at the right, with its title written inside and room to write between them: drag the title to move it in 30-minute steps, drag an end to change its start or end, and strike the title through with the pen, or hold it still, to delete it. Events at the same time split the width into lanes, one pair of brackets each, and ink belongs to the lane the pen lands in. A tap opens its card, and Open its page. No handwriting for times.",
    "x": 0,
    "y": -560,
    "w": 2400
@@ -778,6 +805,9 @@
   "event.draw.dc.html",
   "event.drag.dc.html",
   "event.title.dc.html",
+  "event.delete.dc.html",
+  "event.stack.dc.html",
+  "event.open.dc.html",
   "start.refused.dc.html",
   "start.refused.landscape.dc.html",
   "Parts.dc.html",

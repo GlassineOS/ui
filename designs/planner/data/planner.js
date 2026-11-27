@@ -384,13 +384,15 @@
       if (pitch < minP) { pitch = minP; const vis = Math.max(1, Math.floor(avail / minP)); ws = Math.max(n.from, Math.min(n.to - vis, 13)); we = ws + vis; }
       const hrs = [];
       for (let hh = ws; hh <= we; hh++) hrs.push({ t: compact ? (hh % 3 === 0 ? String(hh) : '') : String(hh).padStart(2, '0'), y: Math.round(top + (hh - ws) * pitch), half: Math.round(top + (hh - ws + 0.5) * pitch), last: hh === we });
-      const evs = (empty ? [] : EV.filter(e => e.day === day && !e.allDay)).map(e => Object.assign({}, e, o.move && o.move.id === e.id ? { s: o.move.s, e: o.move.e } : {}));
+      // o.extra: events added for a board (overlaps); o.moves: {id: {s, e}} moved or stretched; o.drop: ids deleted
+      const evs = (empty ? [] : EV.concat(o.extra || []).filter(e => e.day === day && !e.allDay && !(o.drop || []).includes(e.id)))
+        .map(e => Object.assign({}, e, o.move && o.move.id === e.id ? { s: o.move.s, e: o.move.e } : {}, o.moves && o.moves[e.id] ? o.moves[e.id] : {}));
       const inside = evs.filter(e => e.e > ws * 2 && e.s < we * 2);
       const before = evs.filter(e => e.e <= ws * 2).length, after = evs.filter(e => e.s >= we * 2).length;
       n = Object.assign({}, n, { from: ws, to: we });
       const blocks = inside.map(e => {
         const y1 = top + (Math.max(e.s, n.from * 2) / 2 - n.from) * pitch, y2 = top + (Math.min(e.e, n.to * 2) / 2 - n.from) * pitch;
-        return { id: e.id, y: Math.round(y1) + 1, h: Math.max(8, Math.round(y2 - y1) - 2), words: compact ? ink(e.t, { fs: 13, salt: e.id }) : ink(e.t, { fs: Math.min(fs, Math.max(14, (y2 - y1) - 8)), salt: e.id }),
+        return { id: e.id, s: e.s, e: e.e, title: e.t, y: Math.round(y1) + 1, h: Math.max(8, Math.round(y2 - y1) - 2), words: compact ? ink(e.t, { fs: 13, salt: e.id }) : ink(e.t, { fs: Math.min(fs, Math.max(14, (y2 - y1) - 8)), salt: e.id }),
           when: hm(e.s) + '–' + hm(e.e), cls: 'pl-ev' + (y2 - y1 < 24 ? ' is-short' : '') };
       });
       const allDay = compact || empty ? [] : EV.filter(e => e.day === day && e.allDay).map(e => ({ words: ink(e.t, { fs: 15, salt: e.id }) }));

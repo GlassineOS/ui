@@ -11,22 +11,25 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
 <style>body{margin:0}</style>
 </helmet>
-<div data-spec-id="event.draw" style="width:824px;height:1352px;box-sizing:border-box;padding:28px 32px;display:flex;flex-direction:column;gap:18px;background:#e6e6e6;color:#1b1b1b;font-family:'IBM Plex Sans',sans-serif">
+<div data-spec-id="event.draw" style="width:824px;height:1370px;box-sizing:border-box;padding:28px 32px;display:flex;flex-direction:column;gap:18px;background:#e6e6e6;color:#1b1b1b;font-family:'IBM Plex Sans',sans-serif">
 <div style="display:flex;flex-direction:column;gap:6px">
 <span style="font:500 13px/1.2 'IBM Plex Mono',monospace;color:#3d3d3d">event.draw</span>
 <h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">Drawing an event into free time</h1>
-<p style="margin:0;max-width:760px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">Drawing: the pen drags down over free time; the block snaps to half hours and the gutter shows its start and end. Drawn: on lift, a new event from 16:00 to 17:00; its block is its title field. Titled: the pen writes its title in it; nothing is read aloud or shown as text.</p>
+<p style="margin:0;max-width:760px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">Drawing: the pen draws a line down the hour margin, over free time. It snaps to half hours, and the margin shows its start and end. Drawn: when the pen lifts, a new event exists from 16:00 to 17:00. Its bracket stands in the margin with its ends turned in, and beside it a dotted line marks where its title goes. Titled: the pen writes the title there; nothing is read aloud or shown as text. On this board a tap takes the next step.</p>
 </div>
 <dc-import name="ThemeBar" voice="{{ voice }}" on-pick="{{ pick }}" hint-size="100%,112px"></dc-import>
-<dc-import name="Planner" voice="{{ voice }}" orient="portrait" tmpl="day-agenda" drag="{{ drag }}" hint-size="760px,1008px"></dc-import>
+<div role="button" aria-label="The next step" onClick="{{ next }}" style="cursor:pointer"><dc-import name="Planner" voice="{{ voice }}" orient="portrait" tmpl="day-agenda" drag="{{ drag }}" hint-size="760px,1008px"></dc-import></div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "drag": {"editor": "enum", "options": ["draw", "drawn", "titled"], "default": "draw"}, "$preview": {"width": 824, "height": 1352}, "$states": [{"id": "draw", "name": "Drawing the block", "props": {"drag": "draw"}}, {"id": "drawn", "name": "The event exists", "props": {"drag": "drawn"}, "from": [{"state": "draw", "label": "the pen lifts"}]}, {"id": "titled", "name": "Writing its title", "props": {"drag": "titled"}, "from": [{"state": "drawn", "label": "the pen writes in it"}]}]}'>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "drag": {"editor": "enum", "options": ["draw", "drawn", "titled"], "default": "draw"}, "$preview": {"width": 824, "height": 1370}, "$states": [{"id": "draw", "name": "Drawing the bracket", "props": {"drag": "draw"}}, {"id": "drawn", "name": "The event exists", "props": {"drag": "drawn"}, "from": [{"state": "draw", "label": "the pen lifts"}]}, {"id": "titled", "name": "Writing its title", "props": {"drag": "titled"}, "from": [{"state": "drawn", "label": "the pen writes beside it"}]}]}'>
 class Component extends DCLogic {
   state = {};
+  componentDidUpdate(prev) {
+    if (prev.drag !== this.props.drag && this.state.drag !== undefined) this.setState({ drag: undefined });
+  }
   renderVals() {
     const s = this.state, p = this.props;
-    return { voice: s.voice ?? p.voice ?? 'white', pick: (k, v) => this.setState({ [k]: v }), drag: p.drag ?? "draw" };
+    return { voice: s.voice ?? p.voice ?? 'white', pick: (k, v) => this.setState({ [k]: v }), drag: s.drag ?? p.drag ?? "draw", next: () => { const o = ["draw", "drawn", "titled"], i = o.indexOf(s.drag ?? p.drag ?? o[0]); this.setState({ drag: o[(i + 1) % o.length] }); } };
   }
 }
 </script>

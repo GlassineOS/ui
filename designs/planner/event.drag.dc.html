@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Dragging an event, and its edge</title>
+<title>Moving an event, and its ends</title>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -11,17 +11,17 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
 <style>body{margin:0}</style>
 </helmet>
-<div data-spec-id="event.drag" style="width:824px;height:1400px;box-sizing:border-box;padding:28px 32px;display:flex;flex-direction:column;gap:18px;background:#e6e6e6;color:#1b1b1b;font-family:'IBM Plex Sans',sans-serif">
+<div data-spec-id="event.drag" style="width:824px;height:1438px;box-sizing:border-box;padding:28px 32px;display:flex;flex-direction:column;gap:18px;background:#e6e6e6;color:#1b1b1b;font-family:'IBM Plex Sans',sans-serif">
 <div style="display:flex;flex-direction:column;gap:6px">
 <span style="font:500 13px/1.2 'IBM Plex Mono',monospace;color:#3d3d3d">event.drag</span>
-<h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">Dragging an event, and its edge</h1>
-<p style="margin:0;max-width:760px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">The dentist’s slip is picked up by its tab, the small paper tab on its top edge. Held, it lifts: a hatched shadow 5 px to the right and below; where it was, a dashed outline. Each 30-minute step redraws only the strip the slip leaves and enters (dashed refresh marks are design marks; a few per cent of the panel, the spike about 3 %), its ink unchanged. Its end moves with the folded corner at its lower right: pulled, the corner opens and the slip lifts the same way. The release redraws only the old place and the shadow. Held past the first or last hour, the hours scroll a step per step and the readout stays at that edge; on release they go back, and an event outside them shows in the count at the edge.</p>
+<h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">Moving an event, and its ends</h1>
+<p style="margin:0;max-width:760px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">An event moves by its title. Pressed, its bracket turns dashed; dragged up or down, the dentist goes with the finger in 30-minute steps, and the margin’s readout shows its start. Each step redraws only the strip it leaves and the one it enters. On release the bracket turns solid again where it landed, in one refresh of that place. Each end of the bracket is pulled on its own: while held, its serif thickens, and the bracket follows it in 30-minute steps, with the readout at that end. Held past the first or last hour, the hours scroll a step per step and the readout stays at that edge; on release they go back, and an event outside them shows in the count at the edge. On this board you can drag a title or an end yourself.</p>
 </div>
 <dc-import name="ThemeBar" voice="{{ voice }}" on-pick="{{ pick }}" hint-size="100%,112px"></dc-import>
-<dc-import name="Planner" voice="{{ voice }}" orient="portrait" tmpl="day-agenda" refresh="True" drag="{{ drag }}" hint-size="760px,1008px"></dc-import>
+<dc-import name="Planner" voice="{{ voice }}" orient="portrait" tmpl="day-agenda" refresh="True" drag="{{ drag }}" live="true" hint-size="760px,1008px"></dc-import>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "drag": {"editor": "enum", "options": ["grab", "moved", "resize", "released", "edge"], "default": "grab"}, "$preview": {"width": 824, "height": 1400}, "$states": [{"id": "grab", "name": "Held", "props": {"drag": "grab"}}, {"id": "moved", "name": "Moved 30 minutes later", "props": {"drag": "moved"}, "from": [{"state": "grab", "label": "drag down one step"}]}, {"id": "resize", "name": "Its lower edge dragged", "props": {"drag": "resize"}, "from": [{"state": "moved", "label": "drag the edge"}]}, {"id": "released", "name": "Released: 14:30–16:00", "props": {"drag": "released"}, "from": [{"state": "resize", "label": "the finger lifts"}]}, {"id": "edge", "name": "Held past the first hour", "props": {"drag": "edge"}, "from": [{"state": "grab", "label": "drag up past 06:00"}]}]}'>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "drag": {"editor": "enum", "options": ["grab", "moved", "released", "end", "start", "edge"], "default": "grab"}, "$preview": {"width": 824, "height": 1438}, "$states": [{"id": "grab", "name": "Held by its title", "props": {"drag": "grab"}}, {"id": "moved", "name": "Dragged 30 minutes later", "props": {"drag": "moved"}, "from": [{"state": "grab", "label": "drag down one step"}]}, {"id": "released", "name": "Released: 14:30–15:30", "props": {"drag": "released"}, "from": [{"state": "moved", "label": "the finger lifts"}]}, {"id": "end", "name": "Its lower end pulled to 16:00", "props": {"drag": "end"}, "from": [{"state": "released", "label": "drag the lower end"}]}, {"id": "start", "name": "Its upper end pulled to 14:00", "props": {"drag": "start"}, "from": [{"state": "released", "label": "drag the upper end"}]}, {"id": "edge", "name": "Held past the first hour", "props": {"drag": "edge"}, "from": [{"state": "grab", "label": "drag up past 06:00"}]}]}'>
 class Component extends DCLogic {
   state = {};
   renderVals() {

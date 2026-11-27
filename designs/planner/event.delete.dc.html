@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Deleting an event: crossed out or crumpled</title>
+<title>Deleting an event: struck through, or held</title>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -11,17 +11,17 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
 <style>body{margin:0}</style>
 </helmet>
-<div data-spec-id="event.delete" style="width:824px;height:1376px;box-sizing:border-box;padding:28px 32px;display:flex;flex-direction:column;gap:18px;background:#e6e6e6;color:#1b1b1b;font-family:'IBM Plex Sans',sans-serif">
+<div data-spec-id="event.delete" style="width:824px;height:1438px;box-sizing:border-box;padding:28px 32px;display:flex;flex-direction:column;gap:18px;background:#e6e6e6;color:#1b1b1b;font-family:'IBM Plex Sans',sans-serif">
 <div style="display:flex;flex-direction:column;gap:6px">
 <span style="font:500 13px/1.2 'IBM Plex Mono',monospace;color:#3d3d3d">event.delete</span>
-<h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">Deleting an event: crossed out or crumpled</h1>
-<p style="margin:0;max-width:760px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">Two ways delete a slip, and both end in the same card. The pen: one stroke through the slip that starts outside its left edge and ends past its right edge, or runs between opposite corners outside it; a stroke that starts inside the slip is writing. A finger held still on the slip for 0.5 s crumples it (one refresh of its place). When the pen or the finger lifts, a card opens below the slip (one rectangle refresh): its title, time and day, Keep and Delete event. Keep, or a tap outside, closes the card and the slip is as it was. Delete event removes it: only its place and the card refresh, free time again. No system dialog.</p>
+<h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">Deleting an event: struck through, or held</h1>
+<p style="margin:0;max-width:760px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">There are three ways to delete an event, and all of them end in the same card. With the pen: one stroke across the title, from before its first letter to past its last. A stroke that starts inside the title, or doesn’t cross all of it, is writing. With a finger: held still on the title for 0.5 s. Or with Delete event on its card. The card opens under the title in one rectangle refresh: “Delete this event?”, the title as written, its time and day, Keep and Delete event. Keep, or a tap outside, closes it; the stroke goes and the event is as it was. Delete event removes the bracket and the title: only their place and the card refresh, and the time is free again. No system dialog. On this board you can strike the title with the mouse, hold it still, or tap it.</p>
 </div>
 <dc-import name="ThemeBar" voice="{{ voice }}" on-pick="{{ pick }}" hint-size="100%,112px"></dc-import>
-<dc-import name="Planner" voice="{{ voice }}" orient="portrait" tmpl="day-agenda" slip="{{ step }}" hint-size="760px,1008px"></dc-import>
+<dc-import name="Planner" voice="{{ voice }}" orient="portrait" tmpl="day-agenda" ev="{{ step }}" live="true" hint-size="760px,1008px"></dc-import>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "step": {"editor": "enum", "options": ["none", "cross", "crossed", "press", "pressed", "deleted"], "default": "none"}, "$preview": {"width": 824, "height": 1376}, "$states": [{"id": "idle", "name": "A slip at rest", "props": {"step": "none"}}, {"id": "cross", "name": "Crossed out with the pen", "props": {"step": "cross"}, "from": [{"state": "idle", "label": "one stroke, edge to edge"}]}, {"id": "cross-confirm", "name": "The pen lifts: confirm", "props": {"step": "crossed"}, "from": [{"state": "cross", "label": "the pen lifts"}]}, {"id": "press", "name": "Held: it crumples", "props": {"step": "press"}, "from": [{"state": "idle", "label": "hold 0.5 s"}]}, {"id": "press-confirm", "name": "The finger lifts: confirm", "props": {"step": "pressed"}, "from": [{"state": "press", "label": "the finger lifts"}]}, {"id": "deleted", "name": "Deleted: free time again", "props": {"step": "deleted"}, "from": [{"state": "cross-confirm", "label": "Delete event"}, {"state": "press-confirm", "label": "Delete event"}]}]}'>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "step": {"editor": "enum", "options": ["none", "strike", "struck", "confirm", "deleted"], "default": "none"}, "$preview": {"width": 824, "height": 1438}, "$states": [{"id": "idle", "name": "An event", "props": {"step": "none"}, "from": [{"state": "struck", "label": "Keep"}, {"state": "confirm", "label": "Keep"}]}, {"id": "strike", "name": "Struck through with the pen", "props": {"step": "strike"}, "from": [{"state": "idle", "label": "one stroke across the title"}]}, {"id": "struck", "name": "The pen lifts: confirm", "props": {"step": "struck"}, "from": [{"state": "strike", "label": "the pen lifts"}]}, {"id": "confirm", "name": "Held still: confirm", "props": {"step": "confirm"}, "from": [{"state": "idle", "label": "a finger held still 0.5 s"}]}, {"id": "deleted", "name": "Deleted: free time again", "props": {"step": "deleted"}, "from": [{"state": "struck", "label": "Delete event"}, {"state": "confirm", "label": "Delete event"}]}]}'>
 class Component extends DCLogic {
   state = {};
   renderVals() {

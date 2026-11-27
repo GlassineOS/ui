@@ -153,34 +153,23 @@ html, body { margin: 0; }
 /* while dragged: the block looks as it will when released; where it was, a dashed outline (its only mark) */
 .pl-ev.is-ghost { background: transparent; box-shadow: none; border: 1.5px dashed var(--ink-soft); }
 .pl-ev.is-new { background: transparent; box-shadow: none; border: 2px dashed var(--ink); }
-/* a timed event is a paper slip on the day sheet: flat paper, its keyline, a heavier lower edge (the
-   paper's thickness); a tab on its top edge to pick it up by; a folded corner at its lower right to pull
-   its end; lifted, an offset hatched shadow (1-px dots on a 3-px diagonal, no greys between) */
-.pl-wg:not(.is-compact) .pl-ev:not(.is-ghost):not(.is-new):not(.is-crumpled) { box-shadow: inset 0 0 0 1.5px var(--ink), inset 0 -2.5px 0 var(--ink); }
-[data-theme^="editorial"] .pl-wg:not(.is-compact) .pl-ev:not(.is-ghost):not(.is-new):not(.is-crumpled) { box-shadow: inset 0 0 0 1px var(--ink), inset 3px 0 0 var(--ink), inset 0 -2px 0 var(--ink); }
-[data-theme^="stationery"] .pl-wg:not(.is-compact) .pl-ev:not(.is-ghost):not(.is-new):not(.is-crumpled) { box-shadow: inset 0 0 0 1px var(--ink-soft), inset 0 -2px 0 var(--ink-soft); }
-.pl-defs { position: absolute; width: 0; height: 0; }
-.pl-ev-tab { position: absolute; width: 26px; height: 8px; background: var(--paper); border-radius: 4px 4px 0 0; box-shadow: inset 1.5px 1.5px 0 var(--ink), inset -1.5px 0 0 var(--ink); }
-[data-theme^="editorial"] .pl-ev-tab { box-shadow: inset 1px 1px 0 var(--ink), inset -1px 0 0 var(--ink); }
-[data-theme^="stationery"] .pl-ev-tab { border-radius: 2px 2px 0 0; box-shadow: inset 1px 1px 0 var(--ink-soft), inset -1px 0 0 var(--ink-soft); }
-.pl-ev-tab::before { content: ""; position: absolute; left: -9px; right: -9px; top: -10px; height: 28px; } /* touch target 44 × 28 */
-.pl-ev-ear { position: absolute; right: 0; bottom: 0; overflow: visible; }
-.pl-ev-ear path { vector-effect: non-scaling-stroke; }
-.pl-ev-ear .under { fill: var(--paper); stroke: none; }
-.pl-ev-ear .flap { fill: var(--paper); stroke: var(--ink); stroke-width: 1.5; stroke-linejoin: round; }
-[data-theme^="stationery"] .pl-ev-ear .flap { stroke: var(--ink-soft); stroke-width: 1; }
-.pl-ev-ear.is-pulled .flap { stroke-width: 2; stroke: var(--ink); }
-.pl-ev-ear::before { content: ""; position: absolute; right: 0; bottom: 0; width: 32px; height: 32px; } /* touch target 32 × 32 */
-.pl-ev-lift { position: absolute; fill: var(--ink); border-radius: var(--v-ui-radius); }
-.pl-ev-lift rect { fill: url(#pl-hatch); }
-#pl-hatch rect { fill: var(--ink); shape-rendering: crispEdges; }
-.pl-ev.is-crumpled { background: transparent; box-shadow: none; overflow: visible; }
-.pl-ev-crumple { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: visible; }
-.pl-ev-crumple .edge { fill: var(--paper); stroke: var(--ink); stroke-width: 1.5; stroke-linejoin: miter; }
-.pl-ev-crumple .crease { fill: none; stroke: var(--ink-soft); stroke-width: 1; }
-.pl-ev.is-crumpled > .pl-ink, .pl-ev.is-crumpled > .when { position: relative; }
-.pl-ev.is-crumpled > .when { position: absolute; }
-.pl-stroke { position: absolute; overflow: visible; pointer-events: none; }
+/* In a day agenda an event is a bracket drawn in the hour margin along its hours, its ends turned in as
+   small serifs, its title written beside it. One line in the ink at whole pixels (no grey, no box, no
+   shadow). Held, an end thickens; while the event is moved, or drawn, its bracket is dashed. */
+.pl-bk { position: absolute; overflow: visible; pointer-events: none; shape-rendering: crispEdges; z-index: 1; }
+.pl-bk path { fill: none; stroke: var(--ink); stroke-width: 2; stroke-linecap: square; }
+.pl-bk path.is-held { stroke-width: 3; }
+.pl-bk.is-dashed path { stroke-dasharray: 3 3; stroke-linecap: butt; }
+[data-theme^="stationery"] .pl-bk path { stroke-width: 1; }
+[data-theme^="stationery"] .pl-bk path.is-held { stroke-width: 2; }
+[data-theme^="stationery"] .pl-bk.is-dashed path { stroke-width: 1; stroke-dasharray: 2 2; }
+.pl-evt { position: absolute; display: flex; align-items: flex-start; gap: 6px; padding: 2px 4px 0 8px; overflow: hidden; touch-action: none; cursor: default; }
+.pl-evt .pl-ink { flex-wrap: wrap; row-gap: 2px; }
+.pl-evt .when { flex: none; margin-left: auto; padding-top: 3px; font: 400 10px/1 var(--font-mono); color: var(--ink); white-space: nowrap; }
+[data-theme^="editorial"] .pl-evt .when, [data-theme^="stationery"] .pl-evt .when { font: italic 400 12px/1 var(--v-text); }
+.pl-evt.is-empty { border-bottom: 1.5px dotted var(--ink); }
+.pl-bk-end { position: absolute; width: 44px; height: 28px; z-index: 2; touch-action: none; cursor: ns-resize; }
+.pl-stroke { position: absolute; overflow: visible; pointer-events: none; z-index: 4; }
 .pl-stroke path { fill: none; stroke: var(--pen); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 .pl-agenda-edge { position: absolute; right: 8px; height: 18px; padding: 0 4px; display: flex; align-items: center; z-index: 1; font: 500 10.5px/1 var(--font-mono); color: var(--ink-soft); background: var(--paper); }
 .pl-now { position: absolute; left: 34px; right: 0; border-top: 2px solid var(--ink); }
@@ -216,9 +205,12 @@ html, body { margin: 0; }
 /* an entry shown whole: a card over its place, its ink as written */
 .pl-card { padding: 8px 10px 10px; z-index: 6; }
 .pl-card .pl-ink { flex-wrap: wrap; row-gap: 4px; }
+/* an event's card: its title as written, its time and day, its actions; the confirm card asks first */
 .pl-card.is-confirm { padding-bottom: 0; }
-.pl-card-fact { margin: 8px -10px 0; padding: 8px 12px 7px; border-top: var(--v-row-rule); font: 400 12px/1.3 var(--font-mono); color: var(--ink-soft); }
-.pl-card-acts { display: flex; gap: 8px; justify-content: flex-end; margin: 0 -10px; padding: 10px 12px; border-top: var(--v-row-rule); }
+.pl-card-q { margin: -2px 0 8px; font: var(--v-h1-style) var(--v-h1-w) 17px/1.2 var(--v-head); }
+.pl-card-fact { margin: 8px -10px 0; padding: 8px 12px 7px; border-top: 1.5px dotted var(--ink); font: 400 12px/1.3 var(--font-mono); color: var(--ink); }
+.pl-card-acts { display: flex; gap: 8px; justify-content: flex-end; margin: 0 -10px; padding: 10px 12px; border-top: 1.5px dotted var(--ink); }
+.pl-evscrim { position: absolute; inset: 0; z-index: 5; background: transparent; }
 .pl-pop-fact { display: flex; gap: 12px; padding: 10px 16px 8px; border-bottom: var(--v-row-rule); }
 .pl-pop-fact .k { flex: none; width: 74px; padding-top: 2px; font: 500 11px/1.3 var(--font-mono); color: var(--ink-soft); }
 .pl-pop-fact .v { flex: 1; display: flex; flex-direction: column; gap: 2px; font-size: 16px; line-height: 1.25; }
@@ -418,3 +410,46 @@ html, body { margin: 0; }
 .pl-ws-col .cap { font: 500 12px/1.45 var(--font-mono); color: var(--ink-soft); }
 .pl-ws-col .cap b { color: var(--ink); font-weight: 600; }
 .pl-ws-box { position: relative; }
+
+/* ---------- An event's own page, full screen: Back in the bar; the fields as rows ---------- */
+.pl-back { flex: none; gap: 2px; padding: 0 12px 0 6px; background: transparent; color: inherit; box-shadow: inset 0 0 0 1.5px currentColor; }
+[data-theme^="editorial"] .pl-back { box-shadow: inset 0 0 0 1px currentColor; }
+[data-theme^="stationery"] .pl-back { box-shadow: 0 0 0 1px currentColor; }
+.pl-back .pl-ico { width: 20px; height: 20px; }
+.pl-evp { position: absolute; inset: 0; display: flex; flex-direction: column; padding: 4px 18px 0; overflow: hidden; }
+.pl-evp-r { display: flex; gap: 14px; padding: 6px 0 12px; }
+.pl-evp-r .k { flex: none; width: 74px; padding-top: 16px; font-family: var(--v-label); font-size: var(--v-label-size); font-weight: var(--v-label-w); text-transform: var(--v-label-case);
+  font-variant: var(--v-label-variant); letter-spacing: var(--v-label-ls); color: var(--ink); }
+[data-theme^="white"] .pl-evp-r .k { font-size: 11px; font-weight: 600; }
+.pl-evp-r .v { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+/* a writing line: the ink on a dotted rule in the ink */
+.pl-evp-line { height: 36px; display: flex; align-items: flex-end; padding: 0 2px 6px; border-bottom: 1.5px dotted var(--ink); overflow: hidden; }
+.pl-evp-line.is-title { height: 46px; }
+.pl-evp-tf { height: 44px; margin-top: 2px; display: flex; align-items: center; padding: 0 10px; border-radius: var(--v-ui-radius); box-shadow: inset 0 0 0 2px var(--ink); font: 400 17px/1 var(--font-plex); color: var(--ink); }
+.pl-evp-tf .caret { display: inline-block; width: 2px; height: 22px; background: var(--ink); margin-left: 1px; }
+.pl-evp-when { gap: 8px; padding-top: 4px; }
+.pl-evp-date { align-self: flex-start; }
+.pl-evp-times { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.pl-evp-time { display: flex; align-items: center; gap: 6px; }
+.pl-evp-time .lbl { font: 400 12px/1 var(--font-mono); color: var(--ink); }
+[data-theme^="editorial"] .pl-evp-time .lbl, [data-theme^="stationery"] .pl-evp-time .lbl { font: italic 400 15px/1 var(--v-text); }
+.pl-evp-time .pl-btn { min-width: 40px; padding: 0; font-size: 18px; }
+.pl-evp-time b { min-width: 54px; text-align: center; font: 600 18px/1 var(--font-mono); }
+.pl-evp-dur { font: 400 12px/1 var(--font-mono); color: var(--ink); }
+.pl-evp-seg { display: flex; margin-top: 4px; height: 40px; border-radius: var(--v-ui-radius); box-shadow: inset 0 0 0 1.5px var(--ink); overflow: hidden; }
+[data-theme^="editorial"] .pl-evp-seg { box-shadow: inset 0 0 0 1px var(--ink); }
+[data-theme^="stationery"] .pl-evp-seg { box-shadow: inset 0 0 0 1px var(--ink); border-radius: 3px; }
+.pl-evp-seg a { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; padding: 0 4px; color: var(--ink); text-decoration: none; white-space: nowrap;
+  font-family: var(--v-label); font-size: var(--v-label-size); font-weight: var(--v-label-w); text-transform: var(--v-label-case); font-variant: var(--v-label-variant); letter-spacing: var(--v-label-ls); }
+[data-theme^="white"] .pl-evp-seg a { font-size: 11.5px; font-weight: 600; }
+.pl-evp-seg a + a { box-shadow: inset 1.5px 0 0 var(--ink); }
+[data-theme^="editorial"] .pl-evp-seg a + a, [data-theme^="stationery"] .pl-evp-seg a + a { box-shadow: inset 1px 0 0 var(--ink); }
+.pl-evp-seg a.is-on { background: var(--ink); color: var(--paper); }
+.pl-evp-foot { display: flex; padding: 14px 0; }
+/* a refresh mark too narrow for its label: the label beside it */
+.pl-refresh.is-side span { right: auto; left: calc(100% + 6px); top: -2px; }
+/* titles in columns (events at the same time): the time right after the title */
+.pl-evt.is-col .when { margin-left: 2px; }
+/* a title that has to fit its event: on one line, cut at the column's edge (no ellipsis) */
+.pl-evt.is-cut .pl-ink { flex-wrap: nowrap; overflow: hidden; }
+.pl-evt.is-cut { overflow: hidden; }

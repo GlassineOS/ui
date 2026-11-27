@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Overlapping events: shingled slips</title>
+<title>Events at the same time: brackets side by side</title>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -11,17 +11,17 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
 <style>body{margin:0}</style>
 </helmet>
-<div data-spec-id="event.stack" style="width:824px;height:1376px;box-sizing:border-box;padding:28px 32px;display:flex;flex-direction:column;gap:18px;background:#e6e6e6;color:#1b1b1b;font-family:'IBM Plex Sans',sans-serif">
+<div data-spec-id="event.stack" style="width:824px;height:1392px;box-sizing:border-box;padding:28px 32px;display:flex;flex-direction:column;gap:18px;background:#e6e6e6;color:#1b1b1b;font-family:'IBM Plex Sans',sans-serif">
 <div style="display:flex;flex-direction:column;gap:6px">
 <span style="font:500 13px/1.2 'IBM Plex Mono',monospace;color:#3d3d3d">event.stack</span>
-<h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">Overlapping events: shingled slips</h1>
-<p style="margin:0;max-width:760px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">Events that overlap lie as shingled slips. The later one lies on top, shifted 14 px to the right. The one underneath peeks out by a strip of at least 18 px that shows its title: its top while the one above starts later, its bottom once it is the one above. A tap on a strip brings that slip to the top; one refresh of the rectangle the slips share. Three or more overlapping slips lie the same way, and a tap on any strip fans them out side by side, at their own times, each a third as wide and turned 1.5° from the next, with no tab or folded corner: one refresh of the stack’s span. A tap on a fanned slip brings it to the top and closes the fan; a tap beside them closes it as it was.</p>
+<h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">Events at the same time: brackets side by side</h1>
+<p style="margin:0;max-width:760px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">Events at the same time stand side by side in the margin, like nested brackets. The one that starts first is outermost, each next one 6 px further in, at most three. Their titles stand in columns across the width, in the brackets’ order, each at its own start. Nothing lies on top of anything, and each event moves, stretches, opens and is deleted as if it were alone. Here the dentist and the call to the bank overlap from 14:30 to 15:00, and working from the café runs around both.</p>
 </div>
 <dc-import name="ThemeBar" voice="{{ voice }}" on-pick="{{ pick }}" hint-size="100%,112px"></dc-import>
-<dc-import name="Planner" voice="{{ voice }}" orient="portrait" tmpl="day-agenda" stack="{{ step }}" hint-size="760px,1008px"></dc-import>
+<dc-import name="Planner" voice="{{ voice }}" orient="portrait" tmpl="day-agenda" stack="{{ step }}" live="true" hint-size="760px,1008px"></dc-import>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "step": {"editor": "enum", "options": ["two", "swapped", "three", "fanned"], "default": "two"}, "$preview": {"width": 824, "height": 1376}, "$states": [{"id": "shingled", "name": "Two slips, shingled", "props": {"step": "two"}}, {"id": "swapped", "name": "The strip tapped: it comes to the top", "props": {"step": "swapped"}, "from": [{"state": "shingled", "label": "tap the strip"}]}, {"id": "stack", "name": "Three slips, closed", "props": {"step": "three"}, "from": [{"state": "fanned", "label": "tap again"}]}, {"id": "fanned", "name": "Three slips, fanned", "props": {"step": "fanned"}, "from": [{"state": "stack", "label": "tap a strip"}]}]}'>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "step": {"editor": "enum", "options": ["two", "three"], "default": "two"}, "$preview": {"width": 824, "height": 1392}, "$states": [{"id": "two", "name": "Two at the same time", "props": {"step": "two"}}, {"id": "three", "name": "Three, one around the others", "props": {"step": "three"}, "from": [{"state": "two", "label": "a third event around both"}]}]}'>
 class Component extends DCLogic {
   state = {};
   renderVals() {

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Deleting an event</title>
+<title>Deleting an event: crossed out or crumpled</title>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -14,19 +14,19 @@
 <div data-spec-id="event.delete" style="width:824px;height:1376px;box-sizing:border-box;padding:28px 32px;display:flex;flex-direction:column;gap:18px;background:#e6e6e6;color:#1b1b1b;font-family:'IBM Plex Sans',sans-serif">
 <div style="display:flex;flex-direction:column;gap:6px">
 <span style="font:500 13px/1.2 'IBM Plex Mono',monospace;color:#3d3d3d">event.delete</span>
-<h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">Deleting an event</h1>
-<p style="margin:0;max-width:760px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">Every timed event in a day agenda carries two grips in the soft ink: a short bar on its lower edge, where a drag changes its end, and six dots at its right edge. Held and dragged, the dots move the event as the block does anywhere. A tap on them opens the event’s card over the block (one rectangle refresh): the title as written, its time and day, and Delete event. The first tap on Delete event arms it; only that row refreshes, outlined, as “Tap again to delete”. The second tap deletes the event: the card closes and only the block’s place refreshes, free time again. A tap anywhere else closes the card, armed or not, and nothing is deleted. There is no undo and no dialog.</p>
+<h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">Deleting an event: crossed out or crumpled</h1>
+<p style="margin:0;max-width:760px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">Two ways delete a slip, and both end in the same card. The pen: one stroke through the slip that starts outside its left edge and ends past its right edge, or runs between opposite corners outside it; a stroke that starts inside the slip is writing. A finger held still on the slip for 0.5 s crumples it (one refresh of its place). When the pen or the finger lifts, a card opens below the slip (one rectangle refresh): its title, time and day, Keep and Delete event. Keep, or a tap outside, closes the card and the slip is as it was. Delete event removes it: only its place and the card refresh, free time again. No system dialog.</p>
 </div>
 <dc-import name="ThemeBar" voice="{{ voice }}" on-pick="{{ pick }}" hint-size="100%,112px"></dc-import>
-<dc-import name="Planner" voice="{{ voice }}" orient="portrait" tmpl="day-agenda" evcard="{{ step }}" hint-size="760px,1008px"></dc-import>
+<dc-import name="Planner" voice="{{ voice }}" orient="portrait" tmpl="day-agenda" slip="{{ step }}" hint-size="760px,1008px"></dc-import>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "step": {"editor": "enum", "options": ["tap", "open", "armed", "deleted"], "default": "tap"}, "$preview": {"width": 824, "height": 1376}, "$states": [{"id": "grips", "name": "Grips: the move grip tapped", "props": {"step": "tap"}}, {"id": "card", "name": "Its card", "props": {"step": "open"}, "from": [{"state": "grips", "label": "tap the six dots"}]}, {"id": "armed", "name": "Armed: tap again to delete", "props": {"step": "armed"}, "from": [{"state": "card", "label": "tap Delete event"}]}, {"id": "deleted", "name": "Deleted: free time again", "props": {"step": "deleted"}, "from": [{"state": "armed", "label": "tap it again"}]}]}'>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "step": {"editor": "enum", "options": ["none", "cross", "crossed", "press", "pressed", "deleted"], "default": "none"}, "$preview": {"width": 824, "height": 1376}, "$states": [{"id": "idle", "name": "A slip at rest", "props": {"step": "none"}}, {"id": "cross", "name": "Crossed out with the pen", "props": {"step": "cross"}, "from": [{"state": "idle", "label": "one stroke, edge to edge"}]}, {"id": "cross-confirm", "name": "The pen lifts: confirm", "props": {"step": "crossed"}, "from": [{"state": "cross", "label": "the pen lifts"}]}, {"id": "press", "name": "Held: it crumples", "props": {"step": "press"}, "from": [{"state": "idle", "label": "hold 0.5 s"}]}, {"id": "press-confirm", "name": "The finger lifts: confirm", "props": {"step": "pressed"}, "from": [{"state": "press", "label": "the finger lifts"}]}, {"id": "deleted", "name": "Deleted: free time again", "props": {"step": "deleted"}, "from": [{"state": "cross-confirm", "label": "Delete event"}, {"state": "press-confirm", "label": "Delete event"}]}]}'>
 class Component extends DCLogic {
   state = {};
   renderVals() {
     const s = this.state, p = this.props;
-    return { voice: s.voice ?? p.voice ?? 'white', pick: (k, v) => this.setState({ [k]: v }), step: p.step ?? "tap" };
+    return { voice: s.voice ?? p.voice ?? 'white', pick: (k, v) => this.setState({ [k]: v }), step: p.step ?? "none" };
   }
 }
 </script>

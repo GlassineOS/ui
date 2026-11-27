@@ -44,7 +44,7 @@
   },
   {
    "id": "events",
-   "name": "Events · drawn, dragged, stretched"
+   "name": "Events · drawn, moved, stretched, deleted, stacked"
   },
   {
    "id": "refused",
@@ -384,7 +384,7 @@
    "x": 904,
    "y": 0,
    "w": 824,
-   "h": 1376,
+   "h": 1400,
    "title": "Dragging an event, and its edge",
    "page": "events",
    "is_interactive": false
@@ -403,7 +403,16 @@
    "y": 0,
    "w": 824,
    "h": 1376,
-   "title": "Deleting an event",
+   "title": "Deleting an event: crossed out or crumpled",
+   "page": "events",
+   "is_interactive": false
+  },
+  "event.stack.dc.html": {
+   "x": 3616,
+   "y": 0,
+   "w": 824,
+   "h": 1376,
+   "title": "Overlapping events: shingled slips",
    "page": "events",
    "is_interactive": false
   },
@@ -700,15 +709,15 @@
   "t-events": {
    "kind": "title1",
    "page": "events",
-   "text": "Events · drawn, dragged, stretched",
+   "text": "Events · drawn, moved, stretched, deleted, stacked",
    "x": 0,
    "y": -200,
    "w": 240,
-   "maxW": 3536
+   "maxW": 4440
   },
   "n-events": {
    "page": "events",
-   "text": "Times come only from the agenda: draw a block into free time and an event exists; drag it in 30-minute steps; drag its lower edge to change its length. No handwriting for times. Two soft grips mark where a block is moved and stretched; a tap on its move grip opens its card, which deletes it.",
+   "text": "Times come only from the agenda: draw a block into free time and an event exists. An event is a paper slip: move it by its tab in 30-minute steps, pull its folded corner to change its length, cross it out with the pen or hold it to crumple it to delete it. Overlapping slips lie shingled. No handwriting for times.",
    "x": 0,
    "y": -560,
    "w": 2400
@@ -788,6 +797,7 @@
   "event.drag.dc.html",
   "event.title.dc.html",
   "event.delete.dc.html",
+  "event.stack.dc.html",
   "start.refused.dc.html",
   "start.refused.landscape.dc.html",
   "Parts.dc.html",

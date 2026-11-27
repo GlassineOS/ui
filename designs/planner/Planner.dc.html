@@ -89,7 +89,7 @@
 </sc-if>
 
 <sc-if value="{{ card.on }}" hint-placeholder-val="{{ false }}">
-<div class="pl-pop pl-card" role="dialog" aria-label="The whole entry; a tap anywhere closes it" style="left:{{ card.x }}px;top:{{ card.y }}px;width:{{ card.w }}px"><span class="pl-ink"><sc-for list="{{ card.words }}" as="w" hint-placeholder-count="6"><span class="{{ w.cls }}" style="{{ w.st }}">{{ w.t }}</span></sc-for></span></div>
+<div class="{{ card.cls }}" role="dialog" aria-label="{{ card.label }}" style="left:{{ card.x }}px;top:{{ card.y }}px;width:{{ card.w }}px"><span class="pl-ink"><sc-for list="{{ card.words }}" as="w" hint-placeholder-count="6"><span class="{{ w.cls }}" style="{{ w.st }}">{{ w.t }}</span></sc-for></span><sc-if value="{{ card.isEvent }}" hint-placeholder-val="{{ false }}"><div class="pl-card-fact">{{ card.fact }}</div><a class="{{ card.delCls }}" href="#"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.trash }}"></path></svg><span class="tx">{{ card.delT }}</span><sc-if value="{{ card.armedMark }}" hint-placeholder-val="{{ false }}"><span class="pl-refresh is-in"><span>the second tap deletes; this row is the only refresh</span></span></sc-if></a></sc-if></div>
 </sc-if>
 
 <sc-if value="{{ sheetOv.on }}" hint-placeholder-val="{{ false }}">
@@ -141,7 +141,7 @@
 </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "orient": {"editor": "enum", "options": ["portrait", "landscape"], "default": "portrait"}, "screen": {"editor": "enum", "options": ["view", "refused", "sheet", "picker", "year", "editor"], "default": "view"}, "tmpl": {"editor": "enum", "options": ["day-lists", "day-diary", "day-agenda", "week-columns", "week-spread", "week-lists", "month-grid", "month-goals"], "default": "day-lists"}, "hint": {"editor": "enum", "options": ["count", "none"], "default": "count"}, "search": {"editor": "enum", "options": ["none", "bar", "popup"], "default": "none"}, "overlay": {"editor": "enum", "options": ["none", "info", "cog", "hidden", "settings", "add", "used", "discard", "wset", "slot", "restore", "results", "open", "move"], "default": "none"}, "query": {"editor": "enum", "options": ["found", "more", "nothing"], "default": "found"}, "openFrom": {"editor": "enum", "options": ["title", "hidden"], "default": "title"}, "moveKind": {"editor": "enum", "options": ["day", "week", "month"], "default": "day"}, "strength": {"editor": "enum", "options": ["none", "light", "medium", "strong"], "default": "none"}, "range": {"editor": "enum", "options": ["none", "first", "last", "named"], "default": "none"}, "yearNav": {"editor": "boolean", "default": false}, "year": {"editor": "enum", "options": ["this", "next"], "default": "this"}, "day": {"editor": "enum", "options": ["11", "18"], "default": "11"}, "dev": {"editor": "boolean", "default": false}, "ink": {"editor": "enum", "options": ["raw", "neat", "font"], "default": "raw"}, "write": {"editor": "enum", "options": ["none", "writing", "settled"], "default": "none"}, "text": {"editor": "enum", "options": ["none", "field", "back", "view"], "default": "none"}, "leave": {"editor": "enum", "options": ["done", "outside"], "default": "done"}, "drag": {"editor": "enum", "options": ["none", "draw", "drawn", "titled", "grab", "moved", "resize", "released", "edge"], "default": "none"}, "title": {"editor": "enum", "options": ["grow", "shrink", "cut"], "default": "grow"}, "longTitle": {"editor": "boolean", "default": false}, "edit": {"editor": "enum", "options": ["select", "weight", "short", "land", "new", "copy", "name", "move", "remove", "saved", "edited"], "default": "select"}, "refuse": {"editor": "enum", "options": ["missing", "off"], "default": "missing"}, "refresh": {"editor": "boolean", "default": false}, "widget": {"editor": "enum", "options": ["agenda", "todo", "notes", "habits", "minimonth", "weekov", "priorities"], "default": "todo"}, "fill": {"editor": "enum", "options": ["empty", "full", "more"], "default": "full"}, "$preview": {"width": 760, "height": 1008}}'>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "orient": {"editor": "enum", "options": ["portrait", "landscape"], "default": "portrait"}, "screen": {"editor": "enum", "options": ["view", "refused", "sheet", "picker", "year", "editor"], "default": "view"}, "tmpl": {"editor": "enum", "options": ["day-lists", "day-diary", "day-agenda", "week-columns", "week-spread", "week-lists", "month-grid", "month-goals"], "default": "day-lists"}, "hint": {"editor": "enum", "options": ["count", "none"], "default": "count"}, "search": {"editor": "enum", "options": ["none", "bar", "popup"], "default": "none"}, "overlay": {"editor": "enum", "options": ["none", "info", "cog", "hidden", "settings", "add", "used", "discard", "wset", "slot", "restore", "results", "open", "move"], "default": "none"}, "query": {"editor": "enum", "options": ["found", "more", "nothing"], "default": "found"}, "openFrom": {"editor": "enum", "options": ["title", "hidden"], "default": "title"}, "moveKind": {"editor": "enum", "options": ["day", "week", "month"], "default": "day"}, "strength": {"editor": "enum", "options": ["none", "light", "medium", "strong"], "default": "none"}, "range": {"editor": "enum", "options": ["none", "first", "last", "named"], "default": "none"}, "yearNav": {"editor": "boolean", "default": false}, "year": {"editor": "enum", "options": ["this", "next"], "default": "this"}, "day": {"editor": "enum", "options": ["11", "18"], "default": "11"}, "dev": {"editor": "boolean", "default": false}, "ink": {"editor": "enum", "options": ["raw", "neat", "font"], "default": "raw"}, "write": {"editor": "enum", "options": ["none", "writing", "settled"], "default": "none"}, "text": {"editor": "enum", "options": ["none", "field", "back", "view"], "default": "none"}, "leave": {"editor": "enum", "options": ["done", "outside"], "default": "done"}, "drag": {"editor": "enum", "options": ["none", "draw", "drawn", "titled", "grab", "moved", "resize", "released", "edge"], "default": "none"}, "title": {"editor": "enum", "options": ["grow", "shrink", "cut"], "default": "grow"}, "longTitle": {"editor": "boolean", "default": false}, "edit": {"editor": "enum", "options": ["select", "weight", "short", "land", "new", "copy", "name", "move", "remove", "saved", "edited"], "default": "select"}, "refuse": {"editor": "enum", "options": ["missing", "off"], "default": "missing"}, "refresh": {"editor": "boolean", "default": false}, "evcard": {"editor": "enum", "options": ["none", "tap", "open", "armed", "deleted"], "default": "none"}, "widget": {"editor": "enum", "options": ["agenda", "todo", "notes", "habits", "minimonth", "weekov", "priorities"], "default": "todo"}, "fill": {"editor": "enum", "options": ["empty", "full", "more"], "default": "full"}, "$preview": {"width": 760, "height": 1008}}'>
 class Component extends DCLogic {
   renderVals() {
     const p = this.props, PL = window.PLANNER;
@@ -191,6 +191,9 @@ class Component extends DCLogic {
     const find = (kind2, title) => widgets.find(g => g.kind === kind2 && (!title || g.title === title));
     const agenda = find('agenda');
     if (agenda && drag !== 'none') this.dragMarks(agenda, drag, p, marks, pen, cw, ch, W, H);
+    // the event's card, opened by a tap on the move grip: Delete event, a tap to arm, a tap to delete
+    const evcard = p.evcard || 'none';
+    if (agenda && evcard !== 'none') this.evMarks(agenda, evcard, marks, W, H);
     if (write !== 'none') {
       const td = find('todo', 'Today');
       if (td) {
@@ -220,8 +223,9 @@ class Component extends DCLogic {
     if (info.on) Object.assign(info, this.infoPop(p, t, kind, hidden, pg));
     if (overlay === 'results') Object.assign(info, this.results(PL, p.query || 'found'));
     // an entry shown whole (a cut title, or Open in the hidden list): a card over its place; a tap anywhere closes it
-    const card = { on: overlay === 'open' };
-    if (card.on) Object.assign(card, this.wholeCard(PL, p, widgets, pad, cw, pageH));
+    const card = { on: overlay === 'open' || evcard === 'open' || evcard === 'armed' };
+    if (overlay === 'open') Object.assign(card, this.wholeCard(PL, p, widgets, pad, cw, pageH));
+    else if (card.on) Object.assign(card, this.eventCard(PL, evcard, agenda, pad, pg.title));
     const sheetOv = { on: overlay === 'hidden' || overlay === 'add' || overlay === 'settings' || overlay === 'wset' || overlay === 'slot' || overlay === 'move' || (overlay === 'open' && p.openFrom === 'hidden') };
     if (overlay === 'move') Object.assign(sheetOv, this.moveSheet(PL, p.moveKind || 'day', pageH));
     if (overlay === 'slot') Object.assign(sheetOv, { isSlot: true, h: Math.round(pageH * 0.62), title: 'Slot for these notes', lead: 'Notes are kept per slot. Every template that names a slot shows the same entries; a slot no widget shows keeps its entries, named in the (i).',
@@ -328,6 +332,7 @@ class Component extends DCLogic {
           }
         }
       }
+      out.blocks = out.blocks.map(b => Object.assign(b, Component.grips(b, g.compact)));
     }
     if (out.isNotes) {
       out.lines = g.lines.map(l => ({ ...l, text: p.text === 'view', value: l.words.map(w => w.t).join(' ') }));
@@ -372,6 +377,48 @@ class Component extends DCLogic {
       const r = { x: ag.x + 36, y: Math.round(y(28)) - 2, w: ag.w - 38, h: Math.round(y(30) - y(28)) + 4 };
       marks.push({ cls: 'pl-refresh', ...r, t: 'on release: only the old place, the outline goes' });
     }
+    ag.blocks = ag.blocks.map(b => Object.assign({}, b, Component.grips(b, ag.compact)));
+  }
+
+  /* the grips of a timed event block: an edge grip on its lower edge (the existing lower-edge drag zone)
+     and a move grip of six dots at its right inside edge; none on a compact agenda, the dashed ghost of a
+     drag, or a block still being drawn. The move grip is centred at the right of a short block (no time
+     label there), below the time label on a long one, and beside the label on a block between the two. */
+  static grips(b, compact) {
+    if (compact || /is-ghost|is-new/.test(b.cls)) return { grips: false, move: false };
+    const D = Component.GRIP_DOTS_H;
+    if (b.h < D + 4) return { grips: true, move: false, moveCls: '', gripY: 0 };
+    const cls = /has-grip/.test(b.cls) ? b.cls : b.cls + ' has-grip'; // the title's ink stops short of the dots
+    if (/is-short/.test(b.cls)) return { cls, grips: true, move: true, moveCls: 'pl-ev-move', gripY: Math.round((b.h - D) / 2) };
+    if (b.h >= 17 + D + 2) return { cls, grips: true, move: true, moveCls: 'pl-ev-move', gripY: Math.max(17, Math.round((b.h - D) / 2)) };
+    return { cls, grips: true, move: true, moveCls: 'pl-ev-move is-beside', gripY: Math.round((b.h - D) / 2) };
+  }
+
+  /* the dentist's event (e3): a tap on its move grip, its card, Delete armed, deleted */
+  evMarks(ag, evcard, marks, W, H) {
+    const b = ag.blocks.find(x => x.id === 'e3');
+    const y = hh => ag.y + 34 + ag.top + (hh / 2 - ag.from) * ag.pitch;
+    if (evcard === 'tap' && b) {
+      // the move grip's touch target, about 32 × 40 around the dots
+      const gx = ag.x + ag.w - 6 - 9 - 3, gy = ag.y + 34 + b.y + b.gripY + 5;
+      marks.push({ cls: 'pl-mark is-end', x: gx - 16, y: gy - 20, w: 32, h: 40, t: 'a finger taps the move grip' });
+    }
+    if (evcard === 'deleted') {
+      ag.blocks = ag.blocks.filter(x => x.id !== 'e3');
+      const r = { x: ag.x + 36, y: Math.round(y(28)) - 2, w: ag.w - 38, h: Math.round(y(30) - y(28)) + 4 };
+      marks.push({ cls: 'pl-refresh', ...r, t: 'deleted: only the block’s place, free time again' });
+    }
+  }
+
+  /* the event's own card over its block, near the move grip: its title as written, its time and day,
+     and one action; the first tap on Delete event arms it, the second deletes */
+  eventCard(PL, evcard, ag, pad, ttl) {
+    const b = ag && ag.blocks.find(x => x.id === 'e3');
+    const CW = 340, armed = evcard === 'armed';
+    return { cls: 'pl-pop pl-card is-event', label: 'The event’s card; a tap outside closes it', isEvent: true,
+      x: pad + (ag ? ag.x + ag.w - 2 - CW : 0), y: pad + (ag && b ? ag.y + 34 + b.y - 8 : 300), w: CW,
+      words: b ? b.words : PL.ink('dentist', { fs: 19, salt: 'e3' }), fact: (b ? b.when : '14:00–15:00') + ' · ' + ttl.main,
+      delCls: 'pl-pop-row pl-card-del' + (armed ? ' is-armed' : ''), delT: armed ? 'Tap again to delete' : 'Delete event', armedMark: armed };
   }
 
   editMarks(widgets, p, handles, tags, warns, pg, cw, ch, marks) {
@@ -545,12 +592,12 @@ class Component extends DCLogic {
   /* the whole entry over its place: a cut title over its block, an entry opened from the hidden list a third down the page */
   wholeCard(PL, p, widgets, pad, cw, pageH) {
     if (p.openFrom === 'hidden') {
-      return { x: 16, y: Math.round(pageH / 3) - 70, w: cw + 2 * pad - 32, words: PL.ink('return the library books before the holidays', { fs: 19, salt: 'open' }) };
+      return { cls: 'pl-pop pl-card', label: 'The whole entry; a tap anywhere closes it', x: 16, y: Math.round(pageH / 3) - 70, w: cw + 2 * pad - 32, words: PL.ink('return the library books before the holidays', { fs: 19, salt: 'open' }) };
     }
     const ag = widgets.find(g => g.kind === 'agenda');
     const b = ag && ag.blocks.find(x => x.id === 'e4');
     const t = 'pick up the parcel at the post office and the keys from the neighbours and the bike from the repair shop on the way back home before the shops close';
-    return { x: pad + (ag ? ag.x + 30 : 0), y: pad + (ag && b ? ag.y + 34 + b.y - 8 : 300), w: (ag ? ag.w - 30 : cw), words: PL.ink(t, { fs: 19, salt: 'e4' }) };
+    return { cls: 'pl-pop pl-card', label: 'The whole entry; a tap anywhere closes it', x: pad + (ag ? ag.x + 30 : 0), y: pad + (ag && b ? ag.y + 34 + b.y - 8 : 300), w: (ag ? ag.w - 30 : cw), words: PL.ink(t, { fs: 19, salt: 'e4' }) };
   }
 
   /* Move: another date for an entry from the hidden list; the month's days, a month's weeks or the year's months */
@@ -595,6 +642,7 @@ class Component extends DCLogic {
     return { theme: voice + '-eink', ic: Component.IC, isSheet: true, isDevice: false, widgets, sheet: { W: x - 28 + 40, H: H + 16, top: 86, cols } };
   }
 }
+Component.GRIP_DOTS_H = 10;
 Component.IC = {
   chevL: 'M15 5l-7 7 7 7', chevR: 'M9 5l7 7-7 7',
   cog: 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z M19.4 13.4l1.7 1.3-1.9 3.3-2-.8a7.4 7.4 0 0 1-1.8 1l-.3 2.1h-3.8l-.3-2.1a7.4 7.4 0 0 1-1.8-1l-2 .8-1.9-3.3 1.7-1.3a7.6 7.6 0 0 1 0-2.8L3.3 9.3l1.9-3.3 2 .8a7.4 7.4 0 0 1 1.8-1l.3-2.1h3.8l.3 2.1a7.4 7.4 0 0 1 1.8 1l2-.8 1.9 3.3-1.7 1.3a7.6 7.6 0 0 1 0 2.8z',

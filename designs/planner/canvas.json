@@ -398,6 +398,15 @@
    "page": "events",
    "is_interactive": false
   },
+  "event.delete.dc.html": {
+   "x": 2712,
+   "y": 0,
+   "w": 824,
+   "h": 1376,
+   "title": "Deleting an event",
+   "page": "events",
+   "is_interactive": false
+  },
   "start.refused.dc.html": {
    "x": 0,
    "y": 0,
@@ -695,11 +704,11 @@
    "x": 0,
    "y": -200,
    "w": 240,
-   "maxW": 2712
+   "maxW": 3536
   },
   "n-events": {
    "page": "events",
-   "text": "Times come only from the agenda: draw a block into free time and an event exists; drag it in 30-minute steps; drag its lower edge to change its length. No handwriting for times.",
+   "text": "Times come only from the agenda: draw a block into free time and an event exists; drag it in 30-minute steps; drag its lower edge to change its length. No handwriting for times. Two soft grips mark where a block is moved and stretched; a tap on its move grip opens its card, which deletes it.",
    "x": 0,
    "y": -560,
    "w": 2400
@@ -778,6 +787,7 @@
   "event.draw.dc.html",
   "event.drag.dc.html",
   "event.title.dc.html",
+  "event.delete.dc.html",
   "start.refused.dc.html",
   "start.refused.landscape.dc.html",
   "Parts.dc.html",

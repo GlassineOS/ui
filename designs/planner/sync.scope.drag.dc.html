@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Moving one occurrence: Change which events?</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div data-spec-id="sync.scope.drag" style="width:1140px;height:1438px;box-sizing:border-box;padding:28px 32px;display:flex;flex-direction:column;gap:18px;background:#e6e6e6;color:#1b1b1b;font-family:'IBM Plex Sans',sans-serif">
+<div style="display:flex;flex-direction:column;gap:6px">
+<span style="font:500 13px/1.2 'IBM Plex Mono',monospace;color:#3d3d3d">sync.scope.drag</span>
+<h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">Moving one occurrence: Change which events?</h1>
+<p style="margin:0;max-width:1000px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">“team call” repeats every Thursday at 10:00. Dragged by its title to 11:00 and released, this Thursday’s occurrence sits dashed at its new time and a card opens under it, once, after the release: “Change which events?” with This event, This and following events and All events, each a whole line to tap. This event moves only this Thursday; This and following ends the series before it and starts a new one from it; All events moves every Thursday. A tap outside the card means no: the occurrence goes back to 10:00 and nothing changes. On the first occurrence of a series This and following would be the same as All events, so the card offers only This event and All events.</p>
+</div>
+<dc-import name="ThemeBar" voice="{{ voice }}" on-pick="{{ pick }}" hint-size="100%,112px"></dc-import>
+<dc-import name="Planner" voice="{{ voice }}" orient="{{ orient }}" tmpl="day-agenda" sync="{{ sync }}" hint-size="{{ hint }}"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "step": {"editor": "enum", "options": ["drag", "first", "drag-land", "first-land"], "default": "drag"}, "$preview": {"width": 1140, "height": 1438}, "$states": [{"id": "drag", "name": "Released at 11:00: three choices", "props": {"step": "drag"}}, {"id": "first", "name": "The first of the series: two choices", "props": {"step": "first"}}, {"id": "drag-land", "name": "Turned: three choices", "props": {"step": "drag-land"}, "from": [{"state": "drag", "label": "turn the device"}]}, {"id": "first-land", "name": "Turned: the first of the series", "props": {"step": "first-land"}, "from": [{"state": "first", "label": "turn the device"}]}]}'>
+class Component extends DCLogic {
+  state = {};
+  renderVals() {
+    const s = this.state, p = this.props;
+    const M = {"drag": ["drag", "portrait"], "first": ["first", "portrait"], "drag-land": ["drag", "landscape"], "first-land": ["first", "landscape"]};
+    const [sync, orient] = M[p.step] || M["drag"];
+    return { voice: s.voice ?? p.voice ?? 'white', pick: (k, v) => this.setState({ [k]: v }), sync, orient, hint: orient === 'landscape' ? '1008px,760px' : '760px,1008px' };
+  }
+}
+</script>
+</body>
+</html>

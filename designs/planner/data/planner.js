@@ -109,6 +109,19 @@
     });
   };
 
+  /* typed text (planner spec 002 FR-010): an outside entry's words, set in the voice's text face, straight
+     on the line and in ink colour; struck: a cancelled outside event (FR-011a), a light line through it */
+  P.typed = function (text, opts) {
+    const o = opts || {}, fs = o.fs || 16;
+    return String(text).split(' ').filter(Boolean).map(t => ({ t, st: 'font-size:' + fs.toFixed(1) + 'px;margin-right:' + (fs * 0.28).toFixed(1) + 'px', cls: 'pl-w pl-w--typed' + (o.struck ? ' is-struck' : '') }));
+  };
+  /* an entry's title as shown: typed (outside), its own ink after it (Scenario 1), or ink only */
+  P.words = function (e, ink, opts) {
+    if (!e.typed) return ink(e.t, opts);
+    const fs = Math.min(17, Math.max(13, ((opts && opts.fs) || 19) - 3));
+    return P.typed(e.t, { fs, struck: e.cancelled }).concat(e.ink ? ink(e.ink, Object.assign({}, opts, { salt: e.id + 'i' })) : []);
+  };
+
   /* ---------- Widgets: what each declares (FR-041) ----------
      Width: min, preferred, weight (from the template), grow. Height: min, and the content's need.
      Two kinds: the agenda compresses (its hour pitch shrinks to a minimum); lists and notes
@@ -392,10 +405,10 @@
       n = Object.assign({}, n, { from: ws, to: we });
       const blocks = inside.map(e => {
         const y1 = top + (Math.max(e.s, n.from * 2) / 2 - n.from) * pitch, y2 = top + (Math.min(e.e, n.to * 2) / 2 - n.from) * pitch;
-        return { id: e.id, s: e.s, e: e.e, title: e.t, y: Math.round(y1) + 1, h: Math.max(8, Math.round(y2 - y1) - 2), words: compact ? ink(e.t, { fs: 13, salt: e.id }) : ink(e.t, { fs: Math.min(fs, Math.max(14, (y2 - y1) - 8)), salt: e.id }),
+        return { id: e.id, s: e.s, e: e.e, title: e.t + (e.ink ? ' ' + e.ink : ''), y: Math.round(y1) + 1, h: Math.max(8, Math.round(y2 - y1) - 2), words: compact ? P.words(e, ink, { fs: 13, salt: e.id }) : P.words(e, ink, { fs: Math.min(fs, Math.max(14, (y2 - y1) - 8)), salt: e.id }),
           when: hm(e.s) + '–' + hm(e.e), cls: 'pl-ev' + (y2 - y1 < 24 ? ' is-short' : '') };
       });
-      const allDay = compact || empty ? [] : EV.filter(e => e.day === day && e.allDay).map(e => ({ words: ink(e.t, { fs: 15, salt: e.id }) }));
+      const allDay = compact || empty ? [] : EV.concat(o.extra || []).filter(e => e.day === day && e.allDay && !(o.drop || []).includes(e.id)).map(e => ({ id: e.id, words: P.words(e, ink, { fs: 15, salt: e.id }) }));
       return Object.assign(base, { compact, title: compact ? DOW2[wd(day)] + ' ' + day : 'Agenda', tag: compact ? '' : hm(n.from * 2) + '–' + hm(n.to * 2), today: day === MONTH.today, hrs, blocks, allDay, hasAllDay: allDay.length > 0,
         before, after, beforeLabel: compact ? '↑' + before : '↑ ' + before + ' earlier', afterLabel: compact ? '↓' + after : '↓ ' + after + ' later', pitch, top, from: n.from });
     }

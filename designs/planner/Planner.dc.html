@@ -77,14 +77,19 @@
 </sc-if>
 <sc-if value="{{ evp.on }}" hint-placeholder-val="{{ false }}">
 <div class="pl-evp">
+<sc-if value="{{ evp.notice }}" hint-placeholder-val="{{ false }}"><div class="pl-evp-note" role="status"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.info }}"></path></svg><span class="tx">{{ evp.notice }}</span><sc-for list="{{ evp.noticeActs }}" as="na" hint-placeholder-count="0"><a class="{{ na.cls }}" href="#" onClick="{{ na.on }}">{{ na.t }}</a></sc-for></div></sc-if>
 <div class="pl-evp-r"><span class="k">Title</span><div class="v"><sc-if value="{{ evp.isText }}" hint-placeholder-val="{{ false }}"><div class="pl-evp-tf">{{ evp.titleText }}<span class="caret"></span></div></sc-if><sc-if value="{{ evp.notText }}" hint-placeholder-val="{{ true }}"><div class="pl-evp-line is-title" role="textbox" aria-label="Title: write, or tap with a finger to type" onClick="{{ evp.textTap }}"><span class="pl-ink"><sc-for list="{{ evp.titleBig }}" as="w" hint-placeholder-count="2"><span class="{{ w.cls }}" style="{{ w.st }}">{{ w.t }}</span></sc-for></span></div></sc-if></div></div>
-<div class="pl-evp-r"><span class="k">When</span><div class="v pl-evp-when"><a class="pl-btn pl-evp-date" href="#" aria-label="The day: a tap opens the month"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.calendar }}"></path></svg>{{ evp.date }}</a><div class="pl-evp-times"><span class="pl-evp-time"><span class="lbl">from</span><a class="pl-btn" href="#" aria-label="Start 30 minutes earlier" onClick="{{ evp.sMinus }}">−</a><b>{{ evp.start }}</b><a class="pl-btn" href="#" aria-label="Start 30 minutes later" onClick="{{ evp.sPlus }}">+</a></span><span class="pl-evp-time"><span class="lbl">to</span><a class="pl-btn" href="#" aria-label="End 30 minutes earlier" onClick="{{ evp.eMinus }}">−</a><b>{{ evp.end }}</b><a class="pl-btn" href="#" aria-label="End 30 minutes later" onClick="{{ evp.ePlus }}">+</a></span><span class="pl-evp-dur">{{ evp.dur }}</span></div></div></div>
-<div class="pl-evp-r"><span class="k">Where</span><div class="v"><div class="pl-evp-line" role="textbox" aria-label="Where"><span class="pl-ink"><sc-for list="{{ evp.place }}" as="w" hint-placeholder-count="2"><span class="{{ w.cls }}" style="{{ w.st }}">{{ w.t }}</span></sc-for></span></div></div></div>
+<sc-if value="{{ evp.whenFixed }}" hint-placeholder-val="{{ false }}"><div class="pl-evp-r"><span class="k">When</span><div class="v"><div class="pl-evp-fixed">{{ evp.date }} · {{ evp.whenText }}</div></div></div></sc-if>
+<sc-if value="{{ evp.editable }}" hint-placeholder-val="{{ true }}"><div class="pl-evp-r"><span class="k">When</span><div class="v pl-evp-when"><a class="pl-btn pl-evp-date" href="#" aria-label="The day: a tap opens the month"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.calendar }}"></path></svg>{{ evp.date }}</a><div class="pl-evp-times"><span class="pl-evp-time"><span class="lbl">from</span><a class="pl-btn" href="#" aria-label="Start 30 minutes earlier" onClick="{{ evp.sMinus }}">−</a><b>{{ evp.start }}</b><a class="pl-btn" href="#" aria-label="Start 30 minutes later" onClick="{{ evp.sPlus }}">+</a></span><span class="pl-evp-time"><span class="lbl">to</span><a class="pl-btn" href="#" aria-label="End 30 minutes earlier" onClick="{{ evp.eMinus }}">−</a><b>{{ evp.end }}</b><a class="pl-btn" href="#" aria-label="End 30 minutes later" onClick="{{ evp.ePlus }}">+</a></span><span class="pl-evp-dur">{{ evp.dur }}</span></div><sc-if value="{{ evp.zone }}" hint-placeholder-val="{{ false }}"><span class="pl-evp-zone">{{ evp.zone }}</span></sc-if></div></div></sc-if>
+<sc-if value="{{ evp.hasCal }}" hint-placeholder-val="{{ false }}"><div class="pl-evp-r"><span class="k">Calendar</span><div class="v"><sc-if value="{{ evp.calFixed }}" hint-placeholder-val="{{ false }}"><div class="pl-evp-fixed">{{ evp.calText }}</div></sc-if><sc-if value="{{ evp.editable }}" hint-placeholder-val="{{ true }}"><div class="pl-evp-seg" role="radiogroup" aria-label="Calendar: the event moves there with its ink"><sc-for list="{{ evp.cals }}" as="o" hint-placeholder-count="3"><a class="{{ o.cls }}" href="#" role="radio" onClick="{{ o.on }}">{{ o.t }}</a></sc-for></div></sc-if></div></div></sc-if>
+<sc-for list="{{ evp.fixedRows }}" as="fr" hint-placeholder-count="0"><div class="pl-evp-r"><span class="k">{{ fr.k }}</span><div class="v"><div class="pl-evp-fixed">{{ fr.v }}</div></div></div></sc-for>
+<sc-if value="{{ evp.editable }}" hint-placeholder-val="{{ true }}"><div class="pl-evp-r"><span class="k">Where</span><div class="v"><div class="pl-evp-line" role="textbox" aria-label="Where"><span class="pl-ink"><sc-for list="{{ evp.place }}" as="w" hint-placeholder-count="2"><span class="{{ w.cls }}" style="{{ w.st }}">{{ w.t }}</span></sc-for></span></div></div></div>
 <div class="pl-evp-r"><span class="k">Notes</span><div class="v"><sc-for list="{{ evp.notes }}" as="nl" hint-placeholder-count="4"><div class="pl-evp-line" role="textbox" aria-label="Notes"><span class="pl-ink"><sc-for list="{{ nl.words }}" as="w" hint-placeholder-count="2"><span class="{{ w.cls }}" style="{{ w.st }}">{{ w.t }}</span></sc-for></span></div></sc-for></div></div>
-<div class="pl-evp-r"><span class="k">With</span><div class="v"><sc-for list="{{ evp.people }}" as="pp" hint-placeholder-count="2"><div class="pl-evp-line" role="textbox" aria-label="Participants"><span class="pl-ink"><sc-for list="{{ pp.words }}" as="w" hint-placeholder-count="2"><span class="{{ w.cls }}" style="{{ w.st }}">{{ w.t }}</span></sc-for></span></div></sc-for></div></div>
-<div class="pl-evp-r"><span class="k">Repeat</span><div class="v"><div class="pl-evp-seg" role="radiogroup" aria-label="Repeat"><sc-for list="{{ evp.repeat }}" as="o" hint-placeholder-count="5"><a class="{{ o.cls }}" href="#" role="radio" onClick="{{ o.on }}">{{ o.t }}</a></sc-for></div></div></div>
-<div class="pl-evp-r"><span class="k">Remind</span><div class="v"><div class="pl-evp-seg" role="radiogroup" aria-label="Reminder, before the start"><sc-for list="{{ evp.remind }}" as="o" hint-placeholder-count="5"><a class="{{ o.cls }}" href="#" role="radio" onClick="{{ o.on }}">{{ o.t }}</a></sc-for></div></div></div>
-<div class="pl-evp-foot"><a class="pl-btn" href="#" onClick="{{ evp.del }}"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.trash }}"></path></svg>Delete event</a></div>
+<div class="pl-evp-r"><span class="k">With</span><div class="v"><sc-for list="{{ evp.people }}" as="pp" hint-placeholder-count="2"><div class="pl-evp-line" role="textbox" aria-label="Participants"><span class="pl-ink"><sc-for list="{{ pp.words }}" as="w" hint-placeholder-count="2"><span class="{{ w.cls }}" style="{{ w.st }}">{{ w.t }}</span></sc-for></span></div></sc-for></div></div></sc-if>
+<sc-if value="{{ evp.editable }}" hint-placeholder-val="{{ true }}"><div class="pl-evp-r is-wide"><span class="k">Repeat</span><div class="v"><div class="pl-evp-seg" role="radiogroup" aria-label="Repeat"><sc-for list="{{ evp.repeat }}" as="o" hint-placeholder-count="5"><a class="{{ o.cls }}" href="#" role="radio" onClick="{{ o.on }}">{{ o.t }}</a></sc-for></div></div></div>
+<div class="pl-evp-r is-wide"><span class="k">Remind</span><div class="v"><div class="pl-evp-seg" role="radiogroup" aria-label="Reminder, before the start"><sc-for list="{{ evp.remind }}" as="o" hint-placeholder-count="5"><a class="{{ o.cls }}" href="#" role="radio" onClick="{{ o.on }}">{{ o.t }}</a></sc-for></div></div></div></sc-if>
+<sc-if value="{{ evp.alsoText }}" hint-placeholder-val="{{ false }}"><div class="pl-evp-r"><span class="k">Also</span><div class="v"><div class="pl-evp-fixed is-also">{{ evp.alsoText }}<small>kept as they are; the planner doesn’t change them</small></div></div></div></sc-if>
+<sc-if value="{{ evp.canDelete }}" hint-placeholder-val="{{ true }}"><div class="pl-evp-foot"><a class="pl-btn" href="#" onClick="{{ evp.del }}"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.trash }}"></path></svg>Delete event</a></div></sc-if>
 </div>
 </sc-if>
 
@@ -113,7 +118,7 @@
 
 <sc-if value="{{ card.on }}" hint-placeholder-val="{{ false }}">
 <sc-if value="{{ card.scrim }}" hint-placeholder-val="{{ false }}"><div class="pl-evscrim" onClick="{{ card.close }}"></div></sc-if>
-<div class="{{ card.cls }}" role="dialog" aria-label="{{ card.label }}" style="left:{{ card.x }}px;top:{{ card.y }}px;width:{{ card.w }}px"><sc-if value="{{ card.q }}" hint-placeholder-val="{{ false }}"><div class="pl-card-q">{{ card.q }}</div></sc-if><span class="pl-ink"><sc-for list="{{ card.words }}" as="w" hint-placeholder-count="6"><span class="{{ w.cls }}" style="{{ w.st }}">{{ w.t }}</span></sc-for></span><sc-if value="{{ card.hasActs }}" hint-placeholder-val="{{ false }}"><div class="pl-card-fact">{{ card.fact }}</div><div class="pl-card-acts"><sc-for list="{{ card.acts }}" as="ca" hint-placeholder-count="2"><a class="{{ ca.cls }}" href="#" onClick="{{ ca.on }}">{{ ca.t }}</a></sc-for></div></sc-if></div>
+<div class="{{ card.cls }}" role="dialog" aria-label="{{ card.label }}" style="left:{{ card.x }}px;top:{{ card.y }}px;width:{{ card.w }}px"><sc-if value="{{ card.q }}" hint-placeholder-val="{{ false }}"><div class="pl-card-q">{{ card.q }}</div></sc-if><span class="pl-ink"><sc-for list="{{ card.words }}" as="w" hint-placeholder-count="6"><span class="{{ w.cls }}" style="{{ w.st }}">{{ w.t }}</span></sc-for></span><sc-if value="{{ card.hasActs }}" hint-placeholder-val="{{ false }}"><div class="pl-card-fact">{{ card.fact }}</div><sc-if value="{{ card.note }}" hint-placeholder-val="{{ false }}"><div class="pl-card-note">{{ card.note }}</div></sc-if><div class="pl-card-acts"><sc-for list="{{ card.acts }}" as="ca" hint-placeholder-count="2"><a class="{{ ca.cls }}" href="#" onClick="{{ ca.on }}">{{ ca.t }}</a></sc-for></div></sc-if></div>
 </sc-if>
 
 <sc-if value="{{ sheetOv.on }}" hint-placeholder-val="{{ false }}">
@@ -123,7 +128,7 @@
 <sc-if value="{{ sheetOv.isHidden }}" hint-placeholder-val="{{ false }}"><div class="pl-hl"><sc-for list="{{ sheetOv.groups }}" as="hg" hint-placeholder-count="2"><div class="pl-hl-k">{{ hg.head }}<span>{{ hg.count }}</span></div><sc-for list="{{ hg.items }}" as="it" hint-placeholder-count="2"><div class="pl-hl-i"><span class="pl-ink"><sc-for list="{{ it.words }}" as="w" hint-placeholder-count="3"><span class="{{ w.cls }}" style="{{ w.st }}">{{ w.t }}</span></sc-for></span><span class="when">{{ it.when }}</span><span class="acts"><a href="#">Open</a><a href="#">Move</a><a href="#">Delete</a></span></div></sc-for></sc-for></div></sc-if>
 <sc-if value="{{ sheetOv.isMove }}" hint-placeholder-val="{{ false }}"><div class="pl-mv"><span class="pl-ink pl-mv-e"><sc-for list="{{ sheetOv.words }}" as="w" hint-placeholder-count="3"><span class="{{ w.cls }}" style="{{ w.st }}">{{ w.t }}</span></sc-for></span><div class="pl-ynav"><a href="#" aria-label="{{ sheetOv.prevLabel }}"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.chevL }}"></path></svg></a><b>{{ sheetOv.head }}</b><a href="#" aria-label="{{ sheetOv.nextLabel }}"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.chevR }}"></path></svg></a></div><div class="{{ sheetOv.gridCls }}"><sc-for list="{{ sheetOv.heads }}" as="mh" hint-placeholder-count="7"><span class="h">{{ mh.t }}</span></sc-for><sc-for list="{{ sheetOv.cells }}" as="mc" hint-placeholder-count="31"><a class="{{ mc.cls }}" href="#">{{ mc.t }}</a></sc-for></div></div></sc-if>
 <sc-if value="{{ sheetOv.isAdd }}" hint-placeholder-val="{{ false }}"><div class="pl-add"><sc-for list="{{ sheetOv.wgs }}" as="aw" hint-placeholder-count="7"><a href="#"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ aw.icon }}"></path></svg><span><b>{{ aw.t }}</b><small>{{ aw.sub }}</small></span></a></sc-for></div></sc-if>
-<sc-if value="{{ sheetOv.isSlot }}" hint-placeholder-val="{{ false }}"><div class="pl-hl"><div class="pl-hl-k">Slots in use</div><sc-for list="{{ sheetOv.slots }}" as="sl" hint-placeholder-count="3"><a class="pl-mi" href="#" style="padding-left:0;padding-right:0"><span class="tx">{{ sl.t }}<small>{{ sl.sub }}</small></span><span class="end">{{ sl.end }}</span></a></sc-for><div class="pl-hl-k">A new slot</div><span class="pl-ed-name" style="margin:6px 0 4px;color:var(--ink)"><span class="pl-ink"><sc-for list="{{ sheetOv.nameInk }}" as="w" hint-placeholder-count="2"><span class="{{ w.cls }}" style="{{ w.st }}">{{ w.t }}</span></sc-for></span></span><p class="pl-sheet-lead" style="padding:0">Written with the pen and read as you write; the widget shows that slot as soon as the name is read.</p></div></sc-if><sc-if value="{{ sheetOv.isSettings }}" hint-placeholder-val="{{ false }}"><div class="pl-hl"><sc-for list="{{ sheetOv.rows }}" as="sr" hint-placeholder-count="4"><div class="pl-hl-k">{{ sr.head }}</div><sc-for list="{{ sr.items }}" as="si" hint-placeholder-count="2"><div class="pl-mi" style="padding-left:0;padding-right:0"><span class="tx">{{ si.t }}<small>{{ si.sub }}<sc-if value="{{ si.str }}" hint-placeholder-val="{{ false }}"><a class="pl-str" href="#" aria-label="Strength: {{ si.str }}; a tap gives the next one">{{ si.str }}</a></sc-if></small></span><sc-if value="{{ si.tog }}" hint-placeholder-val="{{ false }}"><span class="{{ si.togCls }}"></span></sc-if><span class="end">{{ si.end }}</span></div></sc-for></sc-for></div></sc-if>
+<sc-if value="{{ sheetOv.isSlot }}" hint-placeholder-val="{{ false }}"><div class="pl-hl"><div class="pl-hl-k">Slots in use</div><sc-for list="{{ sheetOv.slots }}" as="sl" hint-placeholder-count="3"><a class="pl-mi" href="#" style="padding-left:0;padding-right:0"><span class="tx">{{ sl.t }}<small>{{ sl.sub }}</small></span><span class="end">{{ sl.end }}</span></a></sc-for><div class="pl-hl-k">A new slot</div><span class="pl-ed-name" style="margin:6px 0 4px;color:var(--ink)"><span class="pl-ink"><sc-for list="{{ sheetOv.nameInk }}" as="w" hint-placeholder-count="2"><span class="{{ w.cls }}" style="{{ w.st }}">{{ w.t }}</span></sc-for></span></span><p class="pl-sheet-lead" style="padding:0">Written with the pen and read as you write; the widget shows that slot as soon as the name is read.</p></div></sc-if><sc-if value="{{ sheetOv.isSettings }}" hint-placeholder-val="{{ false }}"><div class="pl-hl is-settings"><sc-for list="{{ sheetOv.rows }}" as="sr" hint-placeholder-count="4"><div class="{{ sr.cls }}">{{ sr.head }}</div><sc-for list="{{ sr.items }}" as="si" hint-placeholder-count="2"><div class="pl-mi" style="padding-left:0;padding-right:0"><span class="tx">{{ si.t }}<small>{{ si.sub }}<sc-if value="{{ si.str }}" hint-placeholder-val="{{ false }}"><a class="pl-str" href="#" aria-label="Strength: {{ si.str }}; a tap gives the next one">{{ si.str }}</a></sc-if></small></span><sc-if value="{{ si.tog }}" hint-placeholder-val="{{ false }}"><span class="{{ si.togCls }}"></span></sc-if><span class="end">{{ si.end }}</span></div></sc-for></sc-for></div></sc-if>
 </div>
 </sc-if>
 
@@ -165,7 +170,7 @@
 </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "orient": {"editor": "enum", "options": ["portrait", "landscape"], "default": "portrait"}, "screen": {"editor": "enum", "options": ["view", "refused", "sheet", "picker", "year", "editor"], "default": "view"}, "tmpl": {"editor": "enum", "options": ["day-lists", "day-diary", "day-agenda", "week-columns", "week-spread", "week-lists", "month-grid", "month-goals"], "default": "day-lists"}, "hint": {"editor": "enum", "options": ["count", "none"], "default": "count"}, "search": {"editor": "enum", "options": ["none", "bar", "popup"], "default": "none"}, "overlay": {"editor": "enum", "options": ["none", "info", "cog", "hidden", "settings", "add", "used", "discard", "wset", "slot", "restore", "results", "open", "move"], "default": "none"}, "query": {"editor": "enum", "options": ["found", "more", "nothing"], "default": "found"}, "openFrom": {"editor": "enum", "options": ["title", "hidden"], "default": "title"}, "moveKind": {"editor": "enum", "options": ["day", "week", "month"], "default": "day"}, "strength": {"editor": "enum", "options": ["none", "light", "medium", "strong"], "default": "none"}, "range": {"editor": "enum", "options": ["none", "first", "last", "named"], "default": "none"}, "yearNav": {"editor": "boolean", "default": false}, "year": {"editor": "enum", "options": ["this", "next"], "default": "this"}, "day": {"editor": "enum", "options": ["11", "18"], "default": "11"}, "dev": {"editor": "boolean", "default": false}, "ink": {"editor": "enum", "options": ["raw", "neat", "font"], "default": "raw"}, "write": {"editor": "enum", "options": ["none", "writing", "settled"], "default": "none"}, "text": {"editor": "enum", "options": ["none", "field", "back", "view"], "default": "none"}, "leave": {"editor": "enum", "options": ["done", "outside"], "default": "done"}, "drag": {"editor": "enum", "options": ["none", "draw", "drawn", "titled", "grab", "moved", "released", "end", "start", "edge"], "default": "none"}, "title": {"editor": "enum", "options": ["grow", "shrink", "cut"], "default": "grow"}, "longTitle": {"editor": "boolean", "default": false}, "edit": {"editor": "enum", "options": ["select", "weight", "short", "land", "new", "copy", "name", "move", "remove", "saved", "edited"], "default": "select"}, "refuse": {"editor": "enum", "options": ["missing", "off"], "default": "missing"}, "refresh": {"editor": "boolean", "default": false}, "ev": {"editor": "enum", "options": ["none", "card", "confirm", "strike", "struck", "deleted", "page", "page-text", "page-confirm"], "default": "none"}, "stack": {"editor": "enum", "options": ["none", "two", "three", "writing"], "default": "none"}, "wrap": {"editor": "enum", "options": ["none", "written", "held", "dropped", "short", "cut", "card", "back"], "default": "none"}, "more": {"editor": "enum", "options": ["none", "rows", "land", "widget", "wday"], "default": "none"}, "route": {"editor": "enum", "options": ["none", "gap", "space", "joined"], "default": "none"}, "live": {"editor": "boolean", "default": false}, "widget": {"editor": "enum", "options": ["agenda", "todo", "notes", "habits", "minimonth", "weekov", "priorities"], "default": "todo"}, "fill": {"editor": "enum", "options": ["empty", "full", "more"], "default": "full"}, "$preview": {"width": 760, "height": 1008}}'>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "orient": {"editor": "enum", "options": ["portrait", "landscape"], "default": "portrait"}, "screen": {"editor": "enum", "options": ["view", "refused", "sheet", "picker", "year", "editor"], "default": "view"}, "tmpl": {"editor": "enum", "options": ["day-lists", "day-diary", "day-agenda", "week-columns", "week-spread", "week-lists", "month-grid", "month-goals"], "default": "day-lists"}, "hint": {"editor": "enum", "options": ["count", "none"], "default": "count"}, "search": {"editor": "enum", "options": ["none", "bar", "popup"], "default": "none"}, "overlay": {"editor": "enum", "options": ["none", "info", "cog", "hidden", "settings", "add", "used", "discard", "wset", "slot", "restore", "results", "open", "move"], "default": "none"}, "query": {"editor": "enum", "options": ["found", "more", "nothing"], "default": "found"}, "openFrom": {"editor": "enum", "options": ["title", "hidden"], "default": "title"}, "moveKind": {"editor": "enum", "options": ["day", "week", "month"], "default": "day"}, "strength": {"editor": "enum", "options": ["none", "light", "medium", "strong"], "default": "none"}, "range": {"editor": "enum", "options": ["none", "first", "last", "named"], "default": "none"}, "yearNav": {"editor": "boolean", "default": false}, "year": {"editor": "enum", "options": ["this", "next"], "default": "this"}, "day": {"editor": "enum", "options": ["11", "18"], "default": "11"}, "dev": {"editor": "boolean", "default": false}, "ink": {"editor": "enum", "options": ["raw", "neat", "font"], "default": "raw"}, "write": {"editor": "enum", "options": ["none", "writing", "settled"], "default": "none"}, "text": {"editor": "enum", "options": ["none", "field", "back", "view"], "default": "none"}, "leave": {"editor": "enum", "options": ["done", "outside"], "default": "done"}, "drag": {"editor": "enum", "options": ["none", "draw", "drawn", "titled", "grab", "moved", "released", "end", "start", "edge"], "default": "none"}, "title": {"editor": "enum", "options": ["grow", "shrink", "cut"], "default": "grow"}, "longTitle": {"editor": "boolean", "default": false}, "edit": {"editor": "enum", "options": ["select", "weight", "short", "land", "new", "copy", "name", "move", "remove", "saved", "edited"], "default": "select"}, "refuse": {"editor": "enum", "options": ["missing", "off"], "default": "missing"}, "refresh": {"editor": "boolean", "default": false}, "ev": {"editor": "enum", "options": ["none", "card", "confirm", "strike", "struck", "deleted", "page", "page-text", "page-confirm"], "default": "none"}, "stack": {"editor": "enum", "options": ["none", "two", "three", "writing"], "default": "none"}, "wrap": {"editor": "enum", "options": ["none", "written", "held", "dropped", "short", "cut", "card", "back"], "default": "none"}, "more": {"editor": "enum", "options": ["none", "rows", "land", "widget", "wday"], "default": "none"}, "route": {"editor": "enum", "options": ["none", "gap", "space", "joined"], "default": "none"}, "sync": {"editor": "enum", "options": ["none", "outside", "inked", "drag", "first", "write", "delete", "delete-first", "ro-card", "ro-page", "page", "gone", "cals", "cals-hidden"], "default": "none"}, "live": {"editor": "boolean", "default": false}, "widget": {"editor": "enum", "options": ["agenda", "todo", "notes", "habits", "minimonth", "weekov", "priorities"], "default": "todo"}, "fill": {"editor": "enum", "options": ["empty", "full", "more"], "default": "full"}, "$preview": {"width": 760, "height": 1008}}'>
 class Component extends DCLogic {
   state = {};
   /* a live board starts again from its props when another state is picked */
@@ -226,6 +231,13 @@ class Component extends DCLogic {
     if (lv) o.moves[lv.id] = { s: lv.s, e: lv.e };
     if (p.stack === 'two' || p.stack === 'three' || p.stack === 'writing') o.extra = Component.EXTRA[p.stack === 'writing' ? 'two' : p.stack];
     o.drop = L ? L.drop.concat(ev === 'deleted' ? [L.id] : []) : ev === 'deleted' ? ['e3'] : [];
+    // synced calendars (planner spec 002): outside entries beside the planner's own, a weekly team call
+    const sync = p.sync && p.sync !== 'none' ? p.sync : null;
+    if (sync) {
+      o.extra = (o.extra || []).concat(Component.SYNC.evs.map(e => sync === 'inked' && e.id === 'x1' ? Object.assign({}, e, { ink: 'bring notes' }) : sync === 'write' && e.id === 'x1' ? Object.assign({}, e, { ink: 'room 3' }) : e));
+      o.drop = o.drop.concat(['e2'], sync === 'cals-hidden' ? Component.SYNC.evs.filter(e => e.cal === 'Team').map(e => e.id) : []);
+      if (sync === 'drag' || sync === 'first') o.moves.x1 = { s: 22, e: 24 };
+    }
     if (editing && p.edit === 'short') { o.W = cw; }
     const pg = PL.page(o);
     const widgets = pg.widgets.map(g => this.decorate(g, p, editing));
@@ -256,6 +268,9 @@ class Component extends DCLogic {
         const src = agenda._src.find(x => x.id === e.id) || {};
         this._evAt[e.id] = { x: agenda.x + e.tx, y: agenda.y + 34 + e.y, pitch: agenda.pitch, s: src.s, e: src.e, lo: agenda.from * 2, hi: (agenda.from + agenda.hrs.length - 1) * 2 }; });
       if ((ev === 'strike' || ev === 'struck') && !(L && L.stroke)) this.strikeMarks(agenda, ev, strokes, pen);
+      if (sync === 'drag' || sync === 'first') agenda.evs = agenda.evs.map(e => e.id === 'x1' ? Object.assign({}, e, { bkCls: e.bkCls + ' is-dashed' }) : e);
+      if (sync === 'write') { const e = agenda.evs.find(x => x.id === 'x1'); if (e) Object.assign(pen, { on: true, x: agenda.x + e.tx + Math.min(e.tw - 30, 150), y: agenda.y + 34 + e.y - 40 }); }
+      if (sync === 'delete' || sync === 'delete-first') { const e = agenda.evs.find(x => x.id === 'x1'); if (e) { const x0 = agenda.x + e.tx - 1, x1 = agenda.x + e.tx + 84, yy = agenda.y + 34 + e.y + 12; strokes.push(Component.stroke([[x0, yy + 4], [x0 + 30, yy + 2], [x1 - 30, yy - 1], [x1, yy - 4]])); } }
       if (L && L.stroke) strokes.push(Component.stroke(L.stroke.length > 1 ? L.stroke : L.stroke.concat([L.stroke[0]])));
       if (ev === 'deleted' && !L) {
         const y = hh => agenda.y + 34 + agenda.top + (hh / 2 - agenda.from) * agenda.pitch;
@@ -297,8 +312,12 @@ class Component extends DCLogic {
     const card = { on: overlay === 'open' || ev === 'card' || ev === 'confirm' || ev === 'struck' };
     if (overlay === 'open') Object.assign(card, this.wholeCard(PL, p, widgets, pad, cw, pageH));
     else if (card.on) Object.assign(card, this.eventCard(PL, agenda, pad, pg.title, L ? L.id : p.wrap === 'card' ? 'w1' : 'e3', ev === 'card' ? 'card' : 'confirm'));
-    const evp = { on: evPage };
+    if (sync && Component.SYNC.cards[sync]) Object.assign(card, { on: true, note: '', cls: 'pl-pop pl-card is-confirm' }, this.syncCard(PL, agenda, pad, pg.title, sync));
+    if (!card.note) card.note = '';
+    let evp = { on: evPage || (sync === 'ro-page' || sync === 'page' || sync === 'gone') };
     if (evPage) Object.assign(evp, this.eventPage(PL, ev, pg.title, agenda, L));
+    else if (evp.on) Object.assign(evp, this.syncPage(PL, sync, pg.title));
+    if (evp.on) evp = Object.assign({ canDelete: evp.editable !== false && !evp.noDelete },{ notice: '', noticeActs: [], hasCal: false, calFixed: false, cals: [], calText: '', alsoText: '', zone: '', whenFixed: false, whenText: '', editable: true, fixedRows: [] }, evp);
     const sheetOv = { on: overlay === 'hidden' || overlay === 'add' || overlay === 'settings' || overlay === 'wset' || overlay === 'slot' || overlay === 'move' || (overlay === 'open' && p.openFrom === 'hidden') };
     if (overlay === 'move') Object.assign(sheetOv, this.moveSheet(PL, p.moveKind || 'day', pageH));
     if (overlay === 'slot') Object.assign(sheetOv, { isSlot: true, h: Math.round(pageH * 0.62), title: 'Slot for these notes', lead: 'Notes are kept per slot. Every template that names a slot shows the same entries; a slot no widget shows keeps its entries, named in the (i).',
@@ -307,7 +326,9 @@ class Component extends DCLogic {
     if (overlay === 'wset') Object.assign(sheetOv, this.widgetSheet(pageH));
     if (overlay === 'hidden' || (overlay === 'open' && p.openFrom === 'hidden')) Object.assign(sheetOv, this.hiddenSheet(hidden, kind, pageH));
     if (overlay === 'add') Object.assign(sheetOv, this.addSheet(PL, pageH));
-    if (overlay === 'settings') Object.assign(sheetOv, this.settingsSheet(pageH, p));
+    if (overlay === 'settings') Object.assign(sheetOv, this.settingsSheet(pageH, p, sync));
+    // a settings sheet's group that starts the second column when turned (planner.css)
+    if (sheetOv.rows) sheetOv.rows = sheetOv.rows.map(r => Object.assign({ cls: 'pl-hl-k' + (r.col ? ' is-col' : '') }, r));
     const dialog = { on: overlay === 'used' || overlay === 'discard' || overlay === 'restore' || ev === 'page-confirm' };
     if (ev === 'page-confirm') Object.assign(dialog, { top: 200, title: 'Delete this event?',
       body: 'This event, ' + evp.start + '–' + evp.end + ' on ' + evp.sub + ', leaves the planner, with its place, notes and participants.',
@@ -371,7 +392,7 @@ class Component extends DCLogic {
 
     return {
       theme: voice + '-eink', ic, W, H, isSheet: false, isDevice: true, bezelCls: land ? 'pl-bezel is-land' : 'pl-bezel',
-      showBar: screen === 'view' && !evPage, showEdHead: editing, showRefuse: screen === 'refused', showPage: screen === 'view' || editing, showContent: !evPage, evp,
+      showBar: screen === 'view' && !evp.on, showEdHead: editing, showRefuse: screen === 'refused', showPage: screen === 'view' || editing, showContent: !evp.on, evp,
       showPicker: screen === 'picker' || screen === 'year', pick: screen === 'picker' || screen === 'year' ? this.picker(PL, kind, tid, screen === 'year', p) : {},
       cx: pad, cy: pad, cw, ch, widgets, marks, strokes, handles, tags, warns, pen, tf, info, card, sheetOv, dialog, kbd, bar, ed, edBar, refuse,
       hidden
@@ -789,7 +810,7 @@ class Component extends DCLogic {
       repeat: choose('rep', ['Never', 'Daily', 'Weekly', 'Monthly', 'Yearly'], (L && L.rep) || 'Never'),
       remind: choose('rem', ['None', 'At start', '15 min', '1 h', '1 day'], (L && L.rem) || '1 h'),
       del: evt => this.act(evt, { ev: 'page-confirm' }),
-      textTap: evt => this.act(evt, { ev: 'page-text' }) };
+      textTap: evt => this.act(evt, { ev: 'page-text' }), editable: true };
   }
 
   /* the board's own steps, taken by a tap or a drag: what the props showed is the start */
@@ -931,20 +952,64 @@ class Component extends DCLogic {
       wgs: ids.map(id => ({ t: W[id].name, sub: sub[id], icon: ic['w_' + id] })) };
   }
 
-  settingsSheet(pageH, p) {
+  settingsSheet(pageH, p, sync) {
     const str = { light: 'Light', medium: 'Medium', strong: 'Strong' }[p.strength];
     const neaten = str
       ? { t: 'Neaten', sub: 'straighter lines, a steady slant, even sizes · ', str, tog: true, togCls: 'pl-tog is-on' }
       : { t: 'Neaten', sub: 'straighter lines, a steady slant, even sizes · Medium', tog: true, togCls: 'pl-tog' };
     return { isSettings: true, h: pageH - 20, title: 'Planner settings', lead: 'Ink is always kept as written; these change only how it is shown.',
-      rows: [
-        { head: 'Ink in every field', items: [
+      rows: (sync === 'cals' || sync === 'cals-hidden' ? [this.calRows(sync)] : []).concat([
+        { head: 'Ink in every field', col: sync === 'cals' || sync === 'cals-hidden', items: [
           neaten,
           { t: 'Set in Autograph', sub: 'each word that was read, in your font', tog: true, togCls: 'pl-tog' },
           { t: 'One field’s own choice wins', sub: 'set it in that field’s text mode', end: '' }] },
         { head: 'Agenda', items: [{ t: 'Hours shown', sub: 'per template; this one: 07:00–21:00', end: '07–21' }, { t: 'Steps', sub: 'moving and stretching an event', end: '30 min' }] },
         { head: 'From the system', items: [{ t: 'First day of the week, date and time', sub: 'follow Settings › Language and region', end: 'Monday' }] }
-      ] };
+      ]) };
+  }
+
+  /* planner spec 002 FR-004: every calendar of the store with a Show switch, all on at first; hiding one
+     changes only the planner's views. Calendars are added in Settings, which a tap opens on its accounts page. */
+  calRows(sync) {
+    const C = Component.SYNC.cals;
+    return { head: 'Calendars', items: C.map(c => ({ t: c.name, sub: sync === 'cals-hidden' && c.name === 'Team' ? c.sub + ' · hidden here, still synced' : c.sub, tog: true, togCls: 'pl-tog' + (sync === 'cals-hidden' && c.name === 'Team' ? '' : ' is-on'), end: '' }))
+      .concat([{ t: 'Add a calendar in Settings', sub: 'accounts and their calendars are set up there; opens Settings › Accounts', end: 'Open ›' }]) };
+  }
+
+  /* planner spec 002: the scope card (FR-032) after a drag, after writing and on the delete card; the
+     read-only card (FR-020). Each opens under the title, like the event's own card. */
+  syncCard(PL, ag, pad, ttl, sync) {
+    const C = Component.SYNC.cards[sync], id = C.id, e = ag && ag.evs.find(x => x.id === id), CW = C.w || 340;
+    const day = ttl.main + ' ' + ttl.sub.split(' ·')[0];
+    let x = ag && e ? Math.min(ag.x + e.tx, ag.x + ag.w - 4 - CW) : 60, y = ag && e ? ag.y + 34 + e.y + Math.max(e.h, e.th) + 6 : 120;
+    if (C.allDay && ag) { x = ag.x + 112; y = ag.y + 34 + 30; }
+    const tall = 150 + C.acts.length * 46; // the card's height, about
+    if (ag && e && !C.allDay && y + tall > ag.y + ag.h) y = ag.y + 34 + e.y - tall - 6;
+    const src = Component.SYNC.evs.find(z => z.id === id) || {};
+    const words = C.ink ? PL.typed(src.t, { fs: 17 }).concat(PL.ink(C.ink, { fs: 19, salt: id + 'i' })) : PL.typed(src.t, { fs: 17 });
+    return { cls: 'pl-pop pl-card is-confirm is-scope', label: C.q || 'The event', hasActs: true, q: C.q || '', x: pad + x, y: pad + y, w: CW, words,
+      fact: C.allDay ? 'All day · ' + day : C.fact + ' · ' + day + (C.rep ? ' · ' + C.rep : '') + ' · ' + src.cal, note: src.ro ? 'Read-only · ' + src.cal : C.note || '', acts: C.acts.map(([t, cls]) => ({ t, cls, on: null })), scrim: false, close: null };
+  }
+
+  /* planner spec 002: an outside event's page (FR-003 Calendar, FR-011 Also, FR-042 the other zone), a
+     read-only event's page (FR-020) and the page of an event deleted elsewhere (FR-015) */
+  syncPage(PL, sync, ttl) {
+    const day = ttl.main + ' ' + ttl.sub.split(' ·')[0], T = (t, fs) => PL.typed(t, { fs: fs || 17 });
+    const lines = (ws, n) => ws.concat(Array(Math.max(0, n - ws.length)).fill([])).map(w => ({ words: w }));
+    const choose = (list, on) => list.map(t => ({ t, cls: t === on ? 'is-on' : '', on: null }));
+    const none = evt => { if (evt && evt.preventDefault) evt.preventDefault(); };
+    const base = { on: true, back: none, head: 'Event', sub: day, isText: false, notText: true, titleText: '', date: day.replace(/^(\w{3})\w*/, '$1'),
+      sMinus: none, sPlus: none, eMinus: none, ePlus: none, del: none, textTap: none, hasCal: true };
+    if (sync === 'ro-page') return Object.assign(base, { title: T('Spring holiday', 22), titleBig: T('Spring holiday', 22), editable: false, whenFixed: true, whenText: 'All day', dur: '',
+      notice: 'Read-only · Holidays. This calendar can’t be changed here; the page shows everything it holds.', calFixed: true, calText: 'Holidays · read-only',
+      place: [], notes: [], people: [], fixedRows: [{ k: 'Notes', v: 'Public holiday in the region.' }, { k: 'Repeat', v: 'Yearly, on its day' }, { k: 'Remind', v: 'None' }], alsoText: 'Link' });
+    return Object.assign(base, { title: T('planning call', 22), titleBig: T('planning call', 22), start: '15:00', end: '16:00', dur: '1 h',
+      zone: '15:00–16:00 (9:00–10:00 New York time)',
+      editable: true, noDelete: sync === 'gone', notice: sync === 'gone' ? 'This event was deleted elsewhere.' : '', noticeActs: sync === 'gone' ? [{ t: 'Close', cls: 'pl-btn', on: none }, { t: 'Keep it', cls: 'pl-btn is-primary', on: none }] : [],
+      cals: choose(Component.SYNC.cals.filter(c => !c.ro).map(c => c.name), 'Team'),
+      place: T('online, link under Also', 17), notes: lines([T('Agenda in the shared folder.', 16)], 3), people: lines([T('Robin', 16).concat(T('·', 16), T('Kai', 16), T('·', 16), T('Noor', 16))], 1),
+      repeat: choose(['Never', 'Daily', 'Weekly', 'Monthly', 'Yearly'], 'Never'), remind: choose(['None', 'At start', '15 min', '1 h', '1 day'], '15 min'),
+      alsoText: 'Link · Attachment · 2 more reminders · Status' });
   }
 
   widgetSheet(pageH) {
@@ -1122,6 +1187,30 @@ Component.EXTRA = {
   // five at once: the café, the plumber, the dentist, the bank and the parcel
   more: [{ id: 's2', day: 11, s: 26, e: 32, t: 'work from the café' }, { id: 'm1', day: 11, s: 27, e: 30, t: 'the plumber comes' },
     { id: 's1', day: 11, s: 29, e: 31, t: 'call the bank' }, { id: 'm2', day: 11, s: 29, e: 30, t: 'sign for the parcel' }]
+};
+/* planner spec 002, synced calendars: outside entries (typed; no ink, slot or template data) for the
+   sync boards, the calendars of the store, and each card's words. The device's zone is Berlin. Team is
+   a calendar synced from example.org, Holidays a read-only one; Personal is on this device. */
+Component.SYNC = {
+  evs: [{ id: 'x1', day: 11, s: 20, e: 22, t: 'team call', typed: true, cal: 'Team', rep: 'every Thursday' },
+    { id: 'x2', day: 11, s: 24, e: 26, t: 'budget review', typed: true, cancelled: true, cal: 'Team' },
+    { id: 'x3', day: 11, s: 30, e: 32, t: 'planning call', typed: true, cal: 'Team', zone: 'New York' },
+    { id: 'x4', day: 11, allDay: true, t: 'Spring holiday', typed: true, cal: 'Holidays', ro: true }],
+  cals: [{ name: 'Personal', sub: 'on this device · events, to-dos and notes' }, { name: 'Team', sub: 'cloud.example.org · events and to-dos' },
+    { name: 'Family', sub: 'cloud.example.org · events' }, { name: 'Holidays', sub: 'example.org · read-only', ro: true }],
+  cards: {
+    drag: { id: 'x1', q: 'Change which events?', fact: '11:00–12:00, was 10:00', rep: 'weekly', note: 'A tap outside: it goes back to 10:00.',
+      acts: [['This event', 'pl-btn is-primary'], ['This and following events', 'pl-btn'], ['All events', 'pl-btn']] },
+    first: { id: 'x1', q: 'Change which events?', fact: '11:00–12:00, was 10:00', rep: 'weekly, its first', note: 'A tap outside: it goes back to 10:00.',
+      acts: [['This event', 'pl-btn is-primary'], ['All events', 'pl-btn']] },
+    write: { id: 'x1', q: 'Change which events?', ink: 'room 3', w: 300, fact: '10:00–11:00', rep: 'weekly', note: 'Keep writing; a tap outside changes this event only.',
+      acts: [['This event', 'pl-btn'], ['All events', 'pl-btn']] },
+    delete: { id: 'x1', q: 'Delete this event?', fact: '10:00–11:00', rep: 'weekly', note: 'Which ones go:',
+      acts: [['This event', 'pl-btn is-primary'], ['This and following events', 'pl-btn'], ['All events', 'pl-btn'], ['Keep', 'pl-btn is-quiet']] },
+    'delete-first': { id: 'x1', q: 'Delete this event?', fact: '10:00–11:00', rep: 'weekly, its first', note: 'Which ones go:',
+      acts: [['This event', 'pl-btn is-primary'], ['All events', 'pl-btn'], ['Keep', 'pl-btn is-quiet']] },
+    'ro-card': { id: 'x4', allDay: true, fact: 'Read-only', note: '', acts: [['Open', 'pl-btn is-primary']] }
+  }
 };
 /* where each step of event.wrap puts the moved title (half hours), and whether the café is around it */
 Component.WRAP = {

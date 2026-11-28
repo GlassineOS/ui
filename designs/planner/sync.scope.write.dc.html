@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Writing into a repeating event: two choices, after the pause</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div data-spec-id="sync.scope.write" style="width:1140px;height:1438px;box-sizing:border-box;padding:28px 32px;display:flex;flex-direction:column;gap:18px;background:#e6e6e6;color:#1b1b1b;font-family:'IBM Plex Sans',sans-serif">
+<div style="display:flex;flex-direction:column;gap:6px">
+<span style="font:500 13px/1.2 'IBM Plex Mono',monospace;color:#3d3d3d">sync.scope.write</span>
+<h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">Writing into a repeating event: two choices, after the pause</h1>
+<p style="margin:0;max-width:1000px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">Writing “room 3” after the typed title of this Thursday’s “team call”: the ink shows at once, and only when the pen pauses does a small card open under the title, “Change which events?”, with This event and All events (a text change has no “This and following”). The card never holds up the pen: the pen may go on writing in the field while it is open, and the answer applies to all the writing in that field until it is answered or the pen leaves the field. A tap outside the card changes this event only. Writing a new entry never asks.</p>
+</div>
+<dc-import name="ThemeBar" voice="{{ voice }}" on-pick="{{ pick }}" hint-size="100%,112px"></dc-import>
+<dc-import name="Planner" voice="{{ voice }}" orient="{{ orient }}" tmpl="day-agenda" sync="{{ sync }}" hint-size="{{ hint }}"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "step": {"editor": "enum", "options": ["write", "write-land"], "default": "write"}, "$preview": {"width": 1140, "height": 1438}, "$states": [{"id": "write", "name": "The pen paused: two choices", "props": {"step": "write"}}, {"id": "write-land", "name": "Turned", "props": {"step": "write-land"}, "from": [{"state": "write", "label": "turn the device"}]}]}'>
+class Component extends DCLogic {
+  state = {};
+  renderVals() {
+    const s = this.state, p = this.props;
+    const M = {"write": ["write", "portrait"], "write-land": ["write", "landscape"]};
+    const [sync, orient] = M[p.step] || M["write"];
+    return { voice: s.voice ?? p.voice ?? 'white', pick: (k, v) => this.setState({ [k]: v }), sync, orient, hint: orient === 'landscape' ? '1008px,760px' : '760px,1008px' };
+  }
+}
+</script>
+</body>
+</html>

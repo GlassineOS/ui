@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>One account</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}a{color:#1b1b1b}a:hover{color:#4a4a4a}</style>
+</helmet>
+<div data-spec-id="settings.account" style="width:1124px;height:1540px;box-sizing:border-box;padding:28px 32px;display:flex;flex-direction:column;gap:18px;background:#e6e6e6;color:#1b1b1b;font-family:'IBM Plex Sans',sans-serif">
+<div style="display:flex;flex-direction:column;gap:6px">
+<span style="font:500 13px/1.2 'IBM Plex Mono',monospace;color:#3d3d3d">settings.account</span>
+<h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">One account</h1>
+<p style="margin:0;max-width:1000px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">An account’s page, from the top: its status with its action; the name, which the person can change; the server; Sync (off is Paused) and Sync now; the calendars and address books with their switches; New entries go to; the waiting changes and the entries not accepted, each a count one tap from its list; Remove account. The status line redraws alone, at most every 5 seconds during a first sync. One state per status of pim 001 FR-050.</p>
+<span style="font:500 13px/1.4 'IBM Plex Mono',monospace;color:#1b1b1b">{{ stateName }}</span>
+</div>
+<dc-import name="ThemeBar" voice="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" show-win="{{ yes }}" win="{{ win }}" orient="{{ orient }}" on-pick="{{ pick }}" hint-size="100%,150px"></dc-import>
+<sc-if value="{{ noKbd }}" hint-placeholder-val="{{ true }}"><dc-import name="EinkSettings" theme="{{ voice }}" scheme="{{ scheme }}" pen="{{ pen }}" win="{{ win }}" orient="{{ orient }}" nav="folder" page="accounts" pk="{{ pk }}" hint-size="760px,1140px"></dc-import></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "win": {"editor": "enum", "options": ["full", "column", "row", "quarter"], "default": "full"}, "orient": {"editor": "enum", "options": ["portrait", "landscape"], "default": "portrait"}, "step": {"editor": "enum", "options": ["account-synced", "account-first0", "account-first", "account-syncing", "account-waiting", "account-paused", "account-signin", "account-unreach", "account-cert", "account-notkept", "account-two"], "default": "account-synced"}, "$preview": {"width": 1124, "height": 1540}, "$states": [{"id": "account-synced", "name": "Synced 5 minutes ago", "props": {"step": "account-synced"}}, {"id": "account-first0", "name": "Just added: Syncing… 0 of 230", "props": {"step": "account-first0"}}, {"id": "account-first", "name": "A first sync on its way: Syncing… 120 of 900", "props": {"step": "account-first"}}, {"id": "account-syncing", "name": "Syncing…", "props": {"step": "account-syncing"}, "from": [{"state": "account-synced", "label": "Sync now"}]}, {"id": "account-waiting", "name": "Offline: 3 changes waiting", "props": {"step": "account-waiting"}}, {"id": "account-paused", "name": "Paused: Sync off", "props": {"step": "account-paused"}, "from": [{"state": "account-synced", "label": "turn off Sync"}]}, {"id": "account-signin", "name": "Sign in again", "props": {"step": "account-signin"}}, {"id": "account-unreach", "name": "Can’t reach the server", "props": {"step": "account-unreach"}}, {"id": "account-cert", "name": "The server’s certificate changed", "props": {"step": "account-cert"}}, {"id": "account-notkept", "name": "2 entries weren’t accepted", "props": {"step": "account-notkept"}}, {"id": "account-two", "name": "1 entry was changed in two places", "props": {"step": "account-two"}}, {"id": "account-synced-landscape", "name": "Synced 5 minutes ago, turned", "props": {"step": "account-synced", "orient": "landscape"}, "from": [{"state": "account-synced", "label": "turn the device"}]}]}'>
+class Component extends DCLogic {
+  state = {};
+  renderVals() {
+    const s = this.state, p = this.props, step = p.step ?? "account-synced", orient = s.orient ?? p.orient ?? 'portrait', L = orient === 'landscape';
+    const KB = {}, kb = KB[step];
+    const ST = {"account-synced": "Synced 5 minutes ago", "account-first0": "Just added: Syncing… 0 of 230", "account-first": "A first sync on its way: Syncing… 120 of 900", "account-syncing": "Syncing…", "account-waiting": "Offline: 3 changes waiting", "account-paused": "Paused: Sync off", "account-signin": "Sign in again", "account-unreach": "Can’t reach the server", "account-cert": "The server’s certificate changed", "account-notkept": "2 entries weren’t accepted", "account-two": "1 entry was changed in two places"};
+    return { voice: s.voice ?? p.voice ?? 'white', scheme: 'eink', pen: '1', win: s.win ?? p.win ?? 'full', orient, yes: true, pick: (k, v) => this.setState({ [k]: v }),
+      pk: 'acc-' + step, stateName: ST[step] || '', kbd: !!kb, noKbd: !kb, kbPurpose: kb || 'normal', kbPen: kb !== 'password',
+      f: L ? { ow: '1060px', pad: '29px 28px 29px 44px', sw: '936px', sh: '702px' } : { ow: '760px', pad: '28px 29px 44px', sw: '702px', sh: '936px' } };
+  }
+}
+</script>
+</body>
+</html>

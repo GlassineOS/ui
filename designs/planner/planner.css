@@ -527,5 +527,5 @@ html, body { margin: 0; }
 .pl-bezel.is-land .pl-hl.is-settings > * { break-inside: avoid; }
 .pl-bezel.is-land .pl-hl.is-settings .pl-hl-k { break-after: avoid; }
 .pl-bezel.is-land .pl-hl.is-settings .pl-hl-k.is-col { break-before: column; }
-/* a row's name as long as "Calendar" fits the small caps of Stationery */
-[data-theme^="stationery"] .pl-evp-r .k { width: 90px; }
+/* a page with a Calendar row: a row's name as long as "Calendar" fits the spaced small caps of Editorial and Stationery */
+[data-theme^="editorial"] .pl-evp.has-cal .pl-evp-r .k, [data-theme^="stationery"] .pl-evp.has-cal .pl-evp-r .k { width: 90px; }

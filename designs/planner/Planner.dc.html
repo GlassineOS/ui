@@ -76,7 +76,7 @@
 </div>
 </sc-if>
 <sc-if value="{{ evp.on }}" hint-placeholder-val="{{ false }}">
-<div class="pl-evp">
+<div class="{{ evp.cls }}">
 <sc-if value="{{ evp.notice }}" hint-placeholder-val="{{ false }}"><div class="pl-evp-note" role="status"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.info }}"></path></svg><span class="tx">{{ evp.notice }}</span><sc-for list="{{ evp.noticeActs }}" as="na" hint-placeholder-count="0"><a class="{{ na.cls }}" href="#" onClick="{{ na.on }}">{{ na.t }}</a></sc-for></div></sc-if>
 <div class="pl-evp-r"><span class="k">Title</span><div class="v"><sc-if value="{{ evp.isText }}" hint-placeholder-val="{{ false }}"><div class="pl-evp-tf">{{ evp.titleText }}<span class="caret"></span></div></sc-if><sc-if value="{{ evp.notText }}" hint-placeholder-val="{{ true }}"><div class="pl-evp-line is-title" role="textbox" aria-label="Title: write, or tap with a finger to type" onClick="{{ evp.textTap }}"><span class="pl-ink"><sc-for list="{{ evp.titleBig }}" as="w" hint-placeholder-count="2"><span class="{{ w.cls }}" style="{{ w.st }}">{{ w.t }}</span></sc-for></span></div></sc-if></div></div>
 <sc-if value="{{ evp.whenFixed }}" hint-placeholder-val="{{ false }}"><div class="pl-evp-r"><span class="k">When</span><div class="v"><div class="pl-evp-fixed">{{ evp.date }} · {{ evp.whenText }}</div></div></div></sc-if>
@@ -318,6 +318,8 @@ class Component extends DCLogic {
     if (evPage) Object.assign(evp, this.eventPage(PL, ev, pg.title, agenda, L));
     else if (evp.on) Object.assign(evp, this.syncPage(PL, sync, pg.title));
     if (evp.on) evp = Object.assign({ canDelete: evp.editable !== false && !evp.noDelete },{ notice: '', noticeActs: [], hasCal: false, calFixed: false, cals: [], calText: '', alsoText: '', zone: '', whenFixed: false, whenText: '', editable: true, fixedRows: [] }, evp);
+    // a page with a Calendar row widens Stationery's row names so "Calendar" fits (planner.css); other pages keep theirs
+    evp.cls = 'pl-evp' + (evp.on && evp.hasCal ? ' has-cal' : '');
     const sheetOv = { on: overlay === 'hidden' || overlay === 'add' || overlay === 'settings' || overlay === 'wset' || overlay === 'slot' || overlay === 'move' || (overlay === 'open' && p.openFrom === 'hidden') };
     if (overlay === 'move') Object.assign(sheetOv, this.moveSheet(PL, p.moveKind || 'day', pageH));
     if (overlay === 'slot') Object.assign(sheetOv, { isSlot: true, h: Math.round(pageH * 0.62), title: 'Slot for these notes', lead: 'Notes are kept per slot. Every template that names a slot shows the same entries; a slot no widget shows keeps its entries, named in the (i).',

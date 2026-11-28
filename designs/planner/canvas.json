@@ -411,7 +411,7 @@
    "x": 3616,
    "y": 0,
    "w": 824,
-   "h": 1482,
+   "h": 1504,
    "title": "Events at the same time: one lane each",
    "page": "events",
    "is_interactive": true
@@ -437,14 +437,14 @@
   "event.more.dc.html": {
    "x": 6328,
    "y": 0,
-   "w": 824,
-   "h": 1460,
-   "title": "More events at once than lanes: +N, and a fan",
+   "w": 1080,
+   "h": 1480,
+   "title": "Too many at once for lanes: one row each",
    "page": "events",
    "is_interactive": true
   },
   "event.route.dc.html": {
-   "x": 7232,
+   "x": 7488,
    "y": 0,
    "w": 824,
    "h": 1438,
@@ -749,11 +749,11 @@
    "x": 0,
    "y": -200,
    "w": 240,
-   "maxW": 8056
+   "maxW": 8312
   },
   "n-events": {
    "page": "events",
-   "text": "Times come only from the agenda: draw a line down the hour margin over free time and an event exists. An event is a pair of brackets, [ in the margin and ] at the right, with its title written inside and room to write between them: drag the title to move it in 30-minute steps, drag an end to change its start or end, and strike the title through with the pen, or hold it still, to delete it. Events at the same time split the width into lanes, one pair of brackets each, none narrower than about 160 px; more fold into a +N marker that fans them out. Ink belongs to the lane the pen lands in. A title is rewrapped by its words to its lane, shrinks to about 70 %, then fades out; it is never set in a font to fit. A tap opens its card, and Open its page. No handwriting for times.",
+   "text": "Times come only from the agenda: draw a line down the hour margin over free time and an event exists. An event is a pair of brackets, [ in the margin and ] at the right, with its title written inside and room to write between them: drag the title to move it in 30-minute steps, drag an end to change its start or end, and strike the title through with the pen, or hold it still, to delete it. Events at the same time split the width into lanes, one pair of brackets each, none narrower than about 160 px; a group that would need narrower lanes gets one row each, its hours drawn taller. The day agenda never hides an event; only the small widget folds, into a black bar that opens the day. Ink belongs to the lane the pen lands in. A title is rewrapped by its words to its lane, shrinks to about 70 %, then fades out; it is never set in a font to fit. A tap opens its card, and Open its page. No handwriting for times.",
    "x": 0,
    "y": -560,
    "w": 2400

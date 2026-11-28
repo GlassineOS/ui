@@ -459,20 +459,22 @@ html, body { margin: 0; }
 .pl-evt.is-cut { overflow: hidden; }
 /* a mark whose label ends at its right edge (a mark in a later lane) */
 .pl-mark.is-end span { left: auto; right: -2px; }
-/* more events at the same time than lanes fit: "+N" on the last lane, at the first folded one's start;
-   its touch target reaches past the pill */
-.pl-lanes-more { position: absolute; z-index: 2; transform: translateX(-100%); height: 20px; padding: 0 7px; display: flex; align-items: center; border-radius: 10px;
-  font: 600 11.5px/1 var(--font-mono); color: var(--ink); text-decoration: none; background: var(--paper); box-shadow: inset 0 0 0 1.5px var(--ink); }
-.pl-lanes-more::before { content: ""; position: absolute; inset: -12px -8px; }
-[data-theme^="stationery"] .pl-lanes-more { box-shadow: inset 0 0 0 1px var(--ink); }
-/* the fan: those events over the group's hours, a layer that closes on a tap outside or on a choice */
-.pl-wg.has-fan { overflow: visible; z-index: 3; }
-.pl-fan-scrim { position: absolute; inset: -34px 0 0 0; z-index: 4; }
-.pl-fan { position: absolute; z-index: 5; background: var(--paper); color: var(--ink); border-radius: var(--v-card-radius); box-shadow: var(--v-card-edge); }
-[data-theme^="stationery"] .pl-fan { box-shadow: 0 0 0 1px var(--ink), 0 3px 0 var(--shade); }
-.pl-fan-h { position: absolute; left: 0; right: 0; top: 0; height: 24px; padding: 0 10px; display: flex; align-items: center; border-bottom: var(--v-row-rule); font: 500 10.5px/1 var(--font-mono); color: var(--ink-soft); white-space: nowrap; overflow: hidden; }
-.pl-fan-r { position: absolute; left: 0; right: 0; height: 34px; display: flex; align-items: center; gap: 10px; padding: 0 12px; border-bottom: var(--v-row-rule); color: var(--ink); text-decoration: none; }
-.pl-fan-r:last-child { border-bottom: 0; }
-.pl-fan-r .when { flex: none; width: 74px; font: 400 10px/1 var(--font-mono); }
-[data-theme^="editorial"] .pl-fan-r .when, [data-theme^="stationery"] .pl-fan-r .when { font: italic 400 12px/1 var(--v-text); }
-.pl-fan-r .pl-ink { flex: 1 1 0; overflow: hidden; -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 30px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 30px), transparent); }
+/* a group in rows: its hours drawn taller, marked in the hour margin by a doubled rule between two breaks */
+.pl-stretch { position: absolute; left: 21px; width: 14px; overflow: visible; pointer-events: none; z-index: 1; }
+.pl-stretch path { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-linejoin: round; }
+[data-theme^="stationery"] .pl-stretch path { stroke-width: 1; }
+.pl-evt.is-row { align-items: center; padding-top: 0; }
+.pl-evt.is-row .when { padding-top: 0; }
+/* a small widget's fold: a black bar across the group, never quiet; a tap opens the day */
+.pl-fold { position: absolute; z-index: 2; display: flex; align-items: center; gap: 8px; padding: 0 8px; box-sizing: border-box; overflow: hidden; background: var(--ink); color: var(--paper); text-decoration: none; border-radius: 3px; white-space: nowrap; }
+.pl-fold b { flex: none; font: 600 11.5px/1 var(--font-mono); }
+.pl-fold .when { flex: none; font: 400 10px/1 var(--font-mono); }
+.pl-fold .pl-ink { flex: 1 1 0; min-width: 0; overflow: hidden; -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 20px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 20px), transparent); }
+.pl-fold .pl-w { color: var(--paper); }
+.pl-fold .tap { flex: none; font: 500 10px/1 var(--font-mono); }
+.pl-fold .tap:empty { display: none; }
+.pl-evt.is-narrow { flex-direction: column; align-items: stretch; gap: 2px; }
+.pl-evt.is-narrow .when { margin-left: 0; padding-top: 0; }
+.pl-evt.is-narrow .pl-ink { flex: none; }
+/* a mark that only names a place, without a box (the box would hide what it names) */
+.pl-mark.is-tag { border-color: transparent; }

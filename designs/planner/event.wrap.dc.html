@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A title moved beside an event: rewrapped by its words</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div data-spec-id="event.wrap" style="width:824px;height:1504px;box-sizing:border-box;padding:28px 32px;display:flex;flex-direction:column;gap:18px;background:#e6e6e6;color:#1b1b1b;font-family:'IBM Plex Sans',sans-serif">
+<div style="display:flex;flex-direction:column;gap:6px">
+<span style="font:500 13px/1.2 'IBM Plex Mono',monospace;color:#3d3d3d">event.wrap</span>
+<h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">A title moved beside an event: rewrapped by its words</h1>
+<p style="margin:0;max-width:760px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">A title is ink, and it stays ink: it is never set in a font to make it fit (seeing titles in the person’s font is their own choice). Its strokes are split into words at the gaps you can see, with nothing read, and the words wrap onto the lines that fit the event’s lane. Each word keeps its strokes as written: only where each word stands changes, never the strokes that are stored. Here “take the coats to the cleaner” is written in free time, on one line. Dragged beside the dentist, a lane opens for it; while it is held, its line stays as it was, cut at the lane. Dropped, it is rewrapped to the lane, on two lines. When the event’s height has no more lines (its end pulled to 15:00), the ink first shrinks evenly, never below about 70 % of its written size; beyond that (the café around both, a third and narrower lane) it is cut with a fade before the closing bracket, and a tap shows the whole title on the event’s card. Moved back into free time, it unwraps to one line at its written size. In a lane, a title doesn’t grow into the space below it: that space is the group’s free time. On this board you can drag the title yourself.</p>
+</div>
+<dc-import name="ThemeBar" voice="{{ voice }}" on-pick="{{ pick }}" hint-size="100%,112px"></dc-import>
+<dc-import name="Planner" voice="{{ voice }}" orient="portrait" tmpl="day-agenda" wrap="{{ step }}" live="true" hint-size="760px,1008px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "step": {"editor": "enum", "options": ["written", "held", "dropped", "short", "cut", "card", "back"], "default": "written"}, "$preview": {"width": 824, "height": 1504}, "$states": [{"id": "written", "name": "Written in free time: one line", "props": {"step": "written"}}, {"id": "held", "name": "Held beside the dentist: a lane opens", "props": {"step": "held"}, "from": [{"state": "written", "label": "drag it up beside the dentist"}]}, {"id": "dropped", "name": "Dropped: rewrapped onto two lines", "props": {"step": "dropped"}, "from": [{"state": "held", "label": "the finger lifts"}]}, {"id": "short", "name": "30 minutes: the ink shrinks", "props": {"step": "short"}, "from": [{"state": "dropped", "label": "pull its end up to 15:00"}]}, {"id": "cut", "name": "A narrower lane: cut with a fade", "props": {"step": "cut"}, "from": [{"state": "short", "label": "the café around both"}]}, {"id": "card", "name": "A tap: the whole title on its card", "props": {"step": "card"}, "from": [{"state": "cut", "label": "tap the title"}]}, {"id": "back", "name": "Back in free time: one line again", "props": {"step": "back"}, "from": [{"state": "cut", "label": "drag it down to 16:00"}, {"state": "dropped", "label": "drag it down into free time"}]}]}'>
+class Component extends DCLogic {
+  state = {};
+  renderVals() {
+    const s = this.state, p = this.props;
+    return { voice: s.voice ?? p.voice ?? 'white', pick: (k, v) => this.setState({ [k]: v }), step: p.step ?? "written" };
+  }
+}
+</script>
+</body>
+</html>

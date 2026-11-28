@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Too many at once for lanes: one row each</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div data-spec-id="event.more" style="width:1080px;height:1616px;box-sizing:border-box;padding:28px 32px;display:flex;flex-direction:column;gap:18px;background:#e6e6e6;color:#1b1b1b;font-family:'IBM Plex Sans',sans-serif">
+<div style="display:flex;flex-direction:column;gap:6px">
+<span style="font:500 13px/1.2 'IBM Plex Mono',monospace;color:#3d3d3d">event.more</span>
+<h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">Too many at once for lanes: one row each</h1>
+<p style="margin:0;max-width:760px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">The day agenda never hides an event. Lanes are never narrower than about 160 px (about 4 cm on the panel), so that a word fits and the pen can land in it. When a group would need a narrower lane, the whole group switches from lanes to rows: each event gets its own line across the width, with its brackets, title and time, in order of start, and the hours the group covers are drawn at least twice as tall, more if the rows need it; the other hours give the room back, evenly, down to the smallest pitch. Each row sits on its own ruled line, so no title crosses a rule: inside the group the hour rules stay in the hour margin, as bold ticks for the hours and half hours, spaced at the new scale. The margin of those hours is shaded, with a break across it at both ends and the scale at its foot (“2×”), so that it is clear at a glance this part of the day is drawn at another scale. The now line never crosses ink: its dot stays in the hour margin and the line breaks around every event it meets, so in a group in rows only the dot is left. On a wide layout the same group stays in lanes; on a narrow one it becomes rows sooner. Only the small agenda widget, whose hours are fixed, folds, and never quietly: the rows that don’t fit become one black bar inside the group, with their number, their times and the first one’s title, and the widget’s head names how many are folded. A tap on the bar opens the day. Below 280 px wide the bar takes two lines, the number and times on the first and the first title on the second, so even the smallest widget shows a readable title, and the bar is never drawn shorter than its lines. Here: five at once, upright and turned, and in the widget at its preferred and its smallest size.</p>
+</div>
+<dc-import name="ThemeBar" voice="{{ voice }}" on-pick="{{ pick }}" hint-size="100%,112px"></dc-import>
+<dc-import name="Planner" voice="{{ voice }}" orient="{{ orient }}" tmpl="day-agenda" screen="{{ screen }}" widget="agenda" fill="full" more="{{ step }}" live="true" hint-size="760px,1008px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "step": {"editor": "enum", "options": ["rows", "land", "widget", "wday"], "default": "rows"}, "$preview": {"width": 1080, "height": 1480}, "$states": [{"id": "rows", "name": "Five at once, upright: one row each, the hours taller", "props": {"step": "rows"}}, {"id": "land", "name": "Turned: five lanes fit", "props": {"step": "land"}, "from": [{"state": "rows", "label": "turn the device"}]}, {"id": "widget", "name": "The small widget: rows, and the rest folded into a bar", "props": {"step": "widget"}}, {"id": "wday", "name": "A tap on the bar: the day", "props": {"step": "wday"}, "from": [{"state": "widget", "label": "tap the bar"}]}]}'>
+class Component extends DCLogic {
+  state = {};
+  renderVals() {
+    const s = this.state, p = this.props;
+    return { voice: s.voice ?? p.voice ?? 'white', pick: (k, v) => this.setState({ [k]: v }), step: p.step ?? "rows", screen: p.step === "widget" ? "sheet" : "view", orient: p.step === "land" ? "landscape" : "portrait" };
+  }
+}
+</script>
+</body>
+</html>

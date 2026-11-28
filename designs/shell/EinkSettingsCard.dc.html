@@ -7,7 +7,7 @@
 </head>
 <body>
 <x-dc>
-<helmet><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&amp;family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=block" rel="stylesheet"><style>[data-il-root] [tabindex]:focus-visible{outline:2px solid var(--il-ring,var(--il-focus));outline-offset:2px}[data-ring="leather"]{--il-ring:var(--il-focus-on-leather)}[data-ring="leather"] [data-cream="1"]:focus-visible{outline-color:var(--il-focus-on-cream);box-shadow:0 0 0 4px var(--il-focus-on-leather)!important}</style></helmet>
+<helmet><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&amp;family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=block" rel="stylesheet"><style>[data-il-root] input::placeholder{color:var(--il-ink-soft,#4a4a4a);opacity:1}[data-il-root] [tabindex]:focus-visible{outline:2px solid var(--il-ring,var(--il-focus));outline-offset:2px}[data-ring="leather"]{--il-ring:var(--il-focus-on-leather)}[data-ring="leather"] [data-cream="1"]:focus-visible{outline-color:var(--il-focus-on-cream);box-shadow:0 0 0 4px var(--il-focus-on-leather)!important}</style></helmet>
 <sc-if value="{{ bare }}" hint-placeholder-val="{{ true }}"><div ref="{{ rootRef }}" data-il-root="" onKeyDown="{{ escKey }}" style="position:relative;{{ t.ilv }};width:100%;height:100%;overflow:hidden;background:{{ t.screenBg }}">
 <div data-widget="folder" data-widget-label="Settings folder" style="position:absolute;left:{{ g.cx }};top:{{ g.cy }};width:{{ g.cw }};height:{{ g.ch }};background:var(--il-paper,#ffffff);border:1.5px solid var(--il-ink,#111111);border-radius:{{ k.cardR }};box-shadow:{{ k.cardSh }};box-sizing:border-box;display:flex;flex-direction:column;font-family:{{ k.F }};color:var(--il-ink,#111111)">
 <div style="display:{{ k.frame }};position:absolute;inset:7px;border:1px solid var(--il-rule,#c2c2c2);border-radius:3px;pointer-events:none"></div>
@@ -139,6 +139,28 @@
 
 <sc-if value="{{ b.isMono }}" hint-placeholder-val="{{ false }}"><div style="margin:6px 0;padding:10px 14px;background:var(--il-sheet,#f2f2f2);border-radius:{{ k.segOnR }};font:400 13px/21px 'IBM Plex Mono',monospace;white-space:pre-wrap;word-break:break-word">{{ b.label }}</div></sc-if>
 
+<sc-if value="{{ b.isField }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:8px;padding:12px 0 14px">
+<label style="display:flex;flex-direction:column;gap:8px"><span style="font:{{ k.row }}">{{ b.label }}</span><div style="height:52px;box-sizing:border-box;padding:0 14px;display:flex;align-items:center;gap:10px;border:{{ b.bd }};border-radius:{{ k.segR }}"><input data-widget="text-field" data-osk="{{ b.purpose }}" data-private="{{ b.priv }}" type="{{ b.type }}" name="{{ b.name }}" aria-label="{{ b.label }}" aria-invalid="{{ b.invalid }}" placeholder="{{ b.ph }}" value="{{ b.val }}" inputmode="{{ b.im }}" enterkeyhint="next" autocomplete="off" autocapitalize="none" spellcheck="false" onChange="{{ b.change }}" onFocus="{{ b.focus }}" style="flex:1;min-width:0;height:100%;border:0;outline:none;background:transparent;padding:0;font:{{ b.font }};color:var(--il-ink,#111111)"><span style="display:{{ b.caretD }};width:2px;height:26px;flex:none;margin-left:-8px;background:var(--il-ink,#111111)"></span></div></label>
+<sc-if value="{{ b.hasShow }}" hint-placeholder-val="{{ false }}"><div tabindex="0" role="checkbox" aria-checked="{{ b.shown }}" onKeyDown="{{ ilKey }}" onClick="{{ b.toggleShow }}" style="display:flex;align-items:center;gap:12px;min-height:44px;cursor:pointer"><div style="width:24px;height:24px;flex:none;box-sizing:border-box;border-radius:4px;border:1.5px solid var(--il-ink,#111111);background:{{ b.ckBg }};color:var(--il-paper,#ffffff);display:flex;align-items:center;justify-content:center"><span style="font:600 20px/1 'Material Symbols Outlined';display:{{ b.ckD }}">check</span></div><span style="font:{{ k.row }};font-size:{{ k.zoneFs }}">Show password</span></div></sc-if>
+<sc-if value="{{ b.hasErr }}" hint-placeholder-val="{{ false }}"><div role="alert" style="display:flex;align-items:flex-start;gap:10px"><span style="flex:none;font:400 22px/1 'Material Symbols Outlined'">error</span><span style="min-width:0;font:{{ k.row }};font-size:{{ k.zoneFs }};text-wrap:pretty">{{ b.err }}</span></div></sc-if>
+</div></sc-if>
+
+<sc-if value="{{ b.isAlert }}" hint-placeholder-val="{{ false }}"><div role="alert" style="display:flex;align-items:flex-start;gap:10px;padding:4px 0 12px"><span style="flex:none;font:400 22px/1 'Material Symbols Outlined'">error</span><span style="min-width:0;font:{{ k.row }};font-size:{{ k.zoneFs }};text-wrap:pretty">{{ b.label }}</span></div></sc-if>
+
+<sc-if value="{{ b.isActs }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-wrap:wrap;justify-content:flex-end;gap:12px;padding:16px 0 14px"><sc-for list="{{ b.acts }}" as="o" hint-placeholder-count="2"><div tabindex="0" role="button" aria-disabled="{{ o.dis }}" onKeyDown="{{ ilKey }}" onClick="{{ o.on }}" style="height:48px;max-width:100%;box-sizing:border-box;padding:0 24px;border:1.5px solid {{ o.bdC }};border-radius:999px;display:flex;align-items:center;font:{{ k.row }};font-weight:{{ o.fw }};background:{{ o.bg }};color:{{ o.fg }};cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ o.l }}</div></sc-for></div></sc-if>
+
+<sc-if value="{{ b.isAcct }}" hint-placeholder-val="{{ false }}"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ b.on }}" style="display:flex;flex-direction:{{ b.dir }};align-items:{{ b.ai }};gap:10px 14px;padding:12px 0 14px;cursor:pointer">
+<div style="flex:1;min-width:0;display:flex;align-items:center;gap:14px"><span style="width:24px;flex:none;font:400 22px/1 'Material Symbols Outlined';font-variation-settings:'FILL' {{ b.fill }}">{{ b.icon }}</span><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px"><span style="font:{{ k.row }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ b.label }}</span><span style="display:{{ b.subD }};font:{{ k.sub }};font-weight:{{ b.subW }};color:{{ b.subC }};text-wrap:pretty">{{ b.sub }}</span></div><span style="display:{{ b.chevA }};font:400 26px/1 'Material Symbols Outlined'">chevron_right</span></div>
+<sc-if value="{{ b.hasAct }}" hint-placeholder-val="{{ false }}"><div tabindex="0" role="button" aria-label="{{ b.actAria }}" onKeyDown="{{ ilKey }}" onClick="{{ b.act }}" style="height:48px;flex:none;align-self:{{ b.actAs }};box-sizing:border-box;margin-left:{{ b.actMl }};padding:0 22px;border:1.5px solid var(--il-ink,#111111);border-radius:999px;display:flex;align-items:center;font:{{ k.row }};cursor:pointer;white-space:nowrap">{{ b.actL }}</div></sc-if>
+<span style="display:{{ b.chevB }};flex:none;font:400 26px/1 'Material Symbols Outlined'">chevron_right</span>
+</div></sc-if>
+
+<sc-if value="{{ b.isAccSt }}" hint-placeholder-val="{{ false }}"><div role="status" style="display:flex;flex-direction:column;gap:12px;margin:14px 0 8px;padding:14px 16px;border:2px solid var(--il-ink,#111111);border-radius:{{ k.segR }}"><div style="display:flex;align-items:flex-start;gap:14px"><span style="flex:none;font:400 26px/1 'Material Symbols Outlined'">{{ b.icon }}</span><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px"><span style="font:{{ k.row }};font-weight:600;text-wrap:pretty">{{ b.label }}</span><span style="display:{{ b.subD }};font:{{ k.sub }};color:{{ k.subC }};text-wrap:pretty">{{ b.sub }}</span></div></div><sc-if value="{{ b.hasActs }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px"><sc-for list="{{ b.acts }}" as="o" hint-placeholder-count="1"><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ o.on }}" style="height:48px;max-width:100%;box-sizing:border-box;padding:0 22px;border:1.5px solid var(--il-ink,#111111);border-radius:999px;display:flex;align-items:center;font:{{ k.row }};cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ o.l }}</div></sc-for></div></sc-if></div></sc-if>
+
+<sc-if value="{{ b.isCode }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:{{ b.dir }};gap:16px;padding:14px 0 16px;align-items:flex-start"><div ref="{{ b.ref }}" role="img" aria-label="Code to scan with another device" style="width:{{ b.qs }};height:{{ b.qs }};flex:none;box-sizing:border-box;border:12px solid var(--il-paper,#ffffff);outline:1.5px solid var(--il-ink,#111111);background-color:var(--il-paper,#ffffff);background-size:100% 100%;background-repeat:no-repeat;image-rendering:pixelated"></div><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px"><span style="font:{{ k.sub }};color:{{ k.subC }};text-wrap:pretty">{{ b.label }}</span><span style="font:400 14.5px/1.45 'IBM Plex Mono',monospace;word-break:break-all">{{ b.val }}</span></div></div></sc-if>
+
+<sc-if value="{{ b.isVers }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:10px;padding:14px 0 16px"><span style="font:{{ k.row }};font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ b.label }}</span><div style="display:grid;grid-template-columns:{{ b.cols }};gap:12px"><sc-for list="{{ b.sides }}" as="v" hint-placeholder-count="2"><div style="min-width:0;box-sizing:border-box;padding:12px 14px;border:{{ v.bd }};border-radius:{{ k.segOnR }};display:flex;flex-direction:column;gap:6px"><span style="font:{{ k.head }};font-variant:{{ k.headVar }};text-transform:{{ k.headCase }};letter-spacing:{{ k.headLs }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ v.head }}</span><span style="font:{{ k.sub }};color:{{ k.subC }}">{{ v.when }}</span><sc-for list="{{ v.lines }}" as="ln" hint-placeholder-count="3"><span style="font:{{ k.row }};font-size:{{ k.zoneFs }};font-weight:{{ ln.fw }};text-wrap:pretty">{{ ln.t }}</span></sc-for><span style="flex:1"></span><div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ v.on }}" style="align-self:flex-start;height:48px;box-sizing:border-box;padding:0 20px;margin-top:6px;border:1.5px solid var(--il-ink,#111111);border-radius:999px;display:flex;align-items:center;font:{{ k.row }};font-weight:{{ v.fw }};background:{{ v.bg }};color:{{ v.fg }};cursor:pointer;white-space:nowrap">{{ v.btn }}</div></div></sc-for></div></div></sc-if>
+
 </div>
 </sc-for>
 </div>
@@ -164,6 +186,7 @@
 <span style="flex:1"></span>
 <span style="display:{{ sh.sizeD }};font:400 15px/1.3 'IBM Plex Mono',monospace">{{ sh.size }}</span>
 <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;gap:12px;padding-top:14px;border-top:{{ k.rule }}">
+<div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ sh.b3.on }}" style="display:{{ sh.b3D }};height:48px;box-sizing:border-box;padding:0 24px;border:1.5px solid var(--il-ink,#111111);border-radius:999px;align-items:center;font:{{ k.row }};cursor:pointer;box-shadow:{{ k.pillSh }}">{{ sh.b3.label }}</div>
 <div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ sh.b2.on }}" style="display:{{ sh.b2D }};height:48px;box-sizing:border-box;padding:0 24px;border:1.5px solid var(--il-ink,#111111);border-radius:999px;align-items:center;font:{{ k.row }};cursor:pointer;box-shadow:{{ k.pillSh }}">{{ sh.b2.label }}</div>
 <div tabindex="0" role="button" onKeyDown="{{ ilKey }}" onClick="{{ sh.b1.on }}" style="height:48px;box-sizing:border-box;padding:0 26px;border:1.5px solid var(--il-accent,var(--il-ink,#111111));border-radius:999px;display:flex;align-items:center;font:{{ k.row }};font-weight:600;background:var(--il-accent,var(--il-ink,#111111));color:var(--il-on-accent,var(--il-paper,#ffffff));cursor:pointer">{{ sh.b1.label }}</div>
 </div>
@@ -197,11 +220,12 @@ class Component extends DCLogic {
     saver: false, sleepAfter: '10 min', pill: true, autoT: true, tz: 'Lisbon', fmt: '24-hour', lang: 'English (UK)',
     ov: { Stellarium: { fluOwn: true, flu: 'Clear', dith: true, dithV: 'Dizzy' }, KOReader: { fluOwn: true, flu: 'Calm', grad: false, contentOwn: true, content: 'Text', dith: true, dithV: 'Bayer', freeze: 'Always', fav: true }, 'Firefox ESR': { fluOwn: true, flu: 'Fluid', fav: true }, Chess: { contentOwn: true, content: 'Motion', drawOwn: true, draw: 'Chunked' }, Terminal: { draw: 'CPU', freeze: 'Off' } } };
 
-  componentDidMount() { const pr = this.props.pk && this.pkPreset(this.props.pk); if (pr) this.setState(pr); this.didMount2(); this.reportFit(); }
-  didMount2() { if (this.el && typeof ResizeObserver !== 'undefined') { this.ro = new ResizeObserver(() => { const b = this.el.getBoundingClientRect(), r = { width: this.el.offsetWidth || b.width, height: this.el.offsetHeight || b.height }; if (r.width && (Math.round(r.width) !== this.state.bw || Math.round(r.height) !== this.state.bh)) this.setState({ bw: Math.round(r.width), bh: Math.round(r.height), pg: 0, tabPg: null }); }); this.ro.observe(this.el); } }
+  componentDidMount() { this._pkLast = this.props.pk; const pr = this.props.pk && this.pkPreset(this.props.pk); if (pr) this.setState(pr); this.didMount2(); this.reportFit(); }
+  didMount2() { if (this.el && typeof ResizeObserver !== 'undefined') { this.ro = new ResizeObserver(() => { const b = this.el.getBoundingClientRect(), r = { width: this.el.offsetWidth || b.width, height: this.el.offsetHeight || b.height }; if (r.width && (Math.round(r.width) !== this.state.bw || Math.round(r.height) !== this.state.bh)) this.setState({ bw: Math.round(r.width), bh: Math.round(r.height), pg: this.state.pgHold || 0, tabPg: null }); }); this.ro.observe(this.el); } }
   // Spec boards pass onFit to label each window with its outcome; the product never sets it.
   reportFit() { const f = this._fitInfo, cb = this.props.onFit; if (!cb || !f) return; const j = JSON.stringify(f); if (j !== this._fitSent) { this._fitSent = j; cb(f); } }
-  componentDidUpdate() { this.reportFit(); }
+  // a board's named state changes the preset without a remount
+  componentDidUpdate() { if (this.props.pk !== this._pkLast) { this._pkLast = this.props.pk; const pr = this.props.pk && this.pkPreset(this.props.pk); if (pr) this.setState(pr); } this.reportFit(); }
   componentWillUnmount() { if (this.ro) this.ro.disconnect(); clearInterval(this.pkT); }
   // ---------- Packages (Alpine) ----------
   pkData() {
@@ -338,6 +362,7 @@ class Component extends DCLogic {
   }
 
   pkPreset(p) {
+    if (/^acc-/.test(String(p))) return this.accPreset(p);
     const r = { op: 'install', name: 'retroarch' };
     return ({
       typing: { topic: 'packages', pkQ: 'retroa' },
@@ -367,6 +392,102 @@ class Component extends DCLogic {
     })[p] || null;
   }
 
+
+  // ---------- Accounts (shell spec 014): example data, the account service's status words, presets ----------
+  accData() {
+    if (Component._acc) return Component._acc;
+    const P = (name, host, kind) => ({ name, host, kind });
+    const A = { nc: P('reader@cloud.example.org', 'cloud.example.org', 'Nextcloud'), new: P('reader@cloud.example.org', 'cloud.example.org', 'Nextcloud'),
+      club: P('club@example.org', 'dav.example.org', 'Other server'), school: P('school@cloud.example.net', 'cloud.example.net', 'Nextcloud'),
+      work: P('Work', 'dav.example.com', 'Other server'), family: P('Family', 'family.example.net', 'Other server'), archive: P('archive@files.example.org', 'files.example.org', 'Other server'),
+      home: P('Home server', 'home.example.org', 'Other server'), choir: P('choir@groups.example.org', 'groups.example.org', 'Other server'), team: P('team@cloud.example.com', 'cloud.example.com', 'Nextcloud') };
+    const C = (id, grp, name, note, takes, n, ro) => ({ id, grp, name, note, takes, n, ro: !!ro });
+    const COLS = [C('personal', 'cal', 'Personal', 'events and to-dos', ['events', 'todos'], 120), C('work', 'cal', 'Work', 'events', ['events'], 42), C('bdays', 'cal', 'Contact birthdays', 'events', ['events'], 0, true),
+      C('contacts', 'book', 'Contacts', 'contacts', ['contacts'], 48), C('recent', 'book', 'Recently contacted', 'contacts', ['contacts'], 0, true)];
+    const fp = '3F 9A 1C 07  B2 44 E8 5D\n70 0C A9 13  6E F1 28 D4\n95 3B 0A 7C  E6 41 BF 22\n18 D7 63 9E  05 AA 4F C0';
+    const versions = { id: 'v1', title: 'team call', sides: [
+      { id: 'here', head: 'On this device', when: 'Changed today at 09:12', lines: [{ t: 'team call', b: true }, { t: 'Mon 30 Nov · 10:00–10:30' }, { t: 'Notes: bring the slides' }] },
+      { id: 'server', head: 'On the server', when: 'Changed on cloud.example.org today at 09:40', lines: [{ t: 'team call, room 3', b: true }, { t: 'Mon 30 Nov · 11:00–11:30' }, { t: 'Notes: bring the slides' }] }] };
+    return (Component._acc = { A, COLS, fp, versions, token: 'k7Q2-mXr9-Lp4T', local: { cal: 182, book: 48 },
+      file: { name: 'holidays-2027.ics', what: '124 events', into: ['Personal', 'Work', 'Calendar · on this device'] } });
+  }
+
+  // pim 001 FR-050: one status per account, the same words everywhere; the actions it offers
+  accStatus() {
+    return (st, a) => {
+      const T = {
+        synced: { words: 'Synced 5 minutes ago', icon: 'cloud_done', acts: ['Sync now'] },
+        first0: { words: 'Syncing… 0 of 230', icon: 'sync', acts: [], more: 'The first sync. Every app can be used meanwhile.', last: 'The first sync is running' },
+        first: { words: 'Syncing… 120 of 900', icon: 'sync', acts: [], more: 'The first sync. Every app can be used meanwhile.', last: 'The first sync is running' },
+        syncing: { words: 'Syncing…', icon: 'sync', acts: [] },
+        waiting: { words: 'Offline: 3 changes waiting', icon: 'cloud_off', acts: [], more: 'They go out when the network is back.', waiting: 3, last: 'Last synced today at 08:15' },
+        paused: { words: 'Paused', icon: 'pause_circle', acts: ['Resume'], more: 'Nothing syncs. Changes made here wait until you resume.', waiting: 1 },
+        signin: { words: 'Sign in again', icon: 'key', acts: ['Sign in'], need: true, more: 'The server no longer accepts this device’s password. Changes wait until you sign in.', waiting: 2, last: 'Last synced yesterday at 18:02' },
+        unreach: { words: 'Can’t reach ' + a.host + '. Trying again later.', icon: 'cloud_off', acts: ['Sync now'], last: 'Last synced today at 07:40' },
+        cert: { words: 'The server’s certificate changed', icon: 'gpp_maybe', acts: ['Trust the new one', 'Remove'], need: true, more: 'Syncing stopped. Trust the new certificate only if your provider confirms the change.', last: 'Last synced on Friday' },
+        notkept: { words: '2 entries weren’t accepted: too large', icon: 'error', acts: ['Show them'], more: 'They stay on this device unchanged and are tried again when they change.', refused: 2 },
+        two: { words: '1 entry was changed in two places', icon: 'difference', acts: ['Compare'], more: 'The later change is in use; the other is kept for 30 days.', twice: 1 }
+      };
+      return T[st] || T.synced;
+    };
+  }
+
+  // what a status's action does: the board's own steps (the account service does the work)
+  accAct(id, l) {
+    const set = (st, v) => ({ accSt: { ...(st.accSt || {}), [id]: v } }), go = { sub: null, subPrev: null, pg: 0, accSel: id };
+    this.setState(st => {
+      if (l === 'Sync now' || l === 'Resume') return set(st, 'syncing');
+      if (l === 'Sign in') return this.accData().A[id].kind === 'Nextcloud' ? { ...go, topic: 'accBrowser', accBrowser: 'waiting', accKind: 'nc', accAddr: this.accData().A[id].host, accFrom: 'account' }
+        : { ...go, topic: 'accAddress', accKind: 'dav', accAddr: 'example.org', accUser: 'club', accPw: '', accErr: null, accFrom: 'account' };
+      if (l === 'Trust the new one') return { ...go, topic: 'accCert', accFound: this.accData().A[id].host, accFrom: 'account' };
+      if (l === 'Remove') return { ...go, topic: 'account', accSheet: { remove: true } };
+      if (l === 'Compare') return { ...go, topic: 'accVersions' };
+      return { ...go, topic: 'account' };
+    });
+  }
+
+  accPreset(p) {
+    const base = { topic: 'accounts', sub: null, subPrev: null, pg: 0, accList: ['nc', 'club'], accSt: { nc: 'synced', club: 'signin' }, accSel: 'nc', accKind: 'nc', accAddr: '', accUser: '', accPw: '',
+      accShowPw: false, accFocus: null, accErr: null, accFind: 'looking', accFound: null, accBrowser: 'waiting', accCols: {}, accDefs: {}, accCopy: false, accSheet: null, accNote: null,
+      accImp: 'choose', accImpTo: null, accVer: {}, accFrom: 'accounts', accName: undefined, pgHold: 0 };
+    const dav = { topic: 'accAddress', accKind: 'dav', accAddr: 'example.org', accUser: 'club', accPw: 'mantel-ruby-4' }, ncA = { accKind: 'nc', accAddr: 'cloud.example.org' };
+    const one = st => ({ topic: 'account', accList: ['nc'], accSel: 'nc', accSt: { nc: st } });
+    const EVERY = ['nc', 'school', 'work', 'family', 'club', 'archive', 'home', 'choir', 'team'];
+    const P = {
+      none: { accList: [] }, two: {},
+      every: { accList: EVERY, accSt: { nc: 'synced', school: 'first', work: 'waiting', family: 'paused', club: 'signin', archive: 'unreach', home: 'cert', choir: 'notkept', team: 'two' } },
+      removed: { accList: ['club'], accNote: 'reader@cloud.example.org was removed. New events and to-dos go to On this device now.' },
+      kind: { topic: 'accKind' },
+      nc: { topic: 'accAddress', accKind: 'nc' }, 'nc-typing': { topic: 'accAddress', ...ncA, accFocus: 'addr' }, exists: { topic: 'accAddress', ...ncA, accErr: 'exists' },
+      dav: { topic: 'accAddress', accKind: 'dav' }, 'dav-typing': { ...dav, accFocus: 'pw' }, 'dav-addr-typing': { ...dav, accUser: '', accPw: '', accFocus: 'addr' },
+      notfound: { ...dav, accErr: 'notfound' }, refused: { ...dav, accErr: 'refused' }, http: { ...dav, accAddr: 'http://example.org', accErr: 'http' },
+      finding: { ...dav, topic: 'accFinding' }, 'other-host': { ...dav, topic: 'accFinding', accFind: 'other', accFound: 'dav.example.net' },
+      cert: { ...dav, topic: 'accCert', accFound: 'dav.example.org' },
+      browser: { topic: 'accBrowser', ...ncA }, 'browser-link': { topic: 'accBrowser', ...ncA, accBrowser: 'link' }, 'browser-timeout': { topic: 'accBrowser', ...ncA, accBrowser: 'timeout' }, 'browser-none': { topic: 'accBrowser', ...ncA, accBrowser: 'nobrowser' },
+      choose: { topic: 'accChoose', ...ncA }, 'choose-p2': { topic: 'accChoose', ...ncA, pg: 1, pgHold: 1 }, 'choose-pick': { topic: 'accChoose', ...ncA, sub: { accPick: 'events' } }, leaves: { topic: 'accLeaves', ...ncA }, 'leaves-copy': { topic: 'accLeaves', ...ncA, accCopy: true },
+      remove: { ...one('synced'), accSheet: { remove: true } }, 'remove-waiting': { ...one('waiting'), accSheet: { remove: true } }, 'turn-off': { ...one('synced'), accSheet: { off: 'work' } },
+      versions: { ...one('two'), topic: 'accVersions' },
+      'import': { topic: 'accImport' }, 'import-done': { topic: 'accImport', accImp: 'done', accImpTo: 'Personal' }, 'import-bad': { topic: 'accImport', accImp: 'bad' }
+    };
+    const k = String(p).replace(/^acc-/, '');
+    if (k.startsWith('account-')) return { ...base, ...one(k.slice(8)) };
+    return P[k] ? { ...base, ...P[k] } : null;
+  }
+
+  // a code to scan for the sign-in link, drawn here (a stand-in pattern: the product encodes the link itself)
+  qr(text) {
+    const K = Component._qr || (Component._qr = {});
+    if (K[text] !== undefined || typeof document === 'undefined') return K[text] || null;
+    const N = 29, c = document.createElement('canvas'); c.width = N; c.height = N;
+    const x = c.getContext('2d'), im = x.createImageData(N, N);
+    let h = 2166136261; for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 16777619);
+    const rnd = () => { h = Math.imul(h ^ (h >>> 15), 2246822507); h = Math.imul(h ^ (h >>> 13), 3266489909); return ((h ^= h >>> 16) >>> 0) / 4294967296; };
+    const finder = (i, j) => { for (const [fx, fy] of [[0, 0], [N - 7, 0], [0, N - 7]]) { const a = i - fx, b = j - fy; if (a >= -1 && a <= 7 && b >= -1 && b <= 7) { if (a < 0 || b < 0 || a > 6 || b > 6) return 0; const r = Math.max(Math.abs(a - 3), Math.abs(b - 3)); return r === 2 ? 0 : 1; } } return -1; };
+    for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) { const f = finder(i, j), on = f >= 0 ? f : (i === 6 || j === 6) ? ((i + j) % 2 === 0 ? 1 : 0) : rnd() < 0.5 ? 1 : 0, o = on ? 17 : 255, q = (j * N + i) * 4;
+      im.data[q] = im.data[q + 1] = im.data[q + 2] = o; im.data[q + 3] = 255; }
+    x.putImageData(im, 0, 0);
+    return (K[text] = c.toDataURL());
+  }
 
   themesBase() {
     const serifLbl = f => ({ lblFont: `400 14px ${f}`, lblVar: 'small-caps', lblCase: 'lowercase', lblLs: '.1em' });
@@ -665,7 +786,7 @@ class Component extends DCLogic {
     const kbForgot = (st, more) => ({ kbLearnedW: 0, kbGoneN: 0, kbPerLang: Object.fromEntries(Object.keys(st.kbPerLang).map(l => [l, 0])), kbSheet: null, ...(more || {}) });
     const det = (title, rows) => () => u({ sub: { detail: { title, rows } }, subPrev: sub, pg: 0 });
     const pickGo = key => () => u({ sub: { pick: key }, subPrev: sub, pg: 0 });
-    const TOP = [['eink', 'E-ink', 'tablet_android'], ['apps', 'Apps', 'apps'], ['power', 'Power', 'battery_5_bar', 1], ['appearance', 'Appearance', 'format_paint'], ['network', 'Wi-Fi', 'wifi'], ['sound', 'Sound', 'volume_up', 1], ['light', 'Light', 'light_mode', 1], ['bluetooth', 'Bluetooth', 'bluetooth'], ['keyboard', 'Keyboard', 'keyboard', 1], ['gestures', 'Gestures', 'swipe'], ['time', 'Date & time', 'schedule'], ['language', 'Language', 'language'], ['about', 'About', 'info']];
+    const TOP = [['eink', 'E-ink', 'tablet_android'], ['apps', 'Apps', 'apps'], ['power', 'Power', 'battery_5_bar', 1], ['appearance', 'Appearance', 'format_paint'], ['network', 'Wi-Fi', 'wifi'], ['sound', 'Sound', 'volume_up', 1], ['light', 'Light', 'light_mode', 1], ['bluetooth', 'Bluetooth', 'bluetooth'], ['accounts', 'Accounts', 'cloud_sync'], ['keyboard', 'Keyboard', 'keyboard', 1], ['gestures', 'Gestures', 'swipe'], ['time', 'Date & time', 'schedule'], ['language', 'Language', 'language'], ['about', 'About', 'info']];
     const tInfo = TOP.find(x => x[0] === topic);
     const DIRS = [['left', 'arrow_back', 'Swipe left'], ['right', 'arrow_forward', 'Swipe right'], ['up', 'arrow_upward', 'Swipe up'], ['down', 'arrow_downward', 'Swipe down']];
     const GACT = ['Previous screen', 'Next screen', 'Full screen', 'Leave full screen', 'Home', 'Notifications', 'Quick settings', 'Refresh screen', 'Back', 'Forward', 'Nothing'];
@@ -807,6 +928,146 @@ class Component extends DCLogic {
           S('Available', PX.UPD.map(([n, a, b]) => W.btn(n, a + ' → ' + b, 'Update', pkAsk('update', n), !running)))].filter(Boolean); },
       pkgOutput: () => { const L = ERR_FULL, out = []; for (let i = 0; i < L.length; i += 6) out.push(W.mono(L.slice(i, i + 6).join('\n'))); return [S('', [W.note('apk add retroarch · today at 22:47 · exit status 1')]), S('', out)]; }
     });
+    // ---------- Accounts: calendars and contacts (shell spec 014, pim 001's account service) ----------
+    // Settings shows each step of the account service's flow and passes on what is typed; it connects to nothing itself.
+    const AD = this.accData(), STW = this.accStatus(), accOf = id => AD.A[id] || AD.A.nc;
+    const subPx = parseFloat((/([\d.]+)px/.exec(k.sub) || [0, 14])[1]), zonePx = parseFloat(k.zoneFs) || 15;
+    // lines a text takes at a width: deliberately generous (0.56 em a character), so a block is never drawn shorter than its text
+    const lns = (txt, px, w) => Math.max(1, Math.ceil(String(txt || '').length * px * 0.56 / Math.max(80, w)));
+    const LH = { row: rowPx * 1.3, sub: subPx * 1.4, zone: zonePx * 1.3 };
+    const accGo = (topic, more) => () => u(st => ({ topic, sub: null, subPrev: null, pg: 0, pgHold: 0, accSheet: null, ...(typeof more === 'function' ? more(st) : more || {}) }));
+    const pill = (l, on, o) => ({ l, on: (o && o.dis) ? null : on, dis: !!(o && o.dis), primary: !!(o && o.primary) });
+    W.acts = list => { const need = list.reduce((a, o) => a + o.l.length * rowPx * 0.58 + 50, 0) + (list.length - 1) * 12, rowsN = Math.max(1, Math.ceil(need / cw));
+      return { k: 'acts', nosep: true, h: 30 + rowsN * 48 + (rowsN - 1) * 12 + 4, acts: list.map(o => ({ l: o.l, on: o.on, dis: o.dis ? 'true' : 'false', fw: o.primary ? '600' : '400',
+        bg: o.primary && !o.dis ? 'var(--il-accent,var(--il-ink,#111111))' : 'transparent', fg: o.dis ? DIM : o.primary ? 'var(--il-on-accent,var(--il-paper,#ffffff))' : 'var(--il-ink,#111111)', bdC: o.dis ? DIM : o.primary ? 'var(--il-accent,var(--il-ink,#111111))' : 'var(--il-ink,#111111)' })) }; };
+    // a typed field: its purpose reaches the on-screen keyboard (spec 006); a password field is private (no suggestions, no learning, no handwriting)
+    W.field = (name, label, val, ph, purpose, o) => { o = o || {}; const pw = purpose === 'password', foc = s.accFocus === name;
+      const err = o.err || '', h = 12 + LH.row + 8 + 52 + 14 + (pw ? 52 : 0) + (err ? 8 + lns(err, zonePx, cw - 32) * LH.zone : 0) + 2;
+      return { k: 'field', nosep: true, name, label, val: val || '', ph, purpose, priv: pw ? 'true' : 'false', type: pw && !s.accShowPw ? 'password' : 'text', im: purpose === 'url' ? 'url' : 'text',
+        font: pw && !s.accShowPw ? "400 20px 'IBM Plex Mono',monospace" : k.row, bd: (foc || err ? '2.5px' : '1.5px') + ' solid var(--il-ink,#111111)', caretD: foc ? 'block' : 'none',
+        invalid: err ? 'true' : 'false', hasErr: !!err, err, hasShow: pw, shown: s.accShowPw ? 'true' : 'false', ckBg: s.accShowPw ? 'var(--il-ink,#111111)' : 'transparent', ckD: s.accShowPw ? 'block' : 'none',
+        toggleShow: () => u(st => ({ accShowPw: !st.accShowPw })), focus: () => u({ accFocus: name }),
+        change: e => u({ [{ addr: 'accAddr', user: 'accUser', pw: 'accPw', name: 'accName' }[name]]: e.target.value, accErr: null }), h: Math.ceil(h) }; };
+    // an account in the list: name, its status in the account service's words, the status's action as a button; stacked when narrow
+    W.acct = (id, st) => { const a = accOf(id), w = STW(st, a), hasAct = w.acts.length > 0 && w.row !== false, actL = hasAct ? w.acts[0] : '';
+      const actW = hasAct ? actL.length * rowPx * 0.58 + 46 : 0, stack = hasAct && cw - 38 - 40 - 14 - actW < 190;
+      const textW = cw - 38 - 40 - (hasAct && !stack ? actW + 14 : 0), sub = w.rowWords || w.words;
+      const body = LH.row + 5 + (sub ? lns(sub, subPx, textW) * LH.sub : 0);
+      return { k: 'acct', label: a.name, sub, subD: sub ? 'block' : 'none', subW: w.need ? '600' : '400', subC: w.need ? 'var(--il-ink,#111111)' : k.subC, icon: w.icon, fill: w.need ? 1 : 0,
+        dir: stack ? 'column' : 'row', ai: stack ? 'stretch' : 'center', chevA: hasAct && !stack ? 'none' : 'block', chevB: hasAct && !stack ? 'block' : 'none', hasAct, actL, actAria: actL + ' · ' + a.name, actMl: stack ? '38px' : '0', actAs: stack ? 'flex-start' : 'center',
+        on: accGo('account', { accSel: id }), act: e => { if (e && e.stopPropagation) e.stopPropagation(); this.accAct(id, actL); },
+        h: Math.ceil(26 + (stack ? body + 10 + 48 : Math.max(body, 48)) + 2) }; };
+    // on the account's page Sync now and Resume are the Sync row's own, so the status box doesn't repeat them
+    W.accSt = (id, st) => { const a = accOf(id), w = STW(st, a), acts = w.acts.filter(l => l !== 'Sync now' && l !== 'Resume').map(l => ({ l, on: () => this.accAct(id, l) }));
+      const need = acts.reduce((x, o) => x + o.l.length * rowPx * 0.58 + 54, 0), rowsN = acts.length ? Math.ceil(need / (cw - 36)) : 0;
+      const h = 22 + 32 + 4 + lns(w.words, rowPx, cw - 76) * LH.row + (w.more ? 5 + lns(w.more, subPx, cw - 76) * LH.sub : 0) + (rowsN ? 12 + rowsN * 48 + (rowsN - 1) * 10 : 0);
+      return { k: 'accSt', nosep: true, icon: w.icon, label: w.words, sub: w.more || '', subD: w.more ? 'block' : 'none', hasActs: acts.length > 0, acts, h: Math.ceil(h) + 2 }; };
+    W.code = (label, link) => { const qs = Math.min(184, Math.max(140, Math.round(cw * 0.36))), col = cw < 430, tw = col ? cw : cw - qs - 16;
+      const th = lns(label, subPx, tw) * LH.sub + 8 + lns(link, 14.5 * 0.62 / 0.56, tw) * 21;
+      return { k: 'code', label, val: link, qs: qs + 'px', dir: col ? 'column' : 'row', ref: el => { const u2 = this.qr(link); if (el && u2) el.style.backgroundImage = 'url(' + u2 + ')'; }, h: Math.ceil(30 + (col ? qs + 16 + th : Math.max(qs, th))) + 2 }; };
+    W.vers = (title, sides) => { const two = cw >= 440, sw = two ? (cw - 12) / 2 - 28 : cw - 28;
+      const sideH = v => 12 + 16 + 6 + LH.sub + v.lines.reduce((x, ln) => x + 6 + lns(ln.t, zonePx, sw) * LH.zone, 0) + 6 + 6 + 48 + 12 + 3;
+      const hs = sides.map(sideH), h = 14 + LH.row + 10 + (two ? Math.max(...hs) : hs.reduce((x, y) => x + y, 0) + 12 * (sides.length - 1)) + 16;
+      return { k: 'vers', label: title, cols: two ? 'minmax(0,1fr) minmax(0,1fr)' : 'minmax(0,1fr)', h: Math.ceil(h), sides: sides.map(v => ({ ...v, lines: v.lines.map(ln => ({ t: ln.t, fw: ln.b ? '600' : '400' })),
+        bd: v.cur ? '2px solid var(--il-ink,#111111)' : '1.5px dashed var(--il-ink,#111111)', fw: v.cur ? '400' : '600', bg: 'transparent', fg: 'var(--il-ink,#111111)' })) }; };
+    // a paragraph and a note that are as tall as their text (W.para / W.note are fixed)
+    const para = t => ({ k: 'para', label: t, nosep: true, h: Math.ceil(28 + lns(t, rowPx, cw) * LH.row) });
+    const note = t => ({ k: 'note', label: t, nosep: true, h: Math.ceil(26 + lns(t, subPx, cw) * LH.sub) });
+    const mono = t => ({ k: 'mono', label: t, nosep: true, h: 12 + 20 + 21 * t.split('\n').reduce((x, l) => x + lns(l, 13 * 0.6 / 0.56, cw - 28), 0) });
+    const accSecs = st => (st || []).filter(Boolean);
+    const nc = s.accKind === 'nc', host = nc ? (s.accAddr || 'cloud.example.org') : ((s.accAddr || 'example.org').replace(/^.*@/, ''));
+    const found = s.accFound || (nc ? host : 'dav.example.org');
+    // the collections the server offers (choosing, FR-015) and what the account has linked
+    const COLS = AD.COLS, colOn = c => (s.accCols || {})[c.id] !== false;
+    const KINDS = [['events', 'Events'], ['todos', 'To-dos'], ['notes', 'Notes'], ['contacts', 'Contacts']];
+    const offers = kd => COLS.filter(c => colOn(c) && !c.ro && c.takes.includes(kd)).map(c => c.name).concat(['On this device']);
+    const defOf = kd => { const d = (s.accDefs || {})[kd], o = offers(kd); return d && o.includes(d) ? d : o[0]; };
+    const noTake = KINDS.filter(([kd]) => offers(kd).length === 1);
+    const defRows = () => KINDS.map(([kd, l]) => { const o = offers(kd); return o.length > 1 ? { ...W.link(l, null, () => u({ sub: { accPick: kd }, subPrev: sub, pg: 0 })), val: defOf(kd) } : W.info(l, 'On this device'); });
+    const stayLine = noTake.length ? note('This server’s calendars don’t take ' + noTake.map(x => x[1].toLowerCase()).join(' or ') + '; ' + noTake.map(x => x[1].toLowerCase()).join(' and ') + ' stay on this device.') : null;
+    const colRows = grp => COLS.filter(c => c.grp === grp).map(c => W.tog(c.name, c.note + (c.ro ? ' · read-only' : ''), colOn(c), () => topic === 'account' && colOn(c) && c.n ? u({ accSheet: { off: c.id } }) : u(st => ({ accCols: { ...(st.accCols || {}), [c.id]: !colOn(c) } }))));
+    const cancelFlow = accGo(s.accFrom || 'accounts', { accErr: null, accFocus: null, accPw: '' });
+    const contAddr = () => u(st => nc ? (st.accAddr ? { topic: 'accBrowser', accBrowser: 'waiting', accFocus: null, pg: 0 } : null)
+      : (st.accAddr && st.accUser && st.accPw ? { topic: 'accFinding', accFind: 'looking', accFocus: null, pg: 0 } : null));
+    const canGo = nc ? !!s.accAddr : !!(s.accAddr && s.accUser && s.accPw);
+    const sel = accOf(s.accSel), selSt = (s.accSt || {})[s.accSel] || 'synced';
+    // the remove and turn-off questions (pim 001 FR-055, shell 014 FR-021): asked first, a copy offered, the server never changed
+    const accQ = (() => { const AS = s.accSheet; if (!AS || !(AS.remove || AS.off)) return null;
+      const w = STW(selSt, sel), col = AS.off ? COLS.find(c => c.id === AS.off) : null;
+      const done = keep => () => u(st => AS.off ? { accSheet: null, accCols: { ...(st.accCols || {}), [AS.off]: false } }
+        : { accSheet: null, topic: 'accounts', sub: null, pg: 0, accList: (st.accList || []).filter(x => x !== st.accSel), accNote: (st.accName ?? sel.name) + ' was removed. ' + (keep ? 'Its calendars and address books stay on this device; new entries still go to them.' : 'New events, to-dos and contacts go to On this device now.') });
+      return { title: AS.off ? 'Stop syncing ' + col.name + '?' : 'Remove this account?', done,
+        lines: AS.off ? [{ t: col.name + ' holds ' + col.n + ' entries. Keep a copy, and they stay on this device as a calendar of their own.' }, { t: col.name + ' on ' + sel.host + ' is not changed.', sub: true }]
+          : [{ t: 'Its calendars and address books stop syncing. Keep a copy, and their entries stay on this device.' }, { t: 'Nothing on ' + sel.host + ' is changed.', sub: true }],
+        warn: !AS.off && w.waiting ? w.waiting + ' changes haven’t reached the server yet' : '', warnNames: 'They stay only in the copy on this device.' }; })();
+    const accAsk = accQ && (narrow || winH < 700) ? accQ : null;
+    Object.assign(PAGES, {
+      accounts: () => { const ids = s.accList || [];
+        return accSecs([s.accNote ? S('', [note(s.accNote)]) : null,
+          ids.length ? S('Accounts', ids.map(id => W.acct(id, (s.accSt || {})[id] || 'synced')), { list: true, right: ids.length === 1 ? '1 account' : ids.length + ' accounts' }) : S('', [para('Your calendars and contacts are kept on this device only.')]),
+          S('', [W.link('Add an account', 'Nextcloud, or any calendar and contacts server', accGo('accKind', { accFrom: 'accounts', accAddr: '', accUser: '', accPw: '', accErr: null, accFocus: null, accShowPw: false }), 'add')]),
+          S('On this device', [W.info('Calendar', AD.local.cal + ' entries'), W.info('Address book', AD.local.book + ' contacts')], { list: true }),
+          S('', [W.link('Import a file', 'An iCalendar (.ics) or vCard (.vcf) file', accGo('accImport', { accImp: 'choose' }), 'upload_file')])]); },
+      accKind: () => [S('', [W.link('Nextcloud', 'Sign in with your Nextcloud server’s own page', accGo('accAddress', { accKind: 'nc' }), 'cloud'), W.link('Other server', 'Any calendar and contacts server (CalDAV, CardDAV)', accGo('accAddress', { accKind: 'dav' }), 'dns')])],
+      accAddress: () => { const E = s.accErr, ex = E === 'exists';
+        const errAddr = E === 'notfound' ? 'No calendar server found at ' + host + '. Enter the full address your provider gives.' : E === 'http' ? 'This address isn’t encrypted. Enter one that starts with https, or without http://.' : ex ? 'This account is already on this device.' : '';
+        const errPw = E === 'refused' ? 'The server didn’t accept this user name and password. Check both; an app password from your provider works best.' : '';
+        const F = nc ? [W.field('addr', 'Server address', s.accAddr, 'cloud.example.org', 'url', { err: errAddr }), ex ? W.acts([pill('Open that account', accGo('account', { accSel: 'nc' }))]) : note('Next, your server’s own sign-in page opens in the browser. Your password is typed there, not here.')]
+          : [W.field('addr', 'Address', s.accAddr, 'example.org, or name@example.org', 'url', { err: errAddr }), ex ? W.acts([pill('Open that account', accGo('account', { accSel: 'club' }))]) : null,
+            W.field('user', 'User name', s.accUser, 'As your provider gives it', 'normal'), W.field('pw', 'Password', s.accPw, '', 'password'), errPw ? { k: 'alert', label: errPw, nosep: true, h: Math.ceil(16 + lns(errPw, zonePx, cw - 32) * LH.zone + 2) } : null,
+            note('An app password from your provider is better than your main password, where they offer one.')];
+        const acts = W.acts([pill('Cancel', cancelFlow), pill('Continue', contAddr, { primary: true, dis: !canGo || ex })]);
+        const all = F.filter(Boolean), cap0 = cardH - 3 - (compact ? 60 : parseInt(k.headH)) - 4;
+        // FR-040: with the keyboard open the focused field and Continue stay above it, on a page of their own when the rest doesn't fit
+        if (s.accFocus && all.reduce((x, w) => x + w.h, 0) + acts.h > cap0) { const f = all.find(w => w.name === s.accFocus) || all[0];
+          // still too tall (a turned screen with the keys up): Show password waits until the keyboard closes, so the field and Continue share the page
+          const f2 = f.h + acts.h > cap0 && f.hasShow ? { ...f, hasShow: false, h: f.h - 52 } : f;
+          return [S('', nc ? [f2, acts] : [f2, acts, note('The other fields are kept; they show again when the keyboard closes.')])]; }
+        return [S('', [...all, acts])]; },
+      accFinding: () => s.accFind === 'other' ? [S('', [para(host + ' keeps its calendars at another server: ' + found + '.'), note('Settings goes on with ' + found + ' only if you agree. Your user name and password go there next.'), W.info('You typed', host), W.info('Found', found),
+          W.acts([pill('Back', accGo('accAddress')), pill('Continue', accGo('accChoose'), { primary: true })])])]
+        : [S('', [para('Looking for the calendar at ' + host + '…'), note('This takes up to a minute. Nothing is added yet.'), W.acts([pill('Cancel', cancelFlow)])])],
+      accCert: () => [S('', [para('This system doesn’t trust the certificate of ' + found + '.'), note('Compare this fingerprint with the one your provider shows. Trust it only if every group matches; Settings then trusts this one certificate for this account only.')]),
+        S('SHA-256 fingerprint', [mono(AD.fp)]), S('', [W.acts([pill('Back', accGo('accAddress')), pill('Trust this certificate', accGo('accChoose'), { primary: true })])])],
+      accBrowser: () => { const B = s.accBrowser, link = 'https://' + host + '/login/v2/flow/' + AD.token;
+        if (B === 'timeout') return [S('', [para('The sign-in waited 20 minutes without an answer, so it stopped.'), note('Nothing was added. Try again to open the sign-in page once more.'), W.acts([pill('Cancel', cancelFlow), pill('Try again', () => u({ accBrowser: 'waiting', pg: 0 }), { primary: true })])])];
+        if (B === 'link' || B === 'nobrowser') return [S('', [para(B === 'nobrowser' ? 'There is no web browser on this system. Sign in on another device: open this link there, or scan the code.' : 'Sign in on another device: open this link there, or scan the code with a phone.'),
+          W.code('The link, as text', link), note('Settings goes on by itself once ' + host + ' allows this device.'), W.acts([pill('Cancel', cancelFlow)])])];
+        return [S('', [para('Sign in in the browser. Settings goes on when you’re done.'), note('The sign-in page of ' + host + ' is open in the browser. Your password is typed there, never in Settings.'), W.acts([pill('Cancel', cancelFlow), pill('Show link', () => u({ accBrowser: 'link', pg: 0 }))])])]; },
+      accChoose: () => accSecs([S('Calendars', colRows('cal'), { list: true, right: found }), S('Address books', colRows('book'), { list: true }),
+        S('New entries go to', [...defRows(), stayLine], { list: true, newPage: true }), S('', [W.acts([pill('Cancel', cancelFlow), pill('Continue', accGo('accLeaves'), { primary: true })])])]),
+      accLeaves: () => [S('', [para('Everything written in these calendars and address books, from now on and by any app, handwriting included, goes to ' + found + '.'),
+          W.tog('Also copy the ' + (AD.local.cal + AD.local.book) + ' entries already on this device', s.accCopy ? 'Into ' + defOf('events') + ' and ' + defOf('contacts') + ' on ' + found : 'They stay on this device only', !!s.accCopy, () => u(st => ({ accCopy: !st.accCopy }))),
+          note('Nothing has been added yet. Cancel leaves no account and no password behind.'),
+          W.acts([pill('Cancel', cancelFlow), pill('Start syncing', accGo('account', st => ({ accSel: 'new', accList: [...(st.accList || []).filter(x => x !== 'new'), 'new'], accSt: { ...(st.accSt || {}), new: 'first0' } })), { primary: true })])])],
+      account: () => { const a = sel, paused = selSt === 'paused', busy = /^first|syncing/.test(selSt), w = STW(selSt, a);
+        // in a small window the card's question is a page of its own (the sheet can't page): the same words and the three answers
+        if (accAsk) { const Q = accAsk;
+          return [S('', [{ ...para(Q.title), label: Q.title }, ...Q.lines.map(l => l.sub ? note(l.t) : para(l.t)), Q.warn ? { k: 'alert', label: Q.warn + '. ' + Q.warnNames, nosep: true, h: Math.ceil(16 + lns(Q.warn + '. ' + Q.warnNames, zonePx, cw - 32) * LH.zone + 2) } : null,
+            W.acts([pill('Cancel', () => u({ accSheet: null })), pill('Remove from this device', Q.done(false)), pill('Keep a copy on this device', Q.done(true), { primary: true })])].filter(Boolean))]; }
+        return accSecs([S('', [W.accSt(s.accSel, selSt)]),
+          S('Account', [{ ...W.field('name', 'Name', s.accName ?? a.name, a.name, 'normal'), h: Math.ceil(12 + LH.row + 8 + 52 + 14 + 2) }, W.info('Server', a.host), W.info('Kind', a.kind)], { summary: (s.accName ?? a.name) + ' · ' + a.host, foldLast: 1 }),
+          S('Sync', [W.tog('Sync', paused ? 'Paused: apps keep working on this device' : 'Every 15 minutes, and when something changes', !paused, () => u(st => ({ accSt: { ...(st.accSt || {}), [st.accSel]: paused ? 'syncing' : 'paused' } }))),
+            W.btn('Sync now', paused ? 'Turn on Sync first' : busy ? 'Syncing now' : w.last || 'Last synced 5 minutes ago', 'Sync now', paused || busy ? null : () => u(st => ({ accSt: { ...(st.accSt || {}), [st.accSel]: 'syncing' } })), !paused && !busy)], { list: true }),
+          S('Calendars', colRows('cal'), { list: true }), S('Address books', colRows('book'), { list: true }),
+          S('New entries go to', [...defRows(), stayLine], { summary: KINDS.map(([kd, l]) => l + ': ' + defOf(kd)).join(' · ') }),
+          S('Changes', [W.count('Waiting', w.waiting || 0, w.waiting ? 'Not on the server yet' : 'Nothing waiting', w.waiting ? () => {} : null), W.count('Not accepted', w.refused || 0, w.refused ? 'Kept on this device · too large' : 'None', w.refused ? () => {} : null),
+            ...(w.twice ? [W.count('Changed in two places', w.twice, 'Compare the two versions', accGo('accVersions'))] : [])], { summary: (w.waiting || 0) + ' waiting · ' + (w.refused || 0) + ' not accepted' }),
+          S('', [W.btn('Remove account', 'Asks first; the server isn’t changed', 'Remove', () => u({ accSheet: { remove: true } }))])]); },
+      accVersions: () => { const V = AD.versions, pick = side => () => u(st => ({ accVer: { ...(st.accVer || {}), [V.id]: side } })), cur = (s.accVer || {})[V.id] || 'server';
+        return [S('', [note('This entry was changed here and on ' + sel.host + ' before they synced; the later one is in use. Settings shows each version’s text; handwriting and other app data go with the version you choose.')]),
+          S('1 entry', [W.vers(V.title, V.sides.map(v => ({ head: v.head, when: v.when, lines: v.lines, cur: v.id === cur, btn: v.id === cur ? 'In use' : 'Use this one', on: pick(v.id) })))], { list: true, right: 'Kept for 30 days' })]; },
+      accImport: () => { const I = s.accImp, f = AD.file;
+        if (I === 'done') return [S('', [{ k: 'status', icon: 'check_circle', label: '120 added, 4 were already there', val: f.name + ' → ' + (s.accImpTo || 'Calendar'), h: 100, nosep: true }, note('The file wasn’t changed. Entries that were already there were left as they are.'), W.acts([pill('Done', accGo('accounts'), { primary: true })])])];
+        if (I === 'bad') return [S('', [{ k: 'status', icon: 'error', label: 'Nothing was imported', val: 'members.vcf', h: 100, nosep: true }, para('This file can’t be read: it isn’t a vCard file, or it is damaged.'), W.acts([pill('Back', accGo('accounts')), pill('Choose another file', () => u({ accImp: 'choose' }), { primary: true })])])];
+        return [S('', [W.info('File', f.name), W.info('In it', f.what)]), S('Import into', f.into.map(c => W.radio(c, c === (s.accImpTo || f.into[0]), () => u({ accImpTo: c }))), { list: true, right: 'Takes events' }),
+          S('', [note('Entries already in your calendars are left as they are.'), W.acts([pill('Cancel', accGo('accounts')), pill('Import', () => u({ accImp: 'done' }), { primary: true })])])]; }
+    });
+    // the add pages are steps, not places: their Back says Back and goes to the step before (FR-010 to FR-016)
+    const ACCT = { accounts: ['Accounts'], accKind: ['Add an account', 'Accounts', 'accounts'], accAddress: [nc ? 'Nextcloud' : 'Other server', 'Back', 'accKind'],
+      accFinding: [s.accFind === 'other' ? 'Another server' : 'Finding', 'Back', 'accAddress'], accCert: ['Certificate', 'Back', s.accFrom === 'account' ? 'account' : 'accAddress'],
+      accBrowser: ['Sign in', 'Back', s.accFrom === 'account' ? 'account' : 'accAddress'], accChoose: ['Calendars', 'Back', nc ? 'accAddress' : 'accFinding'],
+      accLeaves: ['Before syncing', 'Back', 'accChoose'], account: [s.accName ?? sel.name, 'Accounts', 'accounts'], accVersions: ['Versions', 'Account', 'account'], accImport: ['Import a file', 'Accounts', 'accounts'] };
     const PKT = { packages: ['Packages', 'Apps', 'apps'], pkgSearch: ['“' + (s.pkQ || '') + '”', 'Packages', 'packages'],
       pkg: [s.pkSel, s.pkFrom === 'pkgChanges' ? 'Your changes' : s.pkFrom === 'pkgSearch' ? 'Results' : 'Packages', s.pkFrom || 'pkgSearch'],
       pkgChanges: ['Your changes', 'Packages', 'packages'], pkgUpdates: ['Updates', 'Packages', 'packages'], pkgOutput: ['apk output', s.pkSel, 'pkg'], kbWords: ['Words', 'Keyboard', 'keyboard'], screenSize: ['Optoma HD146X', 'Appearance', 'appearance'], kbLangs: ['Languages', 'Keyboard', 'keyboard'] };
@@ -825,6 +1086,10 @@ class Component extends DCLogic {
         listPaged: lp > 1, listLabel: (pgI + 1) + '/' + lp, lPrev: () => u({ pkPlanPg: Math.max(0, pgI - 1) }), lNext: () => u({ pkPlanPg: Math.min(lp - 1, pgI + 1) }), lPrevFg: pgI === 0 ? DIM : 'var(--il-ink,#111111)', lNextFg: pgI === lp - 1 ? DIM : 'var(--il-ink,#111111)',
         hasWarn: plan.sys.length > 0, warn: plan.warnText || ('Also removes ' + plan.sys.length + ' packages that are part of the system'), warnNames: plan.warnNames || plan.sys.join(', '),
         size: plan.size, b2: btnP('Cancel', () => u({ pkSheet: null })), b1: btnP(plan.cta, () => this.pkStart(plan.op, plan.name)) };
+    } else if (accQ && !accAsk) {
+      const close = () => u({ accSheet: null });
+      sh = { show: true, icon: 'delete', title: accQ.title, lines: accQ.lines, hasWarn: !!accQ.warn, warn: accQ.warn, warnNames: accQ.warnNames,
+        b3: btnP('Cancel', close), b2: btnP('Remove from this device', accQ.done(false)), b1: btnP('Keep a copy on this device', accQ.done(true)) };
     } else if (s.kbSheet === 'forget') {
       sh = { show: true, icon: 'delete', title: 'Forget all learned words?', lines: [{ t: 'The learned words and the list of removed words are deleted from this device. Removed words can be suggested again. This can’t be undone.' }],
         b2: btnP('Cancel', () => u({ kbSheet: null })), b1: btnP('Forget', () => u(kbForgot(s))) };
@@ -837,26 +1102,32 @@ class Component extends DCLogic {
       else sh = { show: true, icon: 'error', title: 'RetroArch wasn’t installed', lines: [{ t: 'apk stopped with this message. Nothing was changed.' }], hasMono: true, mono: ERR,
         b2: btnP('Details', () => u({ pkRes: null, topic: 'pkgOutput', pg: 0 })), b1: btnP('Close', close) };
     }
-    sh = { hasList: false, hasWarn: false, hasFiles: false, hasRestart: false, hasMono: false, listPaged: false, lines: [], items: [], files: [], size: '', b1: noBtn, b2: noBtn, ...sh };
-    sh.sizeD = sh.size ? 'block' : 'none'; sh.b2D = sh.b2.show ? 'flex' : 'none';
+    sh = { hasList: false, hasWarn: false, hasFiles: false, hasRestart: false, hasMono: false, listPaged: false, lines: [], items: [], files: [], size: '', b1: noBtn, b2: noBtn, b3: noBtn, ...sh };
+    sh.sizeD = sh.size ? 'block' : 'none'; sh.b2D = sh.b2.show ? 'flex' : 'none'; sh.b3D = sh.b3.show ? 'flex' : 'none';
     sh.lines = sh.lines.map(l => ({ t: l.t, font: l.sub ? k.sub : k.row, c: l.sub ? k.subC : 'var(--il-ink,#111111)' }));
 
 
+    const isAccPick = !!(sub && sub.accPick);
     const isPick = !!(sub && sub.pick), isDet = !!(sub && sub.detail), isSec = !!(sub && sub.sec != null), isRange = !!(sub && sub.range);
-    const pageTitle = topic === 'gallery' ? 'Widgets' : topic === 'app' ? appName : PKT[topic] ? PKT[topic][0] : (tInfo ? tInfo[1] : 'Settings');
+    const pageTitle = topic === 'gallery' ? 'Widgets' : topic === 'app' ? appName : ACCT[topic] ? ACCT[topic][0] : PKT[topic] ? PKT[topic][0] : (tInfo ? tInfo[1] : 'Settings');
     let secs = isRange ? PAGES.lightRange() : (PAGES[topic] || PAGES.eink)();
     let secTitle = '';
     if (isPick) {
       const kk = sub.pick, kind = kk === 'tz' ? 'tz' : kk === 'lang' ? 'lang' : 'g', cur = kind === 'tz' ? s.tz : kind === 'lang' ? s.lang : s.g[kk.slice(1)];
       secTitle = kind === 'tz' ? 'Time zone' : kind === 'lang' ? 'System language' : (kk[1] === '3' ? 'Three fingers' : 'Four fingers') + ' · ' + DIRS.find(d => d[0] === kk.slice(2))[2].toLowerCase();
       secs = [S(secTitle, (kind === 'tz' ? CITIES : kind === 'lang' ? LANGS : GACT).map(o => W.radio(o, o === cur, () => u(st => ({ ...(kind === 'tz' ? { tz: o } : kind === 'lang' ? { lang: o } : { g: { ...st.g, [kk.slice(1)]: o } }), sub: st.subPrev ?? null, subPrev: null, pg: 0 })))))];
+    } else if (isAccPick) { const kd = sub.accPick, L = { events: 'Events', todos: 'To-dos', notes: 'Notes', contacts: 'Contacts' }[kd];
+      secTitle = L;
+      secs = [S('New ' + L.toLowerCase() + ' go to', offers(kd).map(o => W.radio(o, o === defOf(kd), () => u(st => ({ accDefs: { ...(st.accDefs || {}), [kd]: o }, sub: null, subPrev: null, pg: 0 })))), { list: true }), S('', [note('Only collections that take ' + L.toLowerCase() + ' are offered.')])];
     } else if (isDet) { secTitle = sub.detail.title; secs = [S(secTitle, sub.detail.rows.map(([a, b]) => W.info(a, b)))]; }
     else if (isRange) secTitle = 'Range & schedule';
     else if (isSec) { const sc = secs[clamp(sub.sec, 0, secs.length - 1)]; secTitle = sc.title; secs = [{ ...sc, title: '' }]; }
 
-    const inSub = isPick || isDet || isSec || isRange;
+    const inSub = isPick || isAccPick || isDet || isSec || isRange;
     let hd;
     if (inSub) hd = { title: secTitle, backLabel: pageTitle, hasBack: true, back: () => u(st => ({ sub: (isPick || isDet) ? (st.subPrev ?? null) : null, subPrev: null, pg: 0 })) };
+    if (isAccPick) hd.backLabel = ACCT[topic] ? ACCT[topic][0] : pageTitle;
+    else if (ACCT[topic] && ACCT[topic][1]) hd = { title: ACCT[topic][0], backLabel: ACCT[topic][1], hasBack: true, back: accGo(ACCT[topic][2], { accSheet: null }) };
     else if (PKT[topic]) hd = { title: PKT[topic][0], backLabel: PKT[topic][1], hasBack: true, back: () => u({ topic: PKT[topic][2], sub: null, subPrev: null, pg: 0 }) };
     else if (topic === 'app') hd = { title: appName, backLabel: 'Apps', hasBack: true, back: () => u({ topic: 'apps', sub: null, pg: 0 }) };
     else hd = { title: pageTitle, hasBack: false };
@@ -879,24 +1150,24 @@ class Component extends DCLogic {
     secs.forEach((sc, i) => {
       const si = isSec ? sub.sec : i;
       if (col.has(i)) return blocks.push({ ...W.link(sc.title, sc.asRow || sc.summary || (sc.items.length === 1 ? (sc.items[0].val || sc.items[0].sub || sc.items[0].label) : sc.items.slice(0, 2).map(w => w.label).join(' · ') + (sc.items.length > 2 ? ' · …' : '')), () => u({ sub: { sec: i }, pg: 0 })), h: CL, sec: sc.title, si });
-      if (sc.title) blocks.push({ ...W.head(sc.title, sc.right, sc.noRule), sec: sc.title, si });
+      if (sc.title) blocks.push({ ...W.head(sc.title, sc.right, sc.noRule), sec: sc.title, si, brk: !!sc.newPage });
       sc.items.forEach(w => blocks.push({ ...w, sec: sc.title, si }));
     });
     const sum = a => a.reduce((x, b) => x + b.h, 0);
     let fit = [...col].some(i => !secs[i].asRow) ? 'collapsed' : 'open', pages = [blocks];
     if (sum(blocks) > cap) {
       if (!compact) cap -= 66; pages = []; let cur = [], acc = 0;
-      blocks.forEach((b, j) => { const need = b.k === 'section-head' && blocks[j + 1] ? b.h + blocks[j + 1].h : b.h; if (cur.length && acc + need > cap) { pages.push(cur); cur = []; acc = 0; } cur.push(b); acc += b.h; });
+      blocks.forEach((b, j) => { const need = b.k === 'section-head' && blocks[j + 1] ? b.h + blocks[j + 1].h : b.h; if (cur.length && (acc + need > cap || b.brk)) { pages.push(cur); cur = []; acc = 0; } cur.push(b); acc += b.h; });
       if (cur.length) pages.push(cur);
       fit = fit === 'collapsed' ? 'collapsed+paged' : 'paged';
     }
     const np = pages.length, pg = clamp(s.pg, 0, np - 1);
     this._fitInfo = { fit, compact, pages: np, collapsed: secs.filter((x, i) => col.has(i)).map(x => x.title), w: Math.round(winW), h: Math.round(winH), cw: Math.round(cw), narrow, tabsPaged: Math.floor((cardH - 15 + 5) / (tabH + 5)) < TOP.length };
     const shown = pages[pg].map((b, j, arr) => { const nx = arr[j + 1]; return { sub: '', val: '', icon: '', right: '', rule: 'none', ...b, sep: b.k === 'section-head' || b.nosep ? 'none' : k.sep,
-      isHead: b.k === 'section-head', isTog: b.k === 'toggle', isSeg: b.k === 'segmented', isNote: b.k === 'note', isSl: b.k === 'slider', isRange: b.k === 'range', isLink: b.k === 'link', isInfo: b.k === 'info', isApp: b.k === 'app', isRadio: b.k === 'radio', isDith: b.k === 'dithering', isBars: b.k === 'bars', isAxis: b.k === 'axis', isOff: b.k === 'offset', isBtn: b.k === 'button', isRot: b.k === 'rotation', isSearch: b.k === 'search', isPkg: b.k === 'pkg', isStatus: b.k === 'status', isPara: b.k === 'para', isMono: b.k === 'mono', isRuler: b.k === 'ruler', isNum: b.k === 'num', valD: b.k === 'link' && b.val ? 'block' : 'none', instD: b.instD || 'none',
+      isHead: b.k === 'section-head', isTog: b.k === 'toggle', isSeg: b.k === 'segmented', isNote: b.k === 'note', isSl: b.k === 'slider', isRange: b.k === 'range', isLink: b.k === 'link', isInfo: b.k === 'info', isApp: b.k === 'app', isRadio: b.k === 'radio', isDith: b.k === 'dithering', isBars: b.k === 'bars', isAxis: b.k === 'axis', isOff: b.k === 'offset', isBtn: b.k === 'button', isRot: b.k === 'rotation', isSearch: b.k === 'search', isPkg: b.k === 'pkg', isStatus: b.k === 'status', isPara: b.k === 'para', isMono: b.k === 'mono', isRuler: b.k === 'ruler', isNum: b.k === 'num', isField: b.k === 'field', isAlert: b.k === 'alert', isActs: b.k === 'acts', isAcct: b.k === 'acct', isAccSt: b.k === 'accSt', isCode: b.k === 'code', isVers: b.k === 'vers', valD: b.k === 'link' && b.val ? 'block' : 'none', instD: b.instD || 'none',
       subD: b.sub ? 'block' : 'none', iconD: b.icon ? 'block' : 'none', rightD: b.right && cw > 380 ? 'block' : 'none' }; });
 
-    const active = topic === 'kbWords' || topic === 'kbLangs' ? 'keyboard' : topic === 'screenSize' ? 'appearance' : topic === 'app' || PKT[topic] ? 'apps' : topic;
+    const active = ACCT[topic] ? 'accounts' : topic === 'kbWords' || topic === 'kbLangs' ? 'keyboard' : topic === 'screenSize' ? 'appearance' : topic === 'app' || PKT[topic] ? 'apps' : topic;
     const goTopic = id => () => u({ topic: id, sub: null, subPrev: null, pg: 0 });
     const mkTab = (label, icon, on, isOn, fill) => ({ label, icon, on, fill: fill ? 1 : 0, bg: isOn ? k.tabOnBg : 'var(--il-paper,#ffffff)', fg: isOn ? k.tabOnFg : 'var(--il-ink,#111111)', sh: isOn ? k.tabOnSh : k.tabSh, w: (isOn ? tabW + 12 : tabW) + 'px', ml: isOn ? '-4px' : '0', bl: isOn ? 'none' : '1.5px solid var(--il-ink,#111111)', extra: '', exD: 'none' });
     const slots = Math.floor((cardH - 15 + 5) / (tabH + 5));
@@ -910,7 +1181,7 @@ class Component extends DCLogic {
 
     const plateOn = { bg: t.plateOnBg, fg: t.plateOnFg, sh: t.plateOnSh }, plateOff = { bg: 'transparent', fg: t.barFg, sh: t.plateOffSh };
     const escKey = e => { if (e.key !== 'Escape') return; const st = this.state; let pp = null;
-      if (st.pkSheet) pp = { pkSheet: null }; else if (st.pkRes) pp = { pkRes: null };
+      if (st.pkSheet) pp = { pkSheet: null }; else if (st.pkRes) pp = { pkRes: null }; else if (st.accSheet) pp = { accSheet: null };
       else if (hd.hasBack) { e.preventDefault(); hd.back(); return; }
       if (pp) { e.preventDefault(); u(pp); } };
     return { escKey, ilKey: e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }, 
@@ -921,7 +1192,7 @@ class Component extends DCLogic {
       barTitle: 'Settings — ' + pageTitle,
       gCols: cols2 ? 'minmax(0,1fr) minmax(0,1fr)' : 'minmax(0,1fr)', gRows: rows2 ? 'minmax(0,1fr) minmax(0,1fr)' : 'minmax(0,1fr)', gBg: win === 'full' ? t.screenBg : t.gridBg,
       others: win === 'full' ? [] : win === 'quarter' ? ['software', 'terminal', 'notes'] : ['browser'],
-      hd, blocks: shown, sh, pageId: (isRange ? 'light:range' : topic) + (isSec ? '#' + sub.sec : isPick ? ':' + sub.pick : isDet ? ':detail' : ''), fit, cap,
+      hd, blocks: shown, sh, pageId: (isRange ? 'light:range' : topic) + (isSec ? '#' + sub.sec : isAccPick ? ':' + sub.accPick : isPick ? ':' + sub.pick : isDet ? ':detail' : ''), fit, cap,
       paged: np > 1, hdPaged: np > 1 && compact, footPaged: np > 1 && !compact, pageShort: (pg + 1) + '/' + np, pageLabel: 'Page ' + (pg + 1) + ' of ' + np, prevFg: pg === 0 ? DIM : 'var(--il-ink,#111111)', nextFg: pg === np - 1 ? DIM : 'var(--il-ink,#111111)',
       prev: () => u({ pg: Math.max(0, pg - 1) }), next: () => u({ pg: Math.min(np - 1, pg + 1) }),
       tabs,

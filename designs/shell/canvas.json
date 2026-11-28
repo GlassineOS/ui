@@ -1030,6 +1030,141 @@
    "w": 824,
    "x": 904,
    "y": 6160
+  },
+  "fit.accounts.dc.html": {
+   "h": 1900,
+   "is_interactive": true,
+   "page": "fit",
+   "title": "fit.accounts · Accounts in every window",
+   "w": 1640,
+   "x": 0,
+   "y": 20200
+  },
+  "fit.account.dc.html": {
+   "h": 1900,
+   "is_interactive": true,
+   "page": "fit",
+   "title": "fit.account · An account in every window",
+   "w": 1640,
+   "x": 0,
+   "y": 22220
+  },
+  "fit.accounts-choose.dc.html": {
+   "h": 1900,
+   "is_interactive": true,
+   "page": "fit",
+   "title": "fit.accounts-choose · Choosing calendars in every window",
+   "w": 1640,
+   "x": 0,
+   "y": 24240
+  },
+  "settings.accounts.dc.html": {
+   "h": 1540,
+   "is_interactive": true,
+   "page": "settings",
+   "title": "settings.accounts · Accounts: calendars and contacts",
+   "w": 1124,
+   "x": 0,
+   "y": 11380
+  },
+  "settings.accounts.add-kind.dc.html": {
+   "h": 1540,
+   "is_interactive": true,
+   "page": "settings",
+   "title": "settings.accounts.add-kind · Add an account: the kind",
+   "w": 1124,
+   "x": 1204,
+   "y": 11380
+  },
+  "settings.accounts.address.dc.html": {
+   "h": 1540,
+   "is_interactive": true,
+   "page": "settings",
+   "title": "settings.accounts.address · Add an account: the address",
+   "w": 1124,
+   "x": 2408,
+   "y": 11380
+  },
+  "settings.accounts.finding.dc.html": {
+   "h": 1540,
+   "is_interactive": true,
+   "page": "settings",
+   "title": "settings.accounts.finding · Add an account: finding the server",
+   "w": 1124,
+   "x": 0,
+   "y": 13040
+  },
+  "settings.accounts.certificate.dc.html": {
+   "h": 1540,
+   "is_interactive": true,
+   "page": "settings",
+   "title": "settings.accounts.certificate · Add an account: an untrusted certificate",
+   "w": 1124,
+   "x": 1204,
+   "y": 13040
+  },
+  "settings.accounts.browser.dc.html": {
+   "h": 1540,
+   "is_interactive": true,
+   "page": "settings",
+   "title": "settings.accounts.browser · Add an account: the server’s own sign-in",
+   "w": 1124,
+   "x": 2408,
+   "y": 13040
+  },
+  "settings.accounts.choose.dc.html": {
+   "h": 1540,
+   "is_interactive": true,
+   "page": "settings",
+   "title": "settings.accounts.choose · Add an account: which calendars and address books",
+   "w": 1124,
+   "x": 0,
+   "y": 14700
+  },
+  "settings.accounts.leaves.dc.html": {
+   "h": 1540,
+   "is_interactive": true,
+   "page": "settings",
+   "title": "settings.accounts.leaves · Add an account: what leaves the device",
+   "w": 1124,
+   "x": 1204,
+   "y": 14700
+  },
+  "settings.account.dc.html": {
+   "h": 1540,
+   "is_interactive": true,
+   "page": "settings",
+   "title": "settings.account · One account",
+   "w": 1124,
+   "x": 2408,
+   "y": 14700
+  },
+  "settings.account.remove.dc.html": {
+   "h": 1540,
+   "is_interactive": true,
+   "page": "settings",
+   "title": "settings.account.remove · Remove an account, stop syncing a calendar",
+   "w": 1124,
+   "x": 0,
+   "y": 16360
+  },
+  "settings.account.versions.dc.html": {
+   "h": 1540,
+   "is_interactive": true,
+   "page": "settings",
+   "title": "settings.account.versions · Changed in two places",
+   "w": 1124,
+   "x": 1204,
+   "y": 16360
+  },
+  "settings.accounts.import.dc.html": {
+   "h": 1540,
+   "is_interactive": true,
+   "page": "settings",
+   "title": "settings.accounts.import · Import a file",
+   "w": 1124,
+   "x": 2408,
+   "y": 16360
   }
  },
  "launch": {

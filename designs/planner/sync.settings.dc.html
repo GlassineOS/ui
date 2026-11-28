@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The planner’s settings: the calendars, a Show switch each</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div data-spec-id="sync.settings" style="width:1140px;height:1438px;box-sizing:border-box;padding:28px 32px;display:flex;flex-direction:column;gap:18px;background:#e6e6e6;color:#1b1b1b;font-family:'IBM Plex Sans',sans-serif">
+<div style="display:flex;flex-direction:column;gap:6px">
+<span style="font:500 13px/1.2 'IBM Plex Mono',monospace;color:#3d3d3d">sync.settings</span>
+<h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">The planner’s settings: the calendars, a Show switch each</h1>
+<p style="margin:0;max-width:1000px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">The planner’s settings (the cog) list every calendar of the store with a Show switch, all on at first: Personal on this device, Team and Family synced from cloud.example.org, and Holidays, read-only. Turning Team off takes its entries out of every view in one refresh; they are still synced and shown by other apps, and they are not counted or listed as hidden entries. A last row says that calendars are added in Settings and opens Settings on its accounts page; the planner has no account screens of its own.</p>
+</div>
+<dc-import name="ThemeBar" voice="{{ voice }}" on-pick="{{ pick }}" hint-size="100%,112px"></dc-import>
+<dc-import name="Planner" voice="{{ voice }}" orient="{{ orient }}" tmpl="day-agenda" overlay="settings" sync="{{ sync }}" hint-size="{{ hint }}"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "step": {"editor": "enum", "options": ["all", "hidden", "all-land"], "default": "all"}, "$preview": {"width": 1140, "height": 1438}, "$states": [{"id": "all", "name": "Every calendar shown", "props": {"step": "all"}}, {"id": "hidden", "name": "Team hidden: its entries leave the views", "props": {"step": "hidden"}, "from": [{"state": "all", "label": "turn Team off"}]}, {"id": "all-land", "name": "Turned", "props": {"step": "all-land"}, "from": [{"state": "all", "label": "turn the device"}]}]}'>
+class Component extends DCLogic {
+  state = {};
+  renderVals() {
+    const s = this.state, p = this.props;
+    const M = {"all": ["cals", "portrait"], "hidden": ["cals-hidden", "portrait"], "all-land": ["cals", "landscape"]};
+    const [sync, orient] = M[p.step] || M["all"];
+    return { voice: s.voice ?? p.voice ?? 'white', pick: (k, v) => this.setState({ [k]: v }), sync, orient, hint: orient === 'landscape' ? '1008px,760px' : '760px,1008px' };
+  }
+}
+</script>
+</body>
+</html>

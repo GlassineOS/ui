@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>An outside event’s page: Calendar, Also and the other zone</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div data-spec-id="sync.page" style="width:1140px;height:1438px;box-sizing:border-box;padding:28px 32px;display:flex;flex-direction:column;gap:18px;background:#e6e6e6;color:#1b1b1b;font-family:'IBM Plex Sans',sans-serif">
+<div style="display:flex;flex-direction:column;gap:6px">
+<span style="font:500 13px/1.2 'IBM Plex Mono',monospace;color:#3d3d3d">sync.page</span>
+<h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">An outside event’s page: Calendar, Also and the other zone</h1>
+<p style="margin:0;max-width:1000px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">“planning call” was made in New York time in the shared Team calendar. The planner shows every time in the device’s zone (Berlin here), so the agenda has it at 15:00 and its card says 15:00–16:00 only; its page adds the times in the event’s own zone: “15:00–16:00 (9:00–10:00 New York time)”. Changing its times keeps the event in its own zone. Calendar lists the writable calendars that take events, the current one marked; picking another moves the event there with its ink (a repeating event moves as a whole series). Where, Notes and With hold the outside text, typed, and take the pen as any field. What the planner doesn’t show (a link, an attachment, more reminders, a status) is kept unchanged and named under Also, read-only.</p>
+</div>
+<dc-import name="ThemeBar" voice="{{ voice }}" on-pick="{{ pick }}" hint-size="100%,112px"></dc-import>
+<dc-import name="Planner" voice="{{ voice }}" orient="{{ orient }}" tmpl="day-agenda" sync="{{ sync }}" hint-size="{{ hint }}"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "step": {"editor": "enum", "options": ["page", "page-land"], "default": "page"}, "$preview": {"width": 1140, "height": 1438}, "$states": [{"id": "page", "name": "The page of an event from another zone", "props": {"step": "page"}}, {"id": "page-land", "name": "Turned", "props": {"step": "page-land"}, "from": [{"state": "page", "label": "turn the device"}]}]}'>
+class Component extends DCLogic {
+  state = {};
+  renderVals() {
+    const s = this.state, p = this.props;
+    const M = {"page": ["page", "portrait"], "page-land": ["page", "landscape"]};
+    const [sync, orient] = M[p.step] || M["page"];
+    return { voice: s.voice ?? p.voice ?? 'white', pick: (k, v) => this.setState({ [k]: v }), sync, orient, hint: orient === 'landscape' ? '1008px,760px' : '760px,1008px' };
+  }
+}
+</script>
+</body>
+</html>

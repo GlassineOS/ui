@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Deleted elsewhere while its page is open</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div data-spec-id="sync.deleted" style="width:1140px;height:1438px;box-sizing:border-box;padding:28px 32px;display:flex;flex-direction:column;gap:18px;background:#e6e6e6;color:#1b1b1b;font-family:'IBM Plex Sans',sans-serif">
+<div style="display:flex;flex-direction:column;gap:6px">
+<span style="font:500 13px/1.2 'IBM Plex Mono',monospace;color:#3d3d3d">sync.deleted</span>
+<h1 style="margin:0;font:600 26px/1.2 'IBM Plex Sans',sans-serif;text-wrap:balance">Deleted elsewhere while its page is open</h1>
+<p style="margin:0;max-width:1000px;font:400 15px/1.5 'IBM Plex Sans',sans-serif;color:#2b2b2b;text-wrap:pretty">The event’s page is open when its deletion arrives from another device. The page stays as it is and says so at its top, “This event was deleted elsewhere.”, with Keep it, which writes it again as it is on the page, and Close, which goes back to the day without it. A card of a deleted event just closes.</p>
+</div>
+<dc-import name="ThemeBar" voice="{{ voice }}" on-pick="{{ pick }}" hint-size="100%,112px"></dc-import>
+<dc-import name="Planner" voice="{{ voice }}" orient="{{ orient }}" tmpl="day-agenda" sync="{{ sync }}" hint-size="{{ hint }}"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voice": {"editor": "enum", "options": ["white", "editorial", "stationery"], "default": "white"}, "step": {"editor": "enum", "options": ["gone", "gone-land"], "default": "gone"}, "$preview": {"width": 1140, "height": 1438}, "$states": [{"id": "gone", "name": "The notice on the page", "props": {"step": "gone"}}, {"id": "gone-land", "name": "Turned", "props": {"step": "gone-land"}, "from": [{"state": "gone", "label": "turn the device"}]}]}'>
+class Component extends DCLogic {
+  state = {};
+  renderVals() {
+    const s = this.state, p = this.props;
+    const M = {"gone": ["gone", "portrait"], "gone-land": ["gone", "landscape"]};
+    const [sync, orient] = M[p.step] || M["gone"];
+    return { voice: s.voice ?? p.voice ?? 'white', pick: (k, v) => this.setState({ [k]: v }), sync, orient, hint: orient === 'landscape' ? '1008px,760px' : '760px,1008px' };
+  }
+}
+</script>
+</body>
+</html>

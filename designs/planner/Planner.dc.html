@@ -387,9 +387,10 @@ class Component extends DCLogic {
       out.habits = g.habits.map(h => ({ words: h.words, cells: h.cells, cls: 'pl-hab-row' + (h.add ? ' is-add' : ''), addLabel: h.add ? '+ a habit' : '' }));
     }
     if (out.isAgenda) {
-      out.hrs = g.hrs.map(h => ({ ...h, showHalf: !h.last && !g.compact }));
+      out.hrs = g.hrs.map(h => ({ ...h, showHalf: !h.last && !g.compact, cls: 'pl-hr', halfCls: 'pl-hr is-half' }));
       const now = 14 + 20 / 60; // 14:20
       out.nowY = g.today && now > g.from && now < g.from + g.hrs.length - 1 ? Math.round(g.top + (now - g.from) * g.pitch) : 0;
+      out.nowSegs = [{ x: Component.NOW.x, w: g.w - Component.NOW.x }];
       out.blocks = g.blocks.map(b => ({ ...b, extra: '' }));
       out.evs = [];
       // a long title: written, its field grows into the free time below; when that space is taken
@@ -465,12 +466,14 @@ class Component extends DCLogic {
     close();
     const rowCl = clusters.filter(c => c.rows);
     const RH = g.fixed ? R.hFixed : R.h;
-    g.stretches = []; g.folds = [];
+    g.stretches = []; g.folds = []; g.rowRules = [];
     // the rows' hours drawn taller: y → f(y), piecewise linear; the other hours shrink evenly, never
     // below the smallest pitch; a fixed widget keeps its hours
     if (rowCl.length && !g.fixed && g.hrs && g.hrs.length > 1) {
       const top = g.hrs[0].y, bot = g.hrs[g.hrs.length - 1].y;
-      const spans = rowCl.map(c => ({ a: c.y0 - 1, b: c.y1 + 1, need: c.items.length * RH + 2 * R.pad }));
+      // at least R.scale times taller, so that the change of scale can't be missed
+      const spans = rowCl.map(c => ({ a: c.y0 - 1, b: c.y1 + 1, need: Math.max(c.items.length * RH + 2 * R.pad, Math.round(R.scale * (c.y1 - c.y0 + 2))) }));
+      rowCl.forEach(c => { c.o = c.y1 - c.y0; });
       const inside = spans.reduce((s, x) => s + (x.b - x.a), 0), free = bot - top - inside;
       const room = Math.max(0, free - free * Math.min(1, R.minPitch / g.pitch));
       let extra = spans.reduce((s, x) => s + Math.max(0, x.need - (x.b - x.a)), 0);
@@ -495,8 +498,10 @@ class Component extends DCLogic {
       g.blocks = g.blocks.map(b => { const y = Math.round(f(b.y)); return Object.assign({}, b, { y, h: Math.round(f(b.y + b.h)) - y }); });
       rowCl.forEach(c => { const ids = c.items.map(b => b.id), bs = g.blocks.filter(b => ids.includes(b.id));
         c.y0 = Math.min(...bs.map(b => b.y)); c.y1 = Math.max(...bs.map(b => b.y + b.h)); c.items = bs.sort((a, b) => a.y - b.y || b.h - a.h);
-        const sh = c.y1 - c.y0 + 8, d = 'M0 3l3.5-3 3.5 3 3.5-3 3.5 3 M4 6V' + (sh - 6) + ' M9 6V' + (sh - 6) + ' M0 ' + (sh - 3) + 'l3.5 3 3.5-3 3.5 3 3.5-3';
-        g.stretches.push({ y: c.y0 - 4, h: sh, d }); });
+        // the margin of the stretched hours is shaded, a break across the margin at each end, the scale named
+        const sh = c.y1 - c.y0, zig = y => 'M0 ' + y + Array.from({ length: 6 }, (_, i) => 'l' + (34 / 6).toFixed(2) + (i % 2 ? ' 5' : ' -5')).join('');
+        const sc = Math.round((sh / Math.max(1, c.o)) * 2) / 2;
+        g.stretches.push({ y: c.y0 - 6, h: sh + 12, by: c.y0, bh: sh, d: zig(6) + ' ' + zig(sh + 6), x: sc + '×' }); });
     }
     g._src = solid;
     g.bk = true;
@@ -525,14 +530,28 @@ class Component extends DCLogic {
     const place = {}, folded = {};
     rowCl.forEach(c => {
       const space = c.y1 - c.y0, n = c.items.length;
+      const w = R0 - L0 + 2, two = g.fixed && w < R.tapW, bar = two ? R.bar2 : R.bar;
       let shown = n;
-      if (g.fixed && n * RH + 2 * R.pad > space) shown = Math.max(0, Math.floor((space - R.bar - 2 * R.pad - R.gap) / RH));
-      c.items.forEach((b, i) => { if (i < shown) place[b.id] = { y: c.y0 + R.pad + i * RH, h: RH - R.gap }; else folded[b.id] = true; });
+      if (g.fixed && n * RH + 2 * R.pad > space) shown = Math.max(0, Math.floor((space - bar - 2 * R.pad - R.gap) / RH));
+      const P = g.fixed ? RH : Math.max(RH, Math.floor((space - 2 * R.pad) / n));
+      c.items.forEach((b, i) => { if (i < shown) place[b.id] = { y: c.y0 + R.pad + i * P, h: P - R.gap }; else folded[b.id] = true; });
+      // each row sits on its own ruled line; a line that would double the group's last hour rule is left out
+      for (let i = 1; i <= shown; i++) {
+        const y = c.y0 + R.pad + i * P - Math.ceil(R.gap / 2);
+        if (i < n || c.y1 - y > 6) g.rowRules.push({ x: L0, w: R0 - L0, y });
+      }
+      g.hrs = g.hrs.map(h => {
+        const o = Object.assign({}, h);
+        const m = g.fixed ? ' is-margin' : ' is-scale';
+        if (h.y > c.y0 + 3 && h.y < c.y1 - 3) o.cls = 'pl-hr' + m;
+        if (h.half > c.y0 + 3 && h.half < c.y1 - 3) o.halfCls = 'pl-hr is-half' + m;
+        return o;
+      });
       if (shown < n) {
-        const fb = c.items.slice(shown), w = R0 - L0 + 2;
+        const fb = c.items.slice(shown);
         const s0 = Math.min(...fb.map(b => b.s)), e0 = Math.max(...fb.map(b => b.e));
-        g.folds.push({ x: L0 - 1, w, y: c.y0 + R.pad + shown * RH, h: R.bar, t: '+' + fb.length + ' more', when: PL.hm(s0) + '–' + PL.hm(e0),
-          words: PL.ink(fb[0].title || '', { fs: R.barFs, salt: fb[0].id }), tap: w >= R.tapW ? 'tap to show' : '',
+        g.folds.push({ cls: 'pl-fold' + (two ? ' is-two' : ''), x: L0 - 1, w, y: c.y0 + R.pad + shown * P, h: bar, t: '+' + fb.length + ' more', when: PL.hm(s0) + '–' + PL.hm(e0),
+          words: PL.ink(fb[0].title || '', { fs: R.barFs, salt: fb[0].id }), tap: two ? '' : 'tap to show',
           label: fb.length + ' more events, ' + PL.hm(s0) + '–' + PL.hm(e0) + ': a tap opens the day', on: e => g.onFold && g.onFold(e) });
       }
     });
@@ -552,6 +571,18 @@ class Component extends DCLogic {
       if (g.pitch < 30 && !b.th && ev.hasTitle && !pos.rows) { ev.cls += /is-cut/.test(ev.cls) ? '' : ' is-cut'; ev.extra += ';height:' + Math.max(ev.h, g.pitch) + 'px'; }
       return ev;
     });
+    // the now line never crosses ink: it breaks around every event (and fold) it would cross, and keeps
+    // its dot in the hour margin; what is left of it between lanes is drawn only where it is long enough
+    if (g.nowY) {
+      const N = Component.NOW, y = g.nowY, cut = [];
+      g.evs.forEach(e => { if (y >= e.y - N.clearY && y <= e.y + e.h + N.clearY) cut.push([e.bx - N.clear, e.bx + e.bw + N.clear]); });
+      g.folds.forEach(fd => { if (y >= fd.y - N.clearY && y <= fd.y + fd.h + N.clearY) cut.push([fd.x - N.clear, fd.x + fd.w + N.clear]); });
+      cut.sort((a, b) => a[0] - b[0]);
+      const segs = []; let x = N.x;
+      cut.forEach(([a, b]) => { if (a - x >= N.least) segs.push({ x, w: a - x }); x = Math.max(x, b); });
+      if (g.w - x >= N.least) segs.push({ x, w: g.w - x });
+      g.nowSegs = segs;
+    }
     // a fold is named in the widget's head: how many events the day has here, how many are folded
     const nf = Object.keys(folded).length;
     if (nf) g.tag = solid.length + ' events, ' + nf + ' folded';
@@ -629,7 +660,7 @@ class Component extends DCLogic {
       const y0 = Math.min(...ids.map(e => e.y)), y1 = Math.max(...ids.map(e => e.y + e.h));
       const t = more === 'land' ? 'turned: five lanes of 160 px or more fit, so they stay lanes'
         : more === 'wday' ? 'from the widget’s bar: the day, every event of the group'
-        : 'a lane would be under 160 px: one row each, these hours drawn taller';
+        : 'a lane would be under 160 px: one row each, these hours drawn 2× taller';
       if (ids.length) marks.push({ cls: 'pl-mark is-below' + (st ? ' is-tag' : ''), x: X + (st ? 18 : 30), y: Y + Math.min(y0, st ? st.y : y0) - 4, w: ag.w - (st ? 22 : 34), h: Math.max(y1, st ? st.y + st.h : y1) - Math.min(y0, st ? st.y : y0) + 8, t });
     }
     const r1 = ev('r1');
@@ -1096,7 +1127,9 @@ Component.WRAP = {
    below each row, the room above the first and below the last, the smallest hour pitch the other hours
    shrink to, the title's size in a row, and the fold bar: its height, its title's size, and the width
    from which it says "tap to show"; a lane narrower than "narrow" puts the time under the title */
-Component.ROWS = { narrow: 190, h: 32, hFixed: 26, gap: 4, pad: 4, minPitch: 20, fs: 17, fsFixed: 14, bar: 24, barFs: 12, tapW: 280 };
+Component.ROWS = { narrow: 190, h: 32, hFixed: 26, gap: 4, pad: 4, minPitch: 20, scale: 2, fs: 17, fsFixed: 14, bar: 24, bar2: 40, barFs: 12, tapW: 280 };
+// the now line: its dot in the hour margin at x; it keeps clear of ink, a piece shorter than least is left out
+Component.NOW = { x: 26, clear: 4, clearY: 6, least: 16 };
 /* the moved title's width on one line at the written size (px), measured on the boards */
 Component.WRAPW = 243;
 Component.IC = {

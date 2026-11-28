@@ -177,8 +177,9 @@ html, body { margin: 0; }
 .pl-stroke { position: absolute; overflow: visible; pointer-events: none; z-index: 4; }
 .pl-stroke path { fill: none; stroke: var(--pen); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 .pl-agenda-edge { position: absolute; right: 8px; height: 18px; padding: 0 4px; display: flex; align-items: center; z-index: 1; font: 500 10.5px/1 var(--font-mono); color: var(--ink-soft); background: var(--paper); }
-.pl-now { position: absolute; left: 34px; right: 0; border-top: 2px solid var(--ink); }
-.pl-now::before { content: ""; position: absolute; left: -4px; top: -5px; width: 8px; height: 8px; border-radius: 50%; background: var(--ink); }
+.pl-now { position: absolute; border-top: 2px solid var(--ink); }
+/* the now dot stands in the hour margin; the line breaks around every event it would cross */
+.pl-nowdot { position: absolute; left: 22px; width: 8px; height: 8px; margin-top: -3px; border-radius: 50%; background: var(--ink); z-index: 2; }
 /* the time readout in the hour gutter while a block is drawn or dragged */
 .pl-readout { position: absolute; left: 2px; padding: 2px 3px; font: 600 10px/1 var(--font-mono); z-index: 3; background: var(--ink); color: var(--paper); border-radius: 3px; white-space: nowrap; }
 
@@ -459,12 +460,23 @@ html, body { margin: 0; }
 .pl-evt.is-cut { overflow: hidden; }
 /* a mark whose label ends at its right edge (a mark in a later lane) */
 .pl-mark.is-end span { left: auto; right: -2px; }
-/* a group in rows: its hours drawn taller, marked in the hour margin by a doubled rule between two breaks */
-.pl-stretch { position: absolute; left: 21px; width: 14px; overflow: visible; pointer-events: none; z-index: 1; }
-.pl-stretch path { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-linejoin: round; }
-[data-theme^="stationery"] .pl-stretch path { stroke-width: 1; }
-.pl-evt.is-row { align-items: center; padding-top: 0; }
-.pl-evt.is-row .when { padding-top: 0; }
+/* a group in rows: its hours drawn taller. The hour margin of those hours is shaded, with a break across
+   it at both ends and the scale ("2×") at its foot; inside, the hours and half hours are bold ticks in
+   the margin only, spaced at the new scale, and each row has its own ruled line across the writing area */
+.pl-band { position: absolute; left: 0; width: 34px; background: var(--rule); }
+.pl-band span { position: absolute; right: 2px; bottom: 8px; padding: 2px 3px; border-radius: 2px; font: 700 10px/1 var(--font-mono); background: var(--ink); color: var(--paper); }
+.pl-stretch { position: absolute; left: 0; width: 34px; overflow: visible; pointer-events: none; z-index: 1; }
+.pl-stretch path { fill: none; stroke: var(--ink); stroke-width: 2.5; stroke-linejoin: miter; }
+[data-theme^="stationery"] .pl-stretch path { stroke-width: 2; }
+.pl-hr.is-scale { right: auto; width: 34px; border-top: 2px solid var(--ink); }
+.pl-hr.is-scale span { font-weight: 700; color: var(--ink); }
+.pl-hr.is-half.is-scale { left: 18px; width: 16px; border-top: 2px solid var(--ink); }
+/* the hours inside a group in rows when they can't grow (a small widget): rules in the margin only */
+.pl-hr.is-margin { right: auto; width: 34px; }
+.pl-hr.is-half.is-margin { left: 18px; width: 16px; }
+.pl-rowrule { position: absolute; border-top: 1px solid var(--rule); }
+.pl-evt.is-row { align-items: flex-end; padding-top: 0; padding-bottom: 5px; }
+.pl-evt.is-row .when { padding-top: 0; padding-bottom: 2px; }
 /* a small widget's fold: a black bar across the group, never quiet; a tap opens the day */
 .pl-fold { position: absolute; z-index: 2; display: flex; align-items: center; gap: 8px; padding: 0 8px; box-sizing: border-box; overflow: hidden; background: var(--ink); color: var(--paper); text-decoration: none; border-radius: 3px; white-space: nowrap; }
 .pl-fold b { flex: none; font: 600 11.5px/1 var(--font-mono); }
@@ -473,6 +485,9 @@ html, body { margin: 0; }
 .pl-fold .pl-w { color: var(--paper); }
 .pl-fold .tap { flex: none; font: 500 10px/1 var(--font-mono); }
 .pl-fold .tap:empty { display: none; }
+/* a narrow widget's fold: the number and times on the first line, the first title readable on the second */
+.pl-fold.is-two { flex-wrap: wrap; align-content: center; row-gap: 4px; column-gap: 8px; }
+.pl-fold.is-two .pl-ink { flex: 1 0 100%; }
 .pl-evt.is-narrow { flex-direction: column; align-items: stretch; gap: 2px; }
 .pl-evt.is-narrow .when { margin-left: 0; padding-top: 0; }
 .pl-evt.is-narrow .pl-ink { flex: none; }

@@ -32,6 +32,7 @@
 
 <sc-if value="{{ showBar }}" hint-placeholder-val="{{ true }}">
 <nav class="pl-bar" aria-label="Planner">
+<sc-if value="{{ bar.back }}" hint-placeholder-val="{{ false }}"><a class="pl-btn pl-back" href="#" aria-label="Back to the page the widget is on" onClick="{{ bar.onBack }}"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.chevL }}"></path></svg>Back</a></sc-if>
 <div class="pl-title"><b>{{ bar.main }}</b><span>{{ bar.sub }}</span></div>
 <div class="pl-seg" role="tablist"><sc-for list="{{ bar.kinds }}" as="k" hint-placeholder-count="3"><a class="{{ k.cls }}" href="{{ k.href }}" role="tab" aria-selected="{{ k.on }}">{{ k.t }}</a></sc-for></div>
 <div class="pl-nav"><a href="#" aria-label="{{ bar.prevLabel }}"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.chevL }}"></path></svg></a><a class="{{ bar.todayCls }}" href="#">{{ bar.today }}</a><a href="#" aria-label="{{ bar.nextLabel }}"><svg class="pl-ico" viewBox="0 0 24 24"><path d="{{ ic.chevR }}"></path></svg></a></div>
@@ -341,7 +342,11 @@ class Component extends DCLogic {
     const isToday = true;
     const infoOpen = info.on;
     const badge = p.hint !== 'none' && nHidden ? String(nHidden) : '';
-    const bar = { main: ttl.main, sub: ttl.sub, kinds, today: 'Today', todayCls: isToday ? 'is-here' : '',
+    // the whole day opened from a small widget's fold bar (event.more): Back, first in the bar, to the
+    // page the widget is on; Day, Today or the arrows choose another period, and Back goes
+    const fromFold = p.more === 'wday' || (p.screen === 'sheet' && screen === 'view');
+    const bar = { back: fromFold, onBack: e => this.act(e, { toDay: false }),
+      main: ttl.main, sub: ttl.sub, kinds, today: 'Today', todayCls: isToday ? 'is-here' : '',
       prevLabel: 'Previous ' + kind, nextLabel: 'Next ' + kind, search: p.search === 'bar', badge,
       infoCls: 'pl-tool' + (badge ? ' has-badge' : '') + (infoOpen ? ' is-open' : ''), infoOpen: String(infoOpen),
       infoLabel: 'About this page' + (nHidden ? ': ' + nHidden + ' entries not shown in this layout' : '') };
